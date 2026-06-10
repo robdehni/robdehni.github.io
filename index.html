@@ -176,7 +176,7 @@ function renderTranscript() {
 function createRecognition() {
   recognition = new SR();
 
-  recognition.continuous = false;       // IMPORTANT for Android Chrome
+  recognition.continuous = true;
   recognition.interimResults = true;    // Allows live display
   recognition.lang = 'en-US';
   recognition.maxAlternatives = 1;
@@ -185,7 +185,7 @@ function createRecognition() {
     let finalChunk = '';
     let interimChunk = '';
 
-    for (let i = 0; i < event.results.length; i++) {
+    for (let i = event.resultIndex; i < event.results.length; i++) {
       const text = cleanText(event.results[i][0].transcript);
 
       if (event.results[i].isFinal) {
@@ -212,13 +212,25 @@ function createRecognition() {
   };
 
   recognition.onend = () => {
-    liveInterim = '';
-    renderTranscript();
-    statusEl.textContent = 'Recording stopped. Process when ready.';
-    statusEl.classList.remove('active');
-    isRecording = false;
-    micBtn.classList.remove('recording');
-    micBtn.textContent = '🎤';
+    if (isRecording) {
+      // Session timed out during natural pause — restart cleanly
+      liveInterim = '';
+      restartTimer = setTimeout(() => {
+        try {
+          createRecognition();
+          recognition.start();
+        } catch(err) {
+          console.warn('Restart failed:', err);
+        }
+      }, 100);
+    } else {
+      liveInterim = '';
+      renderTranscript();
+      statusEl.textContent = 'Recording stopped. Process when ready.';
+      statusEl.classList.remove('active');
+      micBtn.classList.remove('recording');
+      micBtn.textContent = '🎤';
+    }
   };
 }
 
@@ -268,7 +280,6 @@ micBtn.onclick = () => {
 
 document.getElementById('clearBtn').onclick = () => {
   fullTranscript = '';
-  lastResultIndex = 0;
   transcriptText.value = '';
   successCard.style.display = 'none';
   processingOverlay.style.display = 'none';
@@ -324,9 +335,9 @@ submitBtn.onclick = async () => {
   processingOverlay.style.display = 'block';
   successCard.style.display = 'none';
 
-  // GPS non-blocking
+  // GPS — await so coordinates are ready before Airtable save
   let latitude = null, longitude = null, accuracy = null;
-  new Promise((resolve) => {
+  await new Promise((resolve) => {
     if (!navigator.geolocation) { resolve(); return; }
     navigator.geolocation.getCurrentPosition(
       (pos) => { latitude = pos.coords.latitude; longitude = pos.coords.longitude; accuracy = Math.round(pos.coords.accuracy); resolve(); },
