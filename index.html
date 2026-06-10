@@ -124,10 +124,12 @@ document.getElementById('hospital').addEventListener('input', function() { showL
 document.getElementById('hospital').addEventListener('focus', function() { showList(this.value); });
 document.addEventListener('click', function(e) { if (!e.target.closest('.hospital-wrapper')) document.getElementById('hospitalList').classList.remove('open'); });
 
-// ── SPEECH RECOGNITION ─────────────────────────────────────────────────────
-// continuous=false avoids Android Chrome duplication bug (ChatGPT + Claude fix)
-let recognition, isRecording = false, fullTranscript = '';
-let lastResultIndex = 0;  // global so reset works correctly
+// ── ANDROID CHROME SPEECH FIX ─────────────────────────────────────────────
+let recognition = null;
+let isRecording = false;
+let fullTranscript = '';
+let liveInterim = '';
+let restartTimer = null;
 
 const micBtn = document.getElementById('micBtn');
 const statusEl = document.getElementById('status');
@@ -138,51 +140,137 @@ const processingOverlay = document.getElementById('processingOverlay');
 
 document.getElementById('visitDate').value = new Date().toISOString().split('T')[0];
 
-if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+function cleanText(text) {
+  return (text || '').replace(/\s+/g, ' ').trim();
+}
+
+function mergeWithoutDuplication(base, addition) {
+  base = cleanText(base);
+  addition = cleanText(addition);
+
+  if (!addition) return base ? base + ' ' : '';
+  if (!base) return addition + ' ';
+
+  const baseLower = base.toLowerCase();
+  const addLower = addition.toLowerCase();
+
+  if (baseLower.endsWith(addLower)) return base + ' ';
+
+  let maxOverlap = Math.min(base.length, addition.length);
+
+  for (let i = maxOverlap; i >= 5; i--) {
+    if (baseLower.slice(-i) === addLower.slice(0, i)) {
+      return cleanText(base + addition.slice(i)) + ' ';
+    }
+  }
+
+  return cleanText(base + ' ' + addition) + ' ';
+}
+
+function renderTranscript() {
+  transcriptText.value = cleanText(fullTranscript + ' ' + liveInterim);
+}
+
+function createRecognition() {
   recognition = new SR();
-  recognition.continuous = false;
-  recognition.interimResults = true;
+
+  recognition.continuous = false;       // IMPORTANT for Android Chrome
+  recognition.interimResults = true;    // Allows live display
   recognition.lang = 'en-US';
-  recognition.onresult = (e) => {
-    let interim = '';
-    for (let i = 0; i < e.results.length; i++) {
-      if (e.results[i].isFinal) {
-        if (i >= lastResultIndex) {
-          fullTranscript += e.results[i][0].transcript + ' ';
-          lastResultIndex = i + 1;
-        }
+  recognition.maxAlternatives = 1;
+
+  recognition.onresult = (event) => {
+    let finalChunk = '';
+    let interimChunk = '';
+
+    for (let i = 0; i < event.results.length; i++) {
+      const text = cleanText(event.results[i][0].transcript);
+
+      if (event.results[i].isFinal) {
+        finalChunk = cleanText(finalChunk + ' ' + text);
       } else {
-        interim = e.results[i][0].transcript;
+        interimChunk = text;
       }
     }
-    transcriptText.value = fullTranscript + interim;
+
+    if (finalChunk) {
+      fullTranscript = mergeWithoutDuplication(fullTranscript, finalChunk);
+      liveInterim = '';
+    } else {
+      liveInterim = interimChunk;
+    }
+
+    renderTranscript();
   };
-  recognition.onerror = (e) => {
-    if (e.error !== 'no-speech') statusEl.textContent = 'Mic error: ' + e.error;
+
+  recognition.onerror = (event) => {
+    if (event.error !== 'no-speech') {
+      statusEl.textContent = 'Mic error: ' + event.error;
+    }
   };
-  recognition.onend = () => { if (isRecording) recognition.start(); };
+
+  recognition.onend = () => {
+    if (isRecording) {
+      restartTimer = setTimeout(() => {
+        try {
+          createRecognition();
+          recognition.start();
+        } catch (err) {
+          console.warn('Speech restart failed:', err);
+        }
+      }, 250);
+    } else {
+      liveInterim = '';
+      renderTranscript();
+      statusEl.textContent = 'Recording stopped. Process when ready.';
+      statusEl.classList.remove('active');
+    }
+  };
 }
 
 micBtn.onclick = () => {
+  if (!SR) {
+    alert('Speech recognition is not supported in this browser.');
+    return;
+  }
+
   if (!isRecording) {
     isRecording = true;
     fullTranscript = '';
-    lastResultIndex = 0;
+    liveInterim = '';
     transcriptText.value = '';
-    successCard.style.display = 'none';
+
     micBtn.classList.add('recording');
     micBtn.textContent = '⏹';
     statusEl.textContent = 'Recording... tap to stop';
     statusEl.classList.add('active');
-    recognition.start();
+    successCard.style.display = 'none';
+
+    createRecognition();
+
+    try {
+      recognition.start();
+    } catch (err) {
+      console.warn('Speech start failed:', err);
+    }
+
   } else {
     isRecording = false;
-    if (recognition) recognition.stop();
+
+    if (restartTimer) clearTimeout(restartTimer);
+
     micBtn.classList.remove('recording');
     micBtn.textContent = '🎤';
-    statusEl.textContent = 'Recording stopped. Process when ready.';
-    statusEl.classList.remove('active');
+
+    if (recognition) {
+      try {
+        recognition.stop();
+      } catch (err) {
+        console.warn('Speech stop failed:', err);
+      }
+    }
   }
 };
 
