@@ -104,6 +104,7 @@ let allHospitals = [];
 
 const AIRTABLE_TOKEN = 'patFU816X9rok09Lt.86829691fd35d864eb611861b81a88b5c50ddea32657d2fd4d6b52d1ccd37310';
 const BASE_ID = 'appZpw3gV2XKhAAOo';
+const HOSPITALS_TABLE = 'tblx0U3w89jGqxGTE';
 
 const micBtn = document.getElementById('micBtn');
 const statusEl = document.getElementById('status');
@@ -119,7 +120,7 @@ async function loadHospitals() {
   let offset = '';
   try {
     do {
-      const url = `https://api.airtable.com/v0/${BASE_ID}/G.C.C.%20Hospitals-Master?fields%5B%5D=Hospital%20Name&fields%5B%5D=Territory&pageSize=100${offset ? '&offset=' + offset : ''}`;
+      const url = `https://api.airtable.com/v0/${BASE_ID}/${HOSPITALS_TABLE}?fields%5B%5D=Hospital%20Name&fields%5B%5D=Territory&pageSize=100${offset ? '&offset=' + offset : ''}`;
       const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + AIRTABLE_TOKEN } });
       const data = await res.json();
       if (data.records) records = records.concat(data.records);
