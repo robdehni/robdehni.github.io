@@ -6,58 +6,94 @@
 <title>FieldIQ — Log Visit</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #0a0a0a; color: #fff; font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh; padding: 20px; }
+body { background: #0a0a0a; color: #fff; font-family: -apple-system, sans-serif; min-height: 100vh; padding: 20px; }
 .container { max-width: 600px; margin: 0 auto; }
-.header { text-align: center; margin-bottom: 30px; padding-top: 20px; }
+.header { text-align: center; margin-bottom: 24px; padding-top: 16px; }
 .header h1 { font-size: 28px; color: #00d4ff; font-weight: 700; }
-.header p { color: #888; font-size: 14px; margin-top: 4px; }
-.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
-.field label { font-size: 11px; color: #888; margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
-.field input, .field select { width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 14px; outline: none; }
+.header p { color: #888; font-size: 13px; margin-top: 4px; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+.field label { font-size: 11px; color: #888; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+.field input, .field select { width: 100%; padding: 11px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 14px; outline: none; }
 .field select option { background: #1a1a1a; }
-.mic-section { text-align: center; margin: 25px 0 15px; }
-.mic-btn { width: 80px; height: 80px; border-radius: 50%; background: #00d4ff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 32px; transition: all 0.3s; box-shadow: 0 0 20px #00d4ff44; }
-.mic-btn.recording { background: #ff4444; animation: pulse 1s infinite; }
+.mic-section { text-align: center; margin: 20px 0 12px; }
+.mic-btn { width: 76px; height: 76px; border-radius: 50%; background: #00d4ff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 30px; transition: all 0.3s; box-shadow: 0 0 20px #00d4ff33; }
+.mic-btn.recording { background: #ff4444; box-shadow: 0 0 20px #ff444433; animation: pulse 1s infinite; }
 @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-.status { color: #888; font-size: 13px; }
-.transcript-box { background: #111; border: 1px solid #2a2a2a; border-radius: 10px; padding: 16px; min-height: 130px; margin: 15px 0; font-size: 14px; line-height: 1.7; color: #ccc; }
-.btn { width: 100%; padding: 15px; border-radius: 10px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin: 6px 0; }
+.status { color: #888; font-size: 13px; min-height: 18px; }
+.status.active { color: #ff6666; }
+.transcript-box { background: #111; border: 1px solid #222; border-radius: 10px; padding: 14px; min-height: 110px; margin: 12px 0; font-size: 14px; line-height: 1.7; color: #ccc; }
+.btn { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin: 5px 0; transition: all 0.2s; }
 .btn-primary { background: #00d4ff; color: #000; }
-.btn-secondary { background: #1a1a1a; color: #888; border: 1px solid #2a2a2a; }
+.btn-primary:hover { background: #00bcd4; }
+.btn-secondary { background: #1a1a1a; color: #666; border: 1px solid #222; }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.result-box { background: #111; border: 1px solid #00d4ff33; border-radius: 10px; padding: 16px; margin: 15px 0; font-size: 13px; line-height: 1.9; white-space: pre-wrap; color: #ccc; display: none; }
-.saved-badge { background: #00ff8822; border: 1px solid #00ff8844; color: #00ff88; border-radius: 8px; padding: 10px 16px; text-align: center; font-size: 13px; font-weight: 600; margin: 10px 0; display: none; }
+.success-card { background: #0a1a0a; border: 1px solid #00ff4433; border-radius: 12px; padding: 20px; margin: 14px 0; display: none; }
+.success-card .tick { font-size: 32px; text-align: center; margin-bottom: 10px; }
+.success-card h3 { color: #00ff88; font-size: 16px; text-align: center; margin-bottom: 16px; }
+.report-section { margin: 12px 0; }
+.report-section h4 { color: #00d4ff; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #1a1a1a; }
+.report-section p { color: #ccc; font-size: 13px; line-height: 1.7; }
+.priority-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-top: 4px; }
+.priority-high { background: #ff000022; color: #ff6666; border: 1px solid #ff444433; }
+.priority-medium { background: #ff880022; color: #ffaa44; border: 1px solid #ff880033; }
+.priority-low { background: #00880022; color: #44cc88; border: 1px solid #00880033; }
+.processing-overlay { text-align: center; padding: 30px; display: none; }
+.spinner { width: 40px; height: 40px; border: 3px solid #1a1a1a; border-top: 3px solid #00d4ff; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.processing-overlay p { color: #888; font-size: 14px; }
 </style>
 </head>
 <body>
 <div class="container">
-<div class="header"><h1>FieldIQ</h1><p>Log Visit</p></div>
+
+<div class="header">
+  <h1>FieldIQ</h1>
+  <p>Log Visit</p>
+</div>
+
 <div class="fields">
-<div class="field"><label>Hospital</label><input type="text" id="hospital" placeholder="e.g. Dubai Hospital"></div>
-<div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
-<div class="field"><label>Territory</label><select id="territory"><option value="">Select territory</option><option>UAE</option><option>KSA</option><option>Qatar</option><option>Kuwait</option><option>Bahrain</option><option>Oman</option></select></div>
-<div class="field"><label>Visit Type</label><select id="visitType"><option value="">Select type</option><option>In-person</option><option>Virtual</option><option>Phone</option></select></div>
+  <div class="field"><label>Hospital</label><input type="text" id="hospital" placeholder="e.g. Dubai Hospital"></div>
+  <div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
+  <div class="field"><label>Territory</label><select id="territory"><option value="">Select territory</option><option>UAE</option><option>KSA</option><option>Qatar</option><option>Kuwait</option><option>Bahrain</option><option>Oman</option></select></div>
+  <div class="field"><label>Visit Type</label><select id="visitType"><option value="">Select type</option><option>In-person</option><option>Virtual</option><option>Phone</option></select></div>
 </div>
+
 <div class="mic-section">
-<button class="mic-btn" id="micBtn">🎤</button>
-<div class="status" id="status">Tap mic to start recording</div>
+  <button class="mic-btn" id="micBtn">🎤</button>
+  <div class="status" id="status">Tap mic to start recording</div>
 </div>
+
 <div class="transcript-box" id="transcriptText">Your speech will appear here in real time...</div>
+
 <button class="btn btn-primary" id="submitBtn">Process Visit Log</button>
 <button class="btn btn-secondary" id="clearBtn">Clear</button>
-<div class="saved-badge" id="savedBadge">✅ Visit saved to FieldIQ</div>
-<div class="result-box" id="resultBox"></div>
+
+<div class="processing-overlay" id="processingOverlay">
+  <div class="spinner"></div>
+  <p>Analysing your visit...</p>
 </div>
+
+<div class="success-card" id="successCard">
+  <div class="tick">✅</div>
+  <h3>Visit Logged Successfully</h3>
+  <div id="reportContent"></div>
+  <button class="btn btn-primary" style="margin-top:16px" onclick="location.reload()">Log Another Visit</button>
+</div>
+
+</div>
+
 <script>
 let recognition, isRecording = false, fullTranscript = '';
+
 const micBtn = document.getElementById('micBtn');
 const statusEl = document.getElementById('status');
 const transcriptText = document.getElementById('transcriptText');
 const submitBtn = document.getElementById('submitBtn');
-const resultBox = document.getElementById('resultBox');
-const savedBadge = document.getElementById('savedBadge');
-const ANTHROPIC_KEY = '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';
+const successCard = document.getElementById('successCard');
+const processingOverlay = document.getElementById('processingOverlay');
+
 document.getElementById('visitDate').value = new Date().toISOString().split('T')[0];
+
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR();
@@ -76,78 +112,121 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   recognition.onerror = (e) => { statusEl.textContent = 'Mic error: ' + e.error; };
   recognition.onend = () => { if (isRecording) recognition.start(); };
 }
+
 micBtn.onclick = () => {
   if (!isRecording) {
     isRecording = true;
     micBtn.classList.add('recording');
     micBtn.textContent = '⏹';
     statusEl.textContent = 'Recording... tap to stop';
+    statusEl.classList.add('active');
     transcriptText.textContent = '';
     fullTranscript = '';
-    resultBox.style.display = 'none';
-    savedBadge.style.display = 'none';
+    successCard.style.display = 'none';
     recognition.start();
   } else {
     isRecording = false;
     micBtn.classList.remove('recording');
     micBtn.textContent = '🎤';
     statusEl.textContent = 'Recording stopped. Process when ready.';
+    statusEl.classList.remove('active');
     recognition.stop();
   }
 };
+
 document.getElementById('clearBtn').onclick = () => {
   fullTranscript = '';
   transcriptText.textContent = 'Your speech will appear here in real time...';
-  resultBox.style.display = 'none';
-  savedBadge.style.display = 'none';
+  successCard.style.display = 'none';
+  processingOverlay.style.display = 'none';
   statusEl.textContent = 'Tap mic to start recording';
-  submitBtn.textContent = 'Process Visit Log';
   submitBtn.disabled = false;
+  submitBtn.textContent = 'Process Visit Log';
 };
+
+function parseReport(text) {
+  const sections = {
+    summary: '', contacts: '', outcomes: '', nextSteps: '', signals: '', sentiment: '', priority: ''
+  };
+  const lines = text.split('\n');
+  let current = '';
+  for (const line of lines) {
+    const l = line.trim();
+    if (l.match(/VISIT SUMMARY/i)) current = 'summary';
+    else if (l.match(/KEY CONTACTS/i)) current = 'contacts';
+    else if (l.match(/OUTCOMES/i)) current = 'outcomes';
+    else if (l.match(/NEXT STEPS/i)) current = 'nextSteps';
+    else if (l.match(/OPPORTUNITY/i)) current = 'signals';
+    else if (l.match(/SENTIMENT/i)) current = 'sentiment';
+    else if (l.match(/PRIORITY/i)) current = 'priority';
+    else if (l && current) sections[current] += (sections[current] ? '\n' : '') + l;
+  }
+  return sections;
+}
+
+function getPriorityClass(text) {
+  const t = text.toLowerCase();
+  if (t.includes('high')) return 'priority-high';
+  if (t.includes('medium')) return 'priority-medium';
+  return 'priority-low';
+}
+
+function renderReport(text) {
+  const s = parseReport(text);
+  let html = '';
+  if (s.summary) html += `<div class="report-section"><h4>Visit Summary</h4><p>${s.summary.replace(/\n/g,'<br>')}</p></div>`;
+  if (s.contacts) html += `<div class="report-section"><h4>Key Contacts</h4><p>${s.contacts.replace(/\n/g,'<br>')}</p></div>`;
+  if (s.outcomes) html += `<div class="report-section"><h4>Outcomes & Decisions</h4><p>${s.outcomes.replace(/\n/g,'<br>')}</p></div>`;
+  if (s.nextSteps) html += `<div class="report-section"><h4>Next Steps</h4><p>${s.nextSteps.replace(/\n/g,'<br>')}</p></div>`;
+  if (s.signals) html += `<div class="report-section"><h4>Opportunity Signals</h4><p>${s.signals.replace(/\n/g,'<br>')}</p></div>`;
+  if (s.sentiment) html += `<div class="report-section"><h4>Sentiment</h4><p>${s.sentiment.replace(/\n/g,'<br>')}</p></div>`;
+  if (s.priority) html += `<div class="report-section"><h4>Priority</h4><span class="priority-badge ${getPriorityClass(s.priority)}">${s.priority.replace(/\*\*/g,'').trim()}</span></div>`;
+  return html || `<div class="report-section"><p>${text}</p></div>`;
+}
+
 submitBtn.onclick = async () => {
   const transcript = fullTranscript || transcriptText.textContent;
   if (!transcript || transcript.includes('Your speech will appear')) { alert('Please record a visit first.'); return; }
+
   submitBtn.disabled = true;
   submitBtn.textContent = 'Processing...';
-  resultBox.style.display = 'none';
-  savedBadge.style.display = 'none';
+  processingOverlay.style.display = 'block';
+  successCard.style.display = 'none';
+
   try {
     const aiResponse = await fetch('https://fieldiq-proxy.rdehni1979.workers.dev', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        
-        
-        
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
-        messages: [{ role: 'user', content: `Structure this field visit transcript into a report with these sections: VISIT SUMMARY, KEY CONTACTS MET, OUTCOMES & DECISIONS, NEXT STEPS, OPPORTUNITY SIGNALS, SENTIMENT, PRIORITY LEVEL.\n\nTranscript: ${transcript}` }]
+        messages: [{ role: 'user', content: `You are a MedTech sales intelligence assistant. Structure this field visit transcript into a concise report with these exact sections:\n\nVISIT SUMMARY\nKEY CONTACTS MET\nOUTCOMES & DECISIONS\nNEXT STEPS\nOPPORTUNITY SIGNALS\nSENTIMENT\nPRIORITY LEVEL (High / Medium / Low)\n\nBe concise and professional. Transcript:\n${transcript}` }]
       })
     });
+
     const data = await aiResponse.json();
     const result = data.content ? data.content[0].text : JSON.stringify(data);
-    resultBox.style.display = 'block';
-    resultBox.textContent = result;
+
     const hospital = document.getElementById('hospital').value;
     const visitDate = document.getElementById('visitDate').value;
     const territory = document.getElementById('territory').value;
     const visitType = document.getElementById('visitType').value;
+
     await fetch('https://api.airtable.com/v0/appZpw3gV2XKhAAOo/Field%20Visits', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer patFU816X9rok09Lt.86829691fd35d864eb611861b81a88b5c50ddea32657d2fd4d6b52d1ccd37310', 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: { 'Hospital': hospital, 'Visit Date': visitDate, 'Territory': territory, 'Visit Type': visitType, 'Raw Transcript': transcript, 'AI Summary': result } })
     });
-    savedBadge.style.display = 'block';
-    submitBtn.textContent = 'Log Another Visit';
-    submitBtn.disabled = false;
-    submitBtn.onclick = () => location.reload();
+
+    processingOverlay.style.display = 'none';
+    successCard.style.display = 'block';
+    document.getElementById('reportContent').innerHTML = renderReport(result);
+
   } catch(err) {
-    resultBox.style.display = 'block';
-    resultBox.textContent = 'Error: ' + err.message;
+    processingOverlay.style.display = 'none';
     submitBtn.disabled = false;
     submitBtn.textContent = 'Process Visit Log';
+    alert('Something went wrong. Please try again.');
   }
 };
 </script>
