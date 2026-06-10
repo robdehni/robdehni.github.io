@@ -150,16 +150,15 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   recognition.continuous = false;
   recognition.interimResults = true;
   recognition.lang = 'en-US';
+  let lastResultIndex = 0;
   recognition.onresult = (e) => {
-    let interim = '';
-    for (let i = 0; i < e.results.length; i++) {
+    for (let i = lastResultIndex; i < e.results.length; i++) {
       if (e.results[i].isFinal) {
         fullTranscript += e.results[i][0].transcript + ' ';
-      } else {
-        interim += e.results[i][0].transcript;
+        lastResultIndex = i + 1;
       }
     }
-    transcriptText.value = fullTranscript + interim;
+    transcriptText.value = fullTranscript;
   };
   recognition.onerror = (e) => {
     if (e.error !== 'no-speech') statusEl.textContent = 'Mic error: ' + e.error;
@@ -176,6 +175,7 @@ micBtn.onclick = () => {
     statusEl.classList.add('active');
     transcriptText.value = '';
     fullTranscript = '';
+    lastResultIndex = 0;
     successCard.style.display = 'none';
     recognition.start();
   } else {
