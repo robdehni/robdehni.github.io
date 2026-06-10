@@ -145,13 +145,18 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   recognition.interimResults = true;
   recognition.lang = 'en-US';
   recognition.onresult = (e) => {
-    for (let i = lastResultIndex; i < e.results.length; i++) {
+    let interim = '';
+    for (let i = 0; i < e.results.length; i++) {
       if (e.results[i].isFinal) {
-        fullTranscript += e.results[i][0].transcript + ' ';
-        lastResultIndex = i + 1;
+        if (i >= lastResultIndex) {
+          fullTranscript += e.results[i][0].transcript + ' ';
+          lastResultIndex = i + 1;
+        }
+      } else {
+        interim = e.results[i][0].transcript;
       }
     }
-    transcriptText.value = fullTranscript;
+    transcriptText.value = fullTranscript + interim;
   };
   recognition.onerror = (e) => {
     if (e.error !== 'no-speech') statusEl.textContent = 'Mic error: ' + e.error;
