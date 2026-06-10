@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -147,15 +147,13 @@ document.getElementById('visitDate').value = new Date().toISOString().split('T')
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR();
-  recognition.continuous = false;
-  recognition.interimResults = true;
+  recognition.continuous = true;
+  recognition.interimResults = false;
   recognition.lang = 'en-US';
-  let lastResultIndex = 0;
   recognition.onresult = (e) => {
-    for (let i = lastResultIndex; i < e.results.length; i++) {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
       if (e.results[i].isFinal) {
         fullTranscript += e.results[i][0].transcript + ' ';
-        lastResultIndex = i + 1;
       }
     }
     transcriptText.value = fullTranscript;
@@ -175,7 +173,6 @@ micBtn.onclick = () => {
     statusEl.classList.add('active');
     transcriptText.value = '';
     fullTranscript = '';
-    lastResultIndex = 0;
     successCard.style.display = 'none';
     recognition.start();
   } else {
