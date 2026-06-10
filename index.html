@@ -110,9 +110,9 @@ async function loadHospitals() {
   try {
     let records = [], offset = null;
     do {
-      let url = `https://api.airtable.com/v0/${AIRTABLE_BASE}/GCC%20Hospitals%20Master?fields[]=Name&fields[]=Country&pageSize=100`;
-      if (offset) url += `&offset=${offset}`;
-      const r = await fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
+      let url = `https://api.airtable.com/v0/${AIRTABLE_BASE}/GCC%20Hospitals%20Master?fields[]=Hospital%20Name&fields[]=Territory&pageSize=100&api_key=${AIRTABLE_TOKEN}`;
+      if (offset) url += `&offset=${encodeURIComponent(offset)}`;
+      const r = await fetch(url);
       if (!r.ok) throw new Error(r.status);
       const d = await r.json();
       records = records.concat(d.records);
@@ -120,7 +120,7 @@ async function loadHospitals() {
     } while (offset);
 
     allHospitals = records
-      .map(r => ({ name: (r.fields['Name'] || '').trim(), country: (r.fields['Country'] || '').trim() }))
+      .map(r => ({ name: (r.fields['Hospital Name'] || '').trim(), country: (r.fields['Territory'] || '').trim() }))
       .filter(h => h.name)
       .sort((a, b) => a.name.localeCompare(b.name));
 
