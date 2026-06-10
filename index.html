@@ -56,6 +56,7 @@ const transcriptText = document.getElementById('transcriptText');
 const submitBtn = document.getElementById('submitBtn');
 const resultBox = document.getElementById('resultBox');
 const savedBadge = document.getElementById('savedBadge');
+const ANTHROPIC_KEY = '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';
 document.getElementById('visitDate').value = new Date().toISOString().split('T')[0];
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -111,13 +112,18 @@ submitBtn.onclick = async () => {
   resultBox.style.display = 'none';
   savedBadge.style.display = 'none';
   try {
-    const aiResponse = await fetch('https://fieldiq-proxy.vercel.app/api/claude', {
+    const aiResponse = await fetch('https://fieldiq-proxy.rdehni1979.workers.dev', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        
+        
+        
+      },
       body: JSON.stringify({
-        model: 'claude-opus-4-6',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
-        messages: [{ role: 'user', content: `You are a MedTech sales intelligence assistant. Structure this field visit transcript into a clean report with these sections:\n\nVISIT SUMMARY\nKEY CONTACTS MET\nOUTCOMES & DECISIONS\nNEXT STEPS\nOPPORTUNITY SIGNALS\nSENTIMENT\nPRIORITY LEVEL (High / Medium / Low)\n\nTranscript:\n${transcript}` }]
+        messages: [{ role: 'user', content: `Structure this field visit transcript into a report with these sections: VISIT SUMMARY, KEY CONTACTS MET, OUTCOMES & DECISIONS, NEXT STEPS, OPPORTUNITY SIGNALS, SENTIMENT, PRIORITY LEVEL.\n\nTranscript: ${transcript}` }]
       })
     });
     const data = await aiResponse.json();
