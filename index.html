@@ -214,10 +214,11 @@ function createRecognition() {
   recognition.onend = () => {
     liveInterim = '';
     renderTranscript();
-    if (!isRecording) {
-      statusEl.textContent = 'Recording stopped. Process when ready.';
-      statusEl.classList.remove('active');
-    }
+    statusEl.textContent = 'Recording stopped. Process when ready.';
+    statusEl.classList.remove('active');
+    isRecording = false;
+    micBtn.classList.remove('recording');
+    micBtn.textContent = '🎤';
   };
 }
 
