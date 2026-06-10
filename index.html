@@ -124,12 +124,8 @@ document.getElementById('hospital').addEventListener('input', function() { showL
 document.getElementById('hospital').addEventListener('focus', function() { showList(this.value); });
 document.addEventListener('click', function(e) { if (!e.target.closest('.hospital-wrapper')) document.getElementById('hospitalList').classList.remove('open'); });
 
-// ── ANDROID CHROME SPEECH FIX ─────────────────────────────────────────────
-let recognition = null;
-let isRecording = false;
-let fullTranscript = '';
-let liveInterim = '';
-let restartTimer = null;
+// ── SPEECH RECOGNITION — v0.3 Stable ──────────────────────────────────────
+let recognition, isRecording = false, fullTranscript = '';
 
 const micBtn = document.getElementById('micBtn');
 const statusEl = document.getElementById('status');
@@ -140,141 +136,44 @@ const processingOverlay = document.getElementById('processingOverlay');
 
 document.getElementById('visitDate').value = new Date().toISOString().split('T')[0];
 
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-function cleanText(text) {
-  return (text || '').replace(/\s+/g, ' ').trim();
-}
-
-function mergeWithoutDuplication(base, addition) {
-  base = cleanText(base);
-  addition = cleanText(addition);
-
-  if (!addition) return base ? base + ' ' : '';
-  if (!base) return addition + ' ';
-
-  const baseLower = base.toLowerCase();
-  const addLower = addition.toLowerCase();
-
-  if (baseLower.endsWith(addLower)) return base + ' ';
-
-  let maxOverlap = Math.min(base.length, addition.length);
-
-  for (let i = maxOverlap; i >= 5; i--) {
-    if (baseLower.slice(-i) === addLower.slice(0, i)) {
-      return cleanText(base + addition.slice(i)) + ' ';
-    }
-  }
-
-  return cleanText(base + ' ' + addition) + ' ';
-}
-
-function renderTranscript() {
-  transcriptText.value = cleanText(fullTranscript + ' ' + liveInterim);
-}
-
-function createRecognition() {
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR();
-
   recognition.continuous = true;
-  recognition.interimResults = true;    // Allows live display
+  recognition.interimResults = false;
   recognition.lang = 'en-US';
-  recognition.maxAlternatives = 1;
-
-  recognition.onresult = (event) => {
-    let finalChunk = '';
-    let interimChunk = '';
-
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const text = cleanText(event.results[i][0].transcript);
-
-      if (event.results[i].isFinal) {
-        finalChunk = cleanText(finalChunk + ' ' + text);
-      } else {
-        interimChunk = text;
+  recognition.onresult = (e) => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) {
+        fullTranscript += e.results[i][0].transcript + ' ';
       }
     }
-
-    if (finalChunk) {
-      fullTranscript = mergeWithoutDuplication(fullTranscript, finalChunk);
-      liveInterim = '';
-    } else {
-      liveInterim = interimChunk;
-    }
-
-    renderTranscript();
+    transcriptText.value = fullTranscript;
   };
-
-  recognition.onerror = (event) => {
-    if (event.error !== 'no-speech') {
-      statusEl.textContent = 'Mic error: ' + event.error;
-    }
+  recognition.onerror = (e) => {
+    if (e.error !== 'no-speech') statusEl.textContent = 'Mic error: ' + e.error;
   };
-
-  recognition.onend = () => {
-    if (isRecording) {
-      // Session timed out during natural pause — restart cleanly
-      liveInterim = '';
-      restartTimer = setTimeout(() => {
-        try {
-          createRecognition();
-          recognition.start();
-        } catch(err) {
-          console.warn('Restart failed:', err);
-        }
-      }, 100);
-    } else {
-      liveInterim = '';
-      renderTranscript();
-      statusEl.textContent = 'Recording stopped. Process when ready.';
-      statusEl.classList.remove('active');
-      micBtn.classList.remove('recording');
-      micBtn.textContent = '🎤';
-    }
-  };
+  recognition.onend = () => { if (isRecording) recognition.start(); };
 }
 
 micBtn.onclick = () => {
-  if (!SR) {
-    alert('Speech recognition is not supported in this browser.');
-    return;
-  }
-
   if (!isRecording) {
     isRecording = true;
     fullTranscript = '';
-    liveInterim = '';
     transcriptText.value = '';
-
     micBtn.classList.add('recording');
     micBtn.textContent = '⏹';
     statusEl.textContent = 'Recording... tap to stop';
     statusEl.classList.add('active');
     successCard.style.display = 'none';
-
-    createRecognition();
-
-    try {
-      recognition.start();
-    } catch (err) {
-      console.warn('Speech start failed:', err);
-    }
-
+    recognition.start();
   } else {
     isRecording = false;
-
-    if (restartTimer) clearTimeout(restartTimer);
-
+    if (recognition) recognition.stop();
     micBtn.classList.remove('recording');
     micBtn.textContent = '🎤';
-
-    if (recognition) {
-      try {
-        recognition.stop();
-      } catch (err) {
-        console.warn('Speech stop failed:', err);
-      }
-    }
+    statusEl.textContent = 'Recording stopped. Process when ready.';
+    statusEl.classList.remove('active');
   }
 };
 
@@ -335,9 +234,9 @@ submitBtn.onclick = async () => {
   processingOverlay.style.display = 'block';
   successCard.style.display = 'none';
 
-  // GPS — await so coordinates are ready before Airtable save
+  // GPS non-blocking
   let latitude = null, longitude = null, accuracy = null;
-  await new Promise((resolve) => {
+  new Promise((resolve) => {
     if (!navigator.geolocation) { resolve(); return; }
     navigator.geolocation.getCurrentPosition(
       (pos) => { latitude = pos.coords.latitude; longitude = pos.coords.longitude; accuracy = Math.round(pos.coords.accuracy); resolve(); },
