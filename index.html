@@ -1,3 +1,11 @@
+<!--
+FieldIQ v0.3 Stable
+Date: 10 June 2026
+Known Issue: Android Chrome speech recognition approx 70-75% accuracy.
+Editable transcript enabled. Rep corrects before processing.
+Do not modify speech engine without taking a backup first.
+What works: Hospital search, Territory, Voice capture, AI summary, GPS, Airtable save.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,6 +29,11 @@ body { background: #0a0a0a; color: #fff; font-family: -apple-system, sans-serif;
 @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 .status { color: #888; font-size: 13px; min-height: 18px; }
 .status.active { color: #ff6666; }
+.recording-indicator { display: none; text-align: center; margin: 8px 0; }
+.recording-indicator.visible { display: block; }
+.recording-dot { display: inline-block; width: 10px; height: 10px; background: #ff4444; border-radius: 50%; margin-right: 6px; animation: pulse 1s infinite; }
+.recording-timer { font-size: 28px; font-weight: 700; color: #ff4444; letter-spacing: 2px; margin: 4px 0; }
+.recording-label { font-size: 12px; color: #ff8888; text-transform: uppercase; letter-spacing: 1px; }
 .transcript-box { background: #111; border: 1px solid #222; border-radius: 10px; padding: 14px; min-height: 110px; margin: 12px 0; font-size: 14px; line-height: 1.7; color: #ccc; width: 100%; resize: vertical; font-family: -apple-system, sans-serif; }
 .btn { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin: 5px 0; transition: all 0.2s; }
 .btn-primary { background: #00d4ff; color: #000; }
@@ -75,6 +88,11 @@ body { background: #0a0a0a; color: #fff; font-family: -apple-system, sans-serif;
 <div class="mic-section">
   <button class="mic-btn" id="micBtn">🎤</button>
   <div class="status" id="status">Tap mic to start recording</div>
+
+<div class="recording-indicator" id="recordingIndicator">
+  <div class="recording-timer" id="recordingTimer">00:00</div>
+  <div><span class="recording-dot"></span><span class="recording-label">Recording</span></div>
+
 </div>
 
 <div style="position:relative">
@@ -163,13 +181,25 @@ micBtn.onclick = () => {
     transcriptText.value = '';
     micBtn.classList.add('recording');
     micBtn.textContent = '⏹';
-    statusEl.textContent = 'Recording... tap to stop';
+    statusEl.textContent = '';
     statusEl.classList.add('active');
     successCard.style.display = 'none';
+    // Start timer
+    let seconds = 0;
+    window._recordingTimer = setInterval(() => {
+      seconds++;
+      const m = String(Math.floor(seconds/60)).padStart(2,'0');
+      const s = String(seconds%60).padStart(2,'0');
+      document.getElementById('recordingTimer').textContent = m + ':' + s;
+    }, 1000);
+    document.getElementById('recordingTimer').textContent = '00:00';
+    document.getElementById('recordingIndicator').classList.add('visible');
     recognition.start();
   } else {
     isRecording = false;
     if (recognition) recognition.stop();
+    clearInterval(window._recordingTimer);
+    document.getElementById('recordingIndicator').classList.remove('visible');
     micBtn.classList.remove('recording');
     micBtn.textContent = '🎤';
     statusEl.textContent = 'Recording stopped. Process when ready.';
@@ -180,6 +210,8 @@ micBtn.onclick = () => {
 document.getElementById('clearBtn').onclick = () => {
   fullTranscript = '';
   transcriptText.value = '';
+  clearInterval(window._recordingTimer);
+  document.getElementById('recordingIndicator').classList.remove('visible');
   successCard.style.display = 'none';
   processingOverlay.style.display = 'none';
   statusEl.textContent = 'Tap mic to start recording';
