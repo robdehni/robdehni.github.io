@@ -52,7 +52,7 @@ body { background: #0a0a0a; color: #fff; font-family: -apple-system, sans-serif;
 </div>
 
 <div class="fields">
-  <div class="field"><label>Hospital</label><input type="text" id="hospital" placeholder="e.g. Dubai Hospital"></div>
+  <div class="field"><label>Hospital</label><select id="hospital"><option value="">Loading hospitals...</option></select></div>
   <div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
   <div class="field"><label>Territory</label><select id="territory"><option value="">Select territory</option><option>UAE</option><option>KSA</option><option>Qatar</option><option>Kuwait</option><option>Bahrain</option><option>Oman</option></select></div>
   <div class="field"><label>Visit Type</label><select id="visitType"><option value="">Select type</option><option>In-person</option><option>Virtual</option><option>Phone</option></select></div>
@@ -93,6 +93,46 @@ const successCard = document.getElementById('successCard');
 const processingOverlay = document.getElementById('processingOverlay');
 
 document.getElementById('visitDate').value = new Date().toISOString().split('T')[0];
+
+// Load hospitals from Airtable GCC Hospitals Master
+async function loadHospitals() {
+  const sel = document.getElementById('hospital');
+  const AIRTABLE_TOKEN = 'patFU816X9rok09Lt.86829691fd35d864eb611861b81a88b5c50ddea32657d2fd4d6b52d1ccd37310';
+  const BASE_ID = 'appZpw3gV2XKhAAOo';
+  let allRecords = [];
+  let offset = '';
+
+  try {
+    do {
+      const url = `https://api.airtable.com/v0/${BASE_ID}/GCC%20Hospitals%20Master?fields%5B%5D=Hospital%20Name&pageSize=100${offset ? '&offset=' + offset : ''}`;
+      const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + AIRTABLE_TOKEN } });
+      const data = await res.json();
+      if (data.records) allRecords = allRecords.concat(data.records);
+      offset = data.offset || '';
+    } while (offset);
+
+    allRecords.sort((a, b) => {
+      const nameA = (a.fields['Hospital Name'] || '').toLowerCase();
+      const nameB = (b.fields['Hospital Name'] || '').toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+
+    sel.innerHTML = '<option value="">Select hospital</option>';
+    allRecords.forEach(r => {
+      const name = r.fields['Hospital Name'] || '';
+      if (name) {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        sel.appendChild(opt);
+      }
+    });
+  } catch(err) {
+    sel.innerHTML = '<option value="">Could not load hospitals</option>';
+  }
+}
+
+loadHospitals();
 
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -145,9 +185,7 @@ document.getElementById('clearBtn').onclick = () => {
 };
 
 function parseReport(text) {
-  const sections = {
-    summary: '', contacts: '', outcomes: '', nextSteps: '', signals: '', sentiment: '', priority: ''
-  };
+  const sections = { summary: '', contacts: '', outcomes: '', nextSteps: '', signals: '', sentiment: '', priority: '' };
   const lines = text.split('\n');
   let current = '';
   for (const line of lines) {
