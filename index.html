@@ -147,23 +147,23 @@ document.getElementById('visitDate').value = new Date().toISOString().split('T')
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR();
-  recognition.continuous = true;
+  recognition.continuous = false;
   recognition.interimResults = true;
   recognition.lang = 'en-US';
   recognition.onresult = (e) => {
-    let finalText = '';
-    let interimText = '';
+    let interim = '';
     for (let i = 0; i < e.results.length; i++) {
       if (e.results[i].isFinal) {
-        finalText += e.results[i][0].transcript + ' ';
+        fullTranscript += e.results[i][0].transcript + ' ';
       } else {
-        interimText += e.results[i][0].transcript;
+        interim += e.results[i][0].transcript;
       }
     }
-    fullTranscript = finalText;
-    transcriptText.value = finalText + interimText;
+    transcriptText.value = fullTranscript + interim;
   };
-  recognition.onerror = (e) => { statusEl.textContent = 'Mic error: ' + e.error; };
+  recognition.onerror = (e) => {
+    if (e.error !== 'no-speech') statusEl.textContent = 'Mic error: ' + e.error;
+  };
   recognition.onend = () => { if (isRecording) recognition.start(); };
 }
 
