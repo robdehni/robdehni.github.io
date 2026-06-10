@@ -127,7 +127,7 @@ submitBtn.onclick = async () => {
       })
     });
     const data = await aiResponse.json();
-    const result = data.content[0].text;
+    const result = data.content ? data.content[0].text : JSON.stringify(data);
     resultBox.style.display = 'block';
     resultBox.textContent = result;
     const hospital = document.getElementById('hospital').value;
