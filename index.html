@@ -80,7 +80,7 @@ body { background: #0a0a0a; color: #fff; font-family: -apple-system, sans-serif;
 </div>
 
 <div style="position:relative">
-  <textarea class="transcript-box" id="transcriptText" placeholder="Your speech will appear here in real time... You can also edit this text before processing.">Your speech will appear here in real time...</textarea>
+  <textarea class="transcript-box" id="transcriptText" placeholder="Your speech will appear here... tap to edit before processing."></textarea>
   <div style="font-size:11px;color:#555;text-align:right;margin-top:-8px;margin-bottom:8px;">Tap to edit before processing</div>
 </div>
 
@@ -186,7 +186,7 @@ micBtn.onclick = () => {
 
 document.getElementById('clearBtn').onclick = () => {
   fullTranscript = '';
-  transcriptText.value = 'Your speech will appear here in real time...';
+  transcriptText.value = '';
   successCard.style.display = 'none';
   processingOverlay.style.display = 'none';
   statusEl.textContent = 'Tap mic to start recording';
@@ -234,25 +234,23 @@ function renderReport(text) {
 
 submitBtn.onclick = async () => {
   const transcript = transcriptText.value.trim();
-  if (!transcript || transcript === 'Your speech will appear here in real time...') { alert('Please record a visit first.'); return; }
+  if (!transcript || transcript.length < 3) { alert('Please record a visit first.'); return; }
 
   submitBtn.disabled = true;
   submitBtn.textContent = 'Processing...';
   processingOverlay.style.display = 'block';
   successCard.style.display = 'none';
 
-  // Capture GPS location automatically
-  let latitude = '', longitude = '', accuracy = '';
-  try {
-    const pos = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000, enableHighAccuracy: true });
-    });
-    latitude = pos.coords.latitude;
-    longitude = pos.coords.longitude;
-    accuracy = Math.round(pos.coords.accuracy);
-  } catch(gpsErr) {
-    console.log('GPS not available:', gpsErr.message);
-  }
+  // Capture GPS location — non-blocking, runs alongside AI
+  let latitude = null, longitude = null, accuracy = null;
+  const gpsPromise = new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve(); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { latitude = pos.coords.latitude; longitude = pos.coords.longitude; accuracy = Math.round(pos.coords.accuracy); resolve(); },
+      () => resolve(),
+      { timeout: 3000, enableHighAccuracy: false }
+    );
+  });
 
   try {
     const aiResponse = await fetch('https://fieldiq-proxy.rdehni1979.workers.dev', {
