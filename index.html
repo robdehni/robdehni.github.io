@@ -108,6 +108,27 @@ function loadHospitals() {
 }
 loadHospitals();
 
+function showList(query) {
+  const list = document.getElementById('hospitalList');
+  const q = query.toLowerCase().trim();
+  const filtered = (q.length === 0 ? allHospitals.slice(0, 50) : allHospitals.filter(h => h.name.toLowerCase().includes(q) || h.territory.toLowerCase().includes(q))).slice(0, 50);
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="hospital-option no-results">No match — your entry will be used</div>';
+  } else {
+    list.innerHTML = filtered.map(h => '<div class="hospital-option" onclick="pickHospital(\'' + h.name.replace(/'/g,"&#39;") + '\')">' + h.name + (h.territory ? ' <span style="color:#555;font-size:11px">' + h.territory + '</span>' : '') + '</div>').join('');
+  }
+  list.classList.add('open');
+}
+
+function pickHospital(name) {
+  document.getElementById('hospital').value = name;
+  document.getElementById('hospitalList').classList.remove('open');
+}
+
+document.getElementById('hospital').addEventListener('input', function() { showList(this.value); });
+document.getElementById('hospital').addEventListener('focus', function() { showList(this.value); });
+document.addEventListener('click', function(e) { if (!e.target.closest('.hospital-wrapper')) document.getElementById('hospitalList').classList.remove('open'); });
+
 // ── ORIGINAL WORKING CODE — UNCHANGED ─────────────────────────────────────
 let recognition, isRecording = false, fullTranscript = '';
 
