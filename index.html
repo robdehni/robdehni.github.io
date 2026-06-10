@@ -212,18 +212,9 @@ function createRecognition() {
   };
 
   recognition.onend = () => {
-    if (isRecording) {
-      restartTimer = setTimeout(() => {
-        try {
-          createRecognition();
-          recognition.start();
-        } catch (err) {
-          console.warn('Speech restart failed:', err);
-        }
-      }, 250);
-    } else {
-      liveInterim = '';
-      renderTranscript();
+    liveInterim = '';
+    renderTranscript();
+    if (!isRecording) {
       statusEl.textContent = 'Recording stopped. Process when ready.';
       statusEl.classList.remove('active');
     }
