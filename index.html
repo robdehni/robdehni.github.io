@@ -100,59 +100,12 @@ body { background: #0a0a0a; color: #fff; font-family: -apple-system, sans-serif;
 
 <script>
 // ── HOSPITAL DROPDOWN ──────────────────────────────────────────────────────
-const AIRTABLE_TOKEN = 'patFU816X9rok09Lt.86829691fd35d864eb611861b81a88b5c50ddea32657d2fd4d6b52d1ccd37310';
-const AIRTABLE_BASE  = 'appZpw3gV2XKhAAOo';
-let allHospitals = [];
+const HOSPITALS = [{"name": "Al Adan Hospital", "territory": "Kuwait"}, {"name": "Al Ahli Hospital Qatar", "territory": "Qatar"}, {"name": "Al Ain Hospital", "territory": "UAE"}, {"name": "Al Amiri Hospital", "territory": "Kuwait"}, {"name": "Al Fujairah Hospital", "territory": "UAE"}, {"name": "Al Hammadi Hospital Riyadh", "territory": "Saudi Arabia - Riyadh"}, {"name": "Al Hayat International Hospital", "territory": "Oman"}, {"name": "Al Khor Hospital", "territory": "Qatar"}, {"name": "Al Mowasat Hospital", "territory": "Kuwait"}, {"name": "Al Naeem Hospital", "territory": "Kuwait"}, {"name": "Al Nahda Hospital", "territory": "Oman"}, {"name": "Al Nefaie General Hospital", "territory": "Saudi Arabia - Riyadh"}, {"name": "Al Noor Specialist Hospital Makkah", "territory": "Saudi Arabia - Makkah"}, {"name": "Al Qasimi Hospital Sharjah", "territory": "UAE"}, {"name": "Al Razi Hospital", "territory": "Kuwait"}, {"name": "Al Sabah Hospital", "territory": "Kuwait"}, {"name": "Al Salam International Hospital", "territory": "Kuwait"}, {"name": "Al Wakra Hospital", "territory": "Qatar"}, {"name": "Al Wasl Hospital", "territory": "UAE"}, {"name": "Al Zahra Hospital Dubai", "territory": "UAE"}, {"name": "American Hospital Dubai", "territory": "UAE"}, {"name": "American Hospital Qatar", "territory": "Qatar"}, {"name": "American Mission Hospital Bahrain", "territory": "Bahrain"}, {"name": "Aster Hospital Qusais", "territory": "UAE"}, {"name": "Aster Medcity Mankhool", "territory": "UAE"}, {"name": "Aster Medical Centre Qatar", "territory": "Qatar"}, {"name": "Aster Royal Hospital Muscat", "territory": "Oman"}, {"name": "Awali Hospital", "territory": "Bahrain"}, {"name": "Badr Al Samaa Hospital", "territory": "Oman"}, {"name": "Bahrain Specialist Hospital", "territory": "Bahrain"}, {"name": "Burjeel Hospital Abu Dhabi", "territory": "UAE"}, {"name": "Burjeel Hospital Al Ain", "territory": "UAE"}, {"name": "Burjeel Hospital Muscat", "territory": "Oman"}, {"name": "Chest Diseases Hospital", "territory": "Kuwait"}, {"name": "Clemenceau Medical Center Dubai", "territory": "UAE"}, {"name": "Cleveland Clinic Abu Dhabi", "territory": "UAE"}, {"name": "Corniche Hospital", "territory": "UAE"}, {"name": "Cuban Hospital Qatar", "territory": "Qatar"}, {"name": "Dallah Hospital Riyadh", "territory": "Saudi Arabia - Riyadh"}, {"name": "Danat Al Emarat Hospital", "territory": "UAE"}, {"name": "Dar Al Shifa Hospital", "territory": "Kuwait"}, {"name": "Dibba Hospital", "territory": "UAE"}, {"name": "Doha Clinic Hospital", "territory": "Qatar"}, {"name": "Dr Erfan and Bagedo Hospital", "territory": "Saudi Arabia - Jeddah"}, {"name": "Dr Sulaiman Al Habib Hospital Dammam", "territory": "Saudi Arabia - Eastern Province"}, {"name": "Dr Sulaiman Al Habib Hospital Jeddah", "territory": "Saudi Arabia - Jeddah"}, {"name": "Dr Sulaiman Al Habib Hospital Riyadh", "territory": "Saudi Arabia - Riyadh"}, {"name": "Dubai Hospital", "territory": "UAE"}, {"name": "Emirates Hospital Jumeirah", "territory": "UAE"}, {"name": "Farwaniya Hospital", "territory": "Kuwait"}, {"name": "Fujairah Hospital", "territory": "UAE"}, {"name": "Gulf International Hospital", "territory": "Kuwait"}, {"name": "Hamad General Hospital", "territory": "Qatar"}, {"name": "Hatta Hospital", "territory": "UAE"}, {"name": "Hazm Mebaireek General Hospital", "territory": "Qatar"}, {"name": "Heart Hospital Qatar", "territory": "Qatar"}, {"name": "Ibn Sina Hospital", "territory": "Kuwait"}, {"name": "Ibn Sina Hospital Muscat", "territory": "Oman"}, {"name": "Ibrahim Bin Hamad Obaidallah Hospital RAK", "territory": "UAE"}, {"name": "International Hospital of Bahrain", "territory": "Bahrain"}, {"name": "International Medical Center Jeddah", "territory": "Saudi Arabia - Jeddah"}, {"name": "Jahra Hospital", "territory": "Kuwait"}, {"name": "Jidhafs Maternity Hospital", "territory": "Bahrain"}, {"name": "Kalba Hospital", "territory": "UAE"}, {"name": "Khalifa Hospital Ajman", "territory": "UAE"}, {"name": "Khoula Hospital", "territory": "Oman"}, {"name": "King Abdulaziz Hospital Al Ahsa", "territory": "Saudi Arabia - Eastern Province"}, {"name": "King Abdulaziz Hospital Jeddah", "territory": "Saudi Arabia - Jeddah"}, {"name": "King Abdulaziz Medical City Riyadh", "territory": "Saudi Arabia - Riyadh"}, {"name": "King Abdulaziz University Hospital Jeddah", "territory": "Saudi Arabia - Jeddah"}, {"name": "King Abdullah Medical City Makkah", "territory": "Saudi Arabia - Makkah"}, {"name": "King Fahad Armed Forces Hospital Jeddah", "territory": "Saudi Arabia - Jeddah"}, {"name": "King Fahad General Hospital Madinah", "territory": "Saudi Arabia - Madinah"}, {"name": "King Fahad Hospital Dammam", "territory": "Saudi Arabia - Eastern Province"}, {"name": "King Fahad Medical City Riyadh", "territory": "Saudi Arabia - Riyadh"}, {"name": "King Fahad University Hospital Al Khobar", "territory": "Saudi Arabia - Eastern Province"}, {"name": "King Faisal Specialist Hospital Jeddah", "territory": "Saudi Arabia - Jeddah"}, {"name": "King Faisal Specialist Hospital Riyadh", "territory": "Saudi Arabia - Riyadh"}, {"name": "King Hamad University Hospital", "territory": "Bahrain"}, {"name": "King Khalid University Hospital Riyadh", "territory": "Saudi Arabia - Riyadh"}, {"name": "King Salman Hospital Riyadh", "territory": "Saudi Arabia - Riyadh"}, {"name": "King's College Hospital Dubai", "territory": "UAE"}, {"name": "LLH Hospital Abu Dhabi", "territory": "UAE"}, {"name": "Latifa Hospital", "territory": "UAE"}, {"name": "Mafraq Hospital", "territory": "UAE"}, {"name": "Mediclinic Al Noor Abu Dhabi", "territory": "UAE"}, {"name": "Mediclinic City Hospital", "territory": "UAE"}, {"name": "Mediclinic Parkview Hospital", "territory": "UAE"}, {"name": "Mediclinic Welcare Hospital", "territory": "UAE"}, {"name": "Mohammed Bin Khalifa Cardiac Centre", "territory": "Bahrain"}, {"name": "Mouwasat Hospital Dammam", "territory": "Saudi Arabia - Eastern Province"}, {"name": "Mouwasat Hospital Jeddah", "territory": "Saudi Arabia - Jeddah"}, {"name": "Mouwasat Hospital Riyadh", "territory": "Saudi Arabia - Riyadh"}, {"name": "Mubarak Al Kabeer Hospital", "territory": "Kuwait"}, {"name": "Muharraq Hospital", "territory": "Bahrain"}, {"name": "Muscat Private Hospital", "territory": "Oman"}, {"name": "NMC Royal Hospital Abu Dhabi", "territory": "UAE"}, {"name": "NMC Royal Hospital Dubai", "territory": "UAE"}, {"name": "National Center for Cancer Care", "territory": "Qatar"}, {"name": "New Mowasat Hospital", "territory": "Kuwait"}, {"name": "Nizwa Hospital", "territory": "Oman"}, {"name": "Noor Specialist Hospital", "territory": "Bahrain"}, {"name": "Oasis Hospital Al Ain", "territory": "UAE"}, {"name": "Ohud Hospital Madinah", "territory": "Saudi Arabia - Madinah"}, {"name": "Prince Sultan Military Medical City", "territory": "Saudi Arabia - Riyadh"}, {"name": "Psychiatric Hospital Bahrain", "territory": "Bahrain"}, {"name": "RAK Hospital", "territory": "UAE"}, {"name": "Rashid Hospital", "territory": "UAE"}, {"name": "Royal Bahrain Hospital", "territory": "Bahrain"}, {"name": "Royal Hospital Muscat", "territory": "Oman"}, {"name": "Royale Hayat Hospital", "territory": "Kuwait"}, {"name": "Rumailah Hospital", "territory": "Qatar"}, {"name": "Rustaq Hospital", "territory": "Oman"}, {"name": "Salalah Hospital", "territory": "Oman"}, {"name": "Salmaniya Medical Complex", "territory": "Bahrain"}, {"name": "Saqr Hospital Ras Al Khaimah", "territory": "UAE"}, {"name": "Saudi Aramco Medical Organization Dhahran", "territory": "Saudi Arabia - Eastern Province"}, {"name": "Saudi German Hospital Dubai", "territory": "UAE"}, {"name": "Saudi German Hospital Jeddah", "territory": "Saudi Arabia - Jeddah"}, {"name": "Saudi German Hospital Riyadh", "territory": "Saudi Arabia - Riyadh"}, {"name": "Security Forces Hospital Riyadh", "territory": "Saudi Arabia - Riyadh"}, {"name": "Sheikh Khalifa Hospital Umm Al Quwain", "territory": "UAE"}, {"name": "Sheikh Khalifa Medical City Abu Dhabi", "territory": "UAE"}, {"name": "Sheikh Shakhbout Medical City", "territory": "UAE"}, {"name": "Sidra Medicine", "territory": "Qatar"}, {"name": "Sitra Health Center Hospital", "territory": "Bahrain"}, {"name": "Sohar Hospital", "territory": "Oman"}, {"name": "Sultan Qaboos University Hospital", "territory": "Oman"}, {"name": "Sur Hospital", "territory": "Oman"}, {"name": "Tawam Hospital Al Ain", "territory": "UAE"}, {"name": "The View Hospital", "territory": "Qatar"}, {"name": "Thumbay Hospital Ajman", "territory": "UAE"}, {"name": "University Hospital Sharjah", "territory": "UAE"}, {"name": "Valiant Clinic and Hospital", "territory": "UAE"}, {"name": "Women's Wellness and Research Center", "territory": "Qatar"}, {"name": "Zulekha Hospital Dubai", "territory": "UAE"}, {"name": "Zulekha Hospital Sharjah", "territory": "UAE"}];
+let allHospitals = HOSPITALS;
 
-async function loadHospitals() {
-  const input = document.getElementById('hospital');
-  const list  = document.getElementById('hospitalList');
-  try {
-    let records = [], offset = null;
-    do {
-      let url = `https://api.airtable.com/v0/${AIRTABLE_BASE}/GCC%20Hospitals%20Master?fields[]=Hospital%20Name&fields[]=Territory&pageSize=100&api_key=${AIRTABLE_TOKEN}`;
-      if (offset) url += `&offset=${encodeURIComponent(offset)}`;
-      const r = await fetch(url);
-      if (!r.ok) throw new Error(r.status);
-      const d = await r.json();
-      records = records.concat(d.records);
-      offset = d.offset || null;
-    } while (offset);
-
-    allHospitals = records
-      .map(r => ({ name: (r.fields['Hospital Name'] || '').trim(), country: (r.fields['Territory'] || '').trim() }))
-      .filter(h => h.name)
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    input.placeholder = `Search ${allHospitals.length} hospitals...`;
-    input.disabled = false;
-  } catch(e) {
-    input.placeholder = 'e.g. Dubai Hospital';
-    input.disabled = false;
-  }
+function loadHospitals() {
+  document.getElementById('hospital').placeholder = 'Search ' + allHospitals.length + ' hospitals...';
 }
-
-function showList(query) {
-  const list = document.getElementById('hospitalList');
-  const q = query.toLowerCase().trim();
-  const filtered = (q.length === 0 ? allHospitals.slice(0, 50) : allHospitals.filter(h => h.name.toLowerCase().includes(q) || h.country.toLowerCase().includes(q))).slice(0, 50);
-  if (filtered.length === 0) {
-    list.innerHTML = '<div class="hospital-option no-results">No match — your entry will be used</div>';
-  } else {
-    list.innerHTML = filtered.map(h => `<div class="hospital-option" onclick="pickHospital('${h.name.replace(/'/g,"&#39;")}')">${h.name}${h.country ? ' <span style="color:#555;font-size:11px">'+h.country+'</span>' : ''}</div>`).join('');
-  }
-  list.classList.add('open');
-}
-
-function pickHospital(name) {
-  document.getElementById('hospital').value = name;
-  document.getElementById('hospitalList').classList.remove('open');
-}
-
-document.getElementById('hospital').addEventListener('input', function() { if (allHospitals.length) showList(this.value); });
-document.getElementById('hospital').addEventListener('focus', function() { if (allHospitals.length) showList(this.value); });
-document.addEventListener('click', function(e) { if (!e.target.closest('.hospital-wrapper')) document.getElementById('hospitalList').classList.remove('open'); });
-
 loadHospitals();
 
 // ── ORIGINAL WORKING CODE — UNCHANGED ─────────────────────────────────────
