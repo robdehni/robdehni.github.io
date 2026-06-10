@@ -1,207 +1,834 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FieldIQ — Log Visit</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #0a0a0a; color: #fff; font-family: -apple-system, sans-serif; min-height: 100vh; padding: 20px; }
-.container { max-width: 600px; margin: 0 auto; }
-.header { text-align: center; margin-bottom: 24px; padding-top: 16px; }
-.header h1 { font-size: 28px; color: #00d4ff; font-weight: 700; }
-.header p { color: #888; font-size: 13px; margin-top: 4px; }
-.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
-.field label { font-size: 11px; color: #888; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
-.field input, .field select { width: 100%; padding: 11px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 14px; outline: none; }
-.field select option { background: #1a1a1a; }
-.mic-section { text-align: center; margin: 20px 0 12px; }
-.mic-btn { width: 76px; height: 76px; border-radius: 50%; background: #00d4ff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 30px; transition: all 0.3s; box-shadow: 0 0 20px #00d4ff33; }
-.mic-btn.recording { background: #ff4444; box-shadow: 0 0 20px #ff444433; animation: pulse 1s infinite; }
-@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-.status { color: #888; font-size: 13px; min-height: 18px; }
-.status.active { color: #ff6666; }
-.transcript-box { background: #111; border: 1px solid #222; border-radius: 10px; padding: 14px; min-height: 110px; margin: 12px 0; font-size: 14px; line-height: 1.7; color: #ccc; }
-.btn { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin: 5px 0; transition: all 0.2s; }
-.btn-primary { background: #00d4ff; color: #000; }
-.btn-primary:hover { background: #00bcd4; }
-.btn-secondary { background: #1a1a1a; color: #666; border: 1px solid #222; }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.success-card { background: #0a1a0a; border: 1px solid #00ff4433; border-radius: 12px; padding: 20px; margin: 14px 0; display: none; }
-.success-card .tick { font-size: 32px; text-align: center; margin-bottom: 10px; }
-.success-card h3 { color: #00ff88; font-size: 16px; text-align: center; margin-bottom: 16px; }
-.report-section { margin: 12px 0; }
-.report-section h4 { color: #00d4ff; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #1a1a1a; }
-.report-section p { color: #ccc; font-size: 13px; line-height: 1.7; }
-.priority-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-top: 4px; }
-.priority-high { background: #ff000022; color: #ff6666; border: 1px solid #ff444433; }
-.priority-medium { background: #ff880022; color: #ffaa44; border: 1px solid #ff880033; }
-.priority-low { background: #00880022; color: #44cc88; border: 1px solid #00880033; }
-.processing-overlay { text-align: center; padding: 30px; display: none; }
-.spinner { width: 40px; height: 40px; border: 3px solid #1a1a1a; border-top: 3px solid #00d4ff; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.processing-overlay p { color: #888; font-size: 14px; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FieldIQ — Log Visit</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d0d0d;
+      color: #e8e8e8;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 700;
+      color: #00d4aa;
+      letter-spacing: -0.5px;
+    }
+
+    .logo span { color: #e8e8e8; }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 28px;
+    }
+
+    .field-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 7px;
+    }
+
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      color: #e8e8e8;
+      font-size: 15px;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+
+    input[type="text"]:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #00d4aa;
+    }
+
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    select option {
+      background: #1a1a1a;
+      color: #e8e8e8;
+    }
+
+    /* Searchable dropdown wrapper */
+    .dropdown-wrapper {
+      position: relative;
+    }
+
+    .dropdown-wrapper input[type="text"] {
+      padding-right: 40px;
+    }
+
+    .dropdown-loading {
+      font-size: 12px;
+      color: #555;
+      margin-top: 5px;
+    }
+
+    .dropdown-list {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+
+    .dropdown-list.open { display: block; }
+
+    .dropdown-item {
+      padding: 10px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      border-bottom: 1px solid #252525;
+      transition: background 0.15s;
+    }
+
+    .dropdown-item:last-child { border-bottom: none; }
+
+    .dropdown-item:hover,
+    .dropdown-item.highlighted {
+      background: #252525;
+      color: #00d4aa;
+    }
+
+    .dropdown-item .country-tag {
+      font-size: 11px;
+      color: #555;
+      margin-left: 6px;
+    }
+
+    .dropdown-empty {
+      padding: 12px 14px;
+      font-size: 13px;
+      color: #555;
+    }
+
+    /* Voice recorder */
+    .voice-section {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .voice-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 14px;
+    }
+
+    .mic-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #00d4aa;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .mic-btn:hover { background: #00bfa0; }
+    .mic-btn:active { transform: scale(0.98); }
+
+    .mic-btn.recording {
+      background: #ff4444;
+      color: #fff;
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.75; }
+    }
+
+    .mic-icon { font-size: 18px; }
+
+    .transcript-box {
+      margin-top: 14px;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 14px;
+      color: #ccc;
+      min-height: 80px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .transcript-placeholder { color: #444; }
+
+    .char-count {
+      font-size: 11px;
+      color: #444;
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    /* Process button */
+    .process-btn {
+      width: 100%;
+      background: #00d4aa;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s, opacity 0.2s;
+    }
+
+    .process-btn:hover { background: #00bfa0; }
+    .process-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Status */
+    .status-bar {
+      margin-top: 14px;
+      font-size: 13px;
+      color: #888;
+      text-align: center;
+      min-height: 20px;
+    }
+
+    .status-bar.error { color: #ff6b6b; }
+    .status-bar.success { color: #00d4aa; }
+
+    /* Result card */
+    .result-card {
+      display: none;
+      background: #0f1f1c;
+      border: 1px solid #00d4aa44;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .result-card.visible { display: block; }
+
+    .result-card h2 {
+      font-size: 15px;
+      color: #00d4aa;
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+
+    .result-section {
+      margin-bottom: 14px;
+    }
+
+    .result-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #00d4aa;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin-bottom: 5px;
+    }
+
+    .result-section-body {
+      font-size: 14px;
+      color: #ccc;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .priority-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .priority-high { background: #ff444422; color: #ff8888; border: 1px solid #ff444444; }
+    .priority-medium { background: #ffaa0022; color: #ffcc44; border: 1px solid #ffaa0044; }
+    .priority-low { background: #00d4aa22; color: #00d4aa; border: 1px solid #00d4aa44; }
+
+    .sentiment-positive { color: #00d4aa; }
+    .sentiment-neutral { color: #888; }
+    .sentiment-negative { color: #ff6b6b; }
+
+    .saved-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #00d4aa22;
+      border: 1px solid #00d4aa44;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #00d4aa;
+      font-weight: 600;
+      margin-top: 16px;
+    }
+
+    .new-visit-btn {
+      width: 100%;
+      background: transparent;
+      color: #00d4aa;
+      border: 1px solid #00d4aa44;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: background 0.2s;
+    }
+
+    .new-visit-btn:hover { background: #00d4aa11; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+  </style>
 </head>
 <body>
-<div class="container">
-<div class="header">
-  <h1>FieldIQ</h1>
-  <p>Log Visit</p>
-</div>
-<div class="fields">
-  <div class="field"><label>Hospital</label><input type="text" id="hospital" placeholder="e.g. Dubai Hospital"></div>
-  <div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
-  <div class="field"><label>Territory</label><select id="territory"><option value="">Select territory</option><option>UAE</option><option>KSA</option><option>Qatar</option><option>Kuwait</option><option>Bahrain</option><option>Oman</option></select></div>
-  <div class="field"><label>Visit Type</label><select id="visitType"><option value="">Select type</option><option>In-person</option><option>Virtual</option><option>Phone</option></select></div>
-</div>
-<div class="mic-section">
-  <button class="mic-btn" id="micBtn">🎤</button>
-  <div class="status" id="status">Tap mic to start recording</div>
-</div>
-<div class="transcript-box" id="transcriptText">Your speech will appear here in real time...</div>
-<button class="btn btn-primary" id="submitBtn">Process Visit Log</button>
-<button class="btn btn-secondary" id="clearBtn">Clear</button>
-<div class="processing-overlay" id="processingOverlay">
-  <div class="spinner"></div>
-  <p>Analysing your visit...</p>
-</div>
-<div class="success-card" id="successCard">
-  <div class="tick">✅</div>
-  <h3>Visit Logged Successfully</h3>
-  <div id="reportContent"></div>
-  <button class="btn btn-primary" style="margin-top:16px" onclick="location.reload()">Log Another Visit</button>
-</div>
-</div>
-<script>
-let recognition, isRecording = false, fullTranscript = '';
-const micBtn = document.getElementById('micBtn');
-const statusEl = document.getElementById('status');
-const transcriptText = document.getElementById('transcriptText');
-const submitBtn = document.getElementById('submitBtn');
-const successCard = document.getElementById('successCard');
-const processingOverlay = document.getElementById('processingOverlay');
-document.getElementById('visitDate').value = new Date().toISOString().split('T')[0];
-if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SR();
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.lang = 'en-US';
-  recognition.onresult = (e) => {
-    let interim = '', final = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
-      else interim += e.results[i][0].transcript;
+  <div class="container">
+
+    <div class="header">
+      <div class="logo">Field<span>IQ</span></div>
+    </div>
+
+    <h1>Log a Field Visit</h1>
+    <p class="subtitle">Speak your visit notes. AI structures and saves them automatically.</p>
+
+    <!-- Rep Name -->
+    <div class="field-group">
+      <label>Rep Name</label>
+      <input type="text" id="repName" placeholder="Your name" />
+    </div>
+
+    <!-- Hospital Dropdown -->
+    <div class="field-group">
+      <label>Hospital</label>
+      <div class="dropdown-wrapper">
+        <input
+          type="text"
+          id="hospitalSearch"
+          placeholder="Loading hospitals..."
+          autocomplete="off"
+          disabled
+        />
+        <div class="dropdown-list" id="hospitalDropdown"></div>
+      </div>
+      <div class="dropdown-loading" id="dropdownStatus">Fetching hospitals from Airtable...</div>
+      <!-- Hidden field stores selected hospital name -->
+      <input type="hidden" id="hospitalSelected" />
+    </div>
+
+    <!-- Visit Date -->
+    <div class="field-group">
+      <label>Visit Date</label>
+      <input type="text" id="visitDate" placeholder="e.g. 10 June 2026" />
+    </div>
+
+    <!-- Voice Input -->
+    <div class="voice-section">
+      <div class="voice-label">Voice Notes</div>
+      <button class="mic-btn" id="micBtn" onclick="toggleRecording()">
+        <span class="mic-icon">🎤</span>
+        <span id="micBtnText">Tap to Record</span>
+      </button>
+      <div class="transcript-box" id="transcriptBox">
+        <span class="transcript-placeholder" id="transcriptPlaceholder">Your spoken notes will appear here in real time...</span>
+      </div>
+      <div class="char-count" id="charCount">0 characters</div>
+    </div>
+
+    <button class="process-btn" id="processBtn" onclick="processVisit()" disabled>
+      ⚡ Process Visit Log
+    </button>
+
+    <div class="status-bar" id="statusBar"></div>
+
+    <!-- Result Card -->
+    <div class="result-card" id="resultCard">
+      <h2>✅ Visit Processed</h2>
+      <div id="resultSections"></div>
+      <div class="saved-badge" id="savedBadge" style="display:none;">
+        ✓ Saved to Airtable
+      </div>
+      <button class="new-visit-btn" onclick="resetForm()">+ Log Another Visit</button>
+    </div>
+
+  </div>
+
+  <script>
+    // ── CONFIG ──────────────────────────────────────────────────────────────
+    const AIRTABLE_TOKEN = 'patFU816X9rok09Lt.86829691fd35d864eb611861b81a88b5c50ddea32657d2fd4d6b52d1ccd37310';
+    const AIRTABLE_BASE  = 'appZpw3gV2XKhAAOo';
+    const CLOUDFLARE_PROXY = 'https://fieldiq-proxy.rdehni1979.workers.dev';
+
+    // ── HOSPITAL DROPDOWN ───────────────────────────────────────────────────
+    let allHospitals = []; // { name, country, id }
+    let dropdownOpen = false;
+
+    async function loadHospitals() {
+      const searchInput  = document.getElementById('hospitalSearch');
+      const statusEl     = document.getElementById('dropdownStatus');
+      const dropdownEl   = document.getElementById('hospitalDropdown');
+
+      try {
+        let records = [];
+        let offset  = null;
+
+        // Airtable pages at 100 records — loop until all fetched
+        do {
+          let url = `https://api.airtable.com/v0/${AIRTABLE_BASE}/GCC%20Hospitals%20Master?fields[]=Hospital%20Name&fields[]=Country&pageSize=100`;
+          if (offset) url += `&offset=${offset}`;
+
+          const resp = await fetch(url, {
+            headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
+          });
+
+          if (!resp.ok) throw new Error(`Airtable error: ${resp.status}`);
+          const data = await resp.json();
+          records = records.concat(data.records);
+          offset = data.offset || null;
+        } while (offset);
+
+        allHospitals = records
+          .map(r => ({
+            id:      r.id,
+            name:    (r.fields['Hospital Name'] || '').trim(),
+            country: (r.fields['Country'] || '').trim()
+          }))
+          .filter(h => h.name)
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        searchInput.placeholder = `Search ${allHospitals.length} hospitals...`;
+        searchInput.disabled    = false;
+        statusEl.textContent    = '';
+
+      } catch (err) {
+        console.error(err);
+        searchInput.placeholder = 'Type hospital name manually';
+        searchInput.disabled    = false;
+        statusEl.textContent    = '⚠ Could not load hospitals — type manually';
+        statusEl.style.color    = '#ff6b6b';
+      }
     }
-    fullTranscript += final;
-    transcriptText.textContent = fullTranscript + interim;
-  };
-  recognition.onerror = (e) => { statusEl.textContent = 'Mic error: ' + e.error; };
-  recognition.onend = () => { if (isRecording) recognition.start(); };
-}
-micBtn.onclick = () => {
-  if (!isRecording) {
-    isRecording = true;
-    micBtn.classList.add('recording');
-    micBtn.textContent = '⏹';
-    statusEl.textContent = 'Recording... tap to stop';
-    statusEl.classList.add('active');
-    transcriptText.textContent = '';
-    fullTranscript = '';
-    successCard.style.display = 'none';
-    recognition.start();
-  } else {
-    isRecording = false;
-    micBtn.classList.remove('recording');
-    micBtn.textContent = '🎤';
-    statusEl.textContent = 'Recording stopped. Process when ready.';
-    statusEl.classList.remove('active');
-    recognition.stop();
-  }
-};
-document.getElementById('clearBtn').onclick = () => {
-  fullTranscript = '';
-  transcriptText.textContent = 'Your speech will appear here in real time...';
-  successCard.style.display = 'none';
-  processingOverlay.style.display = 'none';
-  statusEl.textContent = 'Tap mic to start recording';
-  submitBtn.disabled = false;
-  submitBtn.textContent = 'Process Visit Log';
-};
-function parseReport(text) {
-  const sections = { summary: '', contacts: '', outcomes: '', nextSteps: '', signals: '', sentiment: '', priority: '' };
-  const lines = text.split('\n');
-  let current = '';
-  for (const line of lines) {
-    const l = line.trim();
-    if (l.match(/VISIT SUMMARY/i)) current = 'summary';
-    else if (l.match(/KEY CONTACTS/i)) current = 'contacts';
-    else if (l.match(/OUTCOMES/i)) current = 'outcomes';
-    else if (l.match(/NEXT STEPS/i)) current = 'nextSteps';
-    else if (l.match(/OPPORTUNITY/i)) current = 'signals';
-    else if (l.match(/SENTIMENT/i)) current = 'sentiment';
-    else if (l.match(/PRIORITY/i)) current = 'priority';
-    else if (l && current) sections[current] += (sections[current] ? '\n' : '') + l;
-  }
-  return sections;
-}
-function getPriorityClass(text) {
-  const t = text.toLowerCase();
-  if (t.includes('high')) return 'priority-high';
-  if (t.includes('medium')) return 'priority-medium';
-  return 'priority-low';
-}
-function renderReport(text) {
-  const s = parseReport(text);
-  let html = '';
-  if (s.summary) html += `<div class="report-section"><h4>Visit Summary</h4><p>${s.summary.replace(/\n/g,'<br>')}</p></div>`;
-  if (s.contacts) html += `<div class="report-section"><h4>Key Contacts</h4><p>${s.contacts.replace(/\n/g,'<br>')}</p></div>`;
-  if (s.outcomes) html += `<div class="report-section"><h4>Outcomes & Decisions</h4><p>${s.outcomes.replace(/\n/g,'<br>')}</p></div>`;
-  if (s.nextSteps) html += `<div class="report-section"><h4>Next Steps</h4><p>${s.nextSteps.replace(/\n/g,'<br>')}</p></div>`;
-  if (s.signals) html += `<div class="report-section"><h4>Opportunity Signals</h4><p>${s.signals.replace(/\n/g,'<br>')}</p></div>`;
-  if (s.sentiment) html += `<div class="report-section"><h4>Sentiment</h4><p>${s.sentiment.replace(/\n/g,'<br>')}</p></div>`;
-  if (s.priority) html += `<div class="report-section"><h4>Priority</h4><span class="priority-badge ${getPriorityClass(s.priority)}">${s.priority.replace(/\*\*/g,'').trim()}</span></div>`;
-  return html || `<div class="report-section"><p>${text}</p></div>`;
-}
-submitBtn.onclick = async () => {
-  const transcript = fullTranscript || transcriptText.textContent;
-  if (!transcript || transcript.includes('Your speech will appear')) { alert('Please record a visit first.'); return; }
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Processing...';
-  processingOverlay.style.display = 'block';
-  successCard.style.display = 'none';
-  try {
-    const aiResponse = await fetch('https://fieldiq-proxy.rdehni1979.workers.dev', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: `You are a MedTech sales intelligence assistant. Structure this field visit transcript into a concise report with these exact sections:\n\nVISIT SUMMARY\nKEY CONTACTS MET\nOUTCOMES & DECISIONS\nNEXT STEPS\nOPPORTUNITY SIGNALS\nSENTIMENT\nPRIORITY LEVEL (High / Medium / Low)\n\nBe concise and professional. Transcript:\n${transcript}` }]
-      })
+
+    function renderDropdown(query) {
+      const dropdown = document.getElementById('hospitalDropdown');
+      const q = query.toLowerCase().trim();
+
+      const filtered = q.length === 0
+        ? allHospitals.slice(0, 40)
+        : allHospitals.filter(h =>
+            h.name.toLowerCase().includes(q) ||
+            h.country.toLowerCase().includes(q)
+          ).slice(0, 40);
+
+      if (filtered.length === 0) {
+        dropdown.innerHTML = `<div class="dropdown-empty">No hospitals found — type to use custom name</div>`;
+      } else {
+        dropdown.innerHTML = filtered.map(h => `
+          <div class="dropdown-item" data-name="${escapeHtml(h.name)}" onclick="selectHospital('${escapeHtml(h.name)}')">
+            ${escapeHtml(h.name)}
+            ${h.country ? `<span class="country-tag">${escapeHtml(h.country)}</span>` : ''}
+          </div>
+        `).join('');
+      }
+
+      dropdown.classList.add('open');
+      dropdownOpen = true;
+    }
+
+    function selectHospital(name) {
+      document.getElementById('hospitalSearch').value   = name;
+      document.getElementById('hospitalSelected').value = name;
+      document.getElementById('hospitalDropdown').classList.remove('open');
+      dropdownOpen = false;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    document.getElementById('hospitalSearch').addEventListener('input', function() {
+      document.getElementById('hospitalSelected').value = this.value; // allow manual entry too
+      if (allHospitals.length > 0) {
+        renderDropdown(this.value);
+      }
     });
-    const data = await aiResponse.json();
-    const result = data.content ? data.content[0].text : JSON.stringify(data);
-    const hospital = document.getElementById('hospital').value;
-    const visitDate = document.getElementById('visitDate').value;
-    const territory = document.getElementById('territory').value;
-    const visitType = document.getElementById('visitType').value;
-    await fetch('https://api.airtable.com/v0/appZpw3gV2XKhAAOo/Field%20Visits', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer patFU816X9rok09Lt.86829691fd35d864eb611861b81a88b5c50ddea32657d2fd4d6b52d1ccd37310', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields: { 'Hospital': hospital, 'Visit Date': visitDate, 'Territory': territory, 'Visit Type': visitType, 'Raw Transcript': transcript, 'AI Summary': result } })
+
+    document.getElementById('hospitalSearch').addEventListener('focus', function() {
+      if (allHospitals.length > 0) renderDropdown(this.value);
     });
-    processingOverlay.style.display = 'none';
-    successCard.style.display = 'block';
-    document.getElementById('reportContent').innerHTML = renderReport(result);
-  } catch(err) {
-    processingOverlay.style.display = 'none';
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Process Visit Log';
-    alert('Something went wrong. Please try again.');
-  }
-};
-</script>
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.dropdown-wrapper')) {
+        document.getElementById('hospitalDropdown').classList.remove('open');
+        dropdownOpen = false;
+      }
+    });
+
+    // Keyboard navigation
+    document.getElementById('hospitalSearch').addEventListener('keydown', function(e) {
+      const items = document.querySelectorAll('.dropdown-item');
+      const highlighted = document.querySelector('.dropdown-item.highlighted');
+      let idx = Array.from(items).indexOf(highlighted);
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (idx < items.length - 1) {
+          if (highlighted) highlighted.classList.remove('highlighted');
+          items[idx + 1].classList.add('highlighted');
+          items[idx + 1].scrollIntoView({ block: 'nearest' });
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (idx > 0) {
+          highlighted.classList.remove('highlighted');
+          items[idx - 1].classList.add('highlighted');
+          items[idx - 1].scrollIntoView({ block: 'nearest' });
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (highlighted) {
+          selectHospital(highlighted.dataset.name);
+        }
+      } else if (e.key === 'Escape') {
+        document.getElementById('hospitalDropdown').classList.remove('open');
+      }
+    });
+
+    // ── SPEECH RECOGNITION ──────────────────────────────────────────────────
+    let recognition = null;
+    let isRecording = false;
+    let fullTranscript = '';
+
+    function setupRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return null;
+
+      const r = new SpeechRecognition();
+      r.continuous      = true;
+      r.interimResults  = true;
+      r.lang            = 'en-US';
+
+      r.onresult = (e) => {
+        let interim = '';
+        let final   = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+          else interim += e.results[i][0].transcript;
+        }
+        fullTranscript += final;
+        updateTranscriptDisplay(fullTranscript + interim);
+      };
+
+      r.onerror = (e) => {
+        console.error('Speech error:', e.error);
+        if (e.error === 'not-allowed') {
+          setStatus('Microphone permission denied. Please allow mic access and try again.', 'error');
+        }
+        stopRecording();
+      };
+
+      r.onend = () => {
+        if (isRecording) r.start(); // keep going
+      };
+
+      return r;
+    }
+
+    function toggleRecording() {
+      if (isRecording) stopRecording();
+      else startRecording();
+    }
+
+    function startRecording() {
+      recognition = setupRecognition();
+      if (!recognition) {
+        setStatus('Speech recognition not supported on this browser. Try Chrome.', 'error');
+        return;
+      }
+      recognition.start();
+      isRecording = true;
+      document.getElementById('micBtn').classList.add('recording');
+      document.getElementById('micBtnText').textContent = 'Recording... Tap to Stop';
+      setStatus('');
+    }
+
+    function stopRecording() {
+      if (recognition) recognition.stop();
+      isRecording = false;
+      document.getElementById('micBtn').classList.remove('recording');
+      document.getElementById('micBtnText').textContent = 'Tap to Record';
+      checkProcessReady();
+    }
+
+    function updateTranscriptDisplay(text) {
+      const box         = document.getElementById('transcriptBox');
+      const placeholder = document.getElementById('transcriptPlaceholder');
+      const counter     = document.getElementById('charCount');
+
+      if (text.trim()) {
+        placeholder.style.display = 'none';
+        box.childNodes[box.childNodes.length - 1].textContent = text; // update last text node
+        // Actually replace all content cleanly:
+        box.innerHTML = '';
+        box.appendChild(document.createTextNode(text));
+      }
+      counter.textContent = `${text.length} characters`;
+      checkProcessReady();
+    }
+
+    function getTranscript() {
+      return document.getElementById('transcriptBox').textContent.trim();
+    }
+
+    function checkProcessReady() {
+      const ready = getTranscript().length > 10 && !isRecording;
+      document.getElementById('processBtn').disabled = !ready;
+    }
+
+    // ── PROCESS VISIT ───────────────────────────────────────────────────────
+    async function processVisit() {
+      const repName  = document.getElementById('repName').value.trim();
+      const hospital = document.getElementById('hospitalSelected').value.trim()
+                    || document.getElementById('hospitalSearch').value.trim();
+      const date     = document.getElementById('visitDate').value.trim();
+      const notes    = getTranscript();
+
+      if (!notes) { setStatus('No transcript to process.', 'error'); return; }
+
+      setStatus('🤖 Analysing with AI...', '');
+      document.getElementById('processBtn').disabled = true;
+
+      const prompt = `You are FieldIQ, an AI assistant for MedTech field reps in emerging markets.
+
+Analyse this field visit transcript and return ONLY a valid JSON object — no markdown, no explanation:
+
+{
+  "visitSummary": "2-3 sentence overview of the visit",
+  "keyContacts": "Names and roles mentioned",
+  "outcomesAndDecisions": "What was agreed or decided",
+  "nextSteps": "Specific follow-up actions with owner if mentioned",
+  "opportunitySignals": "Any purchasing intent, budget mentions, competitive info",
+  "sentiment": "Positive / Neutral / Negative",
+  "priorityLevel": "High / Medium / Low"
+}
+
+Transcript:
+${notes}`;
+
+      try {
+        const resp = await fetch(CLOUDFLARE_PROXY, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-opus-4-20250514',
+            max_tokens: 800,
+            messages: [{ role: 'user', content: prompt }]
+          })
+        });
+
+        if (!resp.ok) throw new Error(`Proxy error: ${resp.status}`);
+        const data = await resp.json();
+        const raw  = data.content?.[0]?.text || '';
+        const clean = raw.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(clean);
+
+        renderResult(parsed);
+        await saveToAirtable({ repName, hospital, date, notes, parsed });
+
+      } catch (err) {
+        console.error(err);
+        setStatus(`Error: ${err.message}`, 'error');
+        document.getElementById('processBtn').disabled = false;
+      }
+    }
+
+    function renderResult(d) {
+      const sections = [
+        { title: 'Visit Summary',          key: 'visitSummary' },
+        { title: 'Key Contacts',           key: 'keyContacts' },
+        { title: 'Outcomes & Decisions',   key: 'outcomesAndDecisions' },
+        { title: 'Next Steps',             key: 'nextSteps' },
+        { title: 'Opportunity Signals',    key: 'opportunitySignals' },
+      ];
+
+      let html = sections.map(s => `
+        <div class="result-section">
+          <div class="result-section-title">${s.title}</div>
+          <div class="result-section-body">${escapeHtml(d[s.key] || 'None noted')}</div>
+        </div>
+      `).join('');
+
+      const sentimentClass = {
+        'positive': 'sentiment-positive',
+        'neutral':  'sentiment-neutral',
+        'negative': 'sentiment-negative'
+      }[(d.sentiment || '').toLowerCase()] || 'sentiment-neutral';
+
+      const priorityClass = {
+        'high':   'priority-high',
+        'medium': 'priority-medium',
+        'low':    'priority-low'
+      }[(d.priorityLevel || '').toLowerCase()] || 'priority-medium';
+
+      html += `
+        <div class="result-section" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <span class="priority-badge ${priorityClass}">${d.priorityLevel || 'Medium'}</span>
+          <span class="result-section-body ${sentimentClass}" style="font-size:13px;">
+            Sentiment: ${d.sentiment || 'Neutral'}
+          </span>
+        </div>
+      `;
+
+      document.getElementById('resultSections').innerHTML = html;
+      document.getElementById('resultCard').classList.add('visible');
+      setStatus('');
+      document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function saveToAirtable({ repName, hospital, date, notes, parsed }) {
+      setStatus('💾 Saving to Airtable...', '');
+
+      const fields = {
+        'Rep Name':             repName  || 'Unknown',
+        'Hospital':             hospital || 'Unknown',
+        'Visit Date':           date     || new Date().toISOString().split('T')[0],
+        'Raw Transcript':       notes,
+        'Visit Summary':        parsed.visitSummary        || '',
+        'Key Contacts':         parsed.keyContacts         || '',
+        'Outcomes & Decisions': parsed.outcomesAndDecisions || '',
+        'Next Steps':           parsed.nextSteps           || '',
+        'Opportunity Signals':  parsed.opportunitySignals  || '',
+        'Sentiment':            parsed.sentiment           || '',
+        'Priority Level':       parsed.priorityLevel       || ''
+      };
+
+      try {
+        const resp = await fetch(
+          `https://api.airtable.com/v0/${AIRTABLE_BASE}/Field%20Visits`,
+          {
+            method:  'POST',
+            headers: {
+              'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
+              'Content-Type':  'application/json'
+            },
+            body: JSON.stringify({ fields })
+          }
+        );
+
+        if (!resp.ok) {
+          const err = await resp.json();
+          throw new Error(err.error?.message || `Airtable save error: ${resp.status}`);
+        }
+
+        document.getElementById('savedBadge').style.display = 'flex';
+        setStatus('');
+
+      } catch (err) {
+        console.error('Airtable save error:', err);
+        setStatus(`Saved locally but Airtable sync failed: ${err.message}`, 'error');
+      }
+    }
+
+    // ── HELPERS ─────────────────────────────────────────────────────────────
+    function setStatus(msg, type) {
+      const el = document.getElementById('statusBar');
+      el.textContent  = msg;
+      el.className    = 'status-bar' + (type ? ` ${type}` : '');
+    }
+
+    function resetForm() {
+      document.getElementById('repName').value         = '';
+      document.getElementById('hospitalSearch').value  = '';
+      document.getElementById('hospitalSelected').value = '';
+      document.getElementById('visitDate').value       = '';
+      document.getElementById('transcriptBox').innerHTML = '<span class="transcript-placeholder" id="transcriptPlaceholder">Your spoken notes will appear here in real time...</span>';
+      document.getElementById('charCount').textContent = '0 characters';
+      document.getElementById('processBtn').disabled  = true;
+      document.getElementById('resultCard').classList.remove('visible');
+      document.getElementById('savedBadge').style.display = 'none';
+      fullTranscript = '';
+      setStatus('');
+    }
+
+    // ── INIT ─────────────────────────────────────────────────────────────────
+    // Set today's date as default
+    const today = new Date();
+    const dateStr = today.getDate() + ' ' + today.toLocaleString('en-GB', { month: 'long' }) + ' ' + today.getFullYear();
+    document.getElementById('visitDate').value = dateStr;
+
+    // Load hospitals on page load
+    loadHospitals();
+  </script>
 </body>
 </html>
