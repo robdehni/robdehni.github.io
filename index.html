@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -52,9 +52,25 @@ body { background: #0a0a0a; color: #fff; font-family: -apple-system, sans-serif;
 </div>
 
 <div class="fields">
-  <div class="field"><label>Hospital</label><select id="hospital"><option value="">Loading hospitals...</option></select></div>
+  <div class="field">
+    <label>Territory</label>
+    <select id="territory" onchange="filterHospitals()">
+      <option value="">Select territory</option>
+      <option>UAE</option>
+      <option>KSA</option>
+      <option>Qatar</option>
+      <option>Kuwait</option>
+      <option>Bahrain</option>
+      <option>Oman</option>
+    </select>
+  </div>
   <div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
-  <div class="field"><label>Territory</label><select id="territory"><option value="">Select territory</option><option>UAE</option><option>KSA</option><option>Qatar</option><option>Kuwait</option><option>Bahrain</option><option>Oman</option></select></div>
+  <div class="field">
+    <label>Hospital</label>
+    <select id="hospital">
+      <option value="">Select territory first</option>
+    </select>
+  </div>
   <div class="field"><label>Visit Type</label><select id="visitType"><option value="">Select type</option><option>In-person</option><option>Virtual</option><option>Phone</option></select></div>
 </div>
 
@@ -84,6 +100,10 @@ body { background: #0a0a0a; color: #fff; font-family: -apple-system, sans-serif;
 
 <script>
 let recognition, isRecording = false, fullTranscript = '';
+let allHospitals = [];
+
+const AIRTABLE_TOKEN = 'patFU816X9rok09Lt.86829691fd35d864eb611861b81a88b5c50ddea32657d2fd4d6b52d1ccd37310';
+const BASE_ID = 'appZpw3gV2XKhAAOo';
 
 const micBtn = document.getElementById('micBtn');
 const statusEl = document.getElementById('status');
@@ -94,42 +114,48 @@ const processingOverlay = document.getElementById('processingOverlay');
 
 document.getElementById('visitDate').value = new Date().toISOString().split('T')[0];
 
-// Load hospitals from Airtable GCC Hospitals Master
 async function loadHospitals() {
-  const sel = document.getElementById('hospital');
-  const AIRTABLE_TOKEN = 'patFU816X9rok09Lt.86829691fd35d864eb611861b81a88b5c50ddea32657d2fd4d6b52d1ccd37310';
-  const BASE_ID = 'appZpw3gV2XKhAAOo';
-  let allRecords = [];
+  let records = [];
   let offset = '';
-
   try {
     do {
-      const url = `https://api.airtable.com/v0/${BASE_ID}/GCC%20Hospitals%20Master?fields%5B%5D=Hospital%20Name&pageSize=100${offset ? '&offset=' + offset : ''}`;
+      const url = `https://api.airtable.com/v0/${BASE_ID}/G.C.C.%20Hospitals-Master?fields%5B%5D=Hospital%20Name&fields%5B%5D=Territory&pageSize=100${offset ? '&offset=' + offset : ''}`;
       const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + AIRTABLE_TOKEN } });
       const data = await res.json();
-      if (data.records) allRecords = allRecords.concat(data.records);
+      if (data.records) records = records.concat(data.records);
       offset = data.offset || '';
     } while (offset);
 
-    allRecords.sort((a, b) => {
-      const nameA = (a.fields['Hospital Name'] || '').toLowerCase();
-      const nameB = (b.fields['Hospital Name'] || '').toLowerCase();
-      return nameA.localeCompare(nameB);
-    });
+    allHospitals = records
+      .filter(r => r.fields['Hospital Name'])
+      .map(r => ({ name: r.fields['Hospital Name'], territory: r.fields['Territory'] || '' }))
+      .sort((a, b) => a.name.localeCompare(b.name));
 
-    sel.innerHTML = '<option value="">Select hospital</option>';
-    allRecords.forEach(r => {
-      const name = r.fields['Hospital Name'] || '';
-      if (name) {
-        const opt = document.createElement('option');
-        opt.value = name;
-        opt.textContent = name;
-        sel.appendChild(opt);
-      }
-    });
   } catch(err) {
-    sel.innerHTML = '<option value="">Could not load hospitals</option>';
+    console.error('Failed to load hospitals', err);
   }
+}
+
+function filterHospitals() {
+  const territory = document.getElementById('territory').value;
+  const sel = document.getElementById('hospital');
+  sel.innerHTML = '<option value="">Select hospital</option>';
+
+  const filtered = territory
+    ? allHospitals.filter(h => h.territory === territory)
+    : allHospitals;
+
+  if (filtered.length === 0) {
+    sel.innerHTML = '<option value="">No hospitals found</option>';
+    return;
+  }
+
+  filtered.forEach(h => {
+    const opt = document.createElement('option');
+    opt.value = h.name;
+    opt.textContent = h.name;
+    sel.appendChild(opt);
+  });
 }
 
 loadHospitals();
@@ -250,9 +276,9 @@ submitBtn.onclick = async () => {
     const territory = document.getElementById('territory').value;
     const visitType = document.getElementById('visitType').value;
 
-    await fetch('https://api.airtable.com/v0/appZpw3gV2XKhAAOo/Field%20Visits', {
+    await fetch(`https://api.airtable.com/v0/${BASE_ID}/Field%20Visits`, {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer patFU816X9rok09Lt.86829691fd35d864eb611861b81a88b5c50ddea32657d2fd4d6b52d1ccd37310', 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + AIRTABLE_TOKEN, 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: { 'Hospital': hospital, 'Visit Date': visitDate, 'Territory': territory, 'Visit Type': visitType, 'Raw Transcript': transcript, 'AI Summary': result } })
     });
 
