@@ -21,7 +21,7 @@ body { background: #0a0a0a; color: #fff; font-family: -apple-system, sans-serif;
 @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 .status { color: #888; font-size: 13px; min-height: 18px; }
 .status.active { color: #ff6666; }
-.transcript-box { background: #111; border: 1px solid #222; border-radius: 10px; padding: 14px; min-height: 110px; margin: 12px 0; font-size: 14px; line-height: 1.7; color: #ccc; }
+.transcript-box { background: #111; border: 1px solid #222; border-radius: 10px; padding: 14px; min-height: 110px; margin: 12px 0; font-size: 14px; line-height: 1.7; color: #ccc; width: 100%; resize: vertical; font-family: -apple-system, sans-serif; }
 .btn { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin: 5px 0; transition: all 0.2s; }
 .btn-primary { background: #00d4ff; color: #000; }
 .btn-primary:hover { background: #00bcd4; }
@@ -79,7 +79,10 @@ body { background: #0a0a0a; color: #fff; font-family: -apple-system, sans-serif;
   <div class="status" id="status">Tap mic to start recording</div>
 </div>
 
-<div class="transcript-box" id="transcriptText">Your speech will appear here in real time...</div>
+<div style="position:relative">
+  <textarea class="transcript-box" id="transcriptText" placeholder="Your speech will appear here in real time... You can also edit this text before processing.">Your speech will appear here in real time...</textarea>
+  <div style="font-size:11px;color:#555;text-align:right;margin-top:-8px;margin-bottom:8px;">Tap to edit before processing</div>
+</div>
 
 <button class="btn btn-primary" id="submitBtn">Process Visit Log</button>
 <button class="btn btn-secondary" id="clearBtn">Clear</button>
@@ -154,7 +157,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       else interim += e.results[i][0].transcript;
     }
     fullTranscript += final;
-    transcriptText.textContent = fullTranscript + interim;
+    transcriptText.value = fullTranscript + interim;
   };
   recognition.onerror = (e) => { statusEl.textContent = 'Mic error: ' + e.error; };
   recognition.onend = () => { if (isRecording) recognition.start(); };
@@ -167,7 +170,7 @@ micBtn.onclick = () => {
     micBtn.textContent = '⏹';
     statusEl.textContent = 'Recording... tap to stop';
     statusEl.classList.add('active');
-    transcriptText.textContent = '';
+    transcriptText.value = '';
     fullTranscript = '';
     successCard.style.display = 'none';
     recognition.start();
@@ -183,7 +186,7 @@ micBtn.onclick = () => {
 
 document.getElementById('clearBtn').onclick = () => {
   fullTranscript = '';
-  transcriptText.textContent = 'Your speech will appear here in real time...';
+  transcriptText.value = 'Your speech will appear here in real time...';
   successCard.style.display = 'none';
   processingOverlay.style.display = 'none';
   statusEl.textContent = 'Tap mic to start recording';
@@ -230,13 +233,26 @@ function renderReport(text) {
 }
 
 submitBtn.onclick = async () => {
-  const transcript = (fullTranscript && fullTranscript.trim()) ? fullTranscript.trim() : transcriptText.textContent.trim();
+  const transcript = transcriptText.value.trim();
   if (!transcript || transcript === 'Your speech will appear here in real time...') { alert('Please record a visit first.'); return; }
 
   submitBtn.disabled = true;
   submitBtn.textContent = 'Processing...';
   processingOverlay.style.display = 'block';
   successCard.style.display = 'none';
+
+  // Capture GPS location automatically
+  let latitude = '', longitude = '', accuracy = '';
+  try {
+    const pos = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000, enableHighAccuracy: true });
+    });
+    latitude = pos.coords.latitude;
+    longitude = pos.coords.longitude;
+    accuracy = Math.round(pos.coords.accuracy);
+  } catch(gpsErr) {
+    console.log('GPS not available:', gpsErr.message);
+  }
 
   try {
     const aiResponse = await fetch('https://fieldiq-proxy.rdehni1979.workers.dev', {
@@ -260,7 +276,7 @@ submitBtn.onclick = async () => {
     await fetch('https://api.airtable.com/v0/appZpw3gV2XKhAAOo/Field%20Visits', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer patFU816X9rok09Lt.86829691fd35d864eb611861b81a88b5c50ddea32657d2fd4d6b52d1ccd37310', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields: { 'Hospital': hospital, 'Visit Date': visitDate, 'Territory': territory, 'Visit Type': visitType, 'Raw Transcript': transcript, 'AI Summary': result } })
+      body: JSON.stringify({ fields: { 'Hospital': hospital, 'Visit Date': visitDate, 'Territory': territory, 'Visit Type': visitType, 'Raw Transcript': transcript, 'AI Summary': result, 'Latitude': latitude || null, 'Longitude': longitude || null, 'Accuracy': accuracy || null } })
     });
 
     processingOverlay.style.display = 'none';
