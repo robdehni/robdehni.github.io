@@ -151,15 +151,17 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   recognition.interimResults = true;
   recognition.lang = 'en-US';
   recognition.onresult = (e) => {
-    let interim = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
+    let finalText = '';
+    let interimText = '';
+    for (let i = 0; i < e.results.length; i++) {
       if (e.results[i].isFinal) {
-        fullTranscript += e.results[i][0].transcript + ' ';
+        finalText += e.results[i][0].transcript + ' ';
       } else {
-        interim += e.results[i][0].transcript;
+        interimText += e.results[i][0].transcript;
       }
     }
-    transcriptText.value = fullTranscript + interim;
+    fullTranscript = finalText;
+    transcriptText.value = finalText + interimText;
   };
   recognition.onerror = (e) => { statusEl.textContent = 'Mic error: ' + e.error; };
   recognition.onend = () => { if (isRecording) recognition.start(); };
