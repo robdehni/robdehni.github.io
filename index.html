@@ -306,7 +306,7 @@ submitBtn.addEventListener('click',async function(){
   successCard.style.display='none';
 
   var latitude=null,longitude=null,accuracy=null;
-  new Promise(function(resolve){
+  await new Promise(function(resolve){
     if(!navigator.geolocation){resolve();return;}
     navigator.geolocation.getCurrentPosition(
       function(pos){latitude=pos.coords.latitude;longitude=pos.coords.longitude;accuracy=Math.round(pos.coords.accuracy);resolve();},
@@ -333,10 +333,10 @@ submitBtn.addEventListener('click',async function(){
     var territory=document.getElementById('territory').value;
     var visitType=document.getElementById('visitType').value;
 
-    var airtableRes=await fetch('https://api.airtable.com/v0/appZpw3gV2XKhAAOo/Field%20Visits',{
+    var airtableRes=await fetch('https://fieldiq-proxy.rdehni1979.workers.dev/save-visit',{
       method:'POST',
-      headers:{'Authorization':'Bearer patQX0BWiWvwY4yjz.24101982820b6fabfef2ed75175e31530992d243bf36bdeda2a489e6c685c387','Content-Type':'application/json'},
-      body:JSON.stringify({fields:{'Hospital Name':hospital,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Raw Transcript':transcript,'AI Summary':result,'Latitude':latitude,'Longitude':longitude,'Accuracy':accuracy}})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({'Hospital Name':hospital,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Raw Transcript':transcript,'AI Summary':result,'Latitude':latitude,'Longitude':longitude,'Accuracy':accuracy})
     });
     var airtableData=await airtableRes.json();
     if(!airtableRes.ok){
