@@ -1,54 +1,84 @@
-<!--
-fieldiq_mediarecorder_ui_test.html
-Date: 11 June 2026
-Purpose: UX prototype - FieldIQ interface + MediaRecorder audio capture
-No Web Speech. No recognition restart loop.
-No AI. No Airtable. No GPS.
-Do NOT merge into index.html until transcription is connected.
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FieldIQ — Voice Capture Test</title>
+<title>FieldIQ Voice Test</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #0a0a0a; color: #fff; font-family: -apple-system, sans-serif; min-height: 100vh; padding: 20px; }
-.container { max-width: 600px; margin: 0 auto; }
-.header { text-align: center; margin-bottom: 24px; padding-top: 16px; }
-.header h1 { font-size: 28px; color: #00d4ff; font-weight: 700; }
-.header p { color: #888; font-size: 13px; margin-top: 4px; }
-.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
-.field label { font-size: 11px; color: #888; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
-.field input, .field select { width: 100%; padding: 11px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 14px; outline: none; }
-.field select option { background: #1a1a1a; }
-.hospital-wrapper { position: relative; }
-.hospital-list { display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 999; }
-.hospital-list.open { display: block; }
-.hospital-option { padding: 10px 11px; font-size: 13px; color: #ccc; cursor: pointer; border-bottom: 1px solid #222; }
-.hospital-option:last-child { border-bottom: none; }
-.hospital-option:hover { background: #252525; color: #00d4ff; }
-.voice-section { background: #111; border: 1px solid #1e1e1e; border-radius: 16px; padding: 24px; margin: 20px 0; text-align: center; }
-.voice-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
-.record-btn { width: 88px; height: 88px; border-radius: 50%; border: 3px solid #00d4ff; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
-.record-btn.active { border-color: #ff4444; }
-.record-icon { width: 32px; height: 32px; border-radius: 50%; background: #00d4ff; }
-.record-btn.active .record-icon { background: #ff4444; border-radius: 6px; width: 26px; height: 26px; }
-.record-status { font-size: 14px; color: #888; margin-bottom: 8px; }
-.record-status.recording { color: #ff6666; }
-.record-status.done { color: #00ff88; }
-.timer { font-size: 36px; font-weight: 700; color: #333; letter-spacing: 3px; margin-bottom: 20px; }
-.timer.active { color: #ff4444; }
-.timer.done { color: #00d4ff; }
-.stop-btn { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #ff4444; background: transparent; color: #ff4444; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px; display: none; }
-.stop-btn.visible { display: block; }
-.playback-section { margin-top: 16px; display: none; text-align: left; }
-.playback-section.visible { display: block; }
-.playback-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-audio { width: 100%; border-radius: 8px; margin-bottom: 16px; }
-.notes-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
-.notes-box { width: 100%; background: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 12px; color: #ccc; font-size: 14px; line-height: 1.7; min-height: 100px; resize: vertical; font-family: -apple-system, sans-serif; outline: none; }
-.process-btn { width: 100%; padding: 14px; border-radius: 10px; border: none; background: #00d4ff; color: #000; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 16px; display: none; }
-.process-btn.visible { display: block; }
-.status-banner { background: #0a1a0a; border:
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#fff;font-family:sans-serif;padding:20px;min-height:100vh}
+h1{color:#00d4ff;text-align:center;padding:16px 0 4px}
+p.sub{color:#888;text-align:center;font-size:13px;margin-bottom:24px}
+.btn{width:100%;padding:14px;border-radius:10px;border:none;font-size:16px;font-weight:700;cursor:pointer;margin:6px 0}
+.rec{background:#00d4ff;color:#000}
+.stp{background:#ff4444;color:#fff;display:none}
+#timer{text-align:center;font-size:40px;font-weight:700;color:#333;margin:16px 0}
+#timer.on{color:#ff4444}
+#status{text-align:center;color:#888;font-size:13px;margin-bottom:12px}
+audio{width:100%;margin:12px 0;display:none}
+textarea{width:100%;background:#111;border:1px solid #222;border-radius:10px;padding:12px;color:#ccc;font-size:14px;min-height:100px;margin-top:8px;font-family:sans-serif}
+.save{background:#00d4ff;color:#000;display:none}
+.ok{background:#0a1a0a;border:1px solid #00ff4422;border-radius:10px;padding:12px;color:#00ff88;text-align:center;margin-top:12px;display:none}
+.err{color:#ff6666;text-align:center;margin-top:12px}
+</style>
+</head>
+<body>
+<h1>FieldIQ</h1>
+<p class="sub">Voice Capture — MediaRecorder</p>
+<div id="timer">0:00</div>
+<div id="status">Tap Record and speak naturally</div>
+<button class="btn rec" id="recBtn">⏺ Record</button>
+<button class="btn stp" id="stpBtn">⏹ Stop</button>
+<audio id="player" controls></audio>
+<textarea id="notes" placeholder="Add any notes here after recording..."></textarea>
+<button class="btn save" id="saveBtn">Save Visit Notes</button>
+<div class="ok" id="ok">✅ Saved</div>
+<div class="err" id="err"></div>
+<script>
+window.onerror=function(m,s,l){document.getElementById('err').textContent='Error: '+m+' line '+l};
+var rec,chunks=[],secs=0,tmr;
+document.getElementById('recBtn').onclick=async function(){
+  try{
+    chunks=[];secs=0;
+    document.getElementById('timer').textContent='0:00';
+    document.getElementById('timer').className='on';
+    document.getElementById('player').style.display='none';
+    document.getElementById('saveBtn').style.display='none';
+    document.getElementById('ok').style.display='none';
+    var stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    rec=new MediaRecorder(stream);
+    rec.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data)};
+    rec.onstop=function(){
+      var blob=new Blob(chunks,{type:'audio/webm'});
+      var p=document.getElementById('player');
+      p.src=URL.createObjectURL(blob);
+      p.style.display='block';
+      document.getElementById('saveBtn').style.display='block';
+      document.getElementById('status').textContent='Done. Press play to review.';
+      document.getElementById('timer').className='';
+      stream.getTracks().forEach(function(t){t.stop()});
+    };
+    rec.start();
+    tmr=setInterval(function(){
+      secs++;
+      var m=Math.floor(secs/60),s=secs%60;
+      document.getElementById('timer').textContent=m+':'+(s<10?'0':'')+s;
+    },1000);
+    document.getElementById('recBtn').style.display='none';
+    document.getElementById('stpBtn').style.display='block';
+    document.getElementById('status').textContent='Recording... speak naturally';
+  }catch(e){document.getElementById('err').textContent='Mic error: '+e.message}
+};
+document.getElementById('stpBtn').onclick=function(){
+  if(rec&&rec.state!=='inactive'){rec.stop();clearInterval(tmr)}
+  document.getElementById('stpBtn').style.display='none';
+  document.getElementById('recBtn').style.display='block';
+};
+document.getElementById('saveBtn').onclick=function(){
+  document.getElementById('ok').style.display='block';
+  document.getElementById('saveBtn').textContent='Saved ✓';
+  document.getElementById('saveBtn').style.background='#00ff88';
+};
+</script>
+</body>
+</html>
