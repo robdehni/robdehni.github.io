@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldIQ — Log Visit</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;padding:20px}
+.container{max-width:600px;margin:0 auto}
+.header{text-align:center;margin-bottom:24px;padding-top:16px}
+.header h1{font-size:28px;color:#00d4ff;font-weight:700}
+.header p{color:#888;font-size:13px;margin-top:4px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.field label{font-size:11px;color:#888;margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:0.5px}
+.field input,.field select{width:100%;padding:11px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:#fff;font-size:14px;outline:none}
+.field select option{background:#1a1a1a}
+.hospital-wrapper{position:relative}
+.hospital-list{display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;max-height:200px;overflow-y:auto;z-index:999}
+.hospital-list.open{display:block}
+.hospital-option{padding:10px 11px;font-size:13px;color:#ccc;cursor:pointer;border-bottom:1px solid #222}
+.hospital-option:last-child{border-bottom:none}
+.hospital-option:hover,.hospital-option:active{background:#252525;color:#00d4ff}
+.mic-section{text-align:center;margin:20px 0 12px}
+.mic-btn{width:88px;height:88px;border-radius:50%;border:3px solid #00d4ff;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:36px;transition:border-color 0.2s,background 0.2s}
+.mic-btn.recording{border-color:#ff4444;background:#ff444411}
+.status{color:#888;font-size:13px;min-height:18px;margin-bottom:8px}
+.status.active{color:#ff6666}
+.status.transcribing{color:#ffaa44}
+.status.done{color:#00ff88}
+.recording-indicator{display:none;text-align:center;margin:8px 0}
+.recording-indicator.visible{display:block}
+.recording-timer{font-size:28px;font-weight:700;color:#ff4444;letter-spacing:2px;margin:4px 0}
+audio{width:100%;border-radius:8px;margin:8px 0;display:none}
+.transcript-box{background:#111;border:1px solid #222;border-radius:10px;padding:14px;min-height:110px;margin:12px 0;font-size:14px;line-height:1.7;color:#ccc;width:100%;resize:vertical;font-family:-apple-system,sans-serif}
+.btn{width:100%;padding:14px;border-radius:10px;border:none;font-size:15px;font-weight:600;cursor:pointer;margin:5px 0;transition:all 0.2s}
+.btn-primary{background:#00d4ff;color:#000}
+.btn-primary:hover{background:#00bcd4}
+.btn-secondary{background:#1a1a1a;color:#666;border:1px solid #222}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+.success-card{background:#0a1a0a;border:1px solid #00ff4433;border-radius:12px;padding:20px;margin:14px 0;display:none}
+.success-card .tick{font-size:32px;text-align:center;margin-bottom:10px}
+.success-card h3{color:#00ff88;font-size:16px;text-align:center;margin-bottom:16px}
+.report-section{margin:12px 0}
+.report-section h4{color:#00d4ff;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #1a1a1a}
+.report-section p{color:#ccc;font-size:13px;line-height:1.7}
+.priority-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-top:4px}
+.priority-high{background:#ff000022;color:#ff6666;border:1px solid #ff444433}
+.priority-medium{background:#ff880022;color:#ffaa44;border:1px solid #ff880033}
+.priority-low{background:#00880022;color:#44cc88;border:1px solid #00880033}
+.processing-overlay{text-align:center;padding:30px;display:none}
+.spinner{width:40px;height:40px;border:3px solid #1a1a1a;border-top:3px solid #00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.processing-overlay p{color:#888;font-size:14px}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+  <h1>FieldIQ</h1>
+  <p>Log Visit</p>
+</div>
+<div class="fields">
+  <div class="field">
+    <label>Hospital</label>
+    <div class="hospital-wrapper">
+      <input type="text" id="hospital" placeholder="Search 137 hospitals..." autocomplete="off">
+      <div class="hospital-list" id="hospitalList"></div>
+    </div>
+  </div>
+  <div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
+  <div class="field">
+    <label>Territory</label>
+    <select id="territory">
+      <option value="">Select territory</option>
+      <option>UAE</option><option>KSA</option><option>Qatar</option>
+      <option>Kuwait</option><option>Bahrain</option><option>Oman</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Visit Type</label>
+    <select id="visitType">
+      <option value="">Select type</option>
+      <option>In-person</option><option>Virtual</option><option>Phone</option>
+    </select>
+  </div>
+</div>
+<div class="mic-section">
+  <button class="mic-btn" id="micBtn">🎙️</button>
+  <div class="status" id="status">Tap mic to start recording</div>
+  <div class="recording-indicator" id="recordingIndicator">
+    <div class="recording-timer" id="recordingTimer">0:00</div>
+  </div>
+  <audio id="audioPlayer" controls></audio>
+</div>
+<div style="position:relative">
+  <textarea class="transcript-box" id="transcriptText" placeholder="Your speech will appear here automatically after recording... tap to edit before processing."></textarea>
+  <div style="font-size:11px;color:#555;text-align:right;margin-top:-8px;margin-bottom:8px;">Tap to edit before processing</div>
+</div>
+<button class="btn btn-primary" id="submitBtn">Process Visit Log</button>
+<button class="btn btn-secondary" id="clearBtn">Clear</button>
+<div class="processing-overlay" id="processingOverlay">
+  <div class="spinner"></div>
+  <p>Analysing your visit...</p>
+</div>
+<div class="success-card" id="successCard">
+  <div class="tick">✅</div>
+  <h3>Visit Logged Successfully</h3>
+  <div id="reportContent"></div>
+  <button class="btn btn-primary" style="margin-top:16px" onclick="location.reload()">Log Another Visit</button>
+</div>
+</div>
+<script>
+var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+window.onerror=function(msg){document.getElementById('status').textContent='Error: '+msg;};
+var HOSPITALS=[{"name":"Al Adan Hospital","territory":"Kuwait"},{"name":"Al Ahli Hospital Qatar","territory":"Qatar"},{"name":"Al Ain Hospital","territory":"UAE"},{"name":"Al Amiri Hospital","territory":"Kuwait"},{"name":"Al Fujairah Hospital","territory":"UAE"},{"name":"Al Hammadi Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Al Hayat International Hospital","territory":"Oman"},{"name":"Al Khor Hospital","territory":"Qatar"},{"name":"Al Mowasat Hospital","territory":"Kuwait"},{"name":"Al Naeem Hospital","territory":"Kuwait"},{"name":"Al Nahda Hospital","territory":"Oman"},{"name":"Al Nefaie General Hospital","territory":"Saudi Arabia - Riyadh"},{"name":"Al Noor Specialist Hospital Makkah","territory":"Saudi Arabia - Makkah"},{"name":"Al Qasimi Hospital Sharjah","territory":"UAE"},{"name":"Al Razi Hospital","territory":"Kuwait"},{"name":"Al Sabah Hospital","territory":"Kuwait"},{"name":"Al Salam International Hospital","territory":"Kuwait"},{"name":"Al Wakra Hospital","territory":"Qatar"},{"name":"Al Wasl Hospital","territory":"UAE"},{"name":"Al Zahra Hospital Dubai","territory":"UAE"},{"name":"American Hospital Dubai","territory":"UAE"},{"name":"American Hospital Qatar","territory":"Qatar"},{"name":"American Mission Hospital Bahrain","territory":"Bahrain"},{"name":"Aster Hospital Qusais","territory":"UAE"},{"name":"Aster Medcity Mankhool","territory":"UAE"},{"name":"Aster Medical Centre Qatar","territory":"Qatar"},{"name":"Aster Royal Hospital Muscat","territory":"Oman"},{"name":"Awali Hospital","territory":"Bahrain"},{"name":"Badr Al Samaa Hospital","territory":"Oman"},{"name":"Bahrain Specialist Hospital","territory":"Bahrain"},{"name":"Burjeel Hospital Abu Dhabi","territory":"UAE"},{"name":"Burjeel Hospital Al Ain","territory":"UAE"},{"name":"Burjeel Hospital Muscat","territory":"Oman"},{"name":"Chest Diseases Hospital","territory":"Kuwait"},{"name":"Clemenceau Medical Center Dubai","territory":"UAE"},{"name":"Cleveland Clinic Abu Dhabi","territory":"UAE"},{"name":"Corniche Hospital","territory":"UAE"},{"name":"Cuban Hospital Qatar","territory":"Qatar"},{"name":"Dallah Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Danat Al Emarat Hospital","territory":"UAE"},{"name":"Dar Al Shifa Hospital","territory":"Kuwait"},{"name":"Dibba Hospital","territory":"UAE"},{"name":"Doha Clinic Hospital","territory":"Qatar"},{"name":"Dr Erfan and Bagedo Hospital","territory":"Saudi Arabia - Jeddah"},{"name":"Dr Sulaiman Al Habib Hospital Dammam","territory":"Saudi Arabia - Eastern Province"},{"name":"Dr Sulaiman Al Habib Hospital Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"Dr Sulaiman Al Habib Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Dubai Hospital","territory":"UAE"},{"name":"Emirates Hospital Jumeirah","territory":"UAE"},{"name":"Farwaniya Hospital","territory":"Kuwait"},{"name":"Fujairah Hospital","territory":"UAE"},{"name":"Gulf International Hospital","territory":"Kuwait"},{"name":"Hamad General Hospital","territory":"Qatar"},{"name":"Hatta Hospital","territory":"UAE"},{"name":"Hazm Mebaireek General Hospital","territory":"Qatar"},{"name":"Heart Hospital Qatar","territory":"Qatar"},{"name":"Ibn Sina Hospital","territory":"Kuwait"},{"name":"Ibn Sina Hospital Muscat","territory":"Oman"},{"name":"Ibrahim Bin Hamad Obaidallah Hospital RAK","territory":"UAE"},{"name":"International Hospital of Bahrain","territory":"Bahrain"},{"name":"International Medical Center Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"Jahra Hospital","territory":"Kuwait"},{"name":"Jidhafs Maternity Hospital","territory":"Bahrain"},{"name":"Kalba Hospital","territory":"UAE"},{"name":"Khalifa HospitalAjman","territory":"UAE"},{"name":"Khoula Hospital","territory":"Oman"},{"name":"King Abdulaziz Hospital Al Ahsa","territory":"Saudi Arabia - Eastern Province"},{"name":"King Abdulaziz Hospital Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"King Abdulaziz Medical City Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"King Abdulaziz University Hospital Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"King Abdullah Medical City Makkah","territory":"Saudi Arabia - Makkah"},{"name":"King Fahad Armed Forces Hospital Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"King Fahad General Hospital Madinah","territory":"Saudi Arabia - Madinah"},{"name":"King Fahad Hospital Dammam","territory":"Saudi Arabia - Eastern Province"},{"name":"King Fahad Medical City Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"King Fahad University Hospital Al Khobar","territory":"Saudi Arabia - Eastern Province"},{"name":"King Faisal Specialist Hospital Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"King Faisal Specialist Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"King Hamad University Hospital","territory":"Bahrain"},{"name":"King Khalid University Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"King Salman Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"King's College Hospital Dubai","territory":"UAE"},{"name":"LLH Hospital Abu Dhabi","territory":"UAE"},{"name":"Latifa Hospital","territory":"UAE"},{"name":"Mafraq Hospital","territory":"UAE"},{"name":"Mediclinic Al Noor Abu Dhabi","territory":"UAE"},{"name":"Mediclinic City Hospital","territory":"UAE"},{"name":"Mediclinic Parkview Hospital","territory":"UAE"},{"name":"Mediclinic Welcare Hospital","territory":"UAE"},{"name":"Mohammed Bin Khalifa Cardiac Centre","territory":"Bahrain"},{"name":"Mouwasat Hospital Dammam","territory":"Saudi Arabia - Eastern Province"},{"name":"Mouwasat Hospital Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"Mouwasat Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Mubarak Al Kabeer Hospital","territory":"Kuwait"},{"name":"Muharraq Hospital","territory":"Bahrain"},{"name":"Muscat Private Hospital","territory":"Oman"},{"name":"NMC Royal Hospital Abu Dhabi","territory":"UAE"},{"name":"NMC Royal Hospital Dubai","territory":"UAE"},{"name":"National Center for Cancer Care","territory":"Qatar"},{"name":"New Mowasat Hospital","territory":"Kuwait"},{"name":"Nizwa Hospital","territory":"Oman"},{"name":"Noor Specialist Hospital","territory":"Bahrain"},{"name":"Oasis Hospital Al Ain","territory":"UAE"},{"name":"Ohud Hospital Madinah","territory":"Saudi Arabia - Madinah"},{"name":"Prince Sultan Military Medical City","territory":"Saudi Arabia - Riyadh"},{"name":"Psychiatric Hospital Bahrain","territory":"Bahrain"},{"name":"RAK Hospital","territory":"UAE"},{"name":"Rashid Hospital","territory":"UAE"},{"name":"Royal Bahrain Hospital","territory":"Bahrain"},{"name":"Royal Hospital Muscat","territory":"Oman"},{"name":"Royale Hayat Hospital","territory":"Kuwait"},{"name":"Rumailah Hospital","territory":"Qatar"},{"name":"Rustaq Hospital","territory":"Oman"},{"name":"Salalah Hospital","territory":"Oman"},{"name":"Salmaniya Medical Complex","territory":"Bahrain"},{"name":"Saqr Hospital Ras Al Khaimah","territory":"UAE"},{"name":"Saudi Aramco Medical Organization Dhahran","territory":"Saudi Arabia - Eastern Province"},{"name":"Saudi German Hospital Dubai","territory":"UAE"},{"name":"Saudi German Hospital Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"Saudi German Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Security Forces Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Sheikh Khalifa Hospital Umm Al Quwain","territory":"UAE"},{"name":"Sheikh Khalifa Medical City Abu Dhabi","territory":"UAE"},{"name":"Sheikh Shakhbout Medical City","territory":"UAE"},{"name":"Sidra Medicine","territory":"Qatar"},{"name":"Sitra Health Center Hospital","territory":"Bahrain"},{"name":"Sohar Hospital","territory":"Oman"},{"name":"Sultan Qaboos University Hospital","territory":"Oman"},{"name":"Sur Hospital","territory":"Oman"},{"name":"Tawam Hospital Al Ain","territory":"UAE"},{"name":"The View Hospital","territory":"Qatar"},{"name":"Thumbay Hospital Ajman","territory":"UAE"},{"name":"University Hospital Sharjah","territory":"UAE"},{"name":"Valiant Clinic and Hospital","territory":"UAE"},{"name":"Women's Wellness and Research Center","territory":"Qatar"},{"name":"Zulekha Hospital Dubai","territory":"UAE"},{"name":"Zulekha Hospital Sharjah","territory":"UAE"}];
+var hospitalInput=document.getElementById('hospital');
+var hospitalList=document.getElementById('hospitalList');
+function showList(query){
+  hospitalList.innerHTML='';
+  var q=query.toLowerCase().trim();
+  var filtered=(q.length===0?HOSPITALS.slice(0,50):HOSPITALS.filter(function(h){return h.name.toLowerCase().indexOf(q)>-1||h.territory.toLowerCase().indexOf(q)>-1;})).slice(0,50);
+  filtered.forEach(function(h){
+    var div=document.createElement('div');
+    div.className='hospital-option';
+    div.textContent=h.name+' — '+h.territory;
+    div.addEventListener('click',function(){hospitalInput.value=h.name;hospitalList.classList.remove('open');});
+    hospitalList.appendChild(div);
+  });
+  hospitalList.classList.add('open');
+}
+hospitalInput.addEventListener('input',function(){showList(this.value);});
+hospitalInput.addEventListener('focus',function(){showList(this.value);});
+document.addEventListener('click',function(e){if(!e.target.closest('.hospital-wrapper'))hospitalList.classList.remove('open');});
+document.getElementById('visitDate').value=new Date().toISOString().split('T')[0];
+var mediaRecorder=null,chunks=[],seconds=0,timerInterval=null,streamRef=null,isRecording=false;
+var micBtn=document.getElementById('micBtn');
+var statusEl=document.getElementById('status');
+var transcriptText=document.getElementById('transcriptText');
+var audioPlayer=document.getElementById('audioPlayer');
+var submitBtn=document.getElementById('submitBtn');
+var successCard=document.getElementById('successCard');
+var processingOverlay=document.getElementById('processingOverlay');
+micBtn.addEventListener('click',function(){if(!isRecording)startRecording();else stopRecording();});
+async function startRecording(){
+  try{
+    isRecording=true;chunks=[];seconds=0;
+    document.getElementById('recordingTimer').textContent='0:00';
+    transcriptText.value='';audioPlayer.style.display='none';successCard.style.display='none';
+    statusEl.className='status active';
+    streamRef=await navigator.mediaDevices.getUserMedia({audio:true});
+    mediaRecorder=new MediaRecorder(streamRef);
+    mediaRecorder.ondataavailable=function(e){if(e.data&&e.data.size>0)chunks.push(e.data);};
+    mediaRecorder.onstop=function(){
+      isRecording=false;
+      var blob=new Blob(chunks,{type:'audio/webm'});
+      audioPlayer.src=URL.createObjectURL(blob);audioPlayer.style.display='block';
+      micBtn.className='mic-btn';micBtn.textContent='🎙️';
+      document.getElementById('recordingIndicator').className='recording-indicator';
+      statusEl.className='status transcribing';statusEl.textContent='Transcribing visit...';
+      if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});
+      var fd=new FormData();fd.append('file',blob,'visit.webm');fd.append('model','whisper-1');
+      fetch(WORKER+'/transcribe',{method:'POST',body:fd})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        var t=d.text||d.transcript||'';
+        if(t){transcriptText.value=t;statusEl.className='status done';statusEl.textContent='Transcript ready. Edit if needed then process.';}
+        else{statusEl.className='status';statusEl.textContent='Transcription failed. Type notes manually.';}
+      }).catch(function(){statusEl.className='status';statusEl.textContent='Transcription error — type notes manually.';});
+    };
+    mediaRecorder.start();
+    timerInterval=setInterval(function(){seconds++;var m=Math.floor(seconds/60),s=seconds%60;document.getElementById('recordingTimer').textContent=m+':'+(s<10?'0':'')+s;},1000);
+    micBtn.className='mic-btn recording';micBtn.textContent='⏹';
+    document.getElementById('recordingIndicator').className='recording-indicator visible';
+    statusEl.textContent='Recording... tap mic to stop';
+  }catch(e){isRecording=false;statusEl.textContent='Mic error: '+e.message;}
+}
+function stopRecording(){
+  clearInterval(timerInterval);
+  document.getElementById('recordingIndicator').className='recording-indicator';
+  if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();
+}
+document.getElementById('clearBtn').addEventListener('click',function(){
+  isRecording=false;transcriptText.value='';audioPlayer.style.display='none';audioPlayer.src='';
+  successCard.style.display='none';processingOverlay.style.display='none';
+  statusEl.textContent='Tap mic to start recording';statusEl.className='status';
+  submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';
+  micBtn.className='mic-btn';micBtn.textContent='🎙️';
+  document.getElementById('recordingIndicator').className='recording-indicator';
+  clearInterval(timerInterval);seconds=0;document.getElementById('recordingTimer').textContent='0:00';
+  if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});
+  streamRef=null;mediaRecorder=null;
+});
+function parseReport(text){
+  var sections={summary:'',contacts:'',outcomes:'',nextSteps:'',signals:'',sentiment:'',priority:''};
+  var lines=text.split('\n'),current='';
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i].trim();
+    if(l.match(/VISIT SUMMARY/i))current='summary';
+    else if(l.match(/KEY CONTACTS/i))current='contacts';
+    else if(l.match(/OUTCOMES/i))current='outcomes';
+    else if(l.match(/NEXT STEPS/i))current='nextSteps';
+    else if(l.match(/OPPORTUNITY/i))current='signals';
+    else if(l.match(/SENTIMENT/i))current='sentiment';
+    else if(l.match(/PRIORITY/i))current='priority';
+    else if(l&&current)sections[current]+=(sections[current]?'\n':'')+l;
+  }
+  return sections;
+}
+function getPriorityClass(t){t=t.toLowerCase();if(t.indexOf('high')>-1)return'priority-high';if(t.indexOf('medium')>-1)return'priority-medium';return'priority-low';}
+function renderReport(text){
+  var s=parseReport(text),html='';
+  if(s.summary)html+='<div class="report-section"><h4>Visit Summary</h4><p>'+s.summary.replace(/\n/g,'<br>')+'</p></div>';
+  if(s.contacts)html+='<div class="report-section"><h4>Key Contacts</h4><p>'+s.contacts.replace(/\n/g,'<br>')+'</p></div>';
+  if(s.outcomes)html+='<div class="report-section"><h4>Outcomes & Decisions</h4><p>'+s.outcomes.replace(/\n/g,'<br>')+'</p></div>';
+  if(s.nextSteps)html+='<div class="report-section"><h4>Next Steps</h4><p>'+s.nextSteps.replace(/\n/g,'<br>')+'</p></div>';
+  if(s.signals)html+='<div class="report-section"><h4>Opportunity Signals</h4><p>'+s.signals.replace(/\n/g,'<br>')+'</p></div>';
+  if(s.sentiment)html+='<div class="report-section"><h4>Sentiment</h4><p>'+s.sentiment.replace(/\n/g,'<br>')+'</p></div>';
+  if(s.priority)html+='<div class="report-section"><h4>Priority</h4><span class="priority-badge '+getPriorityClass(s.priority)+'">'+s.priority.replace(/\*\*/g,'').trim()+'</span></div>';
+  return html||'<div class="report-section"><p>'+text+'</p></div>';
+}
+submitBtn.addEventListener('click',async function(){
+  var transcript=transcriptText.value.trim();
+  if(!transcript||transcript.length<3){alert('Please record a visit first.');return;}
+  submitBtn.disabled=true;submitBtn.textContent='Processing...';
+  processingOverlay.style.display='block';successCard.style.display='none';
+  var latitude=null,longitude=null,accuracy=null;
+  await new Promise(function(resolve){
+    if(!navigator.geolocation){resolve();return;}
+    navigator.geolocation.getCurrentPosition(
+      function(pos){latitude=pos.coords.latitude;longitude=pos.coords.longitude;accuracy=Math.round(pos.coords.accuracy);resolve();},
+      function(){resolve();},{timeout:3000,enableHighAccuracy:false}
+    );
+  });
+  try{
+    var aiRes=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      model:'claude-haiku-4-5-20251001',max_tokens:1000,
+      messages:[{role:'user',content:'You are a MedTech sales intelligence assistant. Structure this field visit transcript into a concise report with these exact sections:\n\nVISIT SUMMARY\nKEY CONTACTS MET\nOUTCOMES & DECISIONS\nNEXT STEPS\nOPPORTUNITY SIGNALS\nSENTIMENT\nPRIORITY LEVEL (High / Medium / Low)\n\nBe concise and professional. Transcript:\n'+transcript}]
+    })});
+    var aiData=await aiRes.json();
+    var result=aiData.content?aiData.content[0].text:JSON.stringify(aiData);
+    var hospital=document.getElementById('hospital').value;
+    var visitDate=document.getElementById('visitDate').value;
+    var territory=document.getElementById('territory').value;
+    var visitType=document.getElementById('visitType').value;
+    var saveRes=await fetch(WORKER+'/save-visit',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({'Hospital Name':hospital,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Raw Transcript':transcript,'AI Summary':result,'Latitude':latitude,'Longitude':longitude,'Accuracy':accuracy})
+    });
+    var saveData=await saveRes.json();
+    if(!saveRes.ok){
+      processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';
+      alert('Save error '+saveRes.status+': '+JSON.stringify(saveData));return;
+    }
+    processingOverlay.style.display='none';successCard.style.display='block';
+    document.getElementById('reportContent').innerHTML=renderReport(result);
+  }catch(err){
+    processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';
+    alert('Error: '+err.message);
+  }
+});
+</script>
+</body>
+</html>
