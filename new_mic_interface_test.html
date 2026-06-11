@@ -1,51 +1,200 @@
+<!--
+fieldiq_mediarecorder_ui_test.html
+Date: 11 June 2026
+Purpose: UX prototype - FieldIQ interface + MediaRecorder audio capture
+No Web Speech. No AI. No Airtable. No GPS.
+Proves: FieldIQ UI + MediaRecorder = clean recording experience
+Do NOT merge into index.html until transcription is connected.
+-->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ROB AUDIO TEST 123</title>
+<title>FieldIQ — Voice Capture</title>
 <style>
-body { margin: 0; background: #ff0000; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: Arial, sans-serif; }
-h1 { color: white; font-size: 32px; margin-bottom: 40px; }
-button { width: 250px; height: 100px; font-size: 28px; font-weight: bold; border: none; border-radius: 20px; cursor: pointer; margin: 10px; }
-#btn1 { background: white; color: #ff0000; }
-#btn2 { background: #333; color: white; }
-#msg { color: white; font-size: 20px; margin: 20px; }
-audio { width: 280px; margin-top: 20px; }
-</style>
-</head>
-<body>
-<h1>ROB AUDIO TEST 123</h1>
-<button id="btn1" onclick="go()">RECORD</button>
-<button id="btn2" onclick="halt()" disabled>STOP</button>
-<div id="msg">Ready</div>
-<audio id="ap" controls style="display:none"></audio>
-<script>
-var r, c=[];
-async function go(){
-  c=[];
-  var s = await navigator.mediaDevices.getUserMedia({audio:true});
-  r = new MediaRecorder(s);
-  r.ondataavailable = function(e){ if(e.data.size>0) c.push(e.data); };
-  r.onstop = function(){
-    var b = new Blob(c,{type:'audio/webm'});
-    var a = document.getElementById('ap');
-    a.src = URL.createObjectURL(b);
-    a.style.display='block';
-    document.getElementById('msg').textContent='Done! Press play.';
-    s.getTracks().forEach(function(t){t.stop();});
-  };
-  r.start();
-  document.getElementById('msg').textContent='Recording...';
-  document.getElementById('btn1').disabled=true;
-  document.getElementById('btn2').disabled=false;
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0a0a0a;
+  color: #fff;
+  font-family: -apple-system, sans-serif;
+  min-height: 100vh;
+  padding: 20px;
 }
-function halt(){
-  r.stop();
-  document.getElementById('btn1').disabled=false;
-  document.getElementById('btn2').disabled=true;
-  document.getElementById('msg').textContent='Stopped.';
+
+.container { max-width: 600px; margin: 0 auto; }
+
+.header { text-align: center; margin-bottom: 24px; padding-top: 16px; }
+.header h1 { font-size: 28px; color: #00d4ff; font-weight: 700; }
+.header p { color: #888; font-size: 13px; margin-top: 4px; }
+
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+.field label { font-size: 11px; color: #888; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+.field input, .field select {
+  width: 100%; padding: 11px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
 }
-</script>
-</body>
-</html>
+.field select option { background: #1a1a1a; }
+
+/* VOICE CAPTURE SECTION */
+.voice-section {
+  background: #111;
+  border: 1px solid #1e1e1e;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.voice-label {
+  font-size: 11px;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+}
+
+/* RECORD BUTTON — no pulse, no animation */
+.record-btn {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 3px solid #00d4ff;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.record-btn:hover { background: #00d4ff11; }
+
+.record-btn.active {
+  border-color: #ff4444;
+  background: #ff444411;
+}
+
+.record-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #00d4ff;
+  transition: background 0.2s;
+}
+
+.record-btn.active .record-icon {
+  background: #ff4444;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+}
+
+.record-status {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 8px;
+  min-height: 20px;
+}
+
+.record-status.recording { color: #ff6666; }
+.record-status.done { color: #00ff88; }
+
+.timer {
+  font-size: 36px;
+  font-weight: 700;
+  color: #333;
+  letter-spacing: 3px;
+  margin-bottom: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer.active { color: #ff4444; }
+.timer.done { color: #00d4ff; }
+
+/* STOP BUTTON */
+.stop-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #ff4444;
+  background: transparent;
+  color: #ff4444;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 12px;
+  display: none;
+  transition: background 0.2s;
+}
+
+.stop-btn:hover { background: #ff444411; }
+.stop-btn.visible { display: block; }
+
+/* PLAYBACK */
+.playback-section {
+  margin-top: 16px;
+  display: none;
+  text-align: left;
+}
+
+.playback-section.visible { display: block; }
+
+.playback-label {
+  font-size: 11px;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+audio {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+/* NOTES BOX */
+.notes-label {
+  font-size: 11px;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.notes-box {
+  width: 100%;
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 12px;
+  color: #ccc;
+  font-size: 14px;
+  line-height: 1.7;
+  min-height: 100px;
+  resize: vertical;
+  font-family: -apple-system, sans-serif;
+  outline: none;
+}
+
+.notes-hint {
+  font-size: 11px;
+  color: #444;
+  margin-top: 6px;
+  text-align: right;
+}
+
+/* PROCESS BUTTON */
+.process-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10
