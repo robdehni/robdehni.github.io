@@ -1,126 +1,92 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FieldIQ — Log Visit</title>
+<title>FieldIQ</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;padding:20px;padding-bottom:80px}
-.container{max-width:600px;margin:0 auto}
-.header{text-align:center;margin-bottom:24px;padding-top:16px}
-.header h1{font-size:28px;color:#00d4ff;font-weight:700}
-.header p{color:#888;font-size:13px;margin-top:4px}
-.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
-.field label{font-size:11px;color:#888;margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:0.5px}
-.field input,.field select{width:100%;padding:11px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:#fff;font-size:14px;outline:none}
-.field select option{background:#1a1a1a}
-.hospital-wrapper{position:relative}
-.hospital-list{display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;max-height:200px;overflow-y:auto;z-index:999}
-.hospital-list.open{display:block}
-.hospital-option{padding:10px 11px;font-size:13px;color:#ccc;cursor:pointer;border-bottom:1px solid #222}
-.hospital-option:last-child{border-bottom:none}
-.hospital-option:hover{background:#252525;color:#00d4ff}
-.mic-section{text-align:center;margin:20px 0 12px}
-.mic-btn{width:88px;height:88px;border-radius:50%;border:3px solid #00d4ff;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:36px;transition:border-color 0.2s,background 0.2s}
-.mic-btn.recording{border-color:#ff4444;background:#ff444411}
-.status{color:#888;font-size:13px;min-height:18px;margin-bottom:8px}
-.status.active{color:#ff6666}
-.status.transcribing{color:#ffaa44}
-.status.done{color:#00ff88}
-.recording-indicator{display:none;text-align:center;margin:8px 0}
-.recording-indicator.visible{display:block}
-.recording-timer{font-size:28px;font-weight:700;color:#ff4444;letter-spacing:2px;margin:4px 0}
-audio{width:100%;border-radius:8px;margin:8px 0;display:none}
-.transcript-box{background:#111;border:1px solid #222;border-radius:10px;padding:14px;min-height:110px;margin:12px 0;font-size:14px;line-height:1.7;color:#ccc;width:100%;resize:vertical;font-family:-apple-system,sans-serif}
-.btn{width:100%;padding:14px;border-radius:10px;border:none;font-size:15px;font-weight:600;cursor:pointer;margin:5px 0;transition:all 0.2s}
-.btn-primary{background:#00d4ff;color:#000}
-.btn-primary:hover{background:#00bcd4}
-.btn-secondary{background:#1a1a1a;color:#666;border:1px solid #222}
-.btn:disabled{opacity:0.4;cursor:not-allowed}
-.success-card{background:#0a1a0a;border:1px solid #00ff4433;border-radius:12px;padding:20px;margin:14px 0;display:none}
-.success-card .tick{font-size:32px;text-align:center;margin-bottom:10px}
-.success-card h3{color:#00ff88;font-size:16px;text-align:center;margin-bottom:16px}
-.report-section{margin:12px 0}
-.report-section h4{color:#00d4ff;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #1a1a1a}
-.report-section p{color:#ccc;font-size:13px;line-height:1.7}
-.priority-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-top:4px}
-.priority-high{background:#ff000022;color:#ff6666;border:1px solid #ff444433}
-.priority-medium{background:#ff880022;color:#ffaa44;border:1px solid #ff880033}
-.priority-low{background:#00880022;color:#44cc88;border:1px solid #00880033}
-.processing-overlay{text-align:center;padding:30px;display:none}
-.spinner{width:40px;height:40px;border:3px solid #1a1a1a;border-top:3px solid #00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.processing-overlay p{color:#888;font-size:14px}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:1px solid #1a1a1a;display:flex;z-index:9999}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:#555;font-size:11px;font-weight:600;letter-spacing:0.3px;transition:color 0.2s}
-.nav-item.active{color:#00d4ff}
-.nav-item:hover{color:#00d4ff}
-.nav-icon{font-size:22px;margin-bottom:3px}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.logo{text-align:center;margin-bottom:48px}
+.logo h1{font-size:42px;font-weight:800;color:#00d4ff;letter-spacing:-1px}
+.logo p{color:#444;font-size:13px;margin-top:6px;letter-spacing:1px;text-transform:uppercase}
+.modules{width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}
+.module{display:flex;align-items:center;gap:16px;background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:18px 20px;text-decoration:none;color:#fff;transition:all 0.2s;cursor:pointer}
+.module:hover,.module:active{border-color:#00d4ff33;background:#141414}
+.module-icon{font-size:28px;width:44px;text-align:center;flex-shrink:0}
+.module-text{}
+.module-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:2px}
+.module-desc{font-size:11px;color:#555}
+.module.primary{border-color:#00d4ff44;background:#00d4ff08}
+.module.primary .module-title{color:#00d4ff}
+.divider{width:100%;max-width:380px;display:flex;align-items:center;gap:12px;margin:8px 0}
+.divider-line{flex:1;height:1px;background:#1a1a1a}
+.divider-text{font-size:10px;color:#333;text-transform:uppercase;letter-spacing:1px}
+.footer{margin-top:48px;text-align:center;color:#2a2a2a;font-size:11px}
+.version{color:#1a1a1a;font-size:10px;margin-top:4px}
 </style>
 </head>
 <body>
-<div class="container">
-<div class="header">
+
+<div class="logo">
   <h1>FieldIQ</h1>
-  <p>Log Visit</p>
+  <p>Territory Intelligence Platform</p>
 </div>
-<div class="fields">
-  <div class="field">
-    <label>Hospital</label>
-    <div class="hospital-wrapper">
-      <input type="text" id="hospital" placeholder="Search 137 hospitals..." autocomplete="off">
-      <div class="hospital-list" id="hospitalList"></div>
+
+<div class="modules">
+
+  <a class="module primary" href="index.html">
+    <div class="module-icon">🎙️</div>
+    <div class="module-text">
+      <div class="module-title">Log Visit</div>
+      <div class="module-desc">Record a field visit — voice to AI report</div>
     </div>
+  </a>
+
+  <a class="module" href="fieldiq-visits-map.html">
+    <div class="module-icon">📍</div>
+    <div class="module-text">
+      <div class="module-title">Visit Map</div>
+      <div class="module-desc">Live map of all field activity across GCC</div>
+    </div>
+  </a>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-text">Management</div>
+    <div class="divider-line"></div>
   </div>
-  <div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
-  <div class="field">
-    <label>Territory</label>
-    <select id="territory">
-      <option value="">Select territory</option>
-      <option>UAE</option><option>KSA</option><option>Qatar</option>
-      <option>Kuwait</option><option>Bahrain</option><option>Oman</option>
-    </select>
-  </div>
-  <div class="field">
-    <label>Visit Type</label>
-    <select id="visitType">
-      <option value="">Select type</option>
-      <option>In-person</option><option>Virtual</option><option>Phone</option>
-    </select>
-  </div>
+
+  <a class="module" href="dashboard.html">
+    <div class="module-icon">📊</div>
+    <div class="module-text">
+      <div class="module-title">Dashboard</div>
+      <div class="module-desc">KPIs, rep performance, territory coverage</div>
+    </div>
+  </a>
+
+  <a class="module" href="#" style="opacity:0.3;pointer-events:none">
+    <div class="module-icon">🧠</div>
+    <div class="module-text">
+      <div class="module-title">AI Insights</div>
+      <div class="module-desc">Coming soon — predictive territory intelligence</div>
+    </div>
+  </a>
+
+  <a class="module" href="#" style="opacity:0.3;pointer-events:none">
+    <div class="module-icon">🏥</div>
+    <div class="module-text">
+      <div class="module-title">Account Intelligence</div>
+      <div class="module-desc">Coming soon — hospital profiles and procurement cycles</div>
+    </div>
+  </a>
+
 </div>
-<div class="mic-section">
-  <button class="mic-btn" id="micBtn">🎙️</button>
-  <div class="status" id="status">Tap mic to start recording</div>
-  <div class="recording-indicator" id="recordingIndicator">
-    <div class="recording-timer" id="recordingTimer">0:00</div>
-  </div>
-  <audio id="audioPlayer" controls></audio>
+
+<div class="footer">
+  Mid East Medical FZC — UAE
+  <div class="version">FieldIQ v1.0 — 2026</div>
 </div>
-<div style="position:relative">
-  <textarea class="transcript-box" id="transcriptText" placeholder="Your speech will appear here automatically after recording... tap to edit before processing."></textarea>
-  <div style="font-size:11px;color:#555;text-align:right;margin-top:-8px;margin-bottom:8px;">Tap to edit before processing</div>
-</div>
-<button class="btn btn-primary" id="submitBtn">Process Visit Log</button>
-<button class="btn btn-secondary" id="clearBtn">Clear</button>
-<div class="processing-overlay" id="processingOverlay">
-  <div class="spinner"></div>
-  <p>Analysing your visit...</p>
-</div>
-<div class="success-card" id="successCard">
-  <div class="tick">✅</div>
-  <h3>Visit Logged Successfully</h3>
-  <div id="reportContent"></div>
-  <button class="btn btn-primary" style="margin-top:16px" onclick="location.reload()">Log Another Visit</button>
-</div>
-</div>
-<nav class="bottom-nav">
-  <a class="nav-item active" href="index.html"><span class="nav-icon">🎙️</span>Log Visit</a>
-  <a class="nav-item" href="fieldiq-visits-map.html"><span class="nav-icon">📍</span>Visit Map</a>
-  <a class="nav-item" href="dashboard.html"><span class="nav-icon">📊</span>Dashboard</a>
-</nav>
-<script>
-window.onerror=function(msg,src,line){document.getElementById('status').textContent='Error: '+msg;};
-var HOSPITALS=[{"name":"Al Adan Hospital","territory":"Kuwait"},{"name":"Al Ahli Hospital Qatar","territory":"Qatar"},{"name":"Al Ain Hospital","territory":"UAE"},{"name":"Al Amiri Hospital","territory":"Kuwait"},{"name":"Al Fujairah Hospital","territory":"UAE"},{"name":"Al Hammadi Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Al Hayat International Hospital","territory":"Oman"},{"name":"Al Khor Hospital","territory":"Qatar"},{"name":"Al Mowasat Hospital","territory":"Kuwait"},{"name":"Al Naeem Hospital","territory":"Kuwait"},{"name":"Al Nahda Hospital","territory":"Oman"},{"name":"Al Nefaie General Hospital","territory":"Saudi Arabia - Riyadh"},{"name":"Al Noor Specialist Hospital Makkah","territory":"Saudi Arabia - Makkah"},{"name":"Al Qasimi Hospital Sharjah","territory":"UAE"},{"name":"Al Razi Hospital","territory":"Kuwait"},{"name":"Al Sabah Hospital","territory":"Kuwait"},{"name":"Al Salam International Hospital","territory":"Kuwait"},{"name":"Al Wakra Hospital","territory":"Qatar"},{"name":"Al Wasl Hospital","territory":"UAE"},{"name":"Al Zahra Hospital Dubai","territory":"UAE"},{"name":"American Hospital Dubai","territory":"UAE"},{"name":"American Hospital Qatar","territory":"Qatar"},{"name":"American Mission Hospital Bahrain","territory":"Bahrain"},{"name":"Aster Hospital Qusais","territory":"UAE"},{"name":"Aster Medcity Mankhool","territory":"UAE"},{"name":"Aster Medical Centre Qatar","territory":"Qatar"},{"name":"Aster Royal Hospital Muscat","territory":"Oman"},{"name":"Awali Hospital","territory":"Bahrain"},{"name":"Badr Al Samaa Hospital","territory":"Oman"},{"name":"Bahrain Specialist Hospital","territory":"Bahrain"},{"name":"Burjeel Hospital Abu Dhabi","territory":"UAE"},{"name":"Burjeel Hospital Al Ain","territory":"UAE"},{"name":"Burjeel Hospital Muscat","territory":"Oman"},{"name":"Chest Diseases Hospital","territory":"Kuwait"},{"name":"Clemenceau Medical Center Dubai","territory":"UAE"},{"name":"Cleveland Clinic Abu Dhabi","territory":"UAE"},{"name":"Corniche Hospital","territory":"UAE"},{"name":"Cuban Hospital Qatar","territory":"Qatar"},{"name":"Dallah Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Danat Al Emarat Hospital","territory":"UAE"},{"name":"Dar Al Shifa Hospital","territory":"Kuwait"},{"name":"Dibba Hospital","territory":"UAE"},{"name":"Doha C
+
+</body>
+</html>
