@@ -31,8 +31,6 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 .recording-indicator{display:none;text-align:center;margin:8px 0}
 .recording-indicator.visible{display:block}
 .recording-timer{font-size:28px;font-weight:700;color:#ff4444;letter-spacing:2px;margin:4px 0}
-.stop-btn{width:100%;padding:14px;border-radius:10px;border:1px solid #ff4444;background:transparent;color:#ff4444;font-size:15px;font-weight:600;cursor:pointer;margin:8px 0;display:none}
-.stop-btn.visible{display:block}
 audio{width:100%;border-radius:8px;margin:8px 0;display:none}
 .transcript-box{background:#111;border:1px solid #222;border-radius:10px;padding:14px;min-height:110px;margin:12px 0;font-size:14px;line-height:1.7;color:#ccc;width:100%;resize:vertical;font-family:-apple-system,sans-serif}
 .btn{width:100%;padding:14px;border-radius:10px;border:none;font-size:15px;font-weight:600;cursor:pointer;margin:5px 0;transition:all 0.2s}
@@ -93,7 +91,6 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
   <div class="recording-indicator" id="recordingIndicator">
     <div class="recording-timer" id="recordingTimer">0:00</div>
   </div>
-  <button class="stop-btn" id="stopBtn">⏹ Stop Recording</button>
   <audio id="audioPlayer" controls></audio>
 </div>
 <div style="position:relative">
@@ -145,9 +142,9 @@ var chunks=[];
 var seconds=0;
 var timerInterval=null;
 var streamRef=null;
+var isRecording=false;
 
 var micBtn=document.getElementById('micBtn');
-var stopBtn=document.getElementById('stopBtn');
 var statusEl=document.getElementById('status');
 var transcriptText=document.getElementById('transcriptText');
 var audioPlayer=document.getElementById('audioPlayer');
@@ -155,12 +152,20 @@ var submitBtn=document.getElementById('submitBtn');
 var successCard=document.getElementById('successCard');
 var processingOverlay=document.getElementById('processingOverlay');
 
-micBtn.addEventListener('click',function(){startRecording();});
-stopBtn.addEventListener('click',function(){stopRecording();});
+// SINGLE TOGGLE BUTTON
+micBtn.addEventListener('click',function(){
+  if(!isRecording){
+    startRecording();
+  } else {
+    stopRecording();
+  }
+});
 
 async function startRecording(){
   try{
-    chunks=[];seconds=0;
+    isRecording=true;
+    chunks=[];
+    seconds=0;
     document.getElementById('recordingTimer').textContent='0:00';
     transcriptText.value='';
     audioPlayer.style.display='none';
@@ -173,11 +178,13 @@ async function startRecording(){
     mediaRecorder.ondataavailable=function(e){if(e.data&&e.data.size>0)chunks.push(e.data);};
 
     mediaRecorder.onstop=function(){
+      isRecording=false;
       var blob=new Blob(chunks,{type:'audio/webm'});
       audioPlayer.src=URL.createObjectURL(blob);
       audioPlayer.style.display='block';
       micBtn.className='mic-btn';
-      document.getElementById('recordingTimer').className='recording-timer';
+      micBtn.textContent='🎙️';
+      document.getElementById('recordingIndicator').className='recording-indicator';
       statusEl.className='status transcribing';
       statusEl.textContent='Transcribing visit...';
       if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});
@@ -190,9 +197,8 @@ async function startRecording(){
       .then(function(r){return r.json();})
       .then(function(data){
         var transcript=data.text||data.transcript||'';
-        var box=document.getElementById('transcriptText')||document.getElementById('notes');
-        if(box&&transcript){
-          box.value=transcript;
+        if(transcript){
+          transcriptText.value=transcript;
           statusEl.className='status done';
           statusEl.textContent='Transcript ready. Edit if needed then process.';
         } else {
@@ -200,7 +206,7 @@ async function startRecording(){
           statusEl.textContent='Transcription failed. Type notes manually.';
         }
       })
-      .catch(function(err){
+      .catch(function(){
         statusEl.className='status';
         statusEl.textContent='Transcription error — type notes manually.';
       });
@@ -215,23 +221,24 @@ async function startRecording(){
     },1000);
 
     micBtn.className='mic-btn recording';
-    stopBtn.className='stop-btn visible';
+    micBtn.textContent='⏹';
     document.getElementById('recordingIndicator').className='recording-indicator visible';
-    statusEl.textContent='Recording... speak naturally';
+    statusEl.textContent='Recording... tap mic to stop';
 
   }catch(e){
+    isRecording=false;
     statusEl.textContent='Mic error: '+e.message;
   }
 }
 
 function stopRecording(){
   clearInterval(timerInterval);
-  stopBtn.className='stop-btn';
   document.getElementById('recordingIndicator').className='recording-indicator';
   if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();
 }
 
 document.getElementById('clearBtn').addEventListener('click',function(){
+  isRecording=false;
   transcriptText.value='';
   audioPlayer.style.display='none';
   audioPlayer.src='';
@@ -242,11 +249,14 @@ document.getElementById('clearBtn').addEventListener('click',function(){
   submitBtn.disabled=false;
   submitBtn.textContent='Process Visit Log';
   micBtn.className='mic-btn';
-  stopBtn.className='stop-btn';
+  micBtn.textContent='🎙️';
   document.getElementById('recordingIndicator').className='recording-indicator';
   clearInterval(timerInterval);
   seconds=0;
   document.getElementById('recordingTimer').textContent='0:00';
+  if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});
+  streamRef=null;
+  mediaRecorder=null;
 });
 
 function parseReport(text){
@@ -326,7 +336,7 @@ submitBtn.addEventListener('click',async function(){
     await fetch('https://api.airtable.com/v0/appZpw3gV2XKhAAOo/Field%20Visits',{
       method:'POST',
       headers:{'Authorization':'Bearer patFU816X9rok09Lt.86829691fd35d864eb611861b81a88b5c50ddea32657d2fd4d6b52d1ccd37310','Content-Type':'application/json'},
-      body:JSON.stringify({fields:{'Hospital':hospital,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Raw Transcript':transcript,'AI Summary':result,'Latitude':latitude,'Longitude':longitude,'Location Accuracy':accuracy}})
+      body:JSON.stringify({fields:{'Hospital':hospital,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Raw Transcript':transcript,'AI Summary':result,'Latitude':latitude,'Longitude':longitude,'Accuracy':accuracy}})
     });
 
     processingOverlay.style.display='none';
