@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +7,7 @@
 <title>FieldIQ — Log Visit</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;padding:20px}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;padding:20px;padding-bottom:80px}
 .container{max-width:600px;margin:0 auto}
 .header{text-align:center;margin-bottom:24px;padding-top:16px}
 .header h1{font-size:28px;color:#00d4ff;font-weight:700}
@@ -52,6 +53,11 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
 .spinner{width:40px;height:40px;border:3px solid #1a1a1a;border-top:3px solid #00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .processing-overlay p{color:#888;font-size:14px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:1px solid #1a1a1a;display:flex;z-index:9999}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:#555;font-size:11px;font-weight:600;letter-spacing:0.3px;transition:color 0.2s}
+.nav-item.active{color:#00d4ff}
+.nav-item:hover{color:#00d4ff}
+.nav-icon{font-size:22px;margin-bottom:3px}
 </style>
 </head>
 <body>
@@ -61,4 +67,60 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
   <p>Log Visit</p>
 </div>
 <div class="fields">
-  <
+  <div class="field">
+    <label>Hospital</label>
+    <div class="hospital-wrapper">
+      <input type="text" id="hospital" placeholder="Search 137 hospitals..." autocomplete="off">
+      <div class="hospital-list" id="hospitalList"></div>
+    </div>
+  </div>
+  <div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
+  <div class="field">
+    <label>Territory</label>
+    <select id="territory">
+      <option value="">Select territory</option>
+      <option>UAE</option><option>KSA</option><option>Qatar</option>
+      <option>Kuwait</option><option>Bahrain</option><option>Oman</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Visit Type</label>
+    <select id="visitType">
+      <option value="">Select type</option>
+      <option>In-person</option><option>Virtual</option><option>Phone</option>
+    </select>
+  </div>
+</div>
+<div class="mic-section">
+  <button class="mic-btn" id="micBtn">🎙️</button>
+  <div class="status" id="status">Tap mic to start recording</div>
+  <div class="recording-indicator" id="recordingIndicator">
+    <div class="recording-timer" id="recordingTimer">0:00</div>
+  </div>
+  <audio id="audioPlayer" controls></audio>
+</div>
+<div style="position:relative">
+  <textarea class="transcript-box" id="transcriptText" placeholder="Your speech will appear here automatically after recording... tap to edit before processing."></textarea>
+  <div style="font-size:11px;color:#555;text-align:right;margin-top:-8px;margin-bottom:8px;">Tap to edit before processing</div>
+</div>
+<button class="btn btn-primary" id="submitBtn">Process Visit Log</button>
+<button class="btn btn-secondary" id="clearBtn">Clear</button>
+<div class="processing-overlay" id="processingOverlay">
+  <div class="spinner"></div>
+  <p>Analysing your visit...</p>
+</div>
+<div class="success-card" id="successCard">
+  <div class="tick">✅</div>
+  <h3>Visit Logged Successfully</h3>
+  <div id="reportContent"></div>
+  <button class="btn btn-primary" style="margin-top:16px" onclick="location.reload()">Log Another Visit</button>
+</div>
+</div>
+<nav class="bottom-nav">
+  <a class="nav-item active" href="index.html"><span class="nav-icon">🎙️</span>Log Visit</a>
+  <a class="nav-item" href="fieldiq-visits-map.html"><span class="nav-icon">📍</span>Visit Map</a>
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">📊</span>Dashboard</a>
+</nav>
+<script>
+window.onerror=function(msg,src,line){document.getElementById('status').textContent='Error: '+msg;};
+var HOSPITALS=[{"name":"Al Adan Hospital","territory":"Kuwait"},{"name":"Al Ahli Hospital Qatar","territory":"Qatar"},{"name":"Al Ain Hospital","territory":"UAE"},{"name":"Al Amiri Hospital","territory":"Kuwait"},{"name":"Al Fujairah Hospital","territory":"UAE"},{"name":"Al Hammadi Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Al Hayat International Hospital","territory":"Oman"},{"name":"Al Khor Hospital","territory":"Qatar"},{"name":"Al Mowasat Hospital","territory":"Kuwait"},{"name":"Al Naeem Hospital","territory":"Kuwait"},{"name":"Al Nahda Hospital","territory":"Oman"},{"name":"Al Nefaie General Hospital","territory":"Saudi Arabia - Riyadh"},{"name":"Al Noor Specialist Hospital Makkah","territory":"Saudi Arabia - Makkah"},{"name":"Al Qasimi Hospital Sharjah","territory":"UAE"},{"name":"Al Razi Hospital","territory":"Kuwait"},{"name":"Al Sabah Hospital","territory":"Kuwait"},{"name":"Al Salam International Hospital","territory":"Kuwait"},{"name":"Al Wakra Hospital","territory":"Qatar"},{"name":"Al Wasl Hospital","territory":"UAE"},{"name":"Al Zahra Hospital Dubai","territory":"UAE"},{"name":"American Hospital Dubai","territory":"UAE"},{"name":"American Hospital Qatar","territory":"Qatar"},{"name":"American Mission Hospital Bahrain","territory":"Bahrain"},{"name":"Aster Hospital Qusais","territory":"UAE"},{"name":"Aster Medcity Mankhool","territory":"UAE"},{"name":"Aster Medical Centre Qatar","territory":"Qatar"},{"name":"Aster Royal Hospital Muscat","territory":"Oman"},{"name":"Awali Hospital","territory":"Bahrain"},{"name":"Badr Al Samaa Hospital","territory":"Oman"},{"name":"Bahrain Specialist Hospital","territory":"Bahrain"},{"name":"Burjeel Hospital Abu Dhabi","territory":"UAE"},{"name":"Burjeel Hospital Al Ain","territory":"UAE"},{"name":"Burjeel Hospital Muscat","territory":"Oman"},{"name":"Chest Diseases Hospital","territory":"Kuwait"},{"name":"Clemenceau Medical Center Dubai","territory":"UAE"},{"name":"Cleveland Clinic Abu Dhabi","territory":"UAE"},{"name":"Corniche Hospital","territory":"UAE"},{"name":"Cuban Hospital Qatar","territory":"Qatar"},{"name":"Dallah Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Danat Al Emarat Hospital","territory":"UAE"},{"name":"Dar Al Shifa Hospital","territory":"Kuwait"},{"name":"Dibba Hospital","territory":"UAE"},{"name":"Doha C
