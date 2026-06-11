@@ -1,70 +1,54 @@
-Looking through this version, I don't see any obvious syntax errors that would immediately cause a black screen.
-A few observations:
-What's improved
-✅ The apostrophe problem is gone.
-This is now safe:
-JavaScript
-div.addEventListener('click', function() {
-  document.getElementById('hospital').value = h.name;
-});
-So names like:
-Plain text
-King's College Hospital Dubai
-will not break JavaScript anymore.
-✅ The error handler is good:
-JavaScript
-window.onerror = function(msg, src, line)
-If something fails after page load, you'll actually see it.
-One thing I would test immediately
-On Android Chrome, sometimes:
-JavaScript
-e.target.closest('.hospital-wrapper')
-can throw errors on older browsers.
-A safer version is:
-JavaScript
-if (!e.target || !e.target.closest || !e.target.closest('.hospital-wrapper'))
-But that's unlikely on your Motorola.
-More important
-The code is now clean enough that if you're still getting a black screen, it is likely one of three things:
-1. GitHub Pages is serving an old cached version
-Try:
-Plain text
-https://robdehni.github.io/new_mic_interface_test.html?v=3
-Add any number after ?v=.
-2. Wrong filename
-I notice you've used several names:
-audio_test.html
-audio_minimal_test.html
+<!--
 fieldiq_mediarecorder_ui_test.html
-new_mic_interface_test.html
-Make sure the filename in GitHub exactly matches the URL.
-GitHub Pages is case-sensitive.
-3. The file didn't fully save
-This happens surprisingly often.
-After commit:
-open GitHub
-open the file
-scroll to the bottom
-confirm you can see:
-JavaScript
-function stopRecording() {
-and
-HTML
-</body>
-</html>
-If the file got cut off during paste, the page may fail.
-My recommendation
-You're actually very close now.
-The biggest breakthrough today wasn't the code.
-It was this:
-The ugly red MediaRecorder test recorded cleanly with zero beeps.
-That proves:
-microphone works
-MediaRecorder works
-Android works
-browser works
-So don't let Claude get dragged back into a 6-hour investigation about speech engines.
-Focus now on:
-MediaRecorder → Transcription → Editable Transcript
-because that's where FieldIQ becomes valuable.
-If this latest interface loads and records cleanly, I'd freeze the UI and spend the next engineering cycle connecting a transcription service. That's the next major milestone.
+Date: 11 June 2026
+Purpose: UX prototype - FieldIQ interface + MediaRecorder audio capture
+No Web Speech. No recognition restart loop.
+No AI. No Airtable. No GPS.
+Do NOT merge into index.html until transcription is connected.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldIQ — Voice Capture Test</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a0a; color: #fff; font-family: -apple-system, sans-serif; min-height: 100vh; padding: 20px; }
+.container { max-width: 600px; margin: 0 auto; }
+.header { text-align: center; margin-bottom: 24px; padding-top: 16px; }
+.header h1 { font-size: 28px; color: #00d4ff; font-weight: 700; }
+.header p { color: #888; font-size: 13px; margin-top: 4px; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+.field label { font-size: 11px; color: #888; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+.field input, .field select { width: 100%; padding: 11px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 14px; outline: none; }
+.field select option { background: #1a1a1a; }
+.hospital-wrapper { position: relative; }
+.hospital-list { display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 999; }
+.hospital-list.open { display: block; }
+.hospital-option { padding: 10px 11px; font-size: 13px; color: #ccc; cursor: pointer; border-bottom: 1px solid #222; }
+.hospital-option:last-child { border-bottom: none; }
+.hospital-option:hover { background: #252525; color: #00d4ff; }
+.voice-section { background: #111; border: 1px solid #1e1e1e; border-radius: 16px; padding: 24px; margin: 20px 0; text-align: center; }
+.voice-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+.record-btn { width: 88px; height: 88px; border-radius: 50%; border: 3px solid #00d4ff; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+.record-btn.active { border-color: #ff4444; }
+.record-icon { width: 32px; height: 32px; border-radius: 50%; background: #00d4ff; }
+.record-btn.active .record-icon { background: #ff4444; border-radius: 6px; width: 26px; height: 26px; }
+.record-status { font-size: 14px; color: #888; margin-bottom: 8px; }
+.record-status.recording { color: #ff6666; }
+.record-status.done { color: #00ff88; }
+.timer { font-size: 36px; font-weight: 700; color: #333; letter-spacing: 3px; margin-bottom: 20px; }
+.timer.active { color: #ff4444; }
+.timer.done { color: #00d4ff; }
+.stop-btn { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #ff4444; background: transparent; color: #ff4444; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px; display: none; }
+.stop-btn.visible { display: block; }
+.playback-section { margin-top: 16px; display: none; text-align: left; }
+.playback-section.visible { display: block; }
+.playback-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+audio { width: 100%; border-radius: 8px; margin-bottom: 16px; }
+.notes-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
+.notes-box { width: 100%; background: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 12px; color: #ccc; font-size: 14px; line-height: 1.7; min-height: 100px; resize: vertical; font-family: -apple-system, sans-serif; outline: none; }
+.process-btn { width: 100%; padding: 14px; border-radius: 10px; border: none; background: #00d4ff; color: #000; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 16px; display: none; }
+.process-btn.visible { display: block; }
+.status-banner { background: #0a1a0a; border:
