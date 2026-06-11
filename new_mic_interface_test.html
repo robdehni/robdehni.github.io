@@ -3,94 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mic Test</title>
+<title>ROB AUDIO TEST 123</title>
 <style>
-  body {
-    background: #ffffff;
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    margin: 0;
-    padding: 40px;
-    box-sizing: border-box;
-  }
-  h2 { font-size: 20px; margin-bottom: 8px; color: #333; }
-  p { font-size: 14px; color: #666; margin-bottom: 40px; text-align: center; }
-  #recordBtn {
-    width: 220px;
-    height: 80px;
-    background: #cc0000;
-    color: white;
-    font-size: 24px;
-    font-weight: bold;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    margin-bottom: 20px;
-  }
-  #stopBtn {
-    width: 220px;
-    height: 80px;
-    background: #333333;
-    color: white;
-    font-size: 24px;
-    font-weight: bold;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    margin-bottom: 40px;
-  }
-  #recordBtn:disabled { background: #ffaaaa; cursor: not-allowed; }
-  #stopBtn:disabled { background: #aaaaaa; cursor: not-allowed; }
-  #status { font-size: 16px; color: #333; margin-bottom: 20px; }
-  audio { width: 100%; max-width: 300px; }
+body { margin: 0; background: #ff0000; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: Arial, sans-serif; }
+h1 { color: white; font-size: 32px; margin-bottom: 40px; }
+button { width: 250px; height: 100px; font-size: 28px; font-weight: bold; border: none; border-radius: 20px; cursor: pointer; margin: 10px; }
+#btn1 { background: white; color: #ff0000; }
+#btn2 { background: #333; color: white; }
+#msg { color: white; font-size: 20px; margin: 20px; }
+audio { width: 280px; margin-top: 20px; }
 </style>
 </head>
 <body>
-
-<h2>Mic Test</h2>
-<p>No animations. No Web Speech. No FieldIQ code.<br>Just record, stop, and play back.</p>
-
-<button id="recordBtn" onclick="startRec()">RECORD</button>
-<button id="stopBtn" onclick="stopRec()" disabled>STOP</button>
-<div id="status">Press RECORD and speak.</div>
-<br>
-<audio id="player" controls style="display:none"></audio>
-
+<h1>ROB AUDIO TEST 123</h1>
+<button id="btn1" onclick="go()">RECORD</button>
+<button id="btn2" onclick="halt()" disabled>STOP</button>
+<div id="msg">Ready</div>
+<audio id="ap" controls style="display:none"></audio>
 <script>
-let rec, chunks = [];
-
-async function startRec() {
-  chunks = [];
-  document.getElementById('status').textContent = 'Recording...';
-  document.getElementById('recordBtn').disabled = true;
-  document.getElementById('stopBtn').disabled = false;
-  document.getElementById('player').style.display = 'none';
-
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  rec = new MediaRecorder(stream);
-  rec.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
-  rec.onstop = () => {
-    const blob = new Blob(chunks, { type: 'audio/webm' });
-    const player = document.getElementById('player');
-    player.src = URL.createObjectURL(blob);
-    player.style.display = 'block';
-    document.getElementById('status').textContent = 'Done. Press play.';
-    stream.getTracks().forEach(t => t.stop());
+var r, c=[];
+async function go(){
+  c=[];
+  var s = await navigator.mediaDevices.getUserMedia({audio:true});
+  r = new MediaRecorder(s);
+  r.ondataavailable = function(e){ if(e.data.size>0) c.push(e.data); };
+  r.onstop = function(){
+    var b = new Blob(c,{type:'audio/webm'});
+    var a = document.getElementById('ap');
+    a.src = URL.createObjectURL(b);
+    a.style.display='block';
+    document.getElementById('msg').textContent='Done! Press play.';
+    s.getTracks().forEach(function(t){t.stop();});
   };
-  rec.start();
+  r.start();
+  document.getElementById('msg').textContent='Recording...';
+  document.getElementById('btn1').disabled=true;
+  document.getElementById('btn2').disabled=false;
 }
-
-function stopRec() {
-  rec.stop();
-  document.getElementById('recordBtn').disabled = false;
-  document.getElementById('stopBtn').disabled = true;
-  document.getElementById('status').textContent = 'Stopped. Loading playback...';
+function halt(){
+  r.stop();
+  document.getElementById('btn1').disabled=false;
+  document.getElementById('btn2').disabled=true;
+  document.getElementById('msg').textContent='Stopped.';
 }
 </script>
-
 </body>
 </html>
