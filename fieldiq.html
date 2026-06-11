@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldIQ</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.logo{text-align:center;margin-bottom:48px}
+.logo h1{font-size:42px;font-weight:800;color:#00d4ff;letter-spacing:-1px}
+.logo p{color:#444;font-size:13px;margin-top:6px;letter-spacing:1px;text-transform:uppercase}
+.modules{width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}
+.module{display:flex;align-items:center;gap:16px;background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:18px 20px;text-decoration:none;color:#fff;transition:all 0.2s}
+.module:hover,.module:active{border-color:#00d4ff33;background:#141414}
+.module-icon{font-size:28px;width:44px;text-align:center;flex-shrink:0}
+.module-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:2px}
+.module-desc{font-size:11px;color:#555}
+.module.primary{border-color:#00d4ff44;background:#00d4ff08}
+.module.primary .module-title{color:#00d4ff}
+.divider{width:100%;max-width:380px;display:flex;align-items:center;gap:12px;margin:8px 0}
+.divider-line{flex:1;height:1px;background:#1a1a1a}
+.divider-text{font-size:10px;color:#333;text-transform:uppercase;letter-spacing:1px}
+.footer{margin-top:48px;text-align:center;color:#2a2a2a;font-size:11px}
+.version{color:#1a1a1a;font-size:10px;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="logo">
+  <h1>FieldIQ</h1>
+  <p>Territory Intelligence Platform</p>
+</div>
+<div class="modules">
+  <a class="module primary" href="fieldiq-log-visit-STABLE-11JUN26.html">
+    <div class="module-icon">🎙️</div>
+    <div class="module-text">
+      <div class="module-title">Log Visit</div>
+      <div class="module-desc">Record a field visit — voice to AI report</div>
+    </div>
+  </a>
+  <a class="module" href="fieldiq-visits-map.html">
+    <div class="module-icon">📍</div>
+    <div class="module-text">
+      <div class="module-title">Visit Map</div>
+      <div class="module-desc">Live map of all field activity across GCC</div>
+    </div>
+  </a>
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-text">Management</div>
+    <div class="divider-line"></div>
+  </div>
+  <a class="module" href="dashboard.html">
+    <div class="module-icon">📊</div>
+    <div class="module-text">
+      <div class="module-title">Dashboard</div>
+      <div class="module-desc">KPIs, rep performance, territory coverage</div>
+    </div>
+  </a>
+  <a class="module" href="#" style="opacity:0.3;pointer-events:none">
+    <div class="module-icon">🧠</div>
+    <div class="module-text">
+      <div class="module-title">AI Insights</div>
+      <div class="module-desc">Coming soon — predictive territory intelligence</div>
+    </div>
+  </a>
+  <a class="module" href="#" style="opacity:0.3;pointer-events:none">
+    <div class="module-icon">🏥</div>
+    <div class="module-text">
+      <div class="module-title">Account Intelligence</div>
+      <div class="module-desc">Coming soon — hospital profiles and procurement cycles</div>
+    </div>
+  </a>
+</div>
+<div class="footer">
+  Mid East Medical FZC — UAE
+  <div class="version">FieldIQ v1.0 — 2026</div>
+</div>
+</body>
+</html>
