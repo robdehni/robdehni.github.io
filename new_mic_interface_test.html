@@ -5,80 +5,157 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FieldIQ Voice Test</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#fff;font-family:sans-serif;padding:20px;min-height:100vh}
-h1{color:#00d4ff;text-align:center;padding:16px 0 4px}
-p.sub{color:#888;text-align:center;font-size:13px;margin-bottom:24px}
-.btn{width:100%;padding:14px;border-radius:10px;border:none;font-size:16px;font-weight:700;cursor:pointer;margin:6px 0}
-.rec{background:#00d4ff;color:#000}
-.stp{background:#ff4444;color:#fff;display:none}
-#timer{text-align:center;font-size:40px;font-weight:700;color:#333;margin:16px 0}
-#timer.on{color:#ff4444}
-#status{text-align:center;color:#888;font-size:13px;margin-bottom:12px}
-audio{width:100%;margin:12px 0;display:none}
-textarea{width:100%;background:#111;border:1px solid #222;border-radius:10px;padding:12px;color:#ccc;font-size:14px;min-height:100px;margin-top:8px;font-family:sans-serif}
-.save{background:#00d4ff;color:#000;display:none}
-.ok{background:#0a1a0a;border:1px solid #00ff4422;border-radius:10px;padding:12px;color:#00ff88;text-align:center;margin-top:12px;display:none}
-.err{color:#ff6666;text-align:center;margin-top:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;color:white;font-family:Arial,sans-serif;padding:20px}
+.wrap{max-width:600px;margin:auto}
+h1{text-align:center;color:#00d4ff;font-size:36px;margin-top:20px}
+.sub{text-align:center;color:#888;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+label{font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px}
+input,select,textarea{width:100%;background:#1a1a1a;color:white;border:1px solid #333;border-radius:10px;padding:13px;font-size:16px;margin-top:6px}
+.card{background:#111;border:1px solid #222;border-radius:18px;padding:24px;text-align:center}
+.big{width:110px;height:110px;border-radius:50%;border:4px solid #00d4ff;background:#061b22;margin:10px auto 18px;font-size:42px;color:#00d4ff}
+.big.recording{border-color:#ff4444;color:#ff4444;background:#220606}
+.status{color:#aaa;font-size:15px;margin-bottom:10px}
+.timer{font-size:42px;font-weight:bold;color:#333;margin-bottom:18px}
+.timer.on{color:#ff4444}
+.btn{width:100%;padding:16px;border:none;border-radius:12px;font-size:17px;font-weight:bold;margin-top:10px}
+.stop{background:#ff4444;color:white;display:none}
+.save{background:#00d4ff;color:black;display:none}
+audio{width:100%;margin-top:18px;display:none}
+textarea{min-height:120px;margin-top:18px;line-height:1.5}
+.ok{display:none;margin-top:12px;background:#06220d;border:1px solid #00ff5533;color:#00ff88;padding:12px;border-radius:10px}
+.err{margin-top:12px;color:#ff6666;font-size:14px;white-space:pre-wrap}
 </style>
 </head>
 <body>
+<div class="wrap">
 <h1>FieldIQ</h1>
-<p class="sub">Voice Capture — MediaRecorder</p>
-<div id="timer">0:00</div>
-<div id="status">Tap Record and speak naturally</div>
-<button class="btn rec" id="recBtn">⏺ Record</button>
-<button class="btn stp" id="stpBtn">⏹ Stop</button>
-<audio id="player" controls></audio>
-<textarea id="notes" placeholder="Add any notes here after recording..."></textarea>
-<button class="btn save" id="saveBtn">Save Visit Notes</button>
-<div class="ok" id="ok">✅ Saved</div>
-<div class="err" id="err"></div>
+<p class="sub">Voice Capture — MediaRecorder Test</p>
+
+<div class="grid">
+  <div>
+    <label>Hospital</label>
+    <input id="hospital" placeholder="Type hospital name">
+  </div>
+  <div>
+    <label>Visit Date</label>
+    <input id="visitDate" type="date">
+  </div>
+  <div>
+    <label>Territory</label>
+    <select id="territory">
+      <option value="">Select territory</option>
+      <option>UAE</option><option>KSA</option><option>Qatar</option>
+      <option>Kuwait</option><option>Bahrain</option><option>Oman</option>
+    </select>
+  </div>
+  <div>
+    <label>Visit Type</label>
+    <select id="visitType">
+      <option value="">Select type</option>
+      <option>In-person</option><option>Virtual</option><option>Phone</option>
+    </select>
+  </div>
+</div>
+
+<div class="card">
+  <button id="recordBtn" class="big">🎙️</button>
+  <div id="status" class="status">Tap microphone to start recording</div>
+  <div id="timer" class="timer">0:00</div>
+
+  <button id="stopBtn" class="btn stop">Stop Recording</button>
+
+  <audio id="player" controls></audio>
+
+  <textarea id="notes" placeholder="After recording, type any missing details here..."></textarea>
+
+  <button id="saveBtn" class="btn save">Save Visit Notes</button>
+  <div id="ok" class="ok">✅ Saved</div>
+  <div id="err" class="err"></div>
+</div>
+</div>
+
 <script>
-window.onerror=function(m,s,l){document.getElementById('err').textContent='Error: '+m+' line '+l};
-var rec,chunks=[],secs=0,tmr;
-document.getElementById('recBtn').onclick=async function(){
+window.onerror=function(msg,src,line){
+  document.getElementById("err").textContent="Error: "+msg+" line "+line;
+};
+
+var mediaRecorder=null;
+var chunks=[];
+var seconds=0;
+var timer=null;
+var streamRef=null;
+
+document.getElementById("visitDate").value=new Date().toISOString().split("T")[0];
+
+document.getElementById("recordBtn").addEventListener("click",startRecording);
+document.getElementById("stopBtn").addEventListener("click",stopRecording);
+document.getElementById("saveBtn").addEventListener("click",function(){
+  document.getElementById("ok").style.display="block";
+  this.textContent="Saved ✓";
+});
+
+async function startRecording(){
   try{
-    chunks=[];secs=0;
-    document.getElementById('timer').textContent='0:00';
-    document.getElementById('timer').className='on';
-    document.getElementById('player').style.display='none';
-    document.getElementById('saveBtn').style.display='none';
-    document.getElementById('ok').style.display='none';
-    var stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    rec=new MediaRecorder(stream);
-    rec.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data)};
-    rec.onstop=function(){
-      var blob=new Blob(chunks,{type:'audio/webm'});
-      var p=document.getElementById('player');
-      p.src=URL.createObjectURL(blob);
-      p.style.display='block';
-      document.getElementById('saveBtn').style.display='block';
-      document.getElementById('status').textContent='Done. Press play to review.';
-      document.getElementById('timer').className='';
-      stream.getTracks().forEach(function(t){t.stop()});
+    document.getElementById("err").textContent="";
+    document.getElementById("ok").style.display="none";
+    document.getElementById("player").style.display="none";
+    document.getElementById("saveBtn").style.display="none";
+
+    chunks=[];
+    seconds=0;
+    document.getElementById("timer").textContent="0:00";
+    document.getElementById("timer").className="timer on";
+
+    streamRef=await navigator.mediaDevices.getUserMedia({audio:true});
+    mediaRecorder=new MediaRecorder(streamRef);
+
+    mediaRecorder.ondataavailable=function(e){
+      if(e.data && e.data.size>0){chunks.push(e.data);}
     };
-    rec.start();
-    tmr=setInterval(function(){
-      secs++;
-      var m=Math.floor(secs/60),s=secs%60;
-      document.getElementById('timer').textContent=m+':'+(s<10?'0':'')+s;
+
+    mediaRecorder.onstop=function(){
+      var blob=new Blob(chunks,{type:"audio/webm"});
+      var url=URL.createObjectURL(blob);
+      var player=document.getElementById("player");
+      player.src=url;
+      player.style.display="block";
+
+      document.getElementById("saveBtn").style.display="block";
+      document.getElementById("status").textContent="Recording complete. Press play to review.";
+      document.getElementById("recordBtn").className="big";
+      document.getElementById("timer").className="timer";
+
+      if(streamRef){
+        streamRef.getTracks().forEach(function(t){t.stop();});
+      }
+    };
+
+    mediaRecorder.start();
+
+    timer=setInterval(function(){
+      seconds++;
+      var m=Math.floor(seconds/60);
+      var s=seconds%60;
+      document.getElementById("timer").textContent=m+":"+(s<10?"0":"")+s;
     },1000);
-    document.getElementById('recBtn').style.display='none';
-    document.getElementById('stpBtn').style.display='block';
-    document.getElementById('status').textContent='Recording... speak naturally';
-  }catch(e){document.getElementById('err').textContent='Mic error: '+e.message}
-};
-document.getElementById('stpBtn').onclick=function(){
-  if(rec&&rec.state!=='inactive'){rec.stop();clearInterval(tmr)}
-  document.getElementById('stpBtn').style.display='none';
-  document.getElementById('recBtn').style.display='block';
-};
-document.getElementById('saveBtn').onclick=function(){
-  document.getElementById('ok').style.display='block';
-  document.getElementById('saveBtn').textContent='Saved ✓';
-  document.getElementById('saveBtn').style.background='#00ff88';
-};
+
+    document.getElementById("recordBtn").className="big recording";
+    document.getElementById("status").textContent="Recording... speak naturally";
+    document.getElementById("stopBtn").style.display="block";
+  }catch(e){
+    document.getElementById("err").textContent="Microphone error: "+e.message;
+  }
+}
+
+function stopRecording(){
+  clearInterval(timer);
+  document.getElementById("stopBtn").style.display="none";
+  if(mediaRecorder && mediaRecorder.state!=="inactive"){
+    mediaRecorder.stop();
+  }
+}
 </script>
 </body>
 </html>
