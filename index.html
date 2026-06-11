@@ -333,11 +333,19 @@ submitBtn.addEventListener('click',async function(){
     var territory=document.getElementById('territory').value;
     var visitType=document.getElementById('visitType').value;
 
-    await fetch('https://api.airtable.com/v0/appZpw3gV2XKhAAOo/Field%20Visits',{
+    var airtableRes=await fetch('https://api.airtable.com/v0/appZpw3gV2XKhAAOo/Field%20Visits',{
       method:'POST',
       headers:{'Authorization':'Bearer patFU816X9rok09Lt.86829691fd35d864eb611861b81a88b5c50ddea32657d2fd4d6b52d1ccd37310','Content-Type':'application/json'},
       body:JSON.stringify({fields:{'Hospital':hospital,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Raw Transcript':transcript,'AI Summary':result,'Latitude':latitude,'Longitude':longitude,'Accuracy':accuracy}})
     });
+    var airtableData=await airtableRes.json();
+    if(!airtableRes.ok){
+      processingOverlay.style.display='none';
+      submitBtn.disabled=false;
+      submitBtn.textContent='Process Visit Log';
+      alert('Airtable error '+airtableRes.status+': '+JSON.stringify(airtableData));
+      return;
+    }
 
     processingOverlay.style.display='none';
     successCard.style.display='block';
