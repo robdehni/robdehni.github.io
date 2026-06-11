@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldIQ — Visit Map</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;height:100vh;display:flex;flex-direction:column}
+.topbar{background:#111;border-bottom:1px solid #1a1a1a;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar h1{font-size:20px;color:#00d4ff;font-weight:700}
+.topbar span{color:#555;font-size:13px}
+.filters{background:#111;border-bottom:1px solid #1a1a1a;padding:10px 20px;display:flex;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.filters select{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;color:#ccc;padding:6px 10px;font-size:13px;outline:none;cursor:pointer}
+.filters select option{background:#1a1a1a}
+.filter-btn{background:#00d4ff;border:none;border-radius:6px;color:#000;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.filter-btn.secondary{background:#1a1a1a;color:#666;border:1px solid #222}
+.stats{background:#0d0d0d;border-bottom:1px solid #1a1a1a;padding:8px 20px;display:flex;gap:20px;flex-shrink:0}
+.stat{font-size:12px;color:#555}
+.stat span{color:#00d4ff;font-weight:700}
+#map{flex:1;z-index:1}
+.legend{position:absolute;bottom:30px;right:10px;background:#111;border:1px solid #222;border-radius:8px;padding:12px;z-index:1000;font-size:12px}
+.legend-item{display:flex;align-items:center;gap:8px;margin:4px 0;color:#aaa}
+.legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:2000;background:#111;border:1px solid #222;border-radius:12px;padding:30px 40px}
+.spinner{width:36px;height:36px;border:3px solid #1a1a1a;border-top:3px solid #00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{color:#888;font-size:14px}
+.error-msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:2000;background:#1a0a0a;border:1px solid #ff444433;border-radius:12px;padding:30px 40px;color:#ff6666;display:none}
+.leaflet-popup-content-wrapper{background:#111;border:1px solid #2a2a2a;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.6)}
+.leaflet-popup-content{color:#ccc;font-size:13px;line-height:1.6;margin:12px 16px;min-width:220px;max-width:280px}
+.leaflet-popup-tip{background:#111}
+.popup-hospital{font-size:15px;font-weight:700;color:#00d4ff;margin-bottom:6px}
+.popup-row{display:flex;justify-content:space-between;gap:8px;margin:3px 0;font-size:12px}
+.popup-label{color:#555}
+.popup-value{color:#ccc;text-align:right}
+.popup-sentiment{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700;margin:6px 0}
+.popup-summary{margin-top:8px;padding-top:8px;border-top:1px solid #1a1a1a;font-size:12px;color:#888;line-height:1.5;max-height:80px;overflow-y:auto}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>FieldIQ — Visit Map</h1>
+  <span id="lastUpdated">Loading...</span>
+</div>
+<div class="filters">
+  <select id="filterTerritory"><option value="">All Territories</option></select>
+  <select id="filterRep"><option value="">All Reps</option></select>
+  <select id="filterSentiment">
+    <option value="">All Sentiment</option>
+    <option value="positive">Positive</option>
+    <option value="neutral">Neutral</option>
+    <option value="negative">Negative</option>
+  </select>
+  <select id="filterDate">
+    <option value="">All Time</option>
+    <option value="today">Today</option>
+    <option value="week">This Week</option>
+    <option value="month">This Month</option>
+  </select>
+  <button class="filter-btn" onclick="applyFilters()">Apply</button>
+  <button class="filter-btn secondary" onclick="resetFilters()">Reset</button>
+</div>
+<div class="stats">
+  <div class="stat">Visits shown: <span id="statCount">0</span></div>
+  <div class="stat">Positive: <span id="statPositive" style="color:#44cc88">0</span></div>
+  <div class="stat">Neutral: <span id="statNeutral" style="color:#ffaa44">0</span></div>
+  <div class="stat">Negative: <span id="statNegative" style="color:#ff6666">0</span></div>
+</div>
+<div id="map"></div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#44cc88"></div> Positive</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ffaa44"></div> Neutral</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ff6666"></div> Negative</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#888"></div> Unknown</div>
+</div>
+<div class="loading" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>Loading visits...</p>
+</div>
+<div class="error-msg" id="errorMsg">
+  <p id="errorText">Failed to load visits.</p>
+</div>
+<script>
+var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
+var map;
+var allVisits=[];
+var markers=[];
+var markerLayer;
+
+map=L.map('map',{zoomControl:true}).setView([24.5,54.0],6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  attribution:'© OpenStreetMap contributors',maxZoom:18
+}).addTo(map);
+markerLayer=L.layerGroup().addTo(map);
+
+function getSentiment(aiSummary){
+  if(!aiSummary)return'unknown';
+  var s=aiSummary.toLowerCase();
+  var sentIdx=s.indexOf('sentiment');
+  if(sentIdx>-1){
+    var snippet=s.substring(sentIdx,sentIdx+120);
+    if(snippet.indexOf('positive')>-1)return'positive';
+    if(snippet.indexOf('negative')>-1)return'negative';
+    if(snippet.indexOf('neutral')>-1)return'neutral';
+  }
+  if(s.indexOf('positive')>-1)return'positive';
+  if(s.indexOf('negative')>-1)return'negative';
+  if(s.indexOf('neutral')>-1)return'neutral';
+  return'unknown';
+}
+
+function getColor(sentiment){
+  if(sentiment==='positive')return'#44cc88';
+  if(sentiment==='neutral')return'#ffaa44';
+  if(sentiment==='negative')return'#ff6666';
+  return'#888888';
+}
+
+function getSentimentBadgeStyle(sentiment){
+  if(sentiment==='positive')return'background:#44cc8822;color:#44cc88;border:1px solid #44cc8844';
+  if(sentiment==='neutral')return'background:#ffaa4422;color:#ffaa44;border:1px solid #ffaa4444';
+  if(sentiment==='negative')return'background:#ff666622;color:#ff6666;border:1px solid #ff666644';
+  return'background:#88888822;color:#888;border:1px solid #88888844';
+}
+
+function makeIcon(color){
+  return L.divIcon({
+    className:'',
+    html:'<div style="width:14px;height:14px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 0 6px rgba(0,0,0,0.5)"></div>',
+    iconSize:[14,14],iconAnchor:[7,7],popupAnchor:[0,-10]
+  });
+}
+
+function truncateSummary(text,maxLen){
+  if(!text)return'';
+  var idx=text.indexOf('VISIT SUMMARY');
+  if(idx>-1){
+    var start=idx+13;
+    var end=text.indexOf('\n\n',start);
+    var snippet=text.substring(start,end>-1?end:start+200).trim();
+    if(snippet.length>maxLen)return snippet.substring(0,maxLen)+'...';
+    return snippet;
+  }
+  if(text.length>maxLen)return text.substring(0,maxLen)+'...';
+  return text;
+}
+
+function renderMarkers(visits){
+  markerLayer.clearLayers();
+  markers=[];
+  var statPos=0,statNeu=0,statNeg=0;
+  visits.forEach(function(v){
+    var f=v.fields;
+    var lat=f['Latitude'];
+    var lon=f['Longitude'];
+    if(!lat||!lon)return;
+    var sentiment=getSentiment(f['AI Summary']||'');
+    var color=getColor(sentiment);
+    var icon=makeIcon(color);
+    if(sentiment==='positive')statPos++;
+    else if(sentiment==='neutral')statNeu++;
+    else if(sentiment==='negative')statNeg++;
+    var popupHtml=
+      '<div class="popup-hospital">'+(f['Hospital Name']||'Unknown Hospital')+'</div>'+
+      '<span class="popup-sentiment" style="'+getSentimentBadgeStyle(sentiment)+'">'+sentiment.charAt(0).toUpperCase()+sentiment.slice(1)+'</span>'+
+      '<div class="popup-row"><span class="popup-label">Rep</span><span class="popup-value">'+(f['Rep Name']||'—')+'</span></div>'+
+      '<div class="popup-row"><span class="popup-label">Date</span><span class="popup-value">'+(f['Visit Date']||'—')+'</span></div>'+
+      '<div class="popup-row"><span class="popup-label">Type</span><span class="popup-value">'+(f['Visit Type']||'—')+'</span></div>'+
+      '<div class="popup-row"><span class="popup-label">Territory</span><span class="popup-value">'+(f['Territory']||'—')+'</span></div>'+
+      (f['AI Summary']?'<div class="popup-summary">'+truncateSummary(f['AI Summary'],180)+'</div>':'');
+    var marker=L.marker([lat,lon],{icon:icon}).bindPopup(popupHtml,{maxWidth:300});
+    markerLayer.addLayer(marker);
+    markers.push(marker);
+  });
+  document.getElementById('statCount').textContent=visits.filter(function(v){return v.fields['Latitude']&&v.fields['Longitude'];}).length;
+  document.getElementById('statPositive').textContent=statPos;
+  document.getElementById('statNeutral').textContent=statNeu;
+  document.getElementById('statNegative').textContent=statNeg;
+}
+
+function populateFilters(visits){
+  var territories={},reps={};
+  visits.forEach(function(v){
+    var f=v.fields;
+    if(f['Territory'])territories[f['Territory']]=true;
+    if(f['Rep Name'])reps[f['Rep Name']]=true;
+  });
+  var tSel=document.getElementById('filterTerritory');
+  Object.keys(territories).sort().forEach(function(t){
+    var opt=document.createElement('option');
+    opt.value=t;opt.textContent=t;tSel.appendChild(opt);
+  });
+  var rSel=document.getElementById('filterRep');
+  Object.keys(reps).sort().forEach(function(r){
+    var opt=document.createElement('option');
+    opt.value=r;opt.textContent=r;rSel.appendChild(opt);
+  });
+}
+
+function applyFilters(){
+  var territory=document.getElementById('filterTerritory').value;
+  var rep=document.getElementById('filterRep').value;
+  var sentiment=document.getElementById('filterSentiment').value;
+  var dateRange=document.getElementById('filterDate').value;
+  var today=new Date();today.setHours(0,0,0,0);
+  var weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
+  var monthAgo=new Date(today);monthAgo.setDate(today.getDate()-30);
+  var filtered=allVisits.filter(function(v){
+    var f=v.fields;
+    if(territory&&f['Territory']!==territory)return false;
+    if(rep&&f['Rep Name']!==rep)return false;
+    if(sentiment&&getSentiment(f['AI Summary']||'')!==sentiment)return false;
+    if(dateRange&&f['Visit Date']){
+      var vDate=new Date(f['Visit Date']);
+      if(dateRange==='today'&&vDate<today)return false;
+      if(dateRange==='week'&&vDate<weekAgo)return false;
+      if(dateRange==='month'&&vDate<monthAgo)return false;
+    }
+    return true;
+  });
+  renderMarkers(filtered);
+}
+
+function resetFilters(){
+  document.getElementById('filterTerritory').value='';
+  document.getElementById('filterRep').value='';
+  document.getElementById('filterSentiment').value='';
+  document.getElementById('filterDate').value='';
+  renderMarkers(allVisits);
+}
+
+async function loadVisits(){
+  document.getElementById('loadingOverlay').style.display='block';
+  try{
+    var res=await fetch(WORKER_URL+'/get-visits');
+    var data=await res.json();
+    if(!res.ok)throw new Error(JSON.stringify(data));
+    allVisits=data.records||[];
+    populateFilters(allVisits);
+    renderMarkers(allVisits);
+    var now=new Date();
+    document.getElementById('lastUpdated').textContent='Updated '+now.toLocaleTimeString();
+    document.getElementById('loadingOverlay').style.display='none';
+  }catch(err){
+    document.getElementById('loadingOverlay').style.display='none';
+    document.getElementById('errorMsg').style.display='block';
+    document.getElementById('errorText').textContent='Failed to load visits: '+err.message;
+  }
+}
+
+loadVisits();
+</script>
+</body>
+</html>
