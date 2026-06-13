@@ -20,7 +20,6 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 .insight-row:last-child{border-bottom:none}
 .insight-label{color:#ccc}
 .insight-value{color:#00d4ff;font-weight:700}
-.insight-bar-wrap{margin-top:4px}
 .insight-bar-bg{background:#1a1a1a;border-radius:4px;height:5px;margin-top:3px}
 .insight-bar-fill{border-radius:4px;height:5px}
 .account-card{background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:12px;margin-bottom:8px}
@@ -61,19 +60,14 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
   Intelligence grows with every visit logged.
 </div>
 <div id="insightsContent" style="display:none">
-
   <div class="section-title">Account Insights</div>
   <div id="accountInsights"></div>
-
   <div class="section-title">Territory Intelligence</div>
   <div id="territoryInsights"></div>
-
   <div class="section-title">Management Attention</div>
   <div id="managementInsights"></div>
-
   <div class="section-title">Institutional Memory</div>
   <div id="institutionalMemory"></div>
-
 </div>
 <div class="loading" id="loadingEl"><div class="spinner"></div>Analysing field intelligence...</div>
 <nav class="bottom-nav">
@@ -96,26 +90,7 @@ function getSentiment(s){
   return'unknown';
 }
 
-function extractSection(text, keyword){
-  if(!text)return'';
-  var lines=text.split('\n');
-  var result='';
-  var capturing=false;
-  var sections=['VISIT SUMMARY','KEY CONTACTS','OUTCOMES','NEXT STEPS','OPPORTUNITY','SENTIMENT','PRIORITY'];
-  for(var i=0;i<lines.length;i++){
-    var l=lines[i].trim();
-    if(l.toUpperCase().indexOf(keyword)>-1){capturing=true;continue;}
-    if(capturing){
-      var isNewSection=false;
-      for(var j=0;j<sections.length;j++){if(l.toUpperCase().indexOf(sections[j])>-1){isNewSection=true;break;}}
-      if(isNewSection)break;
-      if(l)result+=(result?'\n':'')+l;
-    }
-  }
-  return result.trim();
-}
-
-function extractMentions(text, keywords){
+function extractMentions(text,keywords){
   var found=[];
   if(!text)return found;
   var lower=text.toLowerCase();
@@ -128,23 +103,12 @@ function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('
 function buildInsights(records){
   document.getElementById('recordCount').textContent=records.length;
 
-  // Build account map
   var accounts={};
   records.forEach(function(r){
     var f=r.fields;
     var hospital=f['Hospital Name']||'Unknown';
     if(!accounts[hospital]){
-      accounts[hospital]={
-        name:hospital,
-        visits:[],
-        contacts:[],
-        actionItems:[],
-        outcomes:[],
-        priorities:[],
-        sentiments:[],
-        territory:f['Territory']||'',
-        lastVisit:null
-      };
+      accounts[hospital]={name:hospital,visits:[],contacts:[],actionItems:[],outcomes:[],priorities:[],sentiments:[],territory:f['Territory']||'',lastVisit:null};
     }
     var acc=accounts[hospital];
     acc.visits.push(r);
@@ -157,9 +121,10 @@ function buildInsights(records){
     acc.sentiments.push(getSentiment(f['AI Summary']||''));
   });
 
-  // Account Insights
   var sortedAccounts=Object.values(accounts).sort(function(a,b){return b.visits.length-a.visits.length;});
   var maxVisits=sortedAccounts.length>0?sortedAccounts[0].visits.length:1;
+
+  // Account Insights
   var accountHtml='';
   sortedAccounts.forEach(function(acc){
     var latestPriority=acc.priorities.length>0?acc.priorities[acc.priorities.length-1]:'—';
@@ -203,10 +168,7 @@ function buildInsights(records){
     var total=territories[t];
     var posPct=total>0?Math.round((s.positive||0)/total*100):0;
     terrHtml+=
-      '<div class="insight-row">'+
-        '<span class="insight-label">'+t+'</span>'+
-        '<span class="insight-value">'+territories[t]+' visit'+(territories[t]!==1?'s':'')+'</span>'+
-      '</div>'+
+      '<div class="insight-row"><span class="insight-label">'+t+'</span><span class="insight-value">'+territories[t]+' visit'+(territories[t]!==1?'s':'')+'</span></div>'+
       '<div class="insight-bar-bg"><div class="insight-bar-fill" style="width:'+pct+'%;background:#00d4ff"></div></div>'+
       '<div style="font-size:10px;color:#555;margin:3px 0 8px">'+posPct+'% positive sentiment</div>';
   });
@@ -217,49 +179,23 @@ function buildInsights(records){
   var mgmtItems=[];
   var now=new Date();
   sortedAccounts.forEach(function(acc){
-    // High priority with no recent activity
     var hasHigh=acc.priorities.indexOf('High')>-1;
     if(hasHigh&&acc.lastVisit){
       var daysSince=Math.round((now-acc.lastVisit)/(1000*60*60*24));
-      if(daysSince>=7){
-        mgmtItems.push({
-          type:'attention',
-          text:acc.name+' — High Priority account. Last visit '+daysSince+' days ago.',
-          color:'#ff4444'
-        });
-      }
+      if(daysSince>=7)mgmtItems.push({text:acc.name+' — High Priority account. Last visit '+daysSince+' days ago.',color:'#ff4444'});
     }
-    // Multiple visits same priority no change
     if(acc.visits.length>=3&&acc.priorities.length>=3){
       var allSame=acc.priorities.every(function(p){return p===acc.priorities[0];});
-      if(allSame&&acc.priorities[0]==='Medium'){
-        mgmtItems.push({
-          type:'stall',
-          text:acc.name+' — '+acc.visits.length+' visits. Priority unchanged at Medium. May need manager review.',
-          color:'#ffaa44'
-        });
-      }
+      if(allSame&&acc.priorities[0]==='Medium')mgmtItems.push({text:acc.name+' — '+acc.visits.length+' visits. Priority unchanged at Medium. May need manager review.',color:'#ffaa44'});
     }
-    // Multiple reps on same account
     var repsOnAccount={};
     acc.visits.forEach(function(v){var rn=v.fields['Rep Name']||'Unknown';repsOnAccount[rn]=1;});
-    if(Object.keys(repsOnAccount).length>1){
-      mgmtItems.push({
-        type:'multi',
-        text:acc.name+' — Visited by '+Object.keys(repsOnAccount).join(', ')+'. Multiple reps on same account.',
-        color:'#00d4ff'
-      });
-    }
+    if(Object.keys(repsOnAccount).length>1)mgmtItems.push({text:acc.name+' — Visited by '+Object.keys(repsOnAccount).join(', ')+'. Multiple reps on same account.',color:'#00d4ff'});
   });
-
   var mgmtHtml='';
   if(mgmtItems.length>0){
-    mgmtItems.forEach(function(item){
-      mgmtHtml+='<div class="memory-card" style="border-left-color:'+item.color+'">'+
-        '<div class="memory-line">'+item.text+'</div>'+
-      '</div>';
-    });
-  } else {
+    mgmtItems.forEach(function(item){mgmtHtml+='<div class="memory-card" style="border-left-color:'+item.color+'"><div class="memory-line">'+item.text+'</div></div>';});
+  }else{
     mgmtHtml='<div class="insight-card"><div class="memory-line" style="color:#555;text-align:center;padding:8px">No attention items identified yet. Observations appear as patterns emerge.</div></div>';
   }
   document.getElementById('managementInsights').innerHTML=mgmtHtml;
@@ -267,30 +203,20 @@ function buildInsights(records){
   // Institutional Memory
   var memoryHtml='';
   sortedAccounts.forEach(function(acc){
-    var allContacts=acc.contacts.filter(Boolean).join(' ');
     var allActions=acc.actionItems.filter(Boolean);
     var competitors=extractMentions(acc.visits.map(function(v){return v.fields['AI Summary']||'';}).join(' '),
       ['Medtronic','Johnson & Johnson','J&J','Stryker','Zimmer','B. Braun','BBraun','Becton','BD','Abbott','Siemens','Philips','GE Healthcare','Olympus','Karl Storz','Covidien','Boston Scientific','Edwards','Baxter']);
-
     memoryHtml+=
       '<div class="memory-card">'+
         '<div class="memory-hospital">'+acc.name+'</div>'+
         '<div class="memory-label" style="margin:6px 0 3px">Territory</div>'+
         '<div class="memory-line">'+(acc.territory||'Not specified')+'</div>'+
         '<div class="memory-label" style="margin:6px 0 3px">Visit History</div>'+
-        '<div class="memory-line">'+acc.visits.length+' visit'+(acc.visits.length!==1?'s'||'s':'')+' recorded'+
-        (acc.lastVisit?' · Most recent: '+formatDate(acc.lastVisit):'')+'</div>'+
-        (allActions.length>0?
-          '<div class="memory-label" style="margin:6px 0 3px">Open Action Items</div>'+
-          allActions.slice(-3).map(function(a){return'<div class="memory-line">'+a.substring(0,120)+'</div>';}).join(''):'')+
-        (competitors.length>0?
-          '<div class="memory-label" style="margin:6px 0 3px">Competitors Mentioned</div>'+
-          '<div class="memory-line">'+competitors.join(', ')+'</div>':'')+ 
+        '<div class="memory-line">'+acc.visits.length+' visit'+(acc.visits.length!==1?'s':'')+' recorded'+(acc.lastVisit?' · Most recent: '+formatDate(acc.lastVisit):'')+'</div>'+
+        (allActions.length>0?'<div class="memory-label" style="margin:6px 0 3px">Open Action Items</div>'+allActions.slice(-3).map(function(a){return'<div class="memory-line">'+a.substring(0,120)+'</div>';}).join(''):'')+
+        (competitors.length>0?'<div class="memory-label" style="margin:6px 0 3px">Competitors Mentioned</div><div class="memory-line">'+competitors.join(', ')+'</div>':'')+
         '<div class="account-tags" style="margin-top:8px">'+
-          acc.outcomes.filter(Boolean).slice(-1).map(function(o){
-            var cls=o==='Positive'?'pill-positive':o==='Negative'?'pill-negative':'pill-neutral';
-            return'<span class="sentiment-pill '+cls+'">'+o+'</span>';
-          }).join('')+
+          acc.outcomes.filter(Boolean).slice(-1).map(function(o){var cls=o==='Positive'?'pill-positive':o==='Negative'?'pill-negative':'pill-neutral';return'<span class="sentiment-pill '+cls+'">'+o+'</span>';}).join('')+
           (acc.priorities.slice(-1)[0]?'<span class="tag tag-blue">'+acc.priorities.slice(-1)[0]+' Priority</span>':'')+
         '</div>'+
       '</div>';
