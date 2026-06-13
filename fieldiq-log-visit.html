@@ -11,10 +11,14 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 .header{text-align:center;margin-bottom:24px;padding-top:16px}
 .header h1{font-size:28px;color:#00d4ff;font-weight:700}
 .header p{color:#888;font-size:13px;margin-top:4px}
+.home-btn{display:block;text-align:center;margin-bottom:16px;color:#555;font-size:13px;text-decoration:none;padding:8px;border:1px solid #222;border-radius:8px;background:#111}
+.home-btn:hover{color:#00d4ff;border-color:#00d4ff}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.field{display:flex;flex-direction:column}
 .field label{font-size:11px;color:#888;margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:0.5px}
 .field input,.field select{width:100%;padding:11px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:#fff;font-size:14px;outline:none}
 .field select option{background:#1a1a1a}
+.field-full{grid-column:1/-1}
 .hospital-wrapper{position:relative}
 .hospital-list{display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;max-height:200px;overflow-y:auto;z-index:999}
 .hospital-list.open{display:block}
@@ -60,6 +64,7 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
   <h1>FieldIQ</h1>
   <p>Log Visit</p>
 </div>
+<a class="home-btn" href="https://robdehni.github.io/fieldiq.html">← Back to FieldIQ Home</a>
 <div class="fields">
   <div class="field">
     <label>Hospital</label>
@@ -83,6 +88,10 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
       <option value="">Select type</option>
       <option>In-person</option><option>Virtual</option><option>Phone</option>
     </select>
+  </div>
+  <div class="field field-full">
+    <label>Rep Name</label>
+    <input type="text" id="repName" placeholder="Enter your name" autocomplete="off">
   </div>
 </div>
 <div class="mic-section">
@@ -207,6 +216,12 @@ function parseReport(text){
   }
   return sections;
 }
+function getOutcome(sentiment){
+  sentiment=(sentiment||'').toLowerCase();
+  if(sentiment.includes('positive'))return'Positive';
+  if(sentiment.includes('negative'))return'Negative';
+  return'Neutral';
+}
 function getPriorityClass(t){t=t.toLowerCase();if(t.indexOf('high')>-1)return'priority-high';if(t.indexOf('medium')>-1)return'priority-medium';return'priority-low';}
 function renderReport(text){
   var s=parseReport(text),html='';
@@ -222,6 +237,8 @@ function renderReport(text){
 submitBtn.addEventListener('click',async function(){
   var transcript=transcriptText.value.trim();
   if(!transcript||transcript.length<3){alert('Please record a visit first.');return;}
+  var repName=document.getElementById('repName').value.trim();
+  if(!repName){alert('Please enter your name in the Rep Name field.');return;}
   submitBtn.disabled=true;submitBtn.textContent='Processing...';
   processingOverlay.style.display='block';successCard.style.display='none';
   var latitude=null,longitude=null,accuracy=null;
@@ -239,12 +256,28 @@ submitBtn.addEventListener('click',async function(){
     })});
     var aiData=await aiRes.json();
     var result=aiData.content?aiData.content[0].text:JSON.stringify(aiData);
+    var parsed=parseReport(result);
     var hospital=document.getElementById('hospital').value;
     var visitDate=document.getElementById('visitDate').value;
     var territory=document.getElementById('territory').value;
     var visitType=document.getElementById('visitType').value;
     var saveRes=await fetch(WORKER+'/save-visit',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({'Hospital Name':hospital,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Raw Transcript':transcript,'AI Summary':result,'Latitude':latitude,'Longitude':longitude,'Accuracy':accuracy})
+      body:JSON.stringify({
+        'Hospital Name': hospital,
+        'Visit Date': visitDate,
+        'Territory': territory,
+        'Visit Type': visitType,
+        'Rep Name': repName,
+        'Raw Transcript': transcript,
+        'AI Summary': result,
+        'Contact': parsed.contacts,
+        'Outcome': getOutcome(parsed.sentiment),
+        'Meeting Notes': parsed.summary,
+        'Action Items': parsed.nextSteps,
+        'Latitude': latitude,
+        'Longitude': longitude,
+        'Accuracy': accuracy
+      })
     });
     var saveData=await saveRes.json();
     if(!saveRes.ok){
