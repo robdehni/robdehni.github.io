@@ -99,6 +99,7 @@ function getSentiment(s){if(!s)return'unknown';s=s.toLowerCase();var i=s.indexOf
 function getBadgeClass(s){if(s==='positive')return'badge-positive';if(s==='neutral')return'badge-neutral';if(s==='negative')return'badge-negative';return'badge-unknown';}
 function extractSignals(ai){if(!ai)return'';var i=ai.indexOf('OPPORTUNITY');if(i>-1){var e=ai.indexOf('\n\n',i+10);return ai.substring(i+20,e>-1?e:i+300).trim();}return'';}
 function truncate(t,n){if(!t)return'';var i=t.indexOf('VISIT SUMMARY');if(i>-1){var s=t.substring(i+13,i+13+n).trim();return s.length===n?s+'...':s;}return t.length>n?t.substring(0,n)+'...':t;}
+function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
 function buildDashboard(records){
   var today=new Date();today.setHours(0,0,0,0);
   var weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
@@ -151,7 +152,7 @@ function buildDashboard(records){
   var feedHtml='';
   sorted.forEach(function(r){
     var f=r.fields;var sent=getSentiment(f['AI Summary']||'');var sum=truncate(f['AI Summary']||'',120);
-    feedHtml+='<div class="activity-item"><div class="activity-header"><div class="activity-hospital">'+(f['Hospital Name']||'Unknown')+'</div><div class="activity-date">'+(f['Visit Date']||'—')+'</div></div><div class="activity-meta"><span class="activity-badge '+getBadgeClass(sent)+'">'+sent+'</span>'+(f['Rep Name']?'<span class="activity-badge badge-rep">'+f['Rep Name']+'</span>':'')+(f['Territory']?'<span class="activity-badge badge-territory">'+f['Territory']+'</span>':'')+(f['Visit Type']?'<span class="activity-badge badge-territory">'+f['Visit Type']+'</span>':'')+'</div>'+(sum?'<div class="activity-summary">'+sum+'</div>':'')+'</div>';
+    feedHtml+='<div class="activity-item"><div class="activity-header"><div class="activity-hospital">'+(f['Hospital Name']||'Unknown')+'</div><div class="activity-date">'+formatDate(f['Visit Date'])+'</div></div><div class="activity-meta"><span class="activity-badge '+getBadgeClass(sent)+'">'+sent+'</span>'+(f['Rep Name']?'<span class="activity-badge badge-rep">'+f['Rep Name']+'</span>':'')+(f['Territory']?'<span class="activity-badge badge-territory">'+f['Territory']+'</span>':'')+(f['Visit Type']?'<span class="activity-badge badge-territory">'+f['Visit Type']+'</span>':'')+'</div>'+(sum?'<div class="activity-summary">'+sum+'</div>':'')+'</div>';
   });
   document.getElementById('activityFeed').innerHTML=feedHtml||'<div class="empty">No visits yet</div>';
   document.getElementById('loadingEl').style.display='none';
