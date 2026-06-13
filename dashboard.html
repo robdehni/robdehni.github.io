@@ -25,6 +25,24 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 .sent-neutral .sent-label{color:#ffaa44}.sent-neutral .sent-value{color:#ffaa44}
 .sent-negative .sent-label{color:#ff6666}.sent-negative .sent-value{color:#ff6666}
 .section-title{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #1a1a1a}
+.priority-section{margin-bottom:8px}
+.priority-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.priority-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.priority-title{font-size:12px;font-weight:700;color:#ccc}
+.priority-count{font-size:11px;color:#555}
+.priority-card{background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:12px;margin-bottom:6px}
+.priority-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.priority-hospital{font-size:13px;font-weight:600;color:#fff}
+.priority-meta{font-size:11px;color:#555;margin-top:2px}
+.priority-btns{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.pbtn{font-size:10px;padding:3px 8px;border-radius:6px;border:none;cursor:pointer;font-weight:600;transition:opacity 0.2s}
+.pbtn:disabled{opacity:0.4;cursor:not-allowed}
+.pbtn-high{background:#ff444422;color:#ff6666;border:1px solid #ff444433}
+.pbtn-medium{background:#ff880022;color:#ffaa44;border:1px solid #ff880033}
+.pbtn-low{background:#00880022;color:#44cc88;border:1px solid #00880033}
+.pbtn-active-high{background:#ff4444;color:#fff}
+.pbtn-active-medium{background:#ff8800;color:#fff}
+.pbtn-active-low{background:#00cc44;color:#fff}
 .rep-table{width:100%;border-collapse:collapse;font-size:12px}
 .rep-table th{color:#555;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;padding:6px 8px;text-align:left;border-bottom:1px solid #1a1a1a}
 .rep-table td{padding:10px 8px;border-bottom:1px solid #111;color:#ccc}
@@ -78,6 +96,12 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
     <div class="sent-card sent-neutral"><div class="sent-label">Neutral</div><div class="sent-value" id="sentNeutral">0%</div></div>
     <div class="sent-card sent-negative"><div class="sent-label">Negative</div><div class="sent-value" id="sentNegative">0%</div></div>
   </div>
+
+  <div class="section-title">Manager Priority View</div>
+  <div id="priorityHigh" class="priority-section"></div>
+  <div id="priorityMedium" class="priority-section"></div>
+  <div id="priorityLow" class="priority-section"></div>
+
   <div class="section-title">Rep Performance</div>
   <table class="rep-table">
     <thead><tr><th>Rep</th><th>Visits</th><th>Last Visit</th><th>Sentiment</th></tr></thead>
@@ -98,12 +122,92 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 </nav>
 <script>
 var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
+var allRecords=[];
+
 function getSentiment(s){if(!s)return'unknown';s=s.toLowerCase();var i=s.indexOf('sentiment');if(i>-1){var t=s.substring(i,i+120);if(t.indexOf('positive')>-1)return'positive';if(t.indexOf('negative')>-1)return'negative';if(t.indexOf('neutral')>-1)return'neutral';}if(s.indexOf('positive')>-1)return'positive';if(s.indexOf('negative')>-1)return'negative';if(s.indexOf('neutral')>-1)return'neutral';return'unknown';}
 function getBadgeClass(s){if(s==='positive')return'badge-positive';if(s==='neutral')return'badge-neutral';if(s==='negative')return'badge-negative';return'badge-unknown';}
 function extractSignals(ai){if(!ai)return'';var i=ai.indexOf('OPPORTUNITY');if(i>-1){var e=ai.indexOf('\n\n',i+10);return ai.substring(i+20,e>-1?e:i+300).trim();}return'';}
 function truncate(t,n){if(!t)return'';var i=t.indexOf('VISIT SUMMARY');if(i>-1){var s=t.substring(i+13,i+13+n).trim();return s.length===n?s+'...':s;}return t.length>n?t.substring(0,n)+'...':t;}
 function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+
+async function updatePriority(recordId,newPriority,cardEl){
+  var btns=cardEl.querySelectorAll('.pbtn');
+  btns.forEach(function(b){b.disabled=true;});
+  try{
+    var res=await fetch(WORKER_URL+'/update-visit',{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({recordId:recordId,priority:newPriority})
+    });
+    if(res.ok){
+      var rec=allRecords.find(function(r){return r.id===recordId;});
+      if(rec)rec.fields['Priority']=newPriority;
+      renderPrioritySection(allRecords);
+    } else {
+      btns.forEach(function(b){b.disabled=false;});
+      alert('Failed to update priority. Please try again.');
+    }
+  }catch(err){
+    btns.forEach(function(b){b.disabled=false;});
+    alert('Error: '+err.message);
+  }
+}
+
+function makePriorityCard(record){
+  var f=record.fields;
+  var current=(f['Priority']||'Medium');
+  var rep=f['Rep Name']||'Unknown';
+  var date=formatDate(f['Visit Date']);
+  var div=document.createElement('div');
+  div.className='priority-card';
+  div.innerHTML=
+    '<div class="priority-card-header">'+
+      '<div>'+
+        '<div class="priority-hospital">'+(f['Hospital Name']||'Unknown')+'</div>'+
+        '<div class="priority-meta">'+rep+' · '+date+(f['Territory']?' · '+f['Territory']:'')+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="priority-btns">'+
+      '<button class="pbtn pbtn-high'+(current==='High'?' pbtn-active-high':'')+'" data-p="High">🔴 High</button>'+
+      '<button class="pbtn pbtn-medium'+(current==='Medium'?' pbtn-active-medium':'')+'" data-p="Medium">🟠 Medium</button>'+
+      '<button class="pbtn pbtn-low'+(current==='Low'?' pbtn-active-low':'')+'" data-p="Low">🟢 Low</button>'+
+    '</div>';
+  div.querySelectorAll('.pbtn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      if(btn.getAttribute('data-p')!==current){
+        updatePriority(record.id,btn.getAttribute('data-p'),div);
+      }
+    });
+  });
+  return div;
+}
+
+function renderPrioritySection(records){
+  var high=[],medium=[],low=[],unset=[];
+  records.forEach(function(r){
+    var p=r.fields['Priority']||'';
+    if(p==='High')high.push(r);
+    else if(p==='Medium')medium.push(r);
+    else if(p==='Low')low.push(r);
+    else unset.push(r);
+  });
+
+  function renderBucket(el,list,label,color,dot){
+    el.innerHTML='<div class="priority-header"><div class="priority-dot" style="background:'+dot+'"></div><span class="priority-title">'+label+'</span><span class="priority-count">('+list.length+')</span></div>';
+    if(list.length===0){
+      el.innerHTML+='<div class="empty" style="padding:8px">None</div>';
+    } else {
+      list.forEach(function(r){el.appendChild(makePriorityCard(r));});
+    }
+  }
+
+  renderBucket(document.getElementById('priorityHigh'),high,'High Priority','#ff4444','#ff4444');
+  renderBucket(document.getElementById('priorityMedium'),medium,'Medium Priority','#ffaa44','#ffaa44');
+  renderBucket(document.getElementById('priorityLow'),low,'Low Priority','#44cc88','#44cc88');
+}
+
 function buildDashboard(records){
+  allRecords=records;
   var today=new Date();today.setHours(0,0,0,0);
   var weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
   var todayCount=0,weekCount=0,reps={},territories={},sentCounts={positive:0,neutral:0,negative:0,unknown:0},signals=[];
@@ -132,6 +236,9 @@ function buildDashboard(records){
   document.getElementById('sentPositive').textContent=pct(sentCounts.positive);
   document.getElementById('sentNeutral').textContent=pct(sentCounts.neutral);
   document.getElementById('sentNegative').textContent=pct(sentCounts.negative);
+
+  renderPrioritySection(records);
+
   var repRows='';
   Object.keys(reps).sort(function(a,b){return reps[b].count-reps[a].count;}).forEach(function(rep){
     var r=reps[rep];
