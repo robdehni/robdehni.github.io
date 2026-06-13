@@ -12,6 +12,7 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 .topbar p{color:#555;font-size:12px;margin-top:3px}
 .home-btn{display:inline-block;color:#555;font-size:12px;text-decoration:none;padding:5px 12px;border:1px solid #222;border-radius:6px;background:#1a1a1a;margin-bottom:12px}
 .home-btn:hover{color:#00d4ff;border-color:#00d4ff}
+.manager-badge{display:inline-block;background:#00d4ff22;color:#00d4ff;border:1px solid #00d4ff33;border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px;margin-left:8px;text-transform:uppercase;letter-spacing:0.5px}
 .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .kpi-card{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:14px}
 .kpi-label{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px}
@@ -43,6 +44,10 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 .pbtn-active-high{background:#ff4444;color:#fff}
 .pbtn-active-medium{background:#ff8800;color:#fff}
 .pbtn-active-low{background:#00cc44;color:#fff}
+.priority-label{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600;display:inline-block;margin-top:6px}
+.plabel-high{background:#ff444422;color:#ff6666;border:1px solid #ff444433}
+.plabel-medium{background:#ff880022;color:#ffaa44;border:1px solid #ff880033}
+.plabel-low{background:#00880022;color:#44cc88;border:1px solid #00880033}
 .rep-table{width:100%;border-collapse:collapse;font-size:12px}
 .rep-table th{color:#555;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;padding:6px 8px;text-align:left;border-bottom:1px solid #1a1a1a}
 .rep-table td{padding:10px 8px;border-bottom:1px solid #111;color:#ccc}
@@ -80,7 +85,7 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 </head>
 <body>
 <div class="topbar">
-  <h1>FieldIQ</h1>
+  <h1>FieldIQ<span id="managerBadge" style="display:none" class="manager-badge">Manager</span></h1>
   <p id="lastUpdated">Loading dashboard...</p>
   <a class="home-btn" href="https://robdehni.github.io/fieldiq.html">← Back to FieldIQ Home</a>
 </div>
@@ -96,12 +101,10 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
     <div class="sent-card sent-neutral"><div class="sent-label">Neutral</div><div class="sent-value" id="sentNeutral">0%</div></div>
     <div class="sent-card sent-negative"><div class="sent-label">Negative</div><div class="sent-value" id="sentNegative">0%</div></div>
   </div>
-
   <div class="section-title">Manager Priority View</div>
   <div id="priorityHigh" class="priority-section"></div>
   <div id="priorityMedium" class="priority-section"></div>
   <div id="priorityLow" class="priority-section"></div>
-
   <div class="section-title">Rep Performance</div>
   <table class="rep-table">
     <thead><tr><th>Rep</th><th>Visits</th><th>Last Visit</th><th>Sentiment</th></tr></thead>
@@ -123,6 +126,9 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 <script>
 var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
 var allRecords=[];
+var isManager=window.location.search.indexOf('mode=manager')>-1;
+
+if(isManager){document.getElementById('managerBadge').style.display='inline-block';}
 
 function getSentiment(s){if(!s)return'unknown';s=s.toLowerCase();var i=s.indexOf('sentiment');if(i>-1){var t=s.substring(i,i+120);if(t.indexOf('positive')>-1)return'positive';if(t.indexOf('negative')>-1)return'negative';if(t.indexOf('neutral')>-1)return'neutral';}if(s.indexOf('positive')>-1)return'positive';if(s.indexOf('negative')>-1)return'negative';if(s.indexOf('neutral')>-1)return'neutral';return'unknown';}
 function getBadgeClass(s){if(s==='positive')return'badge-positive';if(s==='neutral')return'badge-neutral';if(s==='negative')return'badge-negative';return'badge-unknown';}
@@ -143,7 +149,7 @@ async function updatePriority(recordId,newPriority,cardEl){
       var rec=allRecords.find(function(r){return r.id===recordId;});
       if(rec)rec.fields['Priority']=newPriority;
       renderPrioritySection(allRecords);
-    } else {
+    }else{
       btns.forEach(function(b){b.disabled=false;});
       alert('Failed to update priority. Please try again.');
     }
@@ -160,6 +166,19 @@ function makePriorityCard(record){
   var date=formatDate(f['Visit Date']);
   var div=document.createElement('div');
   div.className='priority-card';
+  var buttonsHtml='';
+  if(isManager){
+    buttonsHtml=
+      '<div class="priority-btns">'+
+        '<button class="pbtn pbtn-high'+(current==='High'?' pbtn-active-high':'')+'" data-p="High">🔴 High</button>'+
+        '<button class="pbtn pbtn-medium'+(current==='Medium'?' pbtn-active-medium':'')+'" data-p="Medium">🟠 Medium</button>'+
+        '<button class="pbtn pbtn-low'+(current==='Low'?' pbtn-active-low':'')+'" data-p="Low">🟢 Low</button>'+
+      '</div>';
+  }else{
+    var labelClass=current==='High'?'plabel-high':current==='Low'?'plabel-low':'plabel-medium';
+    var dot=current==='High'?'🔴':current==='Low'?'🟢':'🟠';
+    buttonsHtml='<div><span class="priority-label '+labelClass+'">'+dot+' '+current+'</span></div>';
+  }
   div.innerHTML=
     '<div class="priority-card-header">'+
       '<div>'+
@@ -167,43 +186,38 @@ function makePriorityCard(record){
         '<div class="priority-meta">'+rep+' · '+date+(f['Territory']?' · '+f['Territory']:'')+'</div>'+
       '</div>'+
     '</div>'+
-    '<div class="priority-btns">'+
-      '<button class="pbtn pbtn-high'+(current==='High'?' pbtn-active-high':'')+'" data-p="High">🔴 High</button>'+
-      '<button class="pbtn pbtn-medium'+(current==='Medium'?' pbtn-active-medium':'')+'" data-p="Medium">🟠 Medium</button>'+
-      '<button class="pbtn pbtn-low'+(current==='Low'?' pbtn-active-low':'')+'" data-p="Low">🟢 Low</button>'+
-    '</div>';
-  div.querySelectorAll('.pbtn').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      if(btn.getAttribute('data-p')!==current){
-        updatePriority(record.id,btn.getAttribute('data-p'),div);
-      }
+    buttonsHtml;
+  if(isManager){
+    div.querySelectorAll('.pbtn').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        if(btn.getAttribute('data-p')!==current){
+          updatePriority(record.id,btn.getAttribute('data-p'),div);
+        }
+      });
     });
-  });
+  }
   return div;
 }
 
 function renderPrioritySection(records){
-  var high=[],medium=[],low=[],unset=[];
+  var high=[],medium=[],low=[];
   records.forEach(function(r){
     var p=r.fields['Priority']||'';
     if(p==='High')high.push(r);
     else if(p==='Medium')medium.push(r);
     else if(p==='Low')low.push(r);
-    else unset.push(r);
   });
-
-  function renderBucket(el,list,label,color,dot){
+  function renderBucket(el,list,label,dot){
     el.innerHTML='<div class="priority-header"><div class="priority-dot" style="background:'+dot+'"></div><span class="priority-title">'+label+'</span><span class="priority-count">('+list.length+')</span></div>';
     if(list.length===0){
       el.innerHTML+='<div class="empty" style="padding:8px">None</div>';
-    } else {
+    }else{
       list.forEach(function(r){el.appendChild(makePriorityCard(r));});
     }
   }
-
-  renderBucket(document.getElementById('priorityHigh'),high,'High Priority','#ff4444','#ff4444');
-  renderBucket(document.getElementById('priorityMedium'),medium,'Medium Priority','#ffaa44','#ffaa44');
-  renderBucket(document.getElementById('priorityLow'),low,'Low Priority','#44cc88','#44cc88');
+  renderBucket(document.getElementById('priorityHigh'),high,'High Priority','#ff4444');
+  renderBucket(document.getElementById('priorityMedium'),medium,'Medium Priority','#ffaa44');
+  renderBucket(document.getElementById('priorityLow'),low,'Low Priority','#44cc88');
 }
 
 function buildDashboard(records){
@@ -236,9 +250,7 @@ function buildDashboard(records){
   document.getElementById('sentPositive').textContent=pct(sentCounts.positive);
   document.getElementById('sentNeutral').textContent=pct(sentCounts.neutral);
   document.getElementById('sentNegative').textContent=pct(sentCounts.negative);
-
   renderPrioritySection(records);
-
   var repRows='';
   Object.keys(reps).sort(function(a,b){return reps[b].count-reps[a].count;}).forEach(function(rep){
     var r=reps[rep];
