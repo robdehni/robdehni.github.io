@@ -222,6 +222,13 @@ function getOutcome(sentiment){
   if(sentiment.includes('negative'))return'Negative';
   return'Neutral';
 }
+function extractPriority(text){
+  text=(text||'').toLowerCase();
+  if(text.includes('high'))return'High';
+  if(text.includes('medium'))return'Medium';
+  if(text.includes('low'))return'Low';
+  return'Medium';
+}
 function getPriorityClass(t){t=t.toLowerCase();if(t.indexOf('high')>-1)return'priority-high';if(t.indexOf('medium')>-1)return'priority-medium';return'priority-low';}
 function renderReport(text){
   var s=parseReport(text),html='';
@@ -252,11 +259,12 @@ submitBtn.addEventListener('click',async function(){
   try{
     var aiRes=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       model:'claude-haiku-4-5-20251001',max_tokens:1000,
-      messages:[{role:'user',content:'You are a MedTech sales intelligence assistant. Structure this field visit transcript into a concise report with these exact sections:\n\nVISIT SUMMARY\nKEY CONTACTS MET\nOUTCOMES & DECISIONS\nNEXT STEPS\nOPPORTUNITY SIGNALS\nSENTIMENT\nPRIORITY LEVEL (High / Medium / Low)\n\nBe concise and professional. Transcript:\n'+transcript}]
+      messages:[{role:'user',content:'You are a MedTech sales intelligence assistant. Structure this field visit transcript into a concise report with these exact sections:\n\nVISIT SUMMARY\nKEY CONTACTS MET\nOUTCOMES & DECISIONS\nNEXT STEPS\nOPPORTUNITY SIGNALS\nSENTIMENT\nPRIORITY LEVEL (respond with exactly one word: High, Medium, or Low)\n\nFor PRIORITY LEVEL, classify based on:\n- High: quotation requested, procurement engaged, decision maker committed, strong buying signal, evaluation planned\n- Medium: follow-up needed, positive interest, return visit requested, relationship developing\n- Low: informational visit, no current opportunity, no buying signal, long-term monitoring\n\nBe concise and professional. Transcript:\n'+transcript}]
     })});
     var aiData=await aiRes.json();
     var result=aiData.content?aiData.content[0].text:JSON.stringify(aiData);
     var parsed=parseReport(result);
+    var priority=extractPriority(parsed.priority);
     var hospital=document.getElementById('hospital').value;
     var visitDate=document.getElementById('visitDate').value;
     var territory=document.getElementById('territory').value;
@@ -273,6 +281,7 @@ submitBtn.addEventListener('click',async function(){
         'Outcome': getOutcome(parsed.sentiment),
         'Meeting Notes': parsed.summary,
         'Action Items': parsed.nextSteps,
+        'Priority': priority,
         'Latitude': latitude,
         'Longitude': longitude,
         'Accuracy': accuracy
