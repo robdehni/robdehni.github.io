@@ -33,6 +33,16 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 .new-account-fields .field{margin-bottom:10px}
 .new-account-fields .field:last-child{margin-bottom:0}
 .new-account-badge{display:inline-block;background:#00d4ff22;color:#00d4ff;border:1px solid #00d4ff33;border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
+
+/* User identity panel */
+.user-locked{display:flex;align-items:center;justify-content:space-between;background:#0d1a0d;border:1px solid #00ff4422;border-radius:10px;padding:12px 16px;margin-bottom:4px}
+.user-locked-info{display:flex;align-items:center;gap:10px}
+.user-locked-avatar{font-size:20px}
+.user-locked-name{font-size:14px;font-weight:700;color:#00ff88}
+.user-locked-role{font-size:11px;color:#555;margin-top:2px}
+.switch-user-btn{font-size:11px;color:#333;background:none;border:none;cursor:pointer;text-decoration:underline;padding:4px}
+.switch-user-btn:hover{color:#888}
+
 .mic-section{text-align:center;margin:20px 0 12px}
 .mic-btn{width:88px;height:88px;border-radius:50%;border:3px solid #00d4ff;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:36px;transition:border-color 0.2s,background 0.2s}
 .mic-btn.recording{border-color:#ff4444;background:#ff444411}
@@ -75,6 +85,7 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
   <p>Log Visit</p>
 </div>
 <a href="https://fieldiq.biz/fieldiq.html" style="display:inline-block;background:#00d4ff;color:#000;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px">← Home</a>
+
 <div class="fields">
   <div class="field field-full">
     <label>Hospital / Account</label>
@@ -96,7 +107,6 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
         <label>City</label>
         <input type="text" id="newAccountCity" placeholder="e.g. Dubai, Riyadh, Doha">
       </div>
-
     </div>
   </div>
   <div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
@@ -115,13 +125,13 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
       <option>In-person</option><option>Virtual</option><option>Phone</option>
     </select>
   </div>
-  <div class="field field-full">
-    <label>Who are you?</label>
-    <select id="userSelect" style="width:100%;padding:11px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:#fff;font-size:14px;outline:none">
-      <option value="">Loading users...</option>
-    </select>
+
+  <!-- USER IDENTITY — full width -->
+  <div class="field-full" id="userIdentitySection">
+    <!-- Filled by JS: either locked panel or dropdown -->
   </div>
 </div>
+
 <div class="mic-section">
   <button class="mic-btn" id="micBtn">🎙️</button>
   <div class="status" id="status">Tap mic to start recording</div>
@@ -132,7 +142,7 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
 </div>
 <div style="position:relative">
   <div class="edit-notice" id="editNotice">✏️ <strong>Review your transcript.</strong> Tap to correct any mistakes before processing.</div>
-<textarea class="transcript-box" id="transcriptText" placeholder="Your speech will appear here automatically after recording... tap to edit before processing."></textarea>
+  <textarea class="transcript-box" id="transcriptText" placeholder="Your speech will appear here automatically after recording... tap to edit before processing."></textarea>
   <div style="font-size:11px;color:#555;text-align:right;margin-top:-8px;margin-bottom:8px;">Tap to edit before processing</div>
 </div>
 <button class="btn btn-primary" id="submitBtn">Process Visit Log</button>
@@ -148,17 +158,61 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
   <button class="btn btn-primary" style="margin-top:16px" onclick="location.reload()">Log Another Visit</button>
 </div>
 </div>
+
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 window.onerror=function(msg){document.getElementById('status').textContent='Error: '+msg;};
+
+// ── USER IDENTITY ──────────────────────────────────────────────
+var currentUserId='', currentUserName='', currentUserRole='';
+
+function renderUserIdentity(){
+  var section=document.getElementById('userIdentitySection');
+  var savedId=localStorage.getItem('fieldiq_user_id');
+  var savedName=localStorage.getItem('fieldiq_user_name');
+  var savedRole=localStorage.getItem('fieldiq_user_role');
+
+  if(savedId && savedName){
+    // LOCKED — show panel, no dropdown
+    currentUserId=savedId;
+    currentUserName=savedName;
+    currentUserRole=savedRole||'Sales Rep';
+    section.innerHTML=
+      '<div class="user-locked">'+
+        '<div class="user-locked-info">'+
+          '<div class="user-locked-avatar">👤</div>'+
+          '<div>'+
+            '<div class="user-locked-name">'+savedName+'</div>'+
+            '<div class="user-locked-role">'+currentUserRole+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<button class="switch-user-btn" onclick="switchUser()">Switch User</button>'+
+      '</div>';
+  } else {
+    // FIRST TIME — show dropdown
+    section.innerHTML=
+      '<label style="font-size:11px;color:#888;margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:0.5px">Who are you?</label>'+
+      '<select id="userSelect" style="width:100%;padding:11px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:#fff;font-size:14px;outline:none">'+
+        '<option value="">Loading users...</option>'+
+      '</select>';
+    loadUsers();
+  }
+}
+
+function switchUser(){
+  localStorage.removeItem('fieldiq_user_id');
+  localStorage.removeItem('fieldiq_user_name');
+  localStorage.removeItem('fieldiq_user_role');
+  location.reload();
+}
 
 async function loadUsers(){
   try{
     var res=await fetch(WORKER+'/get-users');
     var data=await res.json();
     var sel=document.getElementById('userSelect');
+    if(!sel)return;
     sel.innerHTML='<option value="">Select your name...</option>';
-    var savedId=localStorage.getItem('fieldiq_user_id');
     if(data.records){
       data.records.forEach(function(r){
         var f=r.fields;
@@ -170,16 +224,16 @@ async function loadUsers(){
         opt.setAttribute('data-role',f['Role']||'Sales Rep');
         sel.appendChild(opt);
       });
-      // Restore saved selection
-      if(savedId){sel.value=savedId;}
     }
   }catch(err){
-    document.getElementById('userSelect').innerHTML='<option value="">Could not load users</option>';
+    var sel=document.getElementById('userSelect');
+    if(sel)sel.innerHTML='<option value="">Could not load users</option>';
   }
 }
-loadUsers();
 
-// New account toggle
+renderUserIdentity();
+
+// ── NEW ACCOUNT TOGGLE ─────────────────────────────────────────
 var notListedCheck=document.getElementById('notListedCheck');
 var newAccountFields=document.getElementById('newAccountFields');
 var hospitalInput=document.getElementById('hospital');
@@ -197,6 +251,7 @@ notListedCheck.addEventListener('change',function(){
   }
 });
 
+// ── HOSPITAL LIST ──────────────────────────────────────────────
 var HOSPITALS=[{"name":"Al Adan Hospital","territory":"Kuwait"},{"name":"Al Ahli Hospital Qatar","territory":"Qatar"},{"name":"Al Ain Hospital","territory":"UAE"},{"name":"Al Amiri Hospital","territory":"Kuwait"},{"name":"Al Fujairah Hospital","territory":"UAE"},{"name":"Al Hammadi Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Al Hayat International Hospital","territory":"Oman"},{"name":"Al Khor Hospital","territory":"Qatar"},{"name":"Al Mowasat Hospital","territory":"Kuwait"},{"name":"Al Naeem Hospital","territory":"Kuwait"},{"name":"Al Nahda Hospital","territory":"Oman"},{"name":"Al Nefaie General Hospital","territory":"Saudi Arabia - Riyadh"},{"name":"Al Noor Specialist Hospital Makkah","territory":"Saudi Arabia - Makkah"},{"name":"Al Qasimi Hospital Sharjah","territory":"UAE"},{"name":"Al Razi Hospital","territory":"Kuwait"},{"name":"Al Sabah Hospital","territory":"Kuwait"},{"name":"Al Salam International Hospital","territory":"Kuwait"},{"name":"Al Wakra Hospital","territory":"Qatar"},{"name":"Al Wasl Hospital","territory":"UAE"},{"name":"Al Zahra Hospital Dubai","territory":"UAE"},{"name":"American Hospital Dubai","territory":"UAE"},{"name":"American Hospital Qatar","territory":"Qatar"},{"name":"American Mission Hospital Bahrain","territory":"Bahrain"},{"name":"Aster Hospital Qusais","territory":"UAE"},{"name":"Aster Medcity Mankhool","territory":"UAE"},{"name":"Aster Medical Centre Qatar","territory":"Qatar"},{"name":"Aster Royal Hospital Muscat","territory":"Oman"},{"name":"Awali Hospital","territory":"Bahrain"},{"name":"Badr Al Samaa Hospital","territory":"Oman"},{"name":"Bahrain Specialist Hospital","territory":"Bahrain"},{"name":"Burjeel Hospital Abu Dhabi","territory":"UAE"},{"name":"Burjeel Hospital Al Ain","territory":"UAE"},{"name":"Burjeel Hospital Muscat","territory":"Oman"},{"name":"Chest Diseases Hospital","territory":"Kuwait"},{"name":"Clemenceau Medical Center Dubai","territory":"UAE"},{"name":"Cleveland Clinic Abu Dhabi","territory":"UAE"},{"name":"Corniche Hospital","territory":"UAE"},{"name":"Cuban Hospital Qatar","territory":"Qatar"},{"name":"Dallah Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Danat Al Emarat Hospital","territory":"UAE"},{"name":"Dar Al Shifa Hospital","territory":"Kuwait"},{"name":"Dibba Hospital","territory":"UAE"},{"name":"Doha Clinic Hospital","territory":"Qatar"},{"name":"Dr Erfan and Bagedo Hospital","territory":"Saudi Arabia - Jeddah"},{"name":"Dr Sulaiman Al Habib Hospital Dammam","territory":"Saudi Arabia - Eastern Province"},{"name":"Dr Sulaiman Al Habib Hospital Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"Dr Sulaiman Al Habib Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Dubai Hospital","territory":"UAE"},{"name":"Emirates Hospital Jumeirah","territory":"UAE"},{"name":"Farwaniya Hospital","territory":"Kuwait"},{"name":"Fujairah Hospital","territory":"UAE"},{"name":"Gulf International Hospital","territory":"Kuwait"},{"name":"Hamad General Hospital","territory":"Qatar"},{"name":"Hatta Hospital","territory":"UAE"},{"name":"Hazm Mebaireek General Hospital","territory":"Qatar"},{"name":"Heart Hospital Qatar","territory":"Qatar"},{"name":"Ibn Sina Hospital","territory":"Kuwait"},{"name":"Ibn Sina Hospital Muscat","territory":"Oman"},{"name":"Ibrahim Bin Hamad Obaidallah Hospital RAK","territory":"UAE"},{"name":"International Hospital of Bahrain","territory":"Bahrain"},{"name":"International Medical Center Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"Jahra Hospital","territory":"Kuwait"},{"name":"Jidhafs Maternity Hospital","territory":"Bahrain"},{"name":"Kalba Hospital","territory":"UAE"},{"name":"Khalifa HospitalAjman","territory":"UAE"},{"name":"Khoula Hospital","territory":"Oman"},{"name":"King Abdulaziz Hospital Al Ahsa","territory":"Saudi Arabia - Eastern Province"},{"name":"King Abdulaziz Hospital Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"King Abdulaziz Medical City Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"King Abdulaziz University Hospital Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"King Abdullah Medical City Makkah","territory":"Saudi Arabia - Makkah"},{"name":"King Fahad Armed Forces Hospital Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"King Fahad General Hospital Madinah","territory":"Saudi Arabia - Madinah"},{"name":"King Fahad Hospital Dammam","territory":"Saudi Arabia - Eastern Province"},{"name":"King Fahad Medical City Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"King Fahad University Hospital Al Khobar","territory":"Saudi Arabia - Eastern Province"},{"name":"King Faisal Specialist Hospital Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"King Faisal Specialist Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"King Hamad University Hospital","territory":"Bahrain"},{"name":"King Khalid University Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"King Salman Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"King's College Hospital Dubai","territory":"UAE"},{"name":"LLH Hospital Abu Dhabi","territory":"UAE"},{"name":"Latifa Hospital","territory":"UAE"},{"name":"Mafraq Hospital","territory":"UAE"},{"name":"Mediclinic Al Noor Abu Dhabi","territory":"UAE"},{"name":"Mediclinic City Hospital","territory":"UAE"},{"name":"Mediclinic Parkview Hospital","territory":"UAE"},{"name":"Mediclinic Welcare Hospital","territory":"UAE"},{"name":"Mohammed Bin Khalifa Cardiac Centre","territory":"Bahrain"},{"name":"Mouwasat Hospital Dammam","territory":"Saudi Arabia - Eastern Province"},{"name":"Mouwasat Hospital Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"Mouwasat Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Mubarak Al Kabeer Hospital","territory":"Kuwait"},{"name":"Muharraq Hospital","territory":"Bahrain"},{"name":"Muscat Private Hospital","territory":"Oman"},{"name":"NMC Royal Hospital Abu Dhabi","territory":"UAE"},{"name":"NMC Royal Hospital Dubai","territory":"UAE"},{"name":"National Center for Cancer Care","territory":"Qatar"},{"name":"New Mowasat Hospital","territory":"Kuwait"},{"name":"Nizwa Hospital","territory":"Oman"},{"name":"Noor Specialist Hospital","territory":"Bahrain"},{"name":"Oasis Hospital Al Ain","territory":"UAE"},{"name":"Ohud Hospital Madinah","territory":"Saudi Arabia - Madinah"},{"name":"Prince Sultan Military Medical City","territory":"Saudi Arabia - Riyadh"},{"name":"Psychiatric Hospital Bahrain","territory":"Bahrain"},{"name":"RAK Hospital","territory":"UAE"},{"name":"Rashid Hospital","territory":"UAE"},{"name":"Royal Bahrain Hospital","territory":"Bahrain"},{"name":"Royal Hospital Muscat","territory":"Oman"},{"name":"Royale Hayat Hospital","territory":"Kuwait"},{"name":"Rumailah Hospital","territory":"Qatar"},{"name":"Rustaq Hospital","territory":"Oman"},{"name":"Salalah Hospital","territory":"Oman"},{"name":"Salmaniya Medical Complex","territory":"Bahrain"},{"name":"Saqr Hospital Ras Al Khaimah","territory":"UAE"},{"name":"Saudi Aramco Medical Organization Dhahran","territory":"Saudi Arabia - Eastern Province"},{"name":"Saudi German Hospital Dubai","territory":"UAE"},{"name":"Saudi German Hospital Jeddah","territory":"Saudi Arabia - Jeddah"},{"name":"Saudi German Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Security Forces Hospital Riyadh","territory":"Saudi Arabia - Riyadh"},{"name":"Sheikh Khalifa Hospital Umm Al Quwain","territory":"UAE"},{"name":"Sheikh Khalifa Medical City Abu Dhabi","territory":"UAE"},{"name":"Sheikh Shakhbout Medical City","territory":"UAE"},{"name":"Sidra Medicine","territory":"Qatar"},{"name":"Sitra Health Center Hospital","territory":"Bahrain"},{"name":"Sohar Hospital","territory":"Oman"},{"name":"Sultan Qaboos University Hospital","territory":"Oman"},{"name":"Sur Hospital","territory":"Oman"},{"name":"Tawam Hospital Al Ain","territory":"UAE"},{"name":"The View Hospital","territory":"Qatar"},{"name":"Thumbay Hospital Ajman","territory":"UAE"},{"name":"University Hospital Sharjah","territory":"UAE"},{"name":"Valiant Clinic and Hospital","territory":"UAE"},{"name":"Women's Wellness and Research Center","territory":"Qatar"},{"name":"Zulekha Hospital Dubai","territory":"UAE"},{"name":"Zulekha Hospital Sharjah","territory":"UAE"}];
 
 function showList(query){
@@ -216,6 +271,8 @@ hospitalInput.addEventListener('input',function(){showList(this.value);});
 hospitalInput.addEventListener('focus',function(){showList(this.value);});
 document.addEventListener('click',function(e){if(!e.target.closest('.hospital-wrapper'))hospitalList.classList.remove('open');});
 document.getElementById('visitDate').value=new Date().toISOString().split('T')[0];
+
+// ── RECORDING ──────────────────────────────────────────────────
 var mediaRecorder=null,chunks=[],seconds=0,timerInterval=null,streamRef=null,isRecording=false;
 var micBtn=document.getElementById('micBtn');
 var statusEl=document.getElementById('status');
@@ -224,7 +281,9 @@ var audioPlayer=document.getElementById('audioPlayer');
 var submitBtn=document.getElementById('submitBtn');
 var successCard=document.getElementById('successCard');
 var processingOverlay=document.getElementById('processingOverlay');
+
 micBtn.addEventListener('click',function(){if(!isRecording)startRecording();else stopRecording();});
+
 async function startRecording(){
   try{
     isRecording=true;chunks=[];seconds=0;
@@ -263,6 +322,7 @@ function stopRecording(){
   document.getElementById('recordingIndicator').className='recording-indicator';
   if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();
 }
+
 document.getElementById('clearBtn').addEventListener('click',function(){
   isRecording=false;transcriptText.value='';audioPlayer.style.display='none';audioPlayer.src='';
   successCard.style.display='none';processingOverlay.style.display='none';
@@ -273,13 +333,15 @@ document.getElementById('clearBtn').addEventListener('click',function(){
   clearInterval(timerInterval);seconds=0;document.getElementById('recordingTimer').textContent='0:00';
   if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});
   streamRef=null;mediaRecorder=null;
-  document.getElementById('editNotice').className='edit-notice';notListedCheck.checked=false;
+  document.getElementById('editNotice').className='edit-notice';
+  notListedCheck.checked=false;
   newAccountFields.classList.remove('visible');
   hospitalInput.style.display='';
   document.getElementById('newAccountName').value='';
   document.getElementById('newAccountCity').value='';
-
 });
+
+// ── REPORT PARSING ─────────────────────────────────────────────
 function parseReport(text){
   var sections={summary:'',contacts:'',outcomes:'',nextSteps:'',signals:'',sentiment:'',priority:''};
   var lines=text.split('\n'),current='';
@@ -321,19 +383,31 @@ function renderReport(text){
   if(s.priority)html+='<div class="report-section"><h4>Priority</h4><span class="priority-badge '+getPriorityClass(s.priority)+'">'+s.priority.replace(/\*\*/g,'').trim()+'</span></div>';
   return html||'<div class="report-section"><p>'+text+'</p></div>';
 }
+
+// ── SUBMIT ─────────────────────────────────────────────────────
 submitBtn.addEventListener('click',async function(){
   var transcript=transcriptText.value.trim();
   if(!transcript||transcript.length<3){alert('Please record a visit first.');return;}
-  var userSelect=document.getElementById('userSelect');
-  var selectedUser=userSelect.options[userSelect.selectedIndex];
-  if(!userSelect.value){alert('Please select your name.');return;}
-  var repName=selectedUser.getAttribute('data-name')||userSelect.value;
-  var userRole=selectedUser.getAttribute('data-role')||'Sales Rep';
-  var userId=userSelect.value;
-  // Save to localStorage for session persistence
-  localStorage.setItem('fieldiq_user_id',userId);
-  localStorage.setItem('fieldiq_user_name',repName);
-  localStorage.setItem('fieldiq_user_role',userRole);
+
+  // Get user identity
+  var repName='', userRole='', userId='';
+  var savedId=localStorage.getItem('fieldiq_user_id');
+  if(savedId){
+    userId=savedId;
+    repName=localStorage.getItem('fieldiq_user_name')||savedId;
+    userRole=localStorage.getItem('fieldiq_user_role')||'Sales Rep';
+  } else {
+    var sel=document.getElementById('userSelect');
+    if(!sel||!sel.value){alert('Please select your name.');return;}
+    var selectedOpt=sel.options[sel.selectedIndex];
+    userId=sel.value;
+    repName=selectedOpt.getAttribute('data-name')||sel.value;
+    userRole=selectedOpt.getAttribute('data-role')||'Sales Rep';
+    // Lock identity after first use
+    localStorage.setItem('fieldiq_user_id',userId);
+    localStorage.setItem('fieldiq_user_name',repName);
+    localStorage.setItem('fieldiq_user_role',userRole);
+  }
 
   var isNewAccount=notListedCheck.checked;
   var hospitalName='';
@@ -347,6 +421,7 @@ submitBtn.addEventListener('click',async function(){
 
   submitBtn.disabled=true;submitBtn.textContent='Processing...';
   processingOverlay.style.display='block';successCard.style.display='none';
+
   var latitude=null,longitude=null,accuracy=null;
   await new Promise(function(resolve){
     if(!navigator.geolocation){resolve();return;}
@@ -355,6 +430,7 @@ submitBtn.addEventListener('click',async function(){
       function(){resolve();},{timeout:3000,enableHighAccuracy:false}
     );
   });
+
   try{
     var aiRes=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       model:'claude-haiku-4-5-20251001',max_tokens:1000,
@@ -400,6 +476,10 @@ submitBtn.addEventListener('click',async function(){
     }
     processingOverlay.style.display='none';successCard.style.display='block';
     document.getElementById('reportContent').innerHTML=renderReport(result);
+
+    // Re-render identity panel (now locked)
+    renderUserIdentity();
+
   }catch(err){
     processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';
     alert('Error: '+err.message);
