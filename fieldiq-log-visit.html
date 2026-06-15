@@ -94,10 +94,7 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
         <label>City</label>
         <input type="text" id="newAccountCity" placeholder="e.g. Dubai, Riyadh, Doha">
       </div>
-      <div class="field">
-        <label>Country</label>
-        <input type="text" id="newAccountCountry" placeholder="e.g. UAE, KSA, Qatar">
-      </div>
+
     </div>
   </div>
   <div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
@@ -249,7 +246,7 @@ document.getElementById('clearBtn').addEventListener('click',function(){
   hospitalInput.style.display='';
   document.getElementById('newAccountName').value='';
   document.getElementById('newAccountCity').value='';
-  document.getElementById('newAccountCountry').value='';
+
 });
 function parseReport(text){
   var sections={summary:'',contacts:'',outcomes:'',nextSteps:'',signals:'',sentiment:'',priority:''};
