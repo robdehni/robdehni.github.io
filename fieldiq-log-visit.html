@@ -116,8 +116,10 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
     </select>
   </div>
   <div class="field field-full">
-    <label>Rep Name</label>
-    <input type="text" id="repName" placeholder="Enter your name" autocomplete="off">
+    <label>Who are you?</label>
+    <select id="userSelect" style="width:100%;padding:11px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:#fff;font-size:14px;outline:none">
+      <option value="">Loading users...</option>
+    </select>
   </div>
 </div>
 <div class="mic-section">
@@ -149,6 +151,30 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 window.onerror=function(msg){document.getElementById('status').textContent='Error: '+msg;};
+
+async function loadUsers(){
+  try{
+    var res=await fetch(WORKER+'/get-users');
+    var data=await res.json();
+    var sel=document.getElementById('userSelect');
+    sel.innerHTML='<option value="">Select your name...</option>';
+    if(data.records){
+      data.records.forEach(function(r){
+        var f=r.fields;
+        if(f['Active?']===false)return;
+        var opt=document.createElement('option');
+        opt.value=f['User ID']||'';
+        opt.textContent=(f['Display Name']||f['User ID']||'Unknown');
+        opt.setAttribute('data-name',f['Display Name']||'');
+        opt.setAttribute('data-role',f['Role']||'Sales Rep');
+        sel.appendChild(opt);
+      });
+    }
+  }catch(err){
+    document.getElementById('userSelect').innerHTML='<option value="">Could not load users</option>';
+  }
+}
+loadUsers();
 
 // New account toggle
 var notListedCheck=document.getElementById('notListedCheck');
@@ -295,8 +321,12 @@ function renderReport(text){
 submitBtn.addEventListener('click',async function(){
   var transcript=transcriptText.value.trim();
   if(!transcript||transcript.length<3){alert('Please record a visit first.');return;}
-  var repName=document.getElementById('repName').value.trim();
-  if(!repName){alert('Please enter your name in the Rep Name field.');return;}
+  var userSelect=document.getElementById('userSelect');
+  var selectedUser=userSelect.options[userSelect.selectedIndex];
+  if(!userSelect.value){alert('Please select your name.');return;}
+  var repName=selectedUser.getAttribute('data-name')||userSelect.value;
+  var userRole=selectedUser.getAttribute('data-role')||'Sales Rep';
+  var userId=userSelect.value;
 
   var isNewAccount=notListedCheck.checked;
   var hospitalName='';
@@ -337,6 +367,9 @@ submitBtn.addEventListener('click',async function(){
       'Territory': territory,
       'Visit Type': visitType,
       'Rep Name': repName,
+      'User ID': userId,
+      'User Role': userRole,
+      'Display Name': repName,
       'Raw Transcript': transcript,
       'AI Summary': result,
       'Outcome': getOutcome(parsed.sentiment),
