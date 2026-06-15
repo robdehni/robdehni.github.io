@@ -92,7 +92,7 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 <div id="dashContent" style="display:none">
   <div class="kpi-grid">
     <div class="kpi-card"><div class="kpi-label">Total Visits</div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-sub">All time</div></div>
-    <div class="kpi-card"><div class="kpi-label">Today</div><div class="kpi-value" id="kpiToday">0</div><div class="kpi-sub" id="kpiTodayDate">—</div></div>
+    <div class="kpi-card"><div class="kpi-label">New Accounts</div><div class="kpi-value" id="kpiNewAccounts">0</div><div class="kpi-sub">Pending review</div></div>
     <div class="kpi-card"><div class="kpi-label">This Week</div><div class="kpi-value" id="kpiWeek">0</div><div class="kpi-sub">Last 7 days</div></div>
     <div class="kpi-card"><div class="kpi-label">Active Reps</div><div class="kpi-value" id="kpiReps">0</div><div class="kpi-sub">Unique reps</div></div>
   </div>
@@ -224,13 +224,14 @@ function buildDashboard(records){
   allRecords=records;
   var today=new Date();today.setHours(0,0,0,0);
   var weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
-  var todayCount=0,weekCount=0,reps={},territories={},sentCounts={positive:0,neutral:0,negative:0,unknown:0},signals=[];
+  var todayCount=0,weekCount=0,newAccountsCount=0,reps={},territories={},sentCounts={positive:0,neutral:0,negative:0,unknown:0},signals=[];
   records.forEach(function(r){
     var f=r.fields;
     var sent=getSentiment(f['AI Summary']||'');
     sentCounts[sent]=(sentCounts[sent]||0)+1;
     var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
     if(vDate){if(vDate>=today)todayCount++;if(vDate>=weekAgo)weekCount++;}
+    if(f["New Account"]===true||f["New Account"]==="true"||f["New Account"]===1||f["New Account"]==="1")newAccountsCount++;
     var rep=f['Rep Name']||'Unknown';
     if(!reps[rep])reps[rep]={count:0,lastVisit:null,sentiments:[]};
     reps[rep].count++;reps[rep].sentiments.push(sent);
@@ -241,8 +242,7 @@ function buildDashboard(records){
     if(sig&&sig.length>10)signals.push({hospital:f['Hospital Name']||'Unknown',signal:sig});
   });
   document.getElementById('kpiTotal').textContent=records.length;
-  document.getElementById('kpiToday').textContent=todayCount;
-  document.getElementById('kpiTodayDate').textContent=today.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  document.getElementById('kpiNewAccounts').textContent=newAccountsCount;
   document.getElementById('kpiWeek').textContent=weekCount;
   document.getElementById('kpiReps').textContent=Object.keys(reps).length;
   var ws=sentCounts.positive+sentCounts.neutral+sentCounts.negative;
