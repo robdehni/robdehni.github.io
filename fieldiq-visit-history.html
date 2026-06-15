@@ -6,7 +6,7 @@
 <title>FieldIQ — Visit History</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;padding:16px;padding-bottom:32px}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;padding:16px;padding-bottom:32px;overflow-x:hidden}
 .topbar{text-align:center;margin-bottom:16px;padding-top:8px}
 .topbar h1{font-size:22px;color:#00d4ff;font-weight:700}
 .topbar p{color:#555;font-size:12px;margin-top:3px}
@@ -34,9 +34,14 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;color:#333;font-size:13px;padding:40px 20px}
 .count-label{font-size:11px;color:#444;margin-bottom:12px;text-align:center}
+.container{max-width:900px;margin:0 auto;width:100%}
+.visit-card{width:100%;overflow-wrap:break-word;word-break:break-word}
+.visit-summary{white-space:normal;overflow-wrap:break-word;word-break:break-word}
+.visit-account{overflow-wrap:break-word;word-break:break-word}
 </style>
 </head>
 <body>
+<div class="container">
 <div class="topbar">
   <h1>Visit History</h1>
   <p id="lastUpdated">Loading...</p>
@@ -94,7 +99,7 @@ function renderVisits(records){
     var f=r.fields;
     var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
     if(vDate&&vDate>=weekAgo)thisWeek++;
-    if(f['New Account']===true||f['New Account']==='true'||f['New Account']===1)newAccounts++;
+    if(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1')newAccounts++;
   });
 
   document.getElementById('statTotal').textContent=records.length;
@@ -111,7 +116,7 @@ function renderVisits(records){
   sorted.forEach(function(r){
     var f=r.fields;
     var priority=f['Priority']||'Medium';
-    var isNew=(f['New Account']===true||f['New Account']==='true'||f['New Account']===1);
+    var isNew=(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1');
     var summary=truncateSummary(f['AI Summary']||f['Meeting Notes']||'',180);
 
     html+=
@@ -148,5 +153,6 @@ async function loadHistory(){
 
 loadHistory();
 </script>
+</div>
 </body>
 </html>
