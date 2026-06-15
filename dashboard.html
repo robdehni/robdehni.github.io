@@ -81,6 +81,15 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 .spinner{width:32px;height:32px;border:3px solid #1a1a1a;border-top:3px solid #00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;color:#333;font-size:13px;padding:20px}
+.filter-bar{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:12px;margin-bottom:16px}
+.filter-bar h3{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.filter-select{width:100%;padding:9px 10px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:#ccc;font-size:12px;outline:none}
+.filter-select option{background:#1a1a1a}
+.filter-btns{display:flex;gap:8px}
+.fbtn-apply{flex:1;padding:9px;background:#00d4ff;color:#000;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+.fbtn-reset{flex:1;padding:9px;background:#1a1a1a;color:#555;border:1px solid #222;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+.filter-active{font-size:10px;color:#00d4ff;margin-top:6px;text-align:center;min-height:14px}
 </style>
 </head>
 <body>
@@ -88,6 +97,37 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
   <h1>FieldIQ<span id="managerBadge" style="display:none" class="manager-badge">Manager</span></h1>
   <p id="lastUpdated">Loading dashboard...</p>
   <a href="https://fieldiq.biz/fieldiq.html" style="display:inline-block;background:#00d4ff;color:#000;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px">← Home</a>
+</div>
+<div id="filterBar" class="filter-bar" style="display:none">
+  <h3>Manager Filters</h3>
+  <div class="filter-row">
+    <select class="filter-select" id="filterRep">
+      <option value="">All Reps</option>
+    </select>
+    <select class="filter-select" id="filterTerritory">
+      <option value="">All Territories</option>
+      <option>UAE</option><option>KSA</option><option>Qatar</option>
+      <option>Kuwait</option><option>Bahrain</option><option>Oman</option>
+    </select>
+  </div>
+  <div class="filter-row">
+    <select class="filter-select" id="filterDate">
+      <option value="">All Time</option>
+      <option value="7">This Week</option>
+      <option value="month">This Month</option>
+      <option value="30">Last 30 Days</option>
+      <option value="90">Last 90 Days</option>
+    </select>
+    <select class="filter-select" id="filterPriority">
+      <option value="">All Priorities</option>
+      <option>High</option><option>Medium</option><option>Low</option>
+    </select>
+  </div>
+  <div class="filter-btns">
+    <button class="fbtn-apply" onclick="applyFilters()">Apply Filters</button>
+    <button class="fbtn-reset" onclick="resetFilters()">Reset</button>
+  </div>
+  <div class="filter-active" id="filterStatus"></div>
 </div>
 <div id="dashContent" style="display:none">
   <div class="kpi-grid">
@@ -148,7 +188,7 @@ async function updatePriority(recordId,newPriority,cardEl){
     if(res.ok){
       var rec=allRecords.find(function(r){return r.id===recordId;});
       if(rec)rec.fields['Priority']=newPriority;
-      renderPrioritySection(allRecords);
+      applyFilters();
     }else{
       btns.forEach(function(b){b.disabled=false;});
       alert('Failed to update priority. Please try again.');
@@ -281,12 +321,74 @@ function buildDashboard(records){
   document.getElementById('dashContent').style.display='block';
   document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
 }
+var allRecordsRaw=[];
+
+function populateRepFilter(records){
+  var reps={};
+  records.forEach(function(r){
+    var rep=r.fields['Rep Name']||'';
+    if(rep){rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();reps[rep]=1;}
+  });
+  var sel=document.getElementById('filterRep');
+  while(sel.options.length>1)sel.remove(1);
+  Object.keys(reps).sort().forEach(function(r){
+    var o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);
+  });
+}
+
+function getFilteredRecords(){
+  var rep=document.getElementById('filterRep').value;
+  var terr=document.getElementById('filterTerritory').value;
+  var days=document.getElementById('filterDate').value;
+  var priority=document.getElementById('filterPriority').value;
+  var cutoff=null;
+  if(days==='month'){var now=new Date();cutoff=new Date(now.getFullYear(),now.getMonth(),1);}
+  else if(days){cutoff=new Date(Date.now()-parseInt(days)*24*60*60*1000);}
+  return allRecordsRaw.filter(function(r){
+    var f=r.fields;
+    var repName=(f['Rep Name']||'').trim();
+    repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();
+    if(rep&&repName!==rep)return false;
+    if(terr&&f['Territory']!==terr)return false;
+    if(priority&&f['Priority']!==priority)return false;
+    if(cutoff&&f['Visit Date']&&new Date(f['Visit Date'])<cutoff)return false;
+    return true;
+  });
+}
+
+function applyFilters(){
+  var filtered=getFilteredRecords();
+  var rep=document.getElementById('filterRep').value;
+  var terr=document.getElementById('filterTerritory').value;
+  var days=document.getElementById('filterDate').value;
+  var priority=document.getElementById('filterPriority').value;
+  var parts=[];
+  if(rep)parts.push('Rep: '+rep);
+  if(terr)parts.push('Territory: '+terr);
+  if(days)parts.push('Last '+days+' days');
+  if(priority)parts.push('Priority: '+priority);
+  document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+filtered.length+' visits)':'';
+  buildDashboard(filtered);
+}
+
+function resetFilters(){
+  document.getElementById('filterRep').value='';
+  document.getElementById('filterTerritory').value='';
+  document.getElementById('filterDate').value='';
+  document.getElementById('filterPriority').value='';
+  document.getElementById('filterStatus').textContent='';
+  buildDashboard(allRecordsRaw);
+}
+
 async function loadDashboard(){
   try{
     var res=await fetch(WORKER_URL+'/get-visits');
     var data=await res.json();
     if(!res.ok)throw new Error(JSON.stringify(data));
-    buildDashboard(data.records||[]);
+    allRecordsRaw=data.records||[];
+    populateRepFilter(allRecordsRaw);
+    document.getElementById('filterBar').style.display='block';
+    buildDashboard(allRecordsRaw);
   }catch(err){
     document.getElementById('loadingEl').textContent='Failed to load: '+err.message;
   }
