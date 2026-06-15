@@ -34,7 +34,17 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;color:#333;font-size:13px;padding:40px 20px}
 .count-label{font-size:11px;color:#444;margin-bottom:12px;text-align:center}
-.container{max-width:900px;margin:0 auto;width:100%}
+.container{max-width:1100px;margin:0 auto;width:100%;padding:0 8px}
+@media(min-width:768px){
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+  .stat-pill{padding:16px 20px;font-size:13px}
+  .stat-pill span{font-size:28px}
+  .visit-card{border:1px solid #2a2a2a;border-radius:14px;padding:18px 20px;margin-bottom:14px}
+  .visit-account{font-size:16px}
+  .visit-date{font-size:12px}
+  .visit-summary{font-size:12px;max-height:none}
+  .badge{font-size:11px;padding:3px 10px}
+}
 .visit-card{width:100%;overflow-wrap:break-word;word-break:break-word}
 .visit-summary{white-space:normal;overflow-wrap:break-word;word-break:break-word}
 .visit-account{overflow-wrap:break-word;word-break:break-word}
@@ -46,7 +56,7 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
   <h1>Visit History</h1>
   <p id="lastUpdated">Loading...</p>
 </div>
-<a class="home-btn" href="https://fieldiq.biz/fieldiq.html">← Back to FieldIQ Home</a>
+<a href="https://fieldiq.biz/fieldiq.html" style="display:inline-block;background:#00d4ff;color:#000;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px">← Home</a>
 
 <div class="stats-row">
   <div class="stat-pill"><span id="statTotal">—</span>My Visits</div>
