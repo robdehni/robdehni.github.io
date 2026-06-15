@@ -232,7 +232,7 @@ function buildDashboard(records){
     var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
     if(vDate){if(vDate>=today)todayCount++;if(vDate>=weekAgo)weekCount++;}
     if(f["New Account"]===true||f["New Account"]==="true"||f["New Account"]===1||f["New Account"]==="1")newAccountsCount++;
-    var rep=f['Rep Name']||'Unknown';
+    var rep=f['Rep Name']||'Unknown';rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
     if(!reps[rep])reps[rep]={count:0,lastVisit:null,sentiments:[]};
     reps[rep].count++;reps[rep].sentiments.push(sent);
     if(vDate&&(!reps[rep].lastVisit||vDate>reps[rep].lastVisit))reps[rep].lastVisit=vDate;
