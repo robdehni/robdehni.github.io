@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldIQ — Open Actions</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;padding:16px;padding-bottom:40px}
+.container{max-width:900px;margin:0 auto}
+.topbar{text-align:center;margin-bottom:16px;padding-top:8px}
+.topbar h1{font-size:22px;color:#00d4ff;font-weight:700}
+.topbar p{color:#555;font-size:12px;margin-top:3px}
+.home-btn{display:inline-block;background:#00d4ff;color:#000;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px}
+.manager-badge{display:inline-block;background:#ff880022;color:#ffaa44;border:1px solid #ff880033;border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px;margin-left:8px;text-transform:uppercase}
+.filter-bar{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:12px;margin-bottom:16px}
+.filter-bar h3{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.filter-select{width:100%;padding:9px 10px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:#ccc;font-size:12px;outline:none}
+.filter-select option{background:#1a1a1a}
+.filter-btns{display:flex;gap:8px}
+.fbtn-apply{flex:1;padding:9px;background:#00d4ff;color:#000;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+.fbtn-reset{flex:1;padding:9px;background:#1a1a1a;color:#555;border:1px solid #222;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+.filter-status{font-size:10px;color:#00d4ff;margin-top:6px;text-align:center;min-height:14px}
+.stats-row{display:flex;gap:8px;margin-bottom:16px}
+.stat-pill{background:#111;border:1px solid #1a1a1a;border-radius:8px;padding:10px 12px;font-size:11px;color:#555;flex:1;text-align:center}
+.stat-pill span{display:block;font-size:22px;font-weight:700;color:#00d4ff;margin-bottom:2px}
+.stat-pill.high span{color:#ff6666}
+.section-title{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:8px}
+.account-block{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:14px;margin-bottom:10px}
+.account-block.high{border-left:3px solid #ff4444}
+.account-block.medium{border-left:3px solid #ffaa44}
+.account-block.low{border-left:3px solid #44cc88}
+.account-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.account-name{font-size:14px;font-weight:700;color:#fff}
+.account-meta{font-size:11px;color:#555;margin-top:2px}
+.priority-badge{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600;white-space:nowrap}
+.badge-high{background:#ff444422;color:#ff6666;border:1px solid #ff444433}
+.badge-medium{background:#ff880022;color:#ffaa44;border:1px solid #ff880033}
+.badge-low{background:#00880022;color:#44cc88;border:1px solid #00880033}
+.action-list{margin-top:8px;border-top:1px solid #1a1a1a;padding-top:8px}
+.action-item{font-size:12px;color:#aaa;padding:5px 0;border-bottom:1px solid #0d0d0d;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.action-item:last-child{border-bottom:none;padding-bottom:0}
+.action-bullet{color:#00d4ff;flex-shrink:0;margin-top:1px}
+.action-footer{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.af-badge{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600}
+.af-rep{background:#00d4ff11;color:#00d4ff;border:1px solid #00d4ff22}
+.af-terr{background:#1a1a1a;color:#555;border:1px solid #222}
+.af-date{background:#1a1a1a;color:#555;border:1px solid #222}
+.loading{text-align:center;padding:60px 20px;color:#555}
+.spinner{width:32px;height:32px;border:3px solid #1a1a1a;border-top:3px solid #00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;color:#333;font-size:13px;padding:30px}
+.access-denied{text-align:center;padding:60px 20px}
+.access-denied h2{color:#ff6666;font-size:18px;margin-bottom:12px}
+.access-denied p{color:#555;font-size:13px}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="topbar">
+  <h1>Open Actions <span class="manager-badge">Manager</span></h1>
+  <p id="lastUpdated">Loading...</p>
+</div>
+<a class="home-btn" href="https://fieldiq.biz/fieldiq.html">← Home</a>
+
+<div id="accessDenied" class="access-denied" style="display:none">
+  <h2>Manager Access Required</h2>
+  <p>Open this page with ?mode=manager to access Open Actions.</p>
+  <p style="margin-top:8px"><a href="fieldiq-actions.html?mode=manager" style="color:#00d4ff">Open Manager View →</a></p>
+</div>
+
+<div id="mainContent" style="display:none">
+  <div class="filter-bar">
+    <h3>Filters</h3>
+    <div class="filter-row">
+      <select class="filter-select" id="filterRep"><option value="">All Reps</option></select>
+      <select class="filter-select" id="filterTerritory">
+        <option value="">All Territories</option>
+        <option>UAE</option><option>KSA</option><option>Qatar</option>
+        <option>Kuwait</option><option>Bahrain</option><option>Oman</option>
+      </select>
+    </div>
+    <div class="filter-row">
+      <select class="filter-select" id="filterPriority">
+        <option value="">All Priorities</option>
+        <option>High</option><option>Medium</option><option>Low</option>
+      </select>
+      <select class="filter-select" id="filterDate">
+        <option value="">All Time</option>
+        <option value="7">This Week</option>
+        <option value="month">This Month</option>
+        <option value="30">Last 30 Days</option>
+        <option value="90">Last 90 Days</option>
+      </select>
+    </div>
+    <div class="filter-btns">
+      <button class="fbtn-apply" onclick="applyFilters()">Apply</button>
+      <button class="fbtn-reset" onclick="resetFilters()">Reset</button>
+    </div>
+    <div class="filter-status" id="filterStatus"></div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-pill high"><span id="statHigh">0</span>High</div>
+    <div class="stat-pill"><span id="statTotal">0</span>Total Actions</div>
+    <div class="stat-pill"><span id="statAccounts">0</span>Accounts</div>
+  </div>
+
+  <div id="actionContent"></div>
+</div>
+
+<div class="loading" id="loadingEl"><div class="spinner"></div>Loading actions...</div>
+</div>
+
+<script>
+var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+var allRecords=[];
+var isManager=window.location.search.indexOf('mode=manager')>-1;
+
+function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+
+function parseActions(text){
+  if(!text)return[];
+  var lines=text.split('\n');
+  var actions=[];
+  lines.forEach(function(line){
+    line=line.trim();
+    line=line.replace(/^\d+\.\s*/,'').replace(/^[-•*]\s*/,'').trim();
+    if(line.length>5&&line.length<300)actions.push(line);
+  });
+  return actions;
+}
+
+function getPriorityClass(p){
+  if(!p)return'medium';
+  p=p.toLowerCase();
+  if(p==='high')return'high';
+  if(p==='low')return'low';
+  return'medium';
+}
+
+function getBadgeClass(p){
+  if(!p)return'badge-medium';
+  p=p.toLowerCase();
+  if(p==='high')return'badge-high';
+  if(p==='low')return'badge-low';
+  return'badge-medium';
+}
+
+function populateRepFilter(records){
+  var reps={};
+  records.forEach(function(r){
+    var rep=r.fields['Rep Name']||'';
+    if(rep){rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();reps[rep]=1;}
+  });
+  var sel=document.getElementById('filterRep');
+  while(sel.options.length>1)sel.remove(1);
+  Object.keys(reps).sort().forEach(function(r){
+    var o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);
+  });
+}
+
+function getFilteredRecords(){
+  var rep=document.getElementById('filterRep').value;
+  var terr=document.getElementById('filterTerritory').value;
+  var priority=document.getElementById('filterPriority').value;
+  var days=document.getElementById('filterDate').value;
+  var cutoff=null;
+  if(days==='month'){var now=new Date();cutoff=new Date(now.getFullYear(),now.getMonth(),1);}
+  else if(days){cutoff=new Date(Date.now()-parseInt(days)*24*60*60*1000);}
+  return allRecords.filter(function(r){
+    var f=r.fields;
+    if(!f['Action Items']&&!f['Meeting Notes']&&!f['Next Steps'])return false;
+    var repName=(f['Rep Name']||'').trim();
+    repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();
+    if(rep&&repName!==rep)return false;
+    if(terr&&f['Territory']!==terr)return false;
+    if(priority&&f['Priority']!==priority)return false;
+    if(cutoff&&f['Visit Date']&&new Date(f['Visit Date'])<cutoff)return false;
+    return true;
+  });
+}
+
+function buildActionsView(records){
+  // Group by hospital, deduplicate actions
+  var accountMap={};
+  records.forEach(function(r){
+    var f=r.fields;
+    var hospital=f['Hospital Name']||'Unknown Account';
+    var actions=parseActions(f['Action Items']||f['Meeting Notes']||f['Next Steps']||'');
+    if(actions.length===0)return;
+    if(!accountMap[hospital]){
+      accountMap[hospital]={
+        name:hospital,
+        territory:f['Territory']||'',
+        priority:f['Priority']||'Medium',
+        rep:(f['Rep Name']||'').trim(),
+        lastVisit:f['Visit Date']||'',
+        actions:[]
+      };
+    }
+    // Deduplicate actions
+    actions.forEach(function(a){
+      var exists=accountMap[hospital].actions.some(function(existing){
+        return existing.toLowerCase().substring(0,40)===a.toLowerCase().substring(0,40);
+      });
+      if(!exists)accountMap[hospital].actions.push(a);
+    });
+    // Keep highest priority
+    var p=f['Priority']||'Medium';
+    if(p==='High')accountMap[hospital].priority='High';
+    else if(p==='Medium'&&accountMap[hospital].priority==='Low')accountMap[hospital].priority='Medium';
+    // Keep most recent rep
+    if(f['Visit Date']&&(!accountMap[hospital].lastVisit||f['Visit Date']>accountMap[hospital].lastVisit)){
+      accountMap[hospital].lastVisit=f['Visit Date'];
+      accountMap[hospital].rep=(f['Rep Name']||'').trim();
+      accountMap[hospital].rep=accountMap[hospital].rep.charAt(0).toUpperCase()+accountMap[hospital].rep.slice(1).toLowerCase();
+    }
+  });
+
+  var accounts=Object.values(accountMap);
+  // Sort: High first, then Medium, then Low
+  var order={High:0,Medium:1,Low:2};
+  accounts.sort(function(a,b){return(order[a.priority]||1)-(order[b.priority]||1);});
+
+  var high=accounts.filter(function(a){return a.priority==='High';});
+  var medium=accounts.filter(function(a){return a.priority==='Medium';});
+  var low=accounts.filter(function(a){return a.priority==='Low';});
+
+  var totalActions=accounts.reduce(function(sum,a){return sum+a.actions.length;},0);
+  document.getElementById('statHigh').textContent=high.length;
+  document.getElementById('statTotal').textContent=totalActions;
+  document.getElementById('statAccounts').textContent=accounts.length;
+
+  function renderAccounts(list){
+    if(list.length===0)return'<div class="empty">None</div>';
+    return list.map(function(acc){
+      var pc=getPriorityClass(acc.priority);
+      var bc=getBadgeClass(acc.priority);
+      return'<div class="account-block '+pc+'">'+
+        '<div class="account-header">'+
+          '<div>'+
+            '<div class="account-name">'+acc.name+'</div>'+
+            '<div class="account-meta">'+(acc.territory||'')+(acc.lastVisit?' · Last visit: '+formatDate(acc.lastVisit):'')+'</div>'+
+          '</div>'+
+          '<span class="priority-badge '+bc+'">'+acc.priority+'</span>'+
+        '</div>'+
+        '<div class="action-list">'+
+          acc.actions.map(function(a){
+            return'<div class="action-item"><span class="action-bullet">→</span>'+a+'</div>';
+          }).join('')+
+        '</div>'+
+        '<div class="action-footer">'+
+          (acc.rep?'<span class="af-badge af-rep">'+acc.rep+'</span>':'')+
+          (acc.territory?'<span class="af-badge af-terr">'+acc.territory+'</span>':'')+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  var html='';
+  if(high.length>0)html+='<div class="section-title">🔴 High Priority Actions</div>'+renderAccounts(high);
+  if(medium.length>0)html+='<div class="section-title">🟠 Medium Priority Actions</div>'+renderAccounts(medium);
+  if(low.length>0)html+='<div class="section-title">🟢 Low Priority Actions</div>'+renderAccounts(low);
+  if(html==='')html='<div class="empty">No open actions found.</div>';
+
+  document.getElementById('actionContent').innerHTML=html;
+  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
+}
+
+function applyFilters(){
+  var filtered=getFilteredRecords();
+  var rep=document.getElementById('filterRep').value;
+  var terr=document.getElementById('filterTerritory').value;
+  var priority=document.getElementById('filterPriority').value;
+  var days=document.getElementById('filterDate').value;
+  var parts=[];
+  if(rep)parts.push('Rep: '+rep);
+  if(terr)parts.push(terr);
+  if(priority)parts.push(priority+' Priority');
+  if(days)parts.push(days==='month'?'This Month':'Last '+days+' days');
+  document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · '):'';
+  buildActionsView(filtered);
+}
+
+function resetFilters(){
+  document.getElementById('filterRep').value='';
+  document.getElementById('filterTerritory').value='';
+  document.getElementById('filterPriority').value='';
+  document.getElementById('filterDate').value='';
+  document.getElementById('filterStatus').textContent='';
+  buildActionsView(allRecords);
+}
+
+async function loadActions(){
+  if(!isManager){
+    document.getElementById('loadingEl').style.display='none';
+    document.getElementById('accessDenied').style.display='block';
+    return;
+  }
+  try{
+    var res=await fetch(WORKER+'/get-visits');
+    var data=await res.json();
+    if(!res.ok)throw new Error(JSON.stringify(data));
+    allRecords=data.records||[];
+    populateRepFilter(allRecords);
+    buildActionsView(allRecords);
+    document.getElementById('loadingEl').style.display='none';
+    document.getElementById('mainContent').style.display='block';
+  }catch(err){
+    document.getElementById('loadingEl').textContent='Failed to load: '+err.message;
+  }
+}
+
+loadActions();
+</script>
+</body>
+</html>
