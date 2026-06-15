@@ -3,158 +3,366 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FieldIQ — Quick Start Guide</title>
+<title>FieldIQ — AI Insights</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;padding:16px;padding-bottom:40px}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;padding:16px;padding-bottom:80px}
 .topbar{text-align:center;margin-bottom:20px;padding-top:8px}
 .topbar h1{font-size:22px;color:#00d4ff;font-weight:700}
 .topbar p{color:#555;font-size:12px;margin-top:3px}
-.home-btn{display:inline-block;color:#555;font-size:12px;text-decoration:none;padding:5px 12px;border:1px solid #222;border-radius:6px;background:#1a1a1a;margin-bottom:20px}
+.home-btn{display:inline-block;color:#555;font-size:12px;text-decoration:none;padding:5px 12px;border:1px solid #222;border-radius:6px;background:#1a1a1a;margin-bottom:12px}
 .home-btn:hover{color:#00d4ff;border-color:#00d4ff}
-.section{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:16px;margin-bottom:12px}
-.section-num{display:inline-block;background:#00d4ff;color:#000;font-size:11px;font-weight:800;width:22px;height:22px;border-radius:50%;text-align:center;line-height:22px;margin-right:8px;flex-shrink:0}
-.section-title{font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;margin-bottom:10px}
-.step{font-size:13px;color:#aaa;line-height:1.7;padding:6px 0;border-bottom:1px solid #1a1a1a}
-.step:last-child{border-bottom:none;padding-bottom:0}
-.step strong{color:#fff}
-.tip{background:#0d1a0d;border:1px solid #00ff4422;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12px;color:#44cc88;line-height:1.6}
-.warning{background:#1a0d0d;border:1px solid #ff444422;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12px;color:#ff8888;line-height:1.6}
-.info{background:#0d0d1a;border:1px solid #00d4ff22;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12px;color:#00d4ff;line-height:1.6}
-.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700}
-.badge-blue{background:#00d4ff22;color:#00d4ff;border:1px solid #00d4ff33}
-.badge-green{background:#00880022;color:#44cc88;border:1px solid #00880033}
-.badge-orange{background:#ff880022;color:#ffaa44;border:1px solid #ff880033}
-.badge-red{background:#ff000022;color:#ff6666;border:1px solid #ff444433}
-.footer{text-align:center;color:#2a2a2a;font-size:11px;margin-top:24px}
+.obs-note{background:#111;border:1px solid #1a1a1a;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#555;text-align:center}
+.obs-note span{color:#00d4ff}
+.search-box{width:100%;padding:13px 16px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;color:#fff;font-size:15px;outline:none;margin-bottom:8px}
+.search-box:focus{border-color:#00d4ff}
+.search-box::placeholder{color:#444}
+.search-result{background:#0d1a1a;border:1px solid #00d4ff33;border-radius:12px;padding:16px;margin-bottom:16px}
+.search-result-name{font-size:16px;font-weight:700;color:#00d4ff;margin-bottom:4px}
+.search-result-meta{font-size:11px;color:#555;margin-bottom:12px}
+.sr-section{margin-bottom:12px}
+.sr-label{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px}
+.sr-value{font-size:12px;color:#ccc;line-height:1.6}
+.sr-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tag{font-size:10px;padding:3px 10px;border-radius:6px;font-weight:600}
+.tag-blue{background:#00d4ff11;color:#00d4ff;border:1px solid #00d4ff22}
+.tag-green{background:#44cc8822;color:#44cc88;border:1px solid #44cc8844}
+.tag-orange{background:#ffaa4422;color:#ffaa44;border:1px solid #ffaa4444}
+.tag-red{background:#ff666622;color:#ff6666;border:1px solid #ff666644}
+.tag-purple{background:#bb88ff22;color:#bb88ff;border:1px solid #bb88ff33}
+.visit-item{background:#111;border-radius:8px;padding:10px;margin-bottom:6px;border-left:3px solid #1a1a1a}
+.visit-item.positive{border-left-color:#44cc88}
+.visit-item.negative{border-left-color:#ff6666}
+.visit-item.neutral{border-left-color:#ffaa44}
+.visit-header{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+.visit-rep{color:#00d4ff;font-weight:600}
+.visit-date{color:#555}
+.visit-summary{font-size:11px;color:#777;line-height:1.5}
+.no-result{text-align:center;color:#333;font-size:13px;padding:20px}
+.section-title{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #1a1a1a}
+.insight-card{background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:12px;margin-bottom:8px}
+.insight-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #0d0d0d;font-size:12px}
+.insight-row:last-child{border-bottom:none}
+.insight-label{color:#ccc}
+.insight-value{color:#00d4ff;font-weight:700}
+.insight-bar-bg{background:#1a1a1a;border-radius:4px;height:5px;margin-top:3px}
+.insight-bar-fill{border-radius:4px;height:5px}
+.account-card{background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:12px;margin-bottom:8px}
+.account-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:6px}
+.account-meta{font-size:11px;color:#555;margin-bottom:6px}
+.account-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.memory-card{background:#111;border-left:3px solid #00d4ff;border-radius:0 10px 10px 0;padding:12px;margin-bottom:8px}
+.memory-hospital{font-size:13px;font-weight:600;color:#00d4ff;margin-bottom:4px}
+.memory-line{font-size:11px;color:#888;margin:3px 0;line-height:1.5}
+.memory-label{color:#555;font-size:10px;text-transform:uppercase;letter-spacing:0.5px}
+.sentiment-pill{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600}
+.pill-positive{background:#44cc8822;color:#44cc88;border:1px solid #44cc8844}
+.pill-neutral{background:#ffaa4422;color:#ffaa44;border:1px solid #ffaa4444}
+.pill-negative{background:#ff666622;color:#ff6666;border:1px solid #ff666644}
+.empty{text-align:center;color:#333;font-size:13px;padding:20px}
+.loading{text-align:center;padding:40px;color:#555;font-size:14px}
+.spinner{width:32px;height:32px;border:3px solid #1a1a1a;border-top:3px solid #00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:1px solid #1a1a1a;display:flex;z-index:9999}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:#555;font-size:11px;font-weight:600;letter-spacing:0.3px;transition:color 0.2s}
+.nav-item.active{color:#00d4ff}
+.nav-icon{font-size:22px;margin-bottom:3px}
 </style>
 </head>
 <body>
 <div class="topbar">
-  <h1>📖 Quick Start Guide</h1>
-  <p>FieldIQ — Territory Intelligence Platform</p>
+  <h1>🧠 AI Insights</h1>
+  <p id="lastUpdated">Loading intelligence...</p>
+  <a href="https://fieldiq.biz/fieldiq.html" style="display:inline-block;background:#00d4ff;color:#000;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px">← Home</a>
 </div>
-<a href="./fieldiq.html" style="display:inline-block;background:#00d4ff;color:#000;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px">← Home</a>
-
-
-<!-- 2 Minute Quick Start -->
-<div class="section" style="border-color:#00d4ff44;background:#00d4ff08">
-  <div class="section-title" style="color:#00d4ff">⚡ 2-Minute First Visit</div>
-  <div class="step"><strong>1.</strong> Go to <strong>fieldiq.biz</strong> → enter email → get PIN → log in</div>
-  <div class="step"><strong>2.</strong> Tap <strong>Log Visit</strong></div>
-  <div class="step"><strong>3.</strong> Search and select your hospital</div>
-  <div class="step"><strong>4.</strong> Enter your name, territory, visit type</div>
-  <div class="step"><strong>5.</strong> Tap 🎙️ — speak about your visit — tap again to stop</div>
-  <div class="step"><strong>6.</strong> Tap <strong>Process Visit Log</strong></div>
-  <div class="tip">✅ That's it. FieldIQ does the rest automatically.</div>
+<div class="obs-note">
+  Observations based on <span id="recordCount">0</span> field visits collected so far.
+  Intelligence grows with every visit logged.
 </div>
 
-<!-- GPS Notice -->
-<div class="section" style="border-color:#9b59b622;background:#9b59b608">
-  <div class="section-title" style="color:#bb88ff">📍 GPS & Privacy</div>
-  <div class="step">GPS location is captured <strong>only at the moment you submit a visit</strong>.</div>
-  <div class="step">FieldIQ does <strong>not</strong> continuously track your location.</div>
-  <div class="step">Location data is used only to plot your visit on the territory map.</div>
-  <div class="step">GPS is captured only when a visit is submitted and is used as <strong>proof of presence</strong> for field activity reporting.</div>
-</div>
+<input class="search-box" id="searchInput" placeholder="🔍  Search hospital or account..." autocomplete="off">
+<div id="searchResult"></div>
 
-<!-- AI Explanation -->
-<div class="section" style="border-color:#00d4ff22;background:#00d4ff05">
-  <div class="section-title">🤖 What happens after I press Process Visit Log?</div>
-  <div class="step">FieldIQ sends your voice transcript to AI for analysis.</div>
-  <div class="step">Within seconds it generates a structured <strong>Visit Report</strong> including:</div>
-  <div class="step">→ Visit Summary</div>
-  <div class="step">→ Key Contacts Met</div>
-  <div class="step">→ Outcomes & Decisions</div>
-  <div class="step">→ Next Steps & Action Items</div>
-  <div class="step">→ Opportunity Signals</div>
-  <div class="step">→ Priority Level (High / Medium / Low)</div>
-  <div class="step">Everything is saved automatically to the database. No paperwork required.</div>
+<div id="insightsContent" style="display:none">
+  <div class="section-title">Account Insights</div>
+  <div id="accountInsights"></div>
+  <div class="section-title">Territory Intelligence</div>
+  <div id="territoryInsights"></div>
+  <div class="section-title">Management Attention</div>
+  <div id="managementInsights"></div>
+  <div class="section-title">Institutional Memory</div>
+  <div id="institutionalMemory"></div>
 </div>
+<div class="loading" id="loadingEl"><div class="spinner"></div>Analysing field intelligence...</div>
+<nav class="bottom-nav">
+  <a class="nav-item" href="fieldiq-log-visit.html"><span class="nav-icon">🎙️</span>Log Visit</a>
+  <a class="nav-item" href="fieldiq-visits-map.html"><span class="nav-icon">📍</span>Visit Map</a>
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">📊</span>Dashboard</a>
+  <a class="nav-item active" href="fieldiq-insights.html"><span class="nav-icon">🧠</span>Insights</a>
+</nav>
+<script>
+var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+var allRecords=[];
+var accountMap={};
 
-<!-- Section 1 -->
-<div class="section">
-  <div class="section-title"><span class="section-num">1</span>Logging In</div>
-  <div class="step">Go to <strong>fieldiq.biz</strong> on your phone or laptop.</div>
-  <div class="step">Enter your <strong>email address</strong> and tap Send Login Code.</div>
-  <div class="step">Check your email for a <strong>6-digit PIN code</strong>.</div>
-  <div class="step">Enter the code. You are now logged in for approximately <strong>24 hours</strong>.</div>
-  <div class="warning">⚠️ If a feature stops working, your session may have expired. Go to fieldiq.biz, log in again with a new PIN, then try again.</div>
-</div>
+function getSentiment(s){
+  if(!s)return'unknown';
+  s=s.toLowerCase();
+  var i=s.indexOf('sentiment');
+  if(i>-1){var t=s.substring(i,i+120);if(t.indexOf('positive')>-1)return'positive';if(t.indexOf('negative')>-1)return'negative';if(t.indexOf('neutral')>-1)return'neutral';}
+  if(s.indexOf('positive')>-1)return'positive';
+  if(s.indexOf('negative')>-1)return'negative';
+  if(s.indexOf('neutral')>-1)return'neutral';
+  return'unknown';
+}
 
-<!-- Section 2 -->
-<div class="section">
-  <div class="section-title"><span class="section-num">2</span>Logging a Visit</div>
-  <div class="step"><strong>1.</strong> Tap <strong>Log Visit</strong> from the home screen.</div>
-  <div class="step"><strong>2.</strong> Search for the hospital or account name.</div>
-  <div class="step"><strong>3.</strong> Select Visit Date, Territory, Visit Type.</div>
-  <div class="step"><strong>4.</strong> Enter your <strong>Rep Name</strong> — always spell it the same way (e.g. always "Sarah", never "sarah" or "SARAH").</div>
-  <div class="step"><strong>5.</strong> Tap the <strong>🎙️ microphone</strong> and speak naturally about your visit. Tap again to stop.</div>
-  <div class="step"><strong>6.</strong> Wait for transcription. Review the text and edit if needed.</div>
-  <div class="step"><strong>7.</strong> Tap <strong>Process Visit Log</strong>. FieldIQ generates your AI report and saves everything automatically.</div>
-  <div class="tip">✅ Speak naturally. You can mention contacts, products discussed, next steps, and sentiment. FieldIQ will extract and structure everything automatically.</div>
-</div>
+function extractMentions(text,keywords){
+  var found=[];
+  if(!text)return found;
+  var lower=text.toLowerCase();
+  keywords.forEach(function(k){if(lower.indexOf(k.toLowerCase())>-1)found.push(k);});
+  return found;
+}
 
-<!-- Section 3 -->
-<div class="section">
-  <div class="section-title"><span class="section-num">3</span>Adding a New Account</div>
-  <div class="step">If the hospital or account is not in the list, tick <strong>☑ Account not listed</strong>.</div>
-  <div class="step">Enter the <strong>Account Name</strong> and <strong>City</strong>.</div>
-  <div class="step">Complete the visit as normal — record your voice note and process.</div>
-  <div class="step">The visit is saved with a <span class="badge badge-blue">New Account</span> flag for manager review.</div>
-  <div class="tip">✅ GPS coordinates are captured automatically so the account appears on the Visit Map.</div>
-</div>
+function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
 
-<!-- Section 4 -->
-<div class="section">
-  <div class="section-title"><span class="section-num">4</span>Viewing Your Visit History</div>
-  <div class="step">Tap <strong>Visit History</strong> from the home screen.</div>
-  <div class="step">All your visits appear, newest first.</div>
-  <div class="step">Each card shows: Account, Date, Territory, Visit Type, Priority, and AI Summary.</div>
-  <div class="step">New accounts are highlighted with a <span class="badge badge-blue">New Account</span> badge.</div>
-  <div class="info">ℹ️ Visit History is read-only. Contact your manager to correct any errors.</div>
-</div>
+function truncate(t,n){if(!t)return'';return t.length>n?t.substring(0,n)+'...':t;}
 
-<!-- Section 5 -->
-<div class="section">
-  <div class="section-title"><span class="section-num">5</span>Priority Levels</div>
-  <div class="step">FieldIQ automatically assigns a priority to each visit based on your notes.</div>
-  <div class="step"><span class="badge badge-red">High</span> — Quotation requested, procurement engaged, strong buying signal.</div>
-  <div class="step"><span class="badge badge-orange">Medium</span> — Follow-up needed, positive interest, return visit requested.</div>
-  <div class="step"><span class="badge badge-green">Low</span> — Informational visit, no current opportunity.</div>
-  <div class="tip">✅ Managers can change priorities from the Dashboard.</div>
-</div>
+function buildAccountMap(records){
+  accountMap={};
+  records.forEach(function(r){
+    var f=r.fields;
+    var hospital=f['Hospital Name']||'Unknown';
+    if(!accountMap[hospital]){
+      accountMap[hospital]={
+        name:hospital,
+        visits:[],
+        actionItems:[],
+        outcomes:[],
+        priorities:[],
+        sentiments:[],
+        reps:{},
+        territory:f['Territory']||'',
+        lastVisit:null
+      };
+    }
+    var acc=accountMap[hospital];
+    acc.visits.push(r);
+    var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
+    if(vDate&&(!acc.lastVisit||vDate>acc.lastVisit))acc.lastVisit=vDate;
+    if(f['Action Items'])acc.actionItems.push(f['Action Items']);
+    if(f['Outcome'])acc.outcomes.push(f['Outcome']);
+    if(f['Priority'])acc.priorities.push(f['Priority']);
+    acc.sentiments.push(getSentiment(f['AI Summary']||''));
+    var rep=f['Rep Name']||'Unknown';
+    acc.reps[rep]=(acc.reps[rep]||0)+1;
+  });
+}
 
-<!-- Section 6 -->
-<div class="section">
-  <div class="section-title"><span class="section-num">6</span>Rep Name Rule</div>
-  <div class="step">Always type your name <strong>exactly the same way</strong> on every visit.</div>
-  <div class="step">Example: if your name is Sarah, always type <strong>Sarah</strong> — not sarah, SARAH, or Sara.</div>
-  <div class="step">This ensures your visits are grouped correctly in the Dashboard and Reports.</div>
-  <div class="warning">⚠️ Inconsistent spelling creates duplicate rep entries in the Dashboard.</div>
-</div>
+function renderAccountCard(acc){
+  var latestPriority=acc.priorities.length>0?acc.priorities[acc.priorities.length-1]:'—';
+  var latestOutcome=acc.outcomes.length>0?acc.outcomes[acc.outcomes.length-1]:'—';
+  var latestSentiment=acc.sentiments.length>0?acc.sentiments[acc.sentiments.length-1]:'unknown';
+  var repNames=Object.keys(acc.reps);
+  var competitors=extractMentions(
+    acc.visits.map(function(v){return v.fields['AI Summary']||'';}).join(' '),
+    ['Medtronic','Johnson & Johnson','J&J','Stryker','Zimmer','B. Braun','BBraun','Becton','BD','Abbott','Siemens','Philips','GE Healthcare','Olympus','Karl Storz','Covidien','Boston Scientific','Edwards','Baxter']
+  );
+  var priorityColor=latestPriority==='High'?'#ff4444':latestPriority==='Low'?'#44cc88':'#ffaa44';
+  var pillClass=latestSentiment==='positive'?'pill-positive':latestSentiment==='negative'?'pill-negative':'pill-neutral';
 
-<!-- Section 7 -->
-<div class="section">
-  <div class="section-title"><span class="section-num">7</span>For Managers</div>
-  <div class="step">Open the <strong>Dashboard</strong> to see KPIs, rep performance, territory coverage, and opportunity signals.</div>
-  <div class="step">To enable priority editing, open: <strong>fieldiq.biz/dashboard.html?mode=manager</strong></div>
-  <div class="step">In manager mode, you can change visit priorities between <span class="badge badge-red">High</span> <span class="badge badge-orange">Medium</span> <span class="badge badge-green">Low</span>.</div>
-  <div class="step">New accounts pending review appear with a <span class="badge badge-blue">New Account</span> badge in Visit History.</div>
-</div>
+  var sortedVisits=acc.visits.slice().sort(function(a,b){
+    var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);
+    var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);
+    return db-da;
+  });
 
-<!-- Section 8 -->
-<div class="section">
-  <div class="section-title"><span class="section-num">8</span>Quick Reference</div>
-  <div class="step"><strong>Home:</strong> fieldiq.biz</div>
-  <div class="step"><strong>Log Visit:</strong> fieldiq.biz/fieldiq-log-visit.html</div>
-  <div class="step"><strong>Visit History:</strong> fieldiq.biz/fieldiq-visit-history.html</div>
-  <div class="step"><strong>Visit Map:</strong> fieldiq.biz/fieldiq-visits-map.html</div>
-  <div class="step"><strong>Dashboard:</strong> fieldiq.biz/dashboard.html</div>
-  <div class="step"><strong>Manager Mode:</strong> fieldiq.biz/dashboard.html?mode=manager</div>
-  <div class="step"><strong>AI Insights:</strong> fieldiq.biz/fieldiq-insights.html</div>
-</div>
+  var visitsHtml=sortedVisits.map(function(v){
+    var f=v.fields;
+    var sent=getSentiment(f['AI Summary']||'');
+    var summary=f['Meeting Notes']?truncate(f['Meeting Notes'],120):'No notes recorded.';
+    return '<div class="visit-item '+sent+'">'+
+      '<div class="visit-header">'+
+        '<span class="visit-rep">'+(f['Rep Name']||'Unknown')+'</span>'+
+        '<span class="visit-date">'+formatDate(f['Visit Date'])+(f['Visit Type']?' · '+f['Visit Type']:'')+'</span>'+
+      '</div>'+
+      '<div class="visit-summary">'+summary+'</div>'+
+    '</div>';
+  }).join('');
 
-<div class="footer">FieldIQ v1.0 — Mid East Medical FZC — UAE — 2026</div>
+  var actionsHtml='';
+  var allActions=[];
+  acc.actionItems.forEach(function(a){
+    if(a){a.split('\n').forEach(function(line){line=line.trim();if(line&&line.length>2)allActions.push(line);});}
+  });
+  if(allActions.length>0){
+    actionsHtml='<div class="sr-section">'+
+      '<div class="sr-label">Open Action Items</div>'+
+      allActions.slice(-6).map(function(a){return'<div class="sr-value">'+truncate(a,100)+'</div>';}).join('')+
+    '</div>';
+  }
+
+  return '<div class="search-result">'+
+    '<div class="search-result-name">'+acc.name+'</div>'+
+    '<div class="search-result-meta">'+
+      acc.visits.length+' visit'+(acc.visits.length!==1?'s':'')+
+      (acc.territory?' · '+acc.territory:'')+
+      (acc.lastVisit?' · Last: '+formatDate(acc.lastVisit):'')+
+    '</div>'+
+    '<div class="sr-tags">'+
+      (latestPriority!=='—'?'<span class="tag" style="background:'+priorityColor+'22;color:'+priorityColor+';border:1px solid '+priorityColor+'33">'+latestPriority+' Priority</span>':'')+
+      '<span class="sentiment-pill '+pillClass+'">'+latestSentiment+'</span>'+
+      (latestOutcome!=='—'?'<span class="tag tag-green">'+latestOutcome+'</span>':'')+
+      repNames.map(function(r){return'<span class="tag tag-blue">'+r+'</span>';}).join('')+
+      (competitors.length>0?competitors.map(function(c){return'<span class="tag tag-red">'+c+'</span>';}).join(''):'')+
+    '</div>'+
+    (actionsHtml)+
+    '<div class="sr-section">'+
+      '<div class="sr-label">Visit History ('+acc.visits.length+')</div>'+
+      visitsHtml+
+    '</div>'+
+  '</div>';
+}
+
+function doSearch(query){
+  var q=query.trim().toLowerCase();
+  var resultEl=document.getElementById('searchResult');
+  if(q.length<2){resultEl.innerHTML='';return;}
+  var matches=Object.values(accountMap).filter(function(acc){
+    return acc.name.toLowerCase().indexOf(q)>-1||acc.territory.toLowerCase().indexOf(q)>-1;
+  });
+  if(matches.length===0){
+    resultEl.innerHTML='<div class="no-result">No accounts found matching "'+query+'"</div>';
+    return;
+  }
+  resultEl.innerHTML=matches.map(renderAccountCard).join('');
+}
+
+document.getElementById('searchInput').addEventListener('input',function(){
+  doSearch(this.value);
+});
+
+function buildInsights(records){
+  allRecords=records;
+  document.getElementById('recordCount').textContent=records.length;
+  buildAccountMap(records);
+
+  var sortedAccounts=Object.values(accountMap).sort(function(a,b){return b.visits.length-a.visits.length;});
+  var maxVisits=sortedAccounts.length>0?sortedAccounts[0].visits.length:1;
+
+  var accountHtml='';
+  sortedAccounts.forEach(function(acc){
+    var latestPriority=acc.priorities.length>0?acc.priorities[acc.priorities.length-1]:'—';
+    var latestSentiment=acc.sentiments.length>0?acc.sentiments[acc.sentiments.length-1]:'unknown';
+    var pillClass=latestSentiment==='positive'?'pill-positive':latestSentiment==='negative'?'pill-negative':'pill-neutral';
+    var barPct=Math.round(acc.visits.length/maxVisits*100);
+    var priorityColor=latestPriority==='High'?'#ff4444':latestPriority==='Low'?'#44cc88':'#ffaa44';
+    accountHtml+=
+      '<div class="account-card">'+
+        '<div class="account-name">'+acc.name+'</div>'+
+        '<div class="account-meta">'+acc.visits.length+' visit'+(acc.visits.length!==1?'s':'')+
+        (acc.territory?' · '+acc.territory:'')+
+        (acc.lastVisit?' · Last: '+formatDate(acc.lastVisit):'')+'</div>'+
+        '<div class="insight-bar-bg"><div class="insight-bar-fill" style="width:'+barPct+'%;background:#00d4ff"></div></div>'+
+        '<div class="account-tags">'+
+          '<span class="tag tag-blue">'+acc.visits.length+' visits</span>'+
+          (latestPriority!=='—'?'<span class="tag" style="background:'+priorityColor+'22;color:'+priorityColor+';border:1px solid '+priorityColor+'33">'+latestPriority+' Priority</span>':'')+
+          '<span class="sentiment-pill '+pillClass+'">'+latestSentiment+'</span>'+
+          (acc.actionItems.length>0?'<span class="tag tag-orange">'+acc.actionItems.length+' action'+(acc.actionItems.length!==1?'s':'')+'</span>':'')+
+        '</div>'+
+      '</div>';
+  });
+  document.getElementById('accountInsights').innerHTML=accountHtml||'<div class="empty">Logging visits will build account intelligence here.</div>';
+
+  var territories={};
+  var sentByTerr={};
+  records.forEach(function(r){
+    var f=r.fields;
+    var t=f['Territory']||'Unknown';
+    territories[t]=(territories[t]||0)+1;
+    if(!sentByTerr[t])sentByTerr[t]={positive:0,neutral:0,negative:0};
+    var s=getSentiment(f['AI Summary']||'');
+    if(sentByTerr[t][s]!==undefined)sentByTerr[t][s]++;
+  });
+  var maxTerr=Math.max.apply(null,Object.values(territories).concat([1]));
+  var terrHtml='<div class="insight-card">';
+  Object.keys(territories).sort(function(a,b){return territories[b]-territories[a];}).forEach(function(t){
+    var pct=Math.round(territories[t]/maxTerr*100);
+    var s=sentByTerr[t]||{};
+    var total=territories[t];
+    var posPct=total>0?Math.round((s.positive||0)/total*100):0;
+    terrHtml+=
+      '<div class="insight-row"><span class="insight-label">'+t+'</span><span class="insight-value">'+territories[t]+' visit'+(territories[t]!==1?'s':'')+'</span></div>'+
+      '<div class="insight-bar-bg"><div class="insight-bar-fill" style="width:'+pct+'%;background:#00d4ff"></div></div>'+
+      '<div style="font-size:10px;color:#555;margin:3px 0 8px">'+posPct+'% positive sentiment</div>';
+  });
+  terrHtml+='</div>';
+  document.getElementById('territoryInsights').innerHTML=Object.keys(territories).length>0?terrHtml:'<div class="empty">Territory intelligence builds as visits are logged.</div>';
+
+  var mgmtItems=[];
+  var now=new Date();
+  sortedAccounts.forEach(function(acc){
+    var hasHigh=acc.priorities.indexOf('High')>-1;
+    if(hasHigh&&acc.lastVisit){
+      var daysSince=Math.round((now-acc.lastVisit)/(1000*60*60*24));
+      if(daysSince>=7)mgmtItems.push({text:acc.name+' — High Priority account. Last visit '+daysSince+' days ago.',color:'#ff4444'});
+    }
+    if(acc.visits.length>=3&&acc.priorities.length>=3){
+      var allSame=acc.priorities.every(function(p){return p===acc.priorities[0];});
+      if(allSame&&acc.priorities[0]==='Medium')mgmtItems.push({text:acc.name+' — '+acc.visits.length+' visits. Priority unchanged at Medium. May need manager review.',color:'#ffaa44'});
+    }
+    var repNames=Object.keys(acc.reps);
+    if(repNames.length>1)mgmtItems.push({text:acc.name+' — Visited by '+repNames.join(', ')+'. Multiple reps on same account.',color:'#00d4ff'});
+  });
+  var mgmtHtml='';
+  if(mgmtItems.length>0){
+    mgmtItems.forEach(function(item){mgmtHtml+='<div class="memory-card" style="border-left-color:'+item.color+'"><div class="memory-line">'+item.text+'</div></div>';});
+  }else{
+    mgmtHtml='<div class="insight-card"><div class="memory-line" style="color:#555;text-align:center;padding:8px">No attention items identified yet. Observations appear as patterns emerge.</div></div>';
+  }
+  document.getElementById('managementInsights').innerHTML=mgmtHtml;
+
+  var memoryHtml='';
+  sortedAccounts.forEach(function(acc){
+    var allActions=acc.actionItems.filter(Boolean);
+    var competitors=extractMentions(
+      acc.visits.map(function(v){return v.fields['AI Summary']||'';}).join(' '),
+      ['Medtronic','Johnson & Johnson','J&J','Stryker','Zimmer','B. Braun','BBraun','Becton','BD','Abbott','Siemens','Philips','GE Healthcare','Olympus','Karl Storz','Covidien','Boston Scientific','Edwards','Baxter']
+    );
+    memoryHtml+=
+      '<div class="memory-card">'+
+        '<div class="memory-hospital">'+acc.name+'</div>'+
+        '<div class="memory-label" style="margin:6px 0 3px">Territory</div>'+
+        '<div class="memory-line">'+(acc.territory||'Not specified')+'</div>'+
+        '<div class="memory-label" style="margin:6px 0 3px">Visit History</div>'+
+        '<div class="memory-line">'+acc.visits.length+' visit'+(acc.visits.length!==1?'s':'')+' recorded'+(acc.lastVisit?' · Most recent: '+formatDate(acc.lastVisit):'')+'</div>'+
+        (allActions.length>0?'<div class="memory-label" style="margin:6px 0 3px">Open Action Items</div>'+allActions.slice(-3).map(function(a){return'<div class="memory-line">'+truncate(a,120)+'</div>';}).join(''):'')+
+        (competitors.length>0?'<div class="memory-label" style="margin:6px 0 3px">Competitors Mentioned</div><div class="memory-line">'+competitors.join(', ')+'</div>':'')+
+        '<div class="account-tags" style="margin-top:8px">'+
+          acc.outcomes.filter(Boolean).slice(-1).map(function(o){var cls=o==='Positive'?'pill-positive':o==='Negative'?'pill-negative':'pill-neutral';return'<span class="sentiment-pill '+cls+'">'+o+'</span>';}).join('')+
+          (acc.priorities.slice(-1)[0]?'<span class="tag tag-blue">'+acc.priorities.slice(-1)[0]+' Priority</span>':'')+
+          Object.keys(acc.reps).map(function(r){return'<span class="tag tag-purple">'+r+'</span>';}).join('')+
+        '</div>'+
+      '</div>';
+  });
+  document.getElementById('institutionalMemory').innerHTML=memoryHtml||'<div class="empty">Account memory builds automatically with every visit logged.</div>';
+
+  document.getElementById('loadingEl').style.display='none';
+  document.getElementById('insightsContent').style.display='block';
+  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
+}
+
+async function loadInsights(){
+  try{
+    var res=await fetch(WORKER+'/get-visits');
+    var data=await res.json();
+    if(!res.ok)throw new Error(JSON.stringify(data));
+    buildInsights(data.records||[]);
+  }catch(err){
+    document.getElementById('loadingEl').textContent='Failed to load: '+err.message;
+  }
+}
+loadInsights();
+</script>
 </body>
 </html>
