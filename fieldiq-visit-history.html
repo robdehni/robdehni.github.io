@@ -94,7 +94,7 @@ function renderVisits(records){
     var f=r.fields;
     var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
     if(vDate&&vDate>=weekAgo)thisWeek++;
-    if(f['New Account'])newAccounts++;
+    if(f['New Account']===true||f['New Account']==='true'||f['New Account']===1)newAccounts++;
   });
 
   document.getElementById('statTotal').textContent=records.length;
@@ -111,7 +111,7 @@ function renderVisits(records){
   sorted.forEach(function(r){
     var f=r.fields;
     var priority=f['Priority']||'Medium';
-    var isNew=f['New Account']?true:false;
+    var isNew=(f['New Account']===true||f['New Account']==='true'||f['New Account']===1);
     var summary=truncateSummary(f['AI Summary']||f['Meeting Notes']||'',180);
 
     html+=
@@ -124,6 +124,7 @@ function renderVisits(records){
           (f['Territory']?'<span class="badge badge-territory">'+f['Territory']+'</span>':'')+
           (f['Visit Type']?'<span class="badge badge-type">'+f['Visit Type']+'</span>':'')+
           '<span class="badge '+getPriorityClass(priority)+'">'+priority+'</span>'+
+          (f['Rep Name']?'<span class="badge badge-territory">'+f['Rep Name']+'</span>':'')+
           (isNew?'<span class="badge badge-new">New Account</span>':'')+
         '</div>'+
         (summary?'<div class="visit-summary">'+summary+'</div>':'')+
