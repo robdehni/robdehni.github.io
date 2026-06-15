@@ -8,7 +8,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
-.logo{text-align:center;margin-bottom:48px}
+.logo{text-align:center;margin-bottom:40px}
 .logo h1{font-size:42px;font-weight:800;color:#00d4ff;letter-spacing:-1px}
 .logo p{color:#444;font-size:13px;margin-top:6px;letter-spacing:1px;text-transform:uppercase}
 .modules{width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}
@@ -22,10 +22,12 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 .module.primary .module-title{color:#00d4ff}
 .module.intelligence{border-color:#9b59b622;background:#9b59b608}
 .module.intelligence .module-title{color:#bb88ff}
-.divider{width:100%;max-width:380px;display:flex;align-items:center;gap:12px;margin:8px 0}
+.divider{width:100%;max-width:380px;display:flex;align-items:center;gap:12px;margin:4px 0}
 .divider-line{flex:1;height:1px;background:#1a1a1a}
 .divider-text{font-size:10px;color:#333;text-transform:uppercase;letter-spacing:1px}
-.footer{margin-top:48px;text-align:center;color:#2a2a2a;font-size:11px}
+.footer{margin-top:40px;text-align:center;color:#2a2a2a;font-size:11px}
+.footer a{color:#333;text-decoration:none}
+.footer a:hover{color:#00d4ff}
 .version{color:#1a1a1a;font-size:10px;margin-top:4px}
 </style>
 </head>
@@ -35,7 +37,14 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
   <p>Territory Intelligence Platform</p>
 </div>
 <div class="modules">
-  <a class="module primary" href="https://robdehni.github.io/fieldiq-log-visit.html" target="_top">
+
+  <!-- REP TOOLS -->
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-text">Rep</div>
+    <div class="divider-line"></div>
+  </div>
+  <a class="module primary" href="./fieldiq-log-visit.html">
     <div class="module-icon">🎙️</div>
     <div class="module-text">
       <div class="module-title">Log Visit</div>
@@ -49,6 +58,27 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
       <div class="module-desc">Your logged visits — dates, accounts, summaries</div>
     </div>
   </a>
+
+  <!-- MANAGEMENT -->
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-text">Management</div>
+    <div class="divider-line"></div>
+  </div>
+  <a class="module" href="./dashboard.html?mode=manager">
+    <div class="module-icon">📊</div>
+    <div class="module-text">
+      <div class="module-title">Dashboard</div>
+      <div class="module-desc">KPIs, rep performance, territory coverage</div>
+    </div>
+  </a>
+  <a class="module" href="./fieldiq-actions.html?mode=manager">
+    <div class="module-icon">✅</div>
+    <div class="module-text">
+      <div class="module-title">Open Actions</div>
+      <div class="module-desc">Outstanding action items by account</div>
+    </div>
+  </a>
   <a class="module" href="./fieldiq-visits-map.html">
     <div class="module-icon">📍</div>
     <div class="module-text">
@@ -56,18 +86,8 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
       <div class="module-desc">Live map of all field activity across GCC</div>
     </div>
   </a>
-  <div class="divider">
-    <div class="divider-line"></div>
-    <div class="divider-text">Management</div>
-    <div class="divider-line"></div>
-  </div>
-  <a class="module" href="./dashboard.html">
-    <div class="module-icon">📊</div>
-    <div class="module-text">
-      <div class="module-title">Dashboard</div>
-      <div class="module-desc">KPIs, rep performance, territory coverage</div>
-    </div>
-  </a>
+
+  <!-- INTELLIGENCE -->
   <div class="divider">
     <div class="divider-line"></div>
     <div class="divider-text">Intelligence</div>
@@ -87,6 +107,7 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
       <div class="module-desc">How to use FieldIQ — for reps and managers</div>
     </div>
   </a>
+
 </div>
 <div class="footer">
   Mid East Medical FZC — UAE
