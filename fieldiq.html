@@ -3,149 +3,87 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FieldIQ — Visit History</title>
+<title>FieldIQ</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;padding:16px;padding-bottom:32px}
-.topbar{text-align:center;margin-bottom:16px;padding-top:8px}
-.topbar h1{font-size:22px;color:#00d4ff;font-weight:700}
-.topbar p{color:#555;font-size:12px;margin-top:3px}
-.home-btn{display:inline-block;color:#555;font-size:12px;text-decoration:none;padding:5px 12px;border:1px solid #222;border-radius:6px;background:#1a1a1a;margin-bottom:16px}
-.home-btn:hover{color:#00d4ff;border-color:#00d4ff}
-.stats-row{display:flex;gap:8px;margin-bottom:16px}
-.stat-pill{background:#111;border:1px solid #1a1a1a;border-radius:8px;padding:8px 12px;font-size:11px;color:#555;flex:1;text-align:center}
-.stat-pill span{display:block;font-size:20px;font-weight:700;color:#00d4ff;margin-bottom:2px}
-.visit-card{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:14px;margin-bottom:10px}
-.visit-card.new-account{border-color:#00d4ff33;background:#00d4ff05}
-.visit-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.visit-account{font-size:14px;font-weight:700;color:#fff;flex:1;margin-right:8px}
-.visit-date{font-size:11px;color:#555;white-space:nowrap}
-.visit-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
-.badge{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600}
-.badge-territory{background:#1a1a1a;color:#666;border:1px solid #222}
-.badge-type{background:#1a1a1a;color:#666;border:1px solid #222}
-.badge-high{background:#ff444422;color:#ff6666;border:1px solid #ff444433}
-.badge-medium{background:#ff880022;color:#ffaa44;border:1px solid #ff880033}
-.badge-low{background:#00880022;color:#44cc88;border:1px solid #00880033}
-.badge-new{background:#00d4ff22;color:#00d4ff;border:1px solid #00d4ff33}
-.visit-summary{font-size:11px;color:#666;line-height:1.6;margin-top:6px;padding-top:6px;border-top:1px solid #1a1a1a}
-.loading{text-align:center;padding:60px 20px;color:#555}
-.spinner{width:32px;height:32px;border:3px solid #1a1a1a;border-top:3px solid #00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;color:#333;font-size:13px;padding:40px 20px}
-.count-label{font-size:11px;color:#444;margin-bottom:12px;text-align:center}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.logo{text-align:center;margin-bottom:48px}
+.logo h1{font-size:42px;font-weight:800;color:#00d4ff;letter-spacing:-1px}
+.logo p{color:#444;font-size:13px;margin-top:6px;letter-spacing:1px;text-transform:uppercase}
+.modules{width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}
+.module{display:flex;align-items:center;gap:16px;background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:18px 20px;text-decoration:none;color:#fff;transition:all 0.2s}
+.module:active{border-color:#00d4ff33;background:#141414}
+.module-icon{font-size:28px;width:44px;text-align:center;flex-shrink:0}
+.module-text{flex:1}
+.module-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:2px}
+.module-desc{font-size:11px;color:#555}
+.module.primary{border-color:#00d4ff44;background:#00d4ff08}
+.module.primary .module-title{color:#00d4ff}
+.module.intelligence{border-color:#9b59b622;background:#9b59b608}
+.module.intelligence .module-title{color:#bb88ff}
+.divider{width:100%;max-width:380px;display:flex;align-items:center;gap:12px;margin:8px 0}
+.divider-line{flex:1;height:1px;background:#1a1a1a}
+.divider-text{font-size:10px;color:#333;text-transform:uppercase;letter-spacing:1px}
+.footer{margin-top:48px;text-align:center;color:#2a2a2a;font-size:11px}
+.version{color:#1a1a1a;font-size:10px;margin-top:4px}
 </style>
 </head>
 <body>
-<div class="topbar">
-  <h1>Visit History</h1>
-  <p id="lastUpdated">Loading...</p>
+<div class="logo">
+  <h1>FieldIQ</h1>
+  <p>Territory Intelligence Platform</p>
 </div>
-<a class="home-btn" href="https://fieldiq.biz/fieldiq.html">← Back to FieldIQ Home</a>
-
-<div class="stats-row">
-  <div class="stat-pill"><span id="statTotal">—</span>My Visits</div>
-  <div class="stat-pill"><span id="statThisWeek">—</span>This Week</div>
-  <div class="stat-pill"><span id="statNewAccounts">—</span>New Accounts</div>
+<div class="modules">
+  <a class="module primary" href="https://robdehni.github.io/fieldiq-log-visit.html" target="_top">
+    <div class="module-icon">🎙️</div>
+    <div class="module-text">
+      <div class="module-title">Log Visit</div>
+      <div class="module-desc">Record a field visit — voice to AI report</div>
+    </div>
+  </a>
+  <a class="module" href="./fieldiq-visit-history.html">
+    <div class="module-icon">📋</div>
+    <div class="module-text">
+      <div class="module-title">Visit History</div>
+      <div class="module-desc">Your logged visits — dates, accounts, summaries</div>
+    </div>
+  </a>
+  <a class="module" href="./fieldiq-visits-map.html">
+    <div class="module-icon">📍</div>
+    <div class="module-text">
+      <div class="module-title">Visit Map</div>
+      <div class="module-desc">Live map of all field activity across GCC</div>
+    </div>
+  </a>
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-text">Management</div>
+    <div class="divider-line"></div>
+  </div>
+  <a class="module" href="./dashboard.html">
+    <div class="module-icon">📊</div>
+    <div class="module-text">
+      <div class="module-title">Dashboard</div>
+      <div class="module-desc">KPIs, rep performance, territory coverage</div>
+    </div>
+  </a>
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-text">Intelligence</div>
+    <div class="divider-line"></div>
+  </div>
+  <a class="module intelligence" href="./fieldiq-insights.html">
+    <div class="module-icon">🧠</div>
+    <div class="module-text">
+      <div class="module-title">AI Insights</div>
+      <div class="module-desc">Account intelligence, territory trends, institutional memory</div>
+    </div>
+  </a>
 </div>
-
-<div id="countLabel" class="count-label"></div>
-<div id="visitList"><div class="loading"><div class="spinner"></div>Loading visits...</div></div>
-
-<script>
-var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
-
-function formatDate(d){
-  if(!d)return'—';
-  return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-}
-
-function getPriorityClass(p){
-  if(!p)return'badge-medium';
-  p=p.toLowerCase();
-  if(p==='high')return'badge-high';
-  if(p==='low')return'badge-low';
-  return'badge-medium';
-}
-
-function truncateSummary(text,n){
-  if(!text)return'';
-  var i=text.indexOf('VISIT SUMMARY');
-  if(i>-1){
-    var s=text.substring(i+13,i+13+n).trim();
-    return s.length===n?s+'...':s;
-  }
-  return text.length>n?text.substring(0,n)+'...':text;
-}
-
-function renderVisits(records){
-  var today=new Date();today.setHours(0,0,0,0);
-  var weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
-  var thisWeek=0,newAccounts=0;
-
-  // Sort newest first
-  var sorted=records.slice().sort(function(a,b){
-    var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);
-    var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);
-    return db-da;
-  });
-
-  sorted.forEach(function(r){
-    var f=r.fields;
-    var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
-    if(vDate&&vDate>=weekAgo)thisWeek++;
-    if(f['New Account'])newAccounts++;
-  });
-
-  document.getElementById('statTotal').textContent=records.length;
-  document.getElementById('statThisWeek').textContent=thisWeek;
-  document.getElementById('statNewAccounts').textContent=newAccounts;
-  document.getElementById('countLabel').textContent='Showing '+sorted.length+' visit'+(sorted.length!==1?'s':'')+', most recent first';
-
-  if(sorted.length===0){
-    document.getElementById('visitList').innerHTML='<div class="empty">No visits logged yet.</div>';
-    return;
-  }
-
-  var html='';
-  sorted.forEach(function(r){
-    var f=r.fields;
-    var priority=f['Priority']||'Medium';
-    var isNew=f['New Account']?true:false;
-    var summary=truncateSummary(f['AI Summary']||f['Meeting Notes']||'',180);
-
-    html+=
-      '<div class="visit-card'+(isNew?' new-account':'')+'">'+
-        '<div class="visit-header">'+
-          '<div class="visit-account">'+(f['Hospital Name']||'Unknown Account')+'</div>'+
-          '<div class="visit-date">'+formatDate(f['Visit Date'])+'</div>'+
-        '</div>'+
-        '<div class="visit-meta">'+
-          (f['Territory']?'<span class="badge badge-territory">'+f['Territory']+'</span>':'')+
-          (f['Visit Type']?'<span class="badge badge-type">'+f['Visit Type']+'</span>':'')+
-          '<span class="badge '+getPriorityClass(priority)+'">'+priority+'</span>'+
-          (isNew?'<span class="badge badge-new">New Account</span>':'')+
-        '</div>'+
-        (summary?'<div class="visit-summary">'+summary+'</div>':'')+
-      '</div>';
-  });
-
-  document.getElementById('visitList').innerHTML=html;
-  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
-}
-
-async function loadHistory(){
-  try{
-    var res=await fetch(WORKER+'/get-visits');
-    var data=await res.json();
-    if(!res.ok)throw new Error(JSON.stringify(data));
-    renderVisits(data.records||[]);
-  }catch(err){
-    document.getElementById('visitList').innerHTML='<div class="empty">Failed to load: '+err.message+'</div>';
-  }
-}
-
-loadHistory();
-</script>
+<div class="footer">
+  Mid East Medical FZC — UAE
+  <div class="version">FieldIQ v1.0 — 2026</div>
+</div>
 </body>
 </html>
