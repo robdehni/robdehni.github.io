@@ -73,7 +73,7 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 <div class="topbar">
   <h1>🧠 AI Insights</h1>
   <p id="lastUpdated">Loading intelligence...</p>
-  <a class="home-btn" href="https://robdehni.github.io/fieldiq.html">← Back to FieldIQ Home</a>
+  <a class="home-btn" href="https://fieldiq.biz/fieldiq.html">← Back to FieldIQ Home</a>
 </div>
 <div class="obs-note">
   Observations based on <span id="recordCount">0</span> field visits collected so far.
@@ -171,14 +171,12 @@ function renderAccountCard(acc){
   var priorityColor=latestPriority==='High'?'#ff4444':latestPriority==='Low'?'#44cc88':'#ffaa44';
   var pillClass=latestSentiment==='positive'?'pill-positive':latestSentiment==='negative'?'pill-negative':'pill-neutral';
 
-  // Sort visits newest first
   var sortedVisits=acc.visits.slice().sort(function(a,b){
     var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);
     var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);
     return db-da;
   });
 
-  // Visit history HTML
   var visitsHtml=sortedVisits.map(function(v){
     var f=v.fields;
     var sent=getSentiment(f['AI Summary']||'');
@@ -192,7 +190,6 @@ function renderAccountCard(acc){
     '</div>';
   }).join('');
 
-  // Action items HTML
   var actionsHtml='';
   var allActions=[];
   acc.actionItems.forEach(function(a){
@@ -253,7 +250,6 @@ function buildInsights(records){
   var sortedAccounts=Object.values(accountMap).sort(function(a,b){return b.visits.length-a.visits.length;});
   var maxVisits=sortedAccounts.length>0?sortedAccounts[0].visits.length:1;
 
-  // Account Insights
   var accountHtml='';
   sortedAccounts.forEach(function(acc){
     var latestPriority=acc.priorities.length>0?acc.priorities[acc.priorities.length-1]:'—';
@@ -278,7 +274,6 @@ function buildInsights(records){
   });
   document.getElementById('accountInsights').innerHTML=accountHtml||'<div class="empty">Logging visits will build account intelligence here.</div>';
 
-  // Territory Intelligence
   var territories={};
   var sentByTerr={};
   records.forEach(function(r){
@@ -304,7 +299,6 @@ function buildInsights(records){
   terrHtml+='</div>';
   document.getElementById('territoryInsights').innerHTML=Object.keys(territories).length>0?terrHtml:'<div class="empty">Territory intelligence builds as visits are logged.</div>';
 
-  // Management Attention
   var mgmtItems=[];
   var now=new Date();
   sortedAccounts.forEach(function(acc){
@@ -328,7 +322,6 @@ function buildInsights(records){
   }
   document.getElementById('managementInsights').innerHTML=mgmtHtml;
 
-  // Institutional Memory
   var memoryHtml='';
   sortedAccounts.forEach(function(acc){
     var allActions=acc.actionItems.filter(Boolean);
