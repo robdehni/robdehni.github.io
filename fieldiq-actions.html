@@ -171,7 +171,7 @@ function getFilteredRecords(){
   else if(days){cutoff=new Date(Date.now()-parseInt(days)*24*60*60*1000);}
   return allRecords.filter(function(r){
     var f=r.fields;
-    if(!f['Action Items']&&!f['Meeting Notes']&&!f['Next Steps'])return false;
+    if(!f['Action Items']&&!f['Next Steps'])return false;
     var repName=(f['Rep Name']||'').trim();
     repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();
     if(rep&&repName!==rep)return false;
@@ -188,7 +188,7 @@ function buildActionsView(records){
   records.forEach(function(r){
     var f=r.fields;
     var hospital=f['Hospital Name']||'Unknown Account';
-    var actions=parseActions(f['Action Items']||f['Meeting Notes']||f['Next Steps']||'');
+    var actions=parseActions(f['Action Items']||f['Next Steps']||'');
     if(actions.length===0)return;
     if(!accountMap[hospital]){
       accountMap[hospital]={
