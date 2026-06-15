@@ -158,6 +158,7 @@ async function loadUsers(){
     var data=await res.json();
     var sel=document.getElementById('userSelect');
     sel.innerHTML='<option value="">Select your name...</option>';
+    var savedId=localStorage.getItem('fieldiq_user_id');
     if(data.records){
       data.records.forEach(function(r){
         var f=r.fields;
@@ -169,6 +170,8 @@ async function loadUsers(){
         opt.setAttribute('data-role',f['Role']||'Sales Rep');
         sel.appendChild(opt);
       });
+      // Restore saved selection
+      if(savedId){sel.value=savedId;}
     }
   }catch(err){
     document.getElementById('userSelect').innerHTML='<option value="">Could not load users</option>';
@@ -327,6 +330,10 @@ submitBtn.addEventListener('click',async function(){
   var repName=selectedUser.getAttribute('data-name')||userSelect.value;
   var userRole=selectedUser.getAttribute('data-role')||'Sales Rep';
   var userId=userSelect.value;
+  // Save to localStorage for session persistence
+  localStorage.setItem('fieldiq_user_id',userId);
+  localStorage.setItem('fieldiq_user_name',repName);
+  localStorage.setItem('fieldiq_user_role',userRole);
 
   var isNewAccount=notListedCheck.checked;
   var hospitalName='';
