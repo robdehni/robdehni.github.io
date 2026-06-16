@@ -160,7 +160,7 @@ audio{width:100%;border-radius:12px;margin:10px 0;display:none}
     <p>Log Visit</p>
   </div>
 </div>
-<a href="/" id="homeBtn" class="home-btn">← Home</a>
+<a href="./index.html" id="homeBtn" class="home-btn">← Home</a>
 
 <div class="desktop-grid">
 <div class="card">
@@ -246,13 +246,9 @@ window.onerror=function(msg){document.getElementById('status').textContent='Erro
 
 // ── HOME BUTTON ROUTING ─────────────────────────────────────────
 (function(){
-  var ref=document.referrer||'';
+  var role = localStorage.getItem('fieldiq_user_role');
   var homeBtn=document.getElementById('homeBtn');
-  if(ref.includes('fieldiq.html')){
-    homeBtn.href='/fieldiq.html';
-  } else {
-    homeBtn.href='/';
-  }
+  homeBtn.href = (role === 'Manager') ? './fieldiq.html' : './index.html';
 })();
 
 
@@ -284,7 +280,7 @@ function renderUserIdentity(){
       '</div>';
   } else {
     // NO IDENTITY — redirect to home for login, do not show dropdown here
-    window.location.href='/';
+    window.location.href='./index.html';
     return;
   }
 }
@@ -294,43 +290,6 @@ function switchUser(){
   localStorage.removeItem('fieldiq_user_name');
   localStorage.removeItem('fieldiq_user_role');
   location.reload();
-}
-
-async function loadUsers(){
-  try{
-    var res=await fetch(WORKER+'/get-users');
-    var data=await res.json();
-    var sel=document.getElementById('userSelect');
-    if(!sel)return;
-    sel.innerHTML='<option value="">Select your name...</option>';
-    if(data.records){
-      data.records.forEach(function(r){
-        var f=r.fields;
-        if(f['Active?']===false)return;
-        var opt=document.createElement('option');
-        opt.value=f['User ID']||'';
-        opt.textContent=(f['Display Name']||f['User ID']||'Unknown');
-        opt.setAttribute('data-name',f['Display Name']||'');
-        opt.setAttribute('data-role',f['Role']||'Sales Rep');
-        sel.appendChild(opt);
-      });
-    }
-    // Lock identity immediately on selection, not only after visit submission
-    sel.addEventListener('change',function(){
-      if(!sel.value)return;
-      var selectedOpt=sel.options[sel.selectedIndex];
-      var lockId=sel.value;
-      var lockName=selectedOpt.getAttribute('data-name')||sel.value;
-      var lockRole=selectedOpt.getAttribute('data-role')||'Sales Rep';
-      localStorage.setItem('fieldiq_user_id',lockId);
-      localStorage.setItem('fieldiq_user_name',lockName);
-      localStorage.setItem('fieldiq_user_role',lockRole);
-      renderUserIdentity();
-    });
-  }catch(err){
-    var sel=document.getElementById('userSelect');
-    if(sel)sel.innerHTML='<option value="">Could not load users</option>';
-  }
 }
 
 renderUserIdentity();
@@ -491,25 +450,13 @@ submitBtn.addEventListener('click',async function(){
   var transcript=transcriptText.value.trim();
   if(!transcript||transcript.length<3){alert('Please record a visit first.');return;}
 
-  // Get user identity
-  var repName='', userRole='', userId='';
+  // Get user identity — guaranteed to exist; renderUserIdentity()
+  // already redirected to ./index.html on page load if it didn't.
   var savedId=localStorage.getItem('fieldiq_user_id');
-  if(savedId){
-    userId=savedId;
-    repName=localStorage.getItem('fieldiq_user_name')||savedId;
-    userRole=localStorage.getItem('fieldiq_user_role')||'Sales Rep';
-  } else {
-    var sel=document.getElementById('userSelect');
-    if(!sel||!sel.value){alert('Please select your name.');return;}
-    var selectedOpt=sel.options[sel.selectedIndex];
-    userId=sel.value;
-    repName=selectedOpt.getAttribute('data-name')||sel.value;
-    userRole=selectedOpt.getAttribute('data-role')||'Sales Rep';
-    // Lock identity after first use
-    localStorage.setItem('fieldiq_user_id',userId);
-    localStorage.setItem('fieldiq_user_name',repName);
-    localStorage.setItem('fieldiq_user_role',userRole);
-  }
+  if(!savedId){window.location.href='./index.html';return;}
+  var userId=savedId;
+  var repName=localStorage.getItem('fieldiq_user_name')||savedId;
+  var userRole=localStorage.getItem('fieldiq_user_role')||'Sales Rep';
 
   var isNewAccount=notListedCheck.checked;
   var hospitalName='';
