@@ -3,115 +3,145 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FieldIQ</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+<title>FieldIQ — Manager</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
-.logo{text-align:center;margin-bottom:40px}
-.logo h1{font-size:42px;font-weight:800;color:#00d4ff;letter-spacing:-1px}
-.logo p{color:#444;font-size:13px;margin-top:6px;letter-spacing:1px;text-transform:uppercase}
-.modules{width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}
-.module{display:flex;align-items:center;gap:16px;background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:18px 20px;text-decoration:none;color:#fff;transition:all 0.2s}
-.module:active{border-color:#00d4ff33;background:#141414}
-.module-icon{font-size:28px;width:44px;text-align:center;flex-shrink:0}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 20px 50px}
+.wrap{width:100%;max-width:420px}
+
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;gap:10px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-cloud{font-size:26px;line-height:1}
+.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
+.brand-text h1 span{color:#2f8fff}
+.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+.manager-tag{
+  display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#d98a1c;border:1px solid #ffe5b3;
+  border-radius:20px;font-size:11px;font-weight:800;padding:6px 14px;letter-spacing:0.4px;text-transform:uppercase;
+  box-shadow:0 2px 8px rgba(217,138,28,0.1);
+}
+
+.section-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:22px 0 10px}
+
+.module-card{
+  display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #e3ebf5;border-radius:18px;
+  padding:18px 20px;text-decoration:none;margin-bottom:12px;box-shadow:0 4px 14px rgba(11,31,58,0.05);
+  transition:transform 0.15s;
+}
+.module-card:active{transform:scale(0.98)}
+.module-card.primary{background:linear-gradient(135deg,#3d9bff,#1f6fe0);border:none;box-shadow:0 10px 26px rgba(47,143,255,0.32)}
+.module-card.primary .module-title{color:#fff}
+.module-card.primary .module-desc{color:#dbecff}
+.module-card.primary .module-icon-wrap{background:#fff}
+
+.module-icon-wrap{
+  width:50px;height:50px;border-radius:14px;background:#eaf3ff;display:flex;align-items:center;
+  justify-content:center;font-size:24px;flex-shrink:0;
+}
 .module-text{flex:1}
-.module-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:2px}
-.module-desc{font-size:11px;color:#555}
-.module.primary{border-color:#00d4ff44;background:#00d4ff08}
-.module.primary .module-title{color:#00d4ff}
-.module.intelligence{border-color:#9b59b622;background:#9b59b608}
-.module.intelligence .module-title{color:#bb88ff}
-.divider{width:100%;max-width:380px;display:flex;align-items:center;gap:12px;margin:4px 0}
-.divider-line{flex:1;height:1px;background:#1a1a1a}
-.divider-text{font-size:10px;color:#333;text-transform:uppercase;letter-spacing:1px}
-.footer{margin-top:40px;text-align:center;color:#2a2a2a;font-size:11px}
-.footer a{color:#333;text-decoration:none}
-.footer a:hover{color:#00d4ff}
-.version{color:#1a1a1a;font-size:10px;margin-top:4px}
+.module-title{font-size:15.5px;font-weight:800;color:#0b1f3a;margin-bottom:2px}
+.module-desc{font-size:12px;color:#7a8aa3;font-weight:500}
+.module-arrow{color:#aab8cc;font-size:18px}
+.module-card.primary .module-arrow{color:#fff}
+
+.footer{text-align:center;color:#aab8cc;font-size:11px;margin-top:24px;font-weight:600}
+
+@media(min-width:1100px){
+  .wrap{max-width:1400px}
+  body{padding:32px 40px 60px}
+  .topbar{margin-bottom:32px}
+  .module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .module-card{margin-bottom:0}
+  .module-card.primary{grid-column:1/-1}
+}
 </style>
 </head>
 <body>
-<div class="logo">
-  <h1>FieldIQ</h1>
-  <p>Territory Intelligence Platform</p>
-</div>
-<div class="modules">
-
-  <!-- REP TOOLS -->
-  <div class="divider">
-    <div class="divider-line"></div>
-    <div class="divider-text">Rep</div>
-    <div class="divider-line"></div>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-cloud">☁️</span>
+      <div class="brand-text">
+        <h1>Field<span>IQ</span></h1>
+        <p>Territory Intelligence</p>
+      </div>
+    </div>
+    <div class="manager-tag">⭐ Manager Portal</div>
   </div>
-  <a class="module primary" href="./fieldiq-log-visit.html">
-    <div class="module-icon">🎙️</div>
-    <div class="module-text">
-      <div class="module-title">Log Visit</div>
-      <div class="module-desc">Record a field visit — voice to AI report</div>
-    </div>
-  </a>
-  <a class="module" href="./fieldiq-visit-history.html">
-    <div class="module-icon">📋</div>
-    <div class="module-text">
-      <div class="module-title">Visit History</div>
-      <div class="module-desc">Your logged visits — dates, accounts, summaries</div>
-    </div>
-  </a>
 
-  <!-- MANAGEMENT -->
-  <div class="divider">
-    <div class="divider-line"></div>
-    <div class="divider-text">Management</div>
-    <div class="divider-line"></div>
+  <div class="section-label">Management</div>
+  <div class="module-grid">
+    <a class="module-card primary" href="https://fieldiq.biz/dashboard.html">
+      <div class="module-icon-wrap">📊</div>
+      <div class="module-text">
+        <div class="module-title">Dashboard</div>
+        <div class="module-desc">KPIs, rep performance, territory coverage, filters</div>
+      </div>
+      <div class="module-arrow">›</div>
+    </a>
+    <a class="module-card" href="https://fieldiq.biz/fieldiq-actions.html?mode=manager">
+      <div class="module-icon-wrap">✅</div>
+      <div class="module-text">
+        <div class="module-title">Open Actions</div>
+        <div class="module-desc">Outstanding action items by account and rep</div>
+      </div>
+      <div class="module-arrow">›</div>
+    </a>
+    <a class="module-card" href="https://fieldiq.biz/fieldiq-visits-map.html">
+      <div class="module-icon-wrap">📍</div>
+      <div class="module-text">
+        <div class="module-title">Visit Map</div>
+        <div class="module-desc">Live GPS map of all field activity across GCC</div>
+      </div>
+      <div class="module-arrow">›</div>
+    </a>
   </div>
-  <a class="module" href="./dashboard.html?mode=manager">
-    <div class="module-icon">📊</div>
-    <div class="module-text">
-      <div class="module-title">Dashboard</div>
-      <div class="module-desc">KPIs, rep performance, territory coverage</div>
-    </div>
-  </a>
-  <a class="module" href="./fieldiq-actions.html?mode=manager">
-    <div class="module-icon">✅</div>
-    <div class="module-text">
-      <div class="module-title">Open Actions</div>
-      <div class="module-desc">Outstanding action items by account</div>
-    </div>
-  </a>
-  <a class="module" href="./fieldiq-visits-map.html">
-    <div class="module-icon">📍</div>
-    <div class="module-text">
-      <div class="module-title">Visit Map</div>
-      <div class="module-desc">Live map of all field activity across GCC</div>
-    </div>
-  </a>
 
-  <!-- INTELLIGENCE -->
-  <div class="divider">
-    <div class="divider-line"></div>
-    <div class="divider-text">Intelligence</div>
-    <div class="divider-line"></div>
+  <div class="section-label">Intelligence</div>
+  <div class="module-grid">
+    <a class="module-card" href="https://fieldiq.biz/fieldiq-insights.html">
+      <div class="module-icon-wrap">🧠</div>
+      <div class="module-text">
+        <div class="module-title">AI Insights</div>
+        <div class="module-desc">Account intelligence, territory trends, institutional memory</div>
+      </div>
+      <div class="module-arrow">›</div>
+    </a>
   </div>
-  <a class="module intelligence" href="./fieldiq-insights.html">
-    <div class="module-icon">🧠</div>
-    <div class="module-text">
-      <div class="module-title">AI Insights</div>
-      <div class="module-desc">Account intelligence, territory trends, institutional memory</div>
-    </div>
-  </a>
-  <a class="module" href="./fieldiq-guide.html" style="margin-top:4px">
-    <div class="module-icon">📖</div>
-    <div class="module-text">
-      <div class="module-title">Quick Start Guide</div>
-      <div class="module-desc">How to use FieldIQ — for reps and managers</div>
-    </div>
-  </a>
 
-</div>
-<div class="footer">
-  Mid East Medical FZC — UAE
-  <div class="version">FieldIQ v1.0 — 2026</div>
+  <div class="section-label">Field Operations</div>
+  <div class="module-grid">
+    <a class="module-card" href="./fieldiq-log-visit.html">
+      <div class="module-icon-wrap">🎙️</div>
+      <div class="module-text">
+        <div class="module-title">Log Visit</div>
+        <div class="module-desc">Record a field visit — voice to AI report</div>
+      </div>
+      <div class="module-arrow">›</div>
+    </a>
+    <a class="module-card" href="./fieldiq-visit-history.html">
+      <div class="module-icon-wrap">📋</div>
+      <div class="module-text">
+        <div class="module-title">Visit History</div>
+        <div class="module-desc">Your logged visits — dates, accounts, summaries</div>
+      </div>
+      <div class="module-arrow">›</div>
+    </a>
+  </div>
+
+  <div class="section-label">Help</div>
+  <div class="module-grid">
+    <a class="module-card" href="./fieldiq-guide.html">
+      <div class="module-icon-wrap">📖</div>
+      <div class="module-text">
+        <div class="module-title">Quick Start Guide</div>
+        <div class="module-desc">How to use FieldIQ — for reps and managers</div>
+      </div>
+      <div class="module-arrow">›</div>
+    </a>
+  </div>
+
+  <div class="footer">FieldIQ v2.0 · Mid East Medical FZC · UAE · 2026 · Manager Portal</div>
 </div>
 </body>
 </html>
