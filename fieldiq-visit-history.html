@@ -201,7 +201,8 @@ async function loadCurrentUser(){
 async function loadHistory(){
   try{
     if(!currentUser){
-      window.location.href='/';
+      document.getElementById('visitList').innerHTML='<div class="empty">Please select your name on the Home screen before viewing Visit History.<br><br><a href="/" style="display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:12px;box-shadow:0 6px 16px rgba(47,143,255,0.3)">Return Home</a></div>';
+      document.getElementById('countLabel').textContent='';
       return;
     }
     var endpoint=WORKER+'/get-visits';
