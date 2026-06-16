@@ -6,54 +6,84 @@
 <title>FieldIQ — Open Actions</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;padding:16px;padding-bottom:40px}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:18px;padding-bottom:40px}
 .container{max-width:900px;margin:0 auto}
-.topbar{text-align:center;margin-bottom:16px;padding-top:8px}
-.topbar h1{font-size:22px;color:#00d4ff;font-weight:700}
-.topbar p{color:#555;font-size:12px;margin-top:3px}
-.home-btn{display:inline-block;background:#00d4ff;color:#000;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px}
-.manager-badge{display:inline-block;background:#ff880022;color:#ffaa44;border:1px solid #ff880033;border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px;margin-left:8px;text-transform:uppercase}
-.filter-bar{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:12px;margin-bottom:16px}
-.filter-bar h3{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
-.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
-.filter-select{width:100%;padding:9px 10px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:#ccc;font-size:12px;outline:none}
-.filter-select option{background:#1a1a1a}
+.topbar{text-align:center;margin-bottom:14px}
+.topbar h1{font-size:23px;color:#0b1f3a;font-weight:800;letter-spacing:-0.4px}
+.topbar p{color:#7a8aa3;font-size:12.5px;margin-top:4px;font-weight:600}
+.manager-badge{
+  display:inline-block;background:#fff3e0;color:#d98a1c;border:1px solid #ffe5b3;border-radius:8px;
+  font-size:10.5px;font-weight:800;padding:3px 10px;margin-left:8px;text-transform:uppercase;letter-spacing:0.5px;
+}
+.home-btn{
+  display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
+  text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;
+  box-shadow:0 2px 8px rgba(11,31,58,0.05);
+}
+.home-btn:hover{border-color:#2f8fff}
+
+.filter-bar{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:16px;margin-bottom:18px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.filter-bar h3{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:12px}
+.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.filter-select{width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;font-size:12.5px;outline:none;font-weight:600}
+.filter-select:focus{border-color:#2f8fff}
 .filter-btns{display:flex;gap:8px}
-.fbtn-apply{flex:1;padding:9px;background:#00d4ff;color:#000;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
-.fbtn-reset{flex:1;padding:9px;background:#1a1a1a;color:#555;border:1px solid #222;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
-.filter-status{font-size:10px;color:#00d4ff;margin-top:6px;text-align:center;min-height:14px}
-.stats-row{display:flex;gap:8px;margin-bottom:16px}
-.stat-pill{background:#111;border:1px solid #1a1a1a;border-radius:8px;padding:10px 12px;font-size:11px;color:#555;flex:1;text-align:center}
-.stat-pill span{display:block;font-size:22px;font-weight:700;color:#00d4ff;margin-bottom:2px}
-.stat-pill.high span{color:#ff6666}
-.section-title{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:8px}
-.account-block{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:14px;margin-bottom:10px}
-.account-block.high{border-left:3px solid #ff4444}
-.account-block.medium{border-left:3px solid #ffaa44}
-.account-block.low{border-left:3px solid #44cc88}
-.account-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.account-name{font-size:14px;font-weight:700;color:#fff}
-.account-meta{font-size:11px;color:#555;margin-top:2px}
-.priority-badge{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600;white-space:nowrap}
-.badge-high{background:#ff444422;color:#ff6666;border:1px solid #ff444433}
-.badge-medium{background:#ff880022;color:#ffaa44;border:1px solid #ff880033}
-.badge-low{background:#00880022;color:#44cc88;border:1px solid #00880033}
-.action-list{margin-top:8px;border-top:1px solid #1a1a1a;padding-top:8px}
-.action-item{font-size:12px;color:#aaa;padding:5px 0;border-bottom:1px solid #0d0d0d;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.fbtn-apply{flex:1;padding:11px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:10px;font-size:12.5px;font-weight:800;cursor:pointer;box-shadow:0 6px 16px rgba(47,143,255,0.3)}
+.fbtn-reset{flex:1;padding:11px;background:#fff;color:#7a8aa3;border:1.5px solid #e3ebf5;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer}
+.filter-status{font-size:10.5px;color:#2f8fff;margin-top:8px;text-align:center;min-height:14px;font-weight:700}
+
+.stats-row{display:flex;gap:10px;margin-bottom:18px}
+.stat-pill{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px 12px;font-size:11.5px;color:#7a8aa3;flex:1;text-align:center;font-weight:700;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.stat-pill span{display:block;font-size:24px;font-weight:800;color:#2f8fff;margin-bottom:4px}
+.stat-pill.high span{color:#e0344a}
+
+.section-title{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #e3ebf5;display:flex;align-items:center;gap:8px}
+
+.account-block{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.account-block.high{border-left:4px solid #e0344a}
+.account-block.medium{border-left:4px solid #d98a1c}
+.account-block.low{border-left:4px solid #1fa861}
+.account-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.account-name{font-size:14.5px;font-weight:800;color:#0b1f3a}
+.account-meta{font-size:11.5px;color:#aab8cc;margin-top:3px;font-weight:600}
+.priority-badge{font-size:10.5px;padding:4px 11px;border-radius:8px;font-weight:800;white-space:nowrap}
+.badge-high{background:#ffe5e8;color:#e0344a}
+.badge-medium{background:#fff3e0;color:#d98a1c}
+.badge-low{background:#e3f8ea;color:#1fa861}
+
+.action-list{margin-top:10px;border-top:1px solid #eef3f9;padding-top:10px}
+.action-item{font-size:12.5px;color:#3a4a63;padding:6px 0;border-bottom:1px solid #f4f8fc;display:flex;align-items:flex-start;gap:8px;line-height:1.6;font-weight:500}
 .action-item:last-child{border-bottom:none;padding-bottom:0}
-.action-bullet{color:#00d4ff;flex-shrink:0;margin-top:1px}
-.action-footer{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.af-badge{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600}
-.af-rep{background:#00d4ff11;color:#00d4ff;border:1px solid #00d4ff22}
-.af-terr{background:#1a1a1a;color:#555;border:1px solid #222}
-.af-date{background:#1a1a1a;color:#555;border:1px solid #222}
-.loading{text-align:center;padding:60px 20px;color:#555}
-.spinner{width:32px;height:32px;border:3px solid #1a1a1a;border-top:3px solid #00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+.action-bullet{color:#2f8fff;flex-shrink:0;margin-top:1px;font-weight:800}
+.action-footer{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.af-badge{font-size:10.5px;padding:4px 11px;border-radius:8px;font-weight:700}
+.af-rep{background:#eaf3ff;color:#2f8fff}
+.af-terr{background:#eef3f9;color:#5b6b85}
+
+.loading{text-align:center;padding:60px 20px;color:#aab8cc;font-weight:600}
+.spinner{width:36px;height:36px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;color:#333;font-size:13px;padding:30px}
-.access-denied{text-align:center;padding:60px 20px}
-.access-denied h2{color:#ff6666;font-size:18px;margin-bottom:12px}
-.access-denied p{color:#555;font-size:13px}
+.empty{text-align:center;color:#aab8cc;font-size:13px;padding:30px;font-weight:600}
+
+.access-denied{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:80px 24px;
+}
+.access-denied-icon{font-size:54px;margin-bottom:16px}
+.access-denied h2{font-size:20px;color:#0b1f3a;font-weight:800;margin-bottom:8px}
+.access-denied p{font-size:13.5px;color:#7a8aa3;font-weight:600;max-width:320px;line-height:1.6;margin-bottom:20px}
+.access-denied a{
+  display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;
+  text-decoration:none;padding:13px 28px;border-radius:14px;box-shadow:0 8px 20px rgba(47,143,255,0.32);font-size:14px;
+}
+
+@media(min-width:1100px){
+  .container{max-width:1300px}
+  body{padding:32px 40px 60px}
+  .stats-row{max-width:600px}
+  .account-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .account-block{margin-bottom:0}
+}
 </style>
 </head>
 <body>
@@ -65,9 +95,10 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 <a class="home-btn" href="https://fieldiq.biz/fieldiq.html">← Home</a>
 
 <div id="accessDenied" class="access-denied" style="display:none">
+  <div class="access-denied-icon">🔒</div>
   <h2>Manager Access Required</h2>
-  <p>Open this page with ?mode=manager to access Open Actions.</p>
-  <p style="margin-top:8px"><a href="fieldiq-actions.html?mode=manager" style="color:#00d4ff">Open Manager View →</a></p>
+  <p>Open Actions shows outstanding action items across all reps and accounts. This page is restricted to Manager accounts.</p>
+  <a href="./index.html" id="accessDeniedHomeBtn">Return Home</a>
 </div>
 
 <div id="mainContent" style="display:none">
@@ -114,9 +145,17 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 </div>
 
 <script>
+// ── MANAGER ACCESS CONTROL ───────────────────────────────────
+// Real role check using the locked identity from PIN login.
+// Removed: the old ?mode=manager URL check, which was cosmetic
+// only and was directly bypassable from its own denial screen.
+var role = localStorage.getItem('fieldiq_user_role');
+var isManager = (role === 'Manager');
+
+document.getElementById('accessDeniedHomeBtn').href = isManager ? './fieldiq.html' : './index.html';
+
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 var allRecords=[];
-var isManager=window.location.search.indexOf('mode=manager')>-1;
 
 function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
 
@@ -183,7 +222,6 @@ function getFilteredRecords(){
 }
 
 function buildActionsView(records){
-  // Group by hospital, deduplicate actions
   var accountMap={};
   records.forEach(function(r){
     var f=r.fields;
@@ -200,18 +238,15 @@ function buildActionsView(records){
         actions:[]
       };
     }
-    // Deduplicate actions
     actions.forEach(function(a){
       var exists=accountMap[hospital].actions.some(function(existing){
         return existing.toLowerCase().substring(0,40)===a.toLowerCase().substring(0,40);
       });
       if(!exists)accountMap[hospital].actions.push(a);
     });
-    // Keep highest priority
     var p=f['Priority']||'Medium';
     if(p==='High')accountMap[hospital].priority='High';
     else if(p==='Medium'&&accountMap[hospital].priority==='Low')accountMap[hospital].priority='Medium';
-    // Keep most recent rep
     if(f['Visit Date']&&(!accountMap[hospital].lastVisit||f['Visit Date']>accountMap[hospital].lastVisit)){
       accountMap[hospital].lastVisit=f['Visit Date'];
       accountMap[hospital].rep=(f['Rep Name']||'').trim();
@@ -220,7 +255,6 @@ function buildActionsView(records){
   });
 
   var accounts=Object.values(accountMap);
-  // Sort: High first, then Medium, then Low
   var order={High:0,Medium:1,Low:2};
   accounts.sort(function(a,b){return(order[a.priority]||1)-(order[b.priority]||1);});
 
