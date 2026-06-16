@@ -35,6 +35,13 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 .user-select-box{width:100%;max-width:380px;margin-bottom:16px}
 .user-select-box label{font-size:11px;color:#888;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.5px}
 .user-select-box select{width:100%;padding:14px;background:#111;border:1px solid #1a1a1a;border-radius:14px;color:#fff;font-size:15px;outline:none}
+.pin-box{width:100%;max-width:380px;margin-bottom:16px;background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:16px}
+.pin-box label{font-size:11px;color:#888;margin-bottom:8px;display:block;text-transform:uppercase;letter-spacing:0.5px}
+.pin-box input{width:100%;padding:14px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;color:#fff;font-size:18px;letter-spacing:4px;text-align:center;outline:none}
+.pin-box .pin-btn{width:100%;padding:12px;margin-top:10px;border:none;border-radius:10px;background:#00d4ff;color:#000;font-size:14px;font-weight:700;cursor:pointer}
+.pin-error{color:#ff6666;font-size:12px;margin-top:8px;text-align:center;display:none}
+.pin-error.visible{display:block}
+.pin-cancel{font-size:11px;color:#555;text-align:center;margin-top:10px;display:block;cursor:pointer;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -80,11 +87,13 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+var pendingUser=null; // holds selected rep's data while waiting for PIN entry
 
 function switchUser(){
   localStorage.removeItem('fieldiq_user_id');
   localStorage.removeItem('fieldiq_user_name');
   localStorage.removeItem('fieldiq_user_role');
+  pendingUser=null;
   location.reload();
 }
 
@@ -111,8 +120,55 @@ function renderIdentity(){
       '<div class="user-select-box">'+
         '<label>Who are you?</label>'+
         '<select id="homeUserSelect"><option value="">Loading users...</option></select>'+
-      '</div>';
+      '</div>'+
+      '<div id="pinSection"></div>';
     loadUsers();
+  }
+}
+
+function showPinBox(opt){
+  pendingUser={
+    id: opt.value,
+    name: opt.getAttribute('data-name')||opt.value,
+    role: opt.getAttribute('data-role')||'Sales Rep',
+    pin: opt.getAttribute('data-pin')||''
+  };
+  var pinSection=document.getElementById('pinSection');
+  pinSection.innerHTML=
+    '<div class="pin-box">'+
+      '<label>Enter PIN for '+pendingUser.name+'</label>'+
+      '<input type="password" id="pinInput" inputmode="numeric" maxlength="6" placeholder="••••">'+
+      '<button class="pin-btn" id="pinSubmitBtn">Confirm</button>'+
+      '<div class="pin-error" id="pinError">Incorrect PIN. Please try again.</div>'+
+      '<span class="pin-cancel" id="pinCancel">Cancel</span>'+
+    '</div>';
+
+  document.getElementById('pinSubmitBtn').addEventListener('click',checkPin);
+  document.getElementById('pinInput').addEventListener('keydown',function(e){
+    if(e.key==='Enter')checkPin();
+  });
+  document.getElementById('pinCancel').addEventListener('click',function(){
+    pendingUser=null;
+    document.getElementById('pinSection').innerHTML='';
+    document.getElementById('homeUserSelect').value='';
+  });
+  document.getElementById('pinInput').focus();
+}
+
+function checkPin(){
+  var entered=document.getElementById('pinInput').value.trim();
+  var errorEl=document.getElementById('pinError');
+  if(!pendingUser){return;}
+  if(entered && entered===String(pendingUser.pin)){
+    localStorage.setItem('fieldiq_user_id',pendingUser.id);
+    localStorage.setItem('fieldiq_user_name',pendingUser.name);
+    localStorage.setItem('fieldiq_user_role',pendingUser.role);
+    pendingUser=null;
+    renderIdentity();
+  } else {
+    errorEl.className='pin-error visible';
+    document.getElementById('pinInput').value='';
+    document.getElementById('pinInput').focus();
   }
 }
 
@@ -132,16 +188,17 @@ async function loadUsers(){
         opt.textContent=(f['Display Name']||f['User ID']||'Unknown');
         opt.setAttribute('data-name',f['Display Name']||'');
         opt.setAttribute('data-role',f['Role']||'Sales Rep');
+        opt.setAttribute('data-pin',f['PIN']||'');
         sel.appendChild(opt);
       });
     }
     sel.addEventListener('change',function(){
-      if(!sel.value)return;
+      if(!sel.value){
+        document.getElementById('pinSection').innerHTML='';
+        return;
+      }
       var selectedOpt=sel.options[sel.selectedIndex];
-      localStorage.setItem('fieldiq_user_id',sel.value);
-      localStorage.setItem('fieldiq_user_name',selectedOpt.getAttribute('data-name')||sel.value);
-      localStorage.setItem('fieldiq_user_role',selectedOpt.getAttribute('data-role')||'Sales Rep');
-      renderIdentity();
+      showPinBox(selectedOpt);
     });
   }catch(err){
     var sel=document.getElementById('homeUserSelect');
