@@ -3,48 +3,86 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FieldIQ — Visit Map</title>
+<title>FieldIQ — Territory Map</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;width:100%;overflow:hidden}
-body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;display:flex;flex-direction:column}
-.topbar{background:#111;border-bottom:1px solid #1a1a1a;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.topbar h1{font-size:17px;color:#00d4ff;font-weight:700}
-.home-btn{display:inline-block;color:#555;font-size:11px;text-decoration:none;padding:4px 10px;border:1px solid #222;border-radius:6px;background:#1a1a1a;white-space:nowrap}
-.home-btn:hover{color:#00d4ff;border-color:#00d4ff}
-.filters{background:#111;border-bottom:1px solid #1a1a1a;padding:8px 12px;display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;align-items:center}
-.filters select{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;color:#ccc;padding:5px 8px;font-size:12px;outline:none;max-width:110px}
-.fbtn{background:#00d4ff;border:none;border-radius:6px;color:#000;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer}
-.fbtn.sec{background:#1a1a1a;color:#666;border:1px solid #222}
-.stats{background:#0d0d0d;border-bottom:1px solid #1a1a1a;padding:5px 16px;display:flex;gap:14px;flex-shrink:0}
-.stat{font-size:11px;color:#555}.stat span{font-weight:700}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:flex;flex-direction:column}
+
+.topbar{background:#fff;border-bottom:1px solid #e3ebf5;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(11,31,58,0.04)}
+.topbar h1{font-size:17px;color:#0b1f3a;font-weight:800;letter-spacing:-0.3px}
+.topbar h1 span{color:#2f8fff}
+.home-btn{
+  display:inline-flex;align-items:center;gap:6px;color:#2f8fff;font-size:12px;font-weight:700;text-decoration:none;
+  padding:7px 14px;border-radius:30px;background:#eaf3ff;white-space:nowrap;
+}
+.home-btn:hover{background:#dceeff}
+
+.filters{background:#fff;border-bottom:1px solid #e3ebf5;padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;align-items:center}
+.filters select{
+  background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;padding:8px 12px;
+  font-size:12.5px;outline:none;max-width:140px;font-weight:600;
+}
+.filters select:focus{border-color:#2f8fff}
+.fbtn{
+  background:linear-gradient(135deg,#3d9bff,#1f6fe0);border:none;border-radius:10px;color:#fff;padding:9px 16px;
+  font-size:12.5px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(47,143,255,0.3);
+}
+.fbtn.sec{background:#fff;color:#7a8aa3;border:1.5px solid #e3ebf5;box-shadow:none}
+
+.stats{background:#fff;border-bottom:1px solid #e3ebf5;padding:10px 18px;display:flex;gap:18px;flex-shrink:0;flex-wrap:wrap}
+.stat{font-size:12px;color:#7a8aa3;font-weight:600}
+.stat span{font-weight:800}
+
 #map{flex:1;min-height:0;width:100%}
-.legend{position:absolute;bottom:12px;right:8px;background:rgba(17,17,17,0.95);border:1px solid #222;border-radius:8px;padding:10px;z-index:1000;font-size:11px}
-.li{display:flex;align-items:center;gap:6px;margin:3px 0;color:#aaa}
-.ld{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(17,17,17,0.96);border:1px solid #222;border-radius:12px;padding:28px 36px;text-align:center;z-index:2000;min-width:220px}
-.spinner{width:32px;height:32px;border:3px solid #1a1a1a;border-top:3px solid #00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px}
+
+.legend{
+  position:absolute;bottom:16px;right:14px;background:#fff;border:1px solid #e3ebf5;border-radius:14px;
+  padding:14px;z-index:1000;font-size:12px;box-shadow:0 6px 18px rgba(11,31,58,0.12);
+}
+.li{display:flex;align-items:center;gap:7px;margin:5px 0;color:#3a4a63;font-weight:600}
+.ld{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+
+.overlay{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #e3ebf5;
+  border-radius:18px;padding:32px 40px;text-align:center;z-index:2000;min-width:240px;
+  box-shadow:0 12px 32px rgba(11,31,58,0.15);
+}
+.spinner{width:36px;height:36px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.overlay p{color:#888;font-size:13px;margin-top:4px}
-.err{background:rgba(26,10,10,0.96);border-color:#ff444433;color:#ff6666}
-.leaflet-popup-content-wrapper{background:#111;border:1px solid #2a2a2a;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.7)}
-.leaflet-popup-content{color:#ccc;font-size:12px;line-height:1.5;margin:10px 14px;min-width:190px;max-width:260px}
-.leaflet-popup-tip{background:#111}
-.ph{font-size:14px;font-weight:700;color:#00d4ff;margin-bottom:5px}
-.pr{display:flex;justify-content:space-between;gap:8px;margin:2px 0;font-size:11px}
-.pl{color:#555}.pv{color:#ccc;text-align:right}
-.ps{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;margin:4px 0}
-.psum{margin-top:6px;padding-top:6px;border-top:1px solid #1a1a1a;font-size:11px;color:#666;line-height:1.4;max-height:70px;overflow-y:auto}
+.overlay p{color:#7a8aa3;font-size:13.5px;font-weight:600}
+.err p{color:#e0344a}
+
+.access-denied{
+  position:absolute;top:0;left:0;right:0;bottom:0;background:#f4f8fc;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;z-index:3000;padding:24px;text-align:center;
+}
+.access-denied-icon{font-size:54px;margin-bottom:16px}
+.access-denied h2{font-size:20px;color:#0b1f3a;font-weight:800;margin-bottom:8px}
+.access-denied p{font-size:13.5px;color:#7a8aa3;font-weight:600;max-width:320px;line-height:1.6;margin-bottom:20px}
+.access-denied a{
+  display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;
+  text-decoration:none;padding:13px 28px;border-radius:14px;box-shadow:0 8px 20px rgba(47,143,255,0.32);font-size:14px;
+}
+
+.leaflet-popup-content-wrapper{background:#fff;border:1px solid #e3ebf5;border-radius:14px;box-shadow:0 8px 24px rgba(11,31,58,0.18)}
+.leaflet-popup-content{color:#3a4a63;font-size:12.5px;line-height:1.6;margin:12px 16px;min-width:190px;max-width:260px}
+.leaflet-popup-tip{background:#fff}
+.ph{font-size:14.5px;font-weight:800;color:#0b1f3a;margin-bottom:6px}
+.pr{display:flex;justify-content:space-between;gap:8px;margin:3px 0;font-size:11.5px}
+.pl{color:#aab8cc;font-weight:600}.pv{color:#3a4a63;text-align:right;font-weight:700}
+.ps{display:inline-block;padding:3px 10px;border-radius:8px;font-size:10.5px;font-weight:800;margin:5px 0}
+.psum{margin-top:8px;padding-top:8px;border-top:1px solid #eef3f9;font-size:11.5px;color:#7a8aa3;line-height:1.5;max-height:70px;overflow-y:auto}
 </style>
 </head>
 <body>
 <div class="topbar">
-  <h1>FieldIQ — Visit Map</h1>
+  <h1>Field<span>IQ</span> — Territory Map</h1>
   <div style="display:flex;align-items:center;gap:10px;">
-    <span id="updated" style="color:#555;font-size:11px">Loading...</span>
-    <a href="https://fieldiq.biz/fieldiq.html" style="display:inline-block;background:#00d4ff;color:#000;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px">← Home</a>
+    <span id="updated" style="color:#aab8cc;font-size:11.5px;font-weight:600">Loading...</span>
+    <a href="https://fieldiq.biz/fieldiq.html" class="home-btn">← Home</a>
   </div>
 </div>
 <div class="filters">
@@ -55,17 +93,17 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;display:
   <button class="fbtn sec" onclick="resetFilters()">Reset</button>
 </div>
 <div class="stats">
-  <div class="stat">Visits: <span id="sCount" style="color:#00d4ff">0</span></div>
-  <div class="stat">Positive: <span id="sPos" style="color:#44cc88">0</span></div>
-  <div class="stat">Neutral: <span id="sNeu" style="color:#ffaa44">0</span></div>
-  <div class="stat">Negative: <span id="sNeg" style="color:#ff6666">0</span></div>
+  <div class="stat">Visits: <span id="sCount" style="color:#2f8fff">0</span></div>
+  <div class="stat">Positive: <span id="sPos" style="color:#1fa861">0</span></div>
+  <div class="stat">Neutral: <span id="sNeu" style="color:#d98a1c">0</span></div>
+  <div class="stat">Negative: <span id="sNeg" style="color:#e0344a">0</span></div>
 </div>
 <div id="map"></div>
 <div class="legend">
-  <div class="li"><div class="ld" style="background:#44cc88"></div>Positive</div>
-  <div class="li"><div class="ld" style="background:#ffaa44"></div>Neutral</div>
-  <div class="li"><div class="ld" style="background:#ff6666"></div>Negative</div>
-  <div class="li"><div class="ld" style="background:#888"></div>Unknown</div>
+  <div class="li"><div class="ld" style="background:#1fa861"></div>Positive</div>
+  <div class="li"><div class="ld" style="background:#d98a1c"></div>Neutral</div>
+  <div class="li"><div class="ld" style="background:#e0344a"></div>Negative</div>
+  <div class="li"><div class="ld" style="background:#aab8cc"></div>Unknown</div>
 </div>
 <div class="overlay" id="loadingEl">
   <div class="spinner"></div>
@@ -75,7 +113,27 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;display:
   <p id="errorMsg">Failed to load visits.</p>
   <button class="fbtn" style="margin-top:12px" onclick="loadVisits()">Retry</button>
 </div>
+<div class="access-denied" id="accessDeniedEl" style="display:none">
+  <div class="access-denied-icon">🔒</div>
+  <h2>Manager Access Required</h2>
+  <p>The Territory Map shows GPS locations and visit data for all reps. This page is restricted to Manager accounts.</p>
+  <a href="/">Return Home</a>
+</div>
+
 <script>
+// ── MANAGER ACCESS CONTROL ───────────────────────────────────
+// Real role check using the locked identity from PIN login.
+// Map is only initialized and visits are only fetched inside the
+// Manager branch below. Nothing map-related runs before this check passes.
+var role = localStorage.getItem('fieldiq_user_role');
+var isManager = (role === 'Manager');
+
+if (!isManager) {
+  document.getElementById('loadingEl').style.display = 'none';
+  document.getElementById('accessDeniedEl').style.display = 'flex';
+  throw new Error('Access denied: Manager role required.');
+}
+
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 var allVisits=[];
 var markers;
@@ -86,6 +144,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
   attribution:'© OpenStreetMap',maxZoom:18
 }).addTo(theMap);
 markers=L.layerGroup().addTo(theMap);
+
 
 setTimeout(function(){theMap.invalidateSize();},300);
 
