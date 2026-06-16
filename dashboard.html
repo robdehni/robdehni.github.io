@@ -164,11 +164,14 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
   <a class="nav-item active" href="dashboard.html"><span class="nav-icon">📊</span>Dashboard</a>
 </nav>
 <script>
+// ── MANAGER ACCESS CONTROL ───────────────────────────────────
+// Real role check using the locked identity from PIN login.
+// loadDashboard() is only called inside the Manager branch below.
+var role = localStorage.getItem('fieldiq_user_role');
+var isManager = (role === 'Manager');
+
 var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
 var allRecords=[];
-var isManager=window.location.search.indexOf('mode=manager')>-1;
-
-if(isManager){document.getElementById('managerBadge').style.display='inline-block';}
 
 function getSentiment(s){if(!s)return'unknown';s=s.toLowerCase();var i=s.indexOf('sentiment');if(i>-1){var t=s.substring(i,i+120);if(t.indexOf('positive')>-1)return'positive';if(t.indexOf('negative')>-1)return'negative';if(t.indexOf('neutral')>-1)return'neutral';}if(s.indexOf('positive')>-1)return'positive';if(s.indexOf('negative')>-1)return'negative';if(s.indexOf('neutral')>-1)return'neutral';return'unknown';}
 function getBadgeClass(s){if(s==='positive')return'badge-positive';if(s==='neutral')return'badge-neutral';if(s==='negative')return'badge-negative';return'badge-unknown';}
@@ -393,7 +396,12 @@ async function loadDashboard(){
     document.getElementById('loadingEl').textContent='Failed to load: '+err.message;
   }
 }
-loadDashboard();
+if (role !== 'Manager') {
+  window.location.href = '/';
+} else {
+  document.getElementById('managerBadge').style.display='inline-block';
+  loadDashboard();
+}
 </script>
 </body>
 </html>
