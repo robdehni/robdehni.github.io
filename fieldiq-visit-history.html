@@ -179,9 +179,14 @@ async function loadCurrentUser(){
 
 async function loadHistory(){
   try{
+    if(!currentUser){
+      document.getElementById('visitList').innerHTML='<div class="empty">Please go to Log Visit and select your user first.</div>';
+      document.getElementById('countLabel').textContent='';
+      return;
+    }
     var endpoint=WORKER+'/get-visits';
     // Reps get only their own visits via server-side filter
-    if(currentUser&&currentUser.role!=='Manager'){
+    if(currentUser.role!=='Manager'){
       endpoint=WORKER+'/get-visits?filterByUser='+encodeURIComponent(currentUser.userId);
     }
     var res=await fetch(endpoint);
