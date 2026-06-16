@@ -4,127 +4,90 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FieldIQ</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{
-  background:#f4f8fc;
-  color:#0b1f3a;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:28px 20px 40px;
-}
-.wrap{width:100%;max-width:420px}
-.topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;gap:10px}
-.brand{display:flex;align-items:center;gap:10px}
-.brand-cloud{font-size:26px;line-height:1}
-.brand-text{display:flex;flex-direction:column}
-.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
-.brand-text h1 span{color:#2f8fff}
-.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
-.greeting{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-.greeting-text{font-size:13px;color:#5b6b85;font-weight:600;white-space:nowrap}
-.user-chip{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e3ebf5;border-radius:30px;padding:6px 12px 6px 6px;box-shadow:0 2px 8px rgba(11,31,58,0.05)}
-.user-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#2f8fff,#7ec3ff);display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-weight:700;flex-shrink:0}
-.user-role{font-size:12px;font-weight:700;color:#0b1f3a;white-space:nowrap}
-.switch-link{font-size:11px;color:#2f8fff;text-decoration:underline;cursor:pointer;margin-top:2px;font-weight:600;background:none;border:none}
-.identity-card{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:18px;margin-bottom:18px;box-shadow:0 4px 16px rgba(11,31,58,0.06)}
-.identity-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;margin-bottom:10px}
-.identity-select{width:100%;padding:14px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:12px;color:#0b1f3a;font-size:15px;font-weight:600;outline:none;appearance:none}
-.identity-select:focus{border-color:#2f8fff}
-.pin-card{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:18px;margin-bottom:18px;box-shadow:0 4px 16px rgba(11,31,58,0.06)}
-.pin-card label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;margin-bottom:10px;display:block}
-.pin-card input{width:100%;padding:16px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:12px;color:#0b1f3a;font-size:22px;letter-spacing:8px;text-align:center;outline:none;font-weight:700}
-.pin-card input:focus{border-color:#2f8fff}
-.pin-confirm-btn{width:100%;padding:15px;margin-top:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#2f8fff,#1f6fe0);color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(47,143,255,0.35)}
-.pin-error{color:#e0445b;font-size:12px;margin-top:10px;text-align:center;display:none;font-weight:600}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.logo{text-align:center;margin-bottom:40px}
+.logo h1{font-size:42px;font-weight:800;color:#00d4ff;letter-spacing:-1px}
+.logo p{color:#444;font-size:13px;margin-top:6px;letter-spacing:1px;text-transform:uppercase}
+.modules{width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}
+.module{display:flex;align-items:center;gap:16px;background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:18px 20px;text-decoration:none;color:#fff;transition:all 0.2s}
+.module:active{border-color:#00d4ff33;background:#141414}
+.module-icon{font-size:28px;width:44px;text-align:center;flex-shrink:0}
+.module-text{flex:1}
+.module-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:2px}
+.module-desc{font-size:11px;color:#555}
+.module.primary{border-color:#00d4ff44;background:#00d4ff08}
+.module.primary .module-title{color:#00d4ff}
+.divider{width:100%;max-width:380px;display:flex;align-items:center;gap:12px;margin:4px 0}
+.divider-line{flex:1;height:1px;background:#1a1a1a}
+.divider-text{font-size:10px;color:#333;text-transform:uppercase;letter-spacing:1px}
+.footer{margin-top:40px;text-align:center;color:#2a2a2a;font-size:11px}
+.version{color:#1a1a1a;font-size:10px;margin-top:4px}
+.user-locked{width:100%;max-width:380px;display:flex;align-items:center;justify-content:space-between;background:#0d1a0d;border:1px solid #00ff4422;border-radius:14px;padding:14px 18px;margin-bottom:16px}
+.user-locked-info{display:flex;align-items:center;gap:10px}
+.user-locked-avatar{font-size:22px}
+.user-locked-name{font-size:15px;font-weight:700;color:#00ff88}
+.user-locked-role{font-size:11px;color:#555;margin-top:2px}
+.switch-user-btn{font-size:11px;color:#333;background:none;border:none;cursor:pointer;text-decoration:underline;padding:4px}
+.switch-user-btn:hover{color:#888}
+.user-select-box{width:100%;max-width:380px;margin-bottom:16px}
+.user-select-box label{font-size:11px;color:#888;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.5px}
+.user-select-box select{width:100%;padding:14px;background:#111;border:1px solid #1a1a1a;border-radius:14px;color:#fff;font-size:15px;outline:none}
+.pin-box{width:100%;max-width:380px;margin-bottom:16px;background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:16px}
+.pin-box label{font-size:11px;color:#888;margin-bottom:8px;display:block;text-transform:uppercase;letter-spacing:0.5px}
+.pin-box input{width:100%;padding:14px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;color:#fff;font-size:18px;letter-spacing:4px;text-align:center;outline:none}
+.pin-box .pin-btn{width:100%;padding:12px;margin-top:10px;border:none;border-radius:10px;background:#00d4ff;color:#000;font-size:14px;font-weight:700;cursor:pointer}
+.pin-error{color:#ff6666;font-size:12px;margin-top:8px;text-align:center;display:none}
 .pin-error.visible{display:block}
-.pin-cancel{font-size:12px;color:#8a9bb3;text-align:center;margin-top:12px;display:block;cursor:pointer;font-weight:600}
-.hero-btn{display:flex;align-items:center;gap:18px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);border-radius:24px;padding:26px 24px;text-decoration:none;margin-bottom:16px;box-shadow:0 10px 28px rgba(47,143,255,0.35);transition:transform 0.15s}
-.hero-btn:active{transform:scale(0.98)}
-.hero-icon{width:64px;height:64px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
-.hero-text{flex:1}
-.hero-text h2{color:#fff;font-size:24px;font-weight:800;letter-spacing:-0.3px}
-.hero-text p{color:#dbecff;font-size:13px;margin-top:3px;font-weight:500}
-.hero-arrow{color:#fff;font-size:22px;opacity:0.85}
-.card-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-.module-card{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:20px 16px;text-decoration:none;display:flex;flex-direction:column;align-items:flex-start;gap:10px;box-shadow:0 4px 14px rgba(11,31,58,0.05);transition:transform 0.15s}
-.module-card:active{transform:scale(0.97)}
-.module-icon-wrap{width:44px;height:44px;border-radius:12px;background:#eaf3ff;display:flex;align-items:center;justify-content:center;font-size:22px}
-.module-card h3{font-size:15px;font-weight:700;color:#0b1f3a}
-.module-card p{font-size:11.5px;color:#7a8aa3;line-height:1.4}
-.module-go{margin-top:auto;color:#2f8fff;font-size:13px;display:flex;align-items:center;justify-content:center;width:30px;height:30px;background:#eaf3ff;border-radius:50%;font-weight:800}
-.trust-bar{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px 16px;margin-bottom:8px;box-shadow:0 2px 10px rgba(11,31,58,0.04)}
-.trust-icon{width:36px;height:36px;border-radius:50%;background:#eaf6ee;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-.trust-text strong{display:block;font-size:13px;color:#0b1f3a;font-weight:700}
-.trust-text span{font-size:11.5px;color:#8a9bb3}
-.footer{text-align:center;color:#aab8cc;font-size:11px;margin-top:20px;font-weight:600}
+.pin-cancel{font-size:11px;color:#555;text-align:center;margin-top:10px;display:block;cursor:pointer;text-decoration:underline}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="topbar">
-    <div class="brand">
-      <span class="brand-cloud">☁️</span>
-      <div class="brand-text">
-        <h1>Field<span>IQ</span></h1>
-        <p>Territory Intelligence</p>
-      </div>
-    </div>
-    <div id="greetingSection"></div>
-  </div>
+<div class="logo">
+  <h1>FieldIQ</h1>
+  <p>Territory Intelligence Platform</p>
+</div>
 
-  <div id="identitySection"></div>
+<div id="identitySection" style="width:100%;max-width:380px"></div>
 
-  <a class="hero-btn" href="./fieldiq-log-visit.html" id="logVisitBtn">
-    <div class="hero-icon">🎙️</div>
-    <div class="hero-text">
-      <h2>Log Visit</h2>
-      <p>Tap the mic to record your visit</p>
+<div class="modules">
+  <a class="module primary" href="./fieldiq-log-visit.html">
+    <div class="module-icon">🎙️</div>
+    <div class="module-text">
+      <div class="module-title">Log Visit</div>
+      <div class="module-desc">Record a field visit — voice to AI report</div>
     </div>
-    <div class="hero-arrow">›</div>
   </a>
-
-  <div class="card-row">
-    <a class="module-card" href="./fieldiq-visit-history.html">
-      <div class="module-icon-wrap">📋</div>
-      <div>
-        <h3>Visit History</h3>
-        <p>View your visits and summaries</p>
-      </div>
-      <div class="module-go">→</div>
-    </a>
-    <a class="module-card" href="./fieldiq-guide.html">
-      <div class="module-icon-wrap">📖</div>
-      <div>
-        <h3>Quick Start Guide</h3>
-        <p>Learn how to use FieldIQ</p>
-      </div>
-      <div class="module-go">→</div>
-    </a>
-  </div>
-
-  <div class="trust-bar">
-    <div class="trust-icon">🛡️</div>
-    <div class="trust-text">
-      <strong>Secure · Private · Always Synced</strong>
-      <span>Your data is protected and up to date across all devices.</span>
+  <a class="module" href="./fieldiq-visit-history.html">
+    <div class="module-icon">📋</div>
+    <div class="module-text">
+      <div class="module-title">Visit History</div>
+      <div class="module-desc">Your logged visits — dates, accounts, summaries</div>
     </div>
+  </a>
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-text">Help</div>
+    <div class="divider-line"></div>
   </div>
-
-  <div class="footer">FieldIQ v2.0 · Mid East Medical FZC · UAE · 2026</div>
+  <a class="module" href="./fieldiq-guide.html">
+    <div class="module-icon">📖</div>
+    <div class="module-text">
+      <div class="module-title">Quick Start Guide</div>
+      <div class="module-desc">How to use FieldIQ</div>
+    </div>
+  </a>
+</div>
+<div class="footer">
+  Mid East Medical FZC — UAE
+  <div class="version">FieldIQ v1.0 — 2026</div>
 </div>
 
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 var pendingUser=null;
-
-function getInitial(name){
-  if(!name)return'?';
-  return name.trim().charAt(0).toUpperCase();
-}
 
 function switchUser(){
   localStorage.removeItem('fieldiq_user_id');
@@ -136,31 +99,27 @@ function switchUser(){
 
 function renderIdentity(){
   var section=document.getElementById('identitySection');
-  var greeting=document.getElementById('greetingSection');
   var savedId=localStorage.getItem('fieldiq_user_id');
   var savedName=localStorage.getItem('fieldiq_user_name');
   var savedRole=localStorage.getItem('fieldiq_user_role');
 
   if(savedId && savedName){
-    var hour=new Date().getHours();
-    var timeGreeting = hour<12 ? 'Good morning' : hour<18 ? 'Good afternoon' : 'Good evening';
-    var switchHtml = (savedRole==='Manager') ? '<button class="switch-link" onclick="switchUser()">Switch User</button>' : '';
-    greeting.innerHTML=
-      '<div class="greeting">'+
-        '<div class="greeting-text">'+timeGreeting+', '+savedName.split(' ')[0]+'! 👋</div>'+
-        '<div class="user-chip">'+
-          '<div class="user-avatar">'+getInitial(savedName)+'</div>'+
-          '<div class="user-role">'+(savedRole||'Sales Rep')+'</div>'+
-        '</div>'+
-        switchHtml+
-      '</div>';
-    section.innerHTML='';
-  } else {
-    greeting.innerHTML='';
     section.innerHTML=
-      '<div class="identity-card">'+
-        '<div class="identity-label">Who are you?</div>'+
-        '<select class="identity-select" id="homeUserSelect"><option value="">Loading users...</option></select>'+
+      '<div class="user-locked">'+
+        '<div class="user-locked-info">'+
+          '<div class="user-locked-avatar">👤</div>'+
+          '<div>'+
+            '<div class="user-locked-name">'+savedName+'</div>'+
+            '<div class="user-locked-role">'+(savedRole||'Sales Rep')+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<button class="switch-user-btn" onclick="switchUser()">Switch User</button>'+
+      '</div>';
+  } else {
+    section.innerHTML=
+      '<div class="user-select-box">'+
+        '<label>Who are you?</label>'+
+        '<select id="homeUserSelect"><option value="">Loading users...</option></select>'+
       '</div>'+
       '<div id="pinSection"></div>';
     loadUsers();
@@ -176,10 +135,10 @@ function showPinBox(opt){
   };
   var pinSection=document.getElementById('pinSection');
   pinSection.innerHTML=
-    '<div class="pin-card">'+
+    '<div class="pin-box">'+
       '<label>Enter PIN for '+pendingUser.name+'</label>'+
       '<input type="password" id="pinInput" inputmode="numeric" maxlength="6" placeholder="••••">'+
-      '<button class="pin-confirm-btn" id="pinSubmitBtn">Confirm</button>'+
+      '<button class="pin-btn" id="pinSubmitBtn">Confirm</button>'+
       '<div class="pin-error" id="pinError">Incorrect PIN. Please try again.</div>'+
       '<span class="pin-cancel" id="pinCancel">Cancel</span>'+
     '</div>';
