@@ -25,6 +25,16 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 .divider-text{font-size:10px;color:#333;text-transform:uppercase;letter-spacing:1px}
 .footer{margin-top:40px;text-align:center;color:#2a2a2a;font-size:11px}
 .version{color:#1a1a1a;font-size:10px;margin-top:4px}
+.user-locked{width:100%;max-width:380px;display:flex;align-items:center;justify-content:space-between;background:#0d1a0d;border:1px solid #00ff4422;border-radius:14px;padding:14px 18px;margin-bottom:16px}
+.user-locked-info{display:flex;align-items:center;gap:10px}
+.user-locked-avatar{font-size:22px}
+.user-locked-name{font-size:15px;font-weight:700;color:#00ff88}
+.user-locked-role{font-size:11px;color:#555;margin-top:2px}
+.switch-user-btn{font-size:11px;color:#333;background:none;border:none;cursor:pointer;text-decoration:underline;padding:4px}
+.switch-user-btn:hover{color:#888}
+.user-select-box{width:100%;max-width:380px;margin-bottom:16px}
+.user-select-box label{font-size:11px;color:#888;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.5px}
+.user-select-box select{width:100%;padding:14px;background:#111;border:1px solid #1a1a1a;border-radius:14px;color:#fff;font-size:15px;outline:none}
 </style>
 </head>
 <body>
@@ -32,6 +42,9 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
   <h1>FieldIQ</h1>
   <p>Territory Intelligence Platform</p>
 </div>
+
+<div id="identitySection" style="width:100%;max-width:380px"></div>
+
 <div class="modules">
   <a class="module primary" href="./fieldiq-log-visit.html">
     <div class="module-icon">🎙️</div>
@@ -64,5 +77,79 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
   Mid East Medical FZC — UAE
   <div class="version">FieldIQ v1.0 — 2026</div>
 </div>
+
+<script>
+var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+
+function switchUser(){
+  localStorage.removeItem('fieldiq_user_id');
+  localStorage.removeItem('fieldiq_user_name');
+  localStorage.removeItem('fieldiq_user_role');
+  location.reload();
+}
+
+function renderIdentity(){
+  var section=document.getElementById('identitySection');
+  var savedId=localStorage.getItem('fieldiq_user_id');
+  var savedName=localStorage.getItem('fieldiq_user_name');
+  var savedRole=localStorage.getItem('fieldiq_user_role');
+
+  if(savedId && savedName){
+    section.innerHTML=
+      '<div class="user-locked">'+
+        '<div class="user-locked-info">'+
+          '<div class="user-locked-avatar">👤</div>'+
+          '<div>'+
+            '<div class="user-locked-name">'+savedName+'</div>'+
+            '<div class="user-locked-role">'+(savedRole||'Sales Rep')+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<button class="switch-user-btn" onclick="switchUser()">Switch User</button>'+
+      '</div>';
+  } else {
+    section.innerHTML=
+      '<div class="user-select-box">'+
+        '<label>Who are you?</label>'+
+        '<select id="homeUserSelect"><option value="">Loading users...</option></select>'+
+      '</div>';
+    loadUsers();
+  }
+}
+
+async function loadUsers(){
+  try{
+    var res=await fetch(WORKER+'/get-users');
+    var data=await res.json();
+    var sel=document.getElementById('homeUserSelect');
+    if(!sel)return;
+    sel.innerHTML='<option value="">Select your name...</option>';
+    if(data.records){
+      data.records.forEach(function(r){
+        var f=r.fields;
+        if(f['Active?']===false)return;
+        var opt=document.createElement('option');
+        opt.value=f['User ID']||'';
+        opt.textContent=(f['Display Name']||f['User ID']||'Unknown');
+        opt.setAttribute('data-name',f['Display Name']||'');
+        opt.setAttribute('data-role',f['Role']||'Sales Rep');
+        sel.appendChild(opt);
+      });
+    }
+    sel.addEventListener('change',function(){
+      if(!sel.value)return;
+      var selectedOpt=sel.options[sel.selectedIndex];
+      localStorage.setItem('fieldiq_user_id',sel.value);
+      localStorage.setItem('fieldiq_user_name',selectedOpt.getAttribute('data-name')||sel.value);
+      localStorage.setItem('fieldiq_user_role',selectedOpt.getAttribute('data-role')||'Sales Rep');
+      renderIdentity();
+    });
+  }catch(err){
+    var sel=document.getElementById('homeUserSelect');
+    if(sel)sel.innerHTML='<option value="">Could not load users</option>';
+  }
+}
+
+renderIdentity();
+</script>
 </body>
 </html>
