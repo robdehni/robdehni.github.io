@@ -56,7 +56,7 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
   <h1>Visit History</h1>
   <p id="lastUpdated">Loading...</p>
 </div>
-<a href="https://fieldiq.biz/fieldiq.html" style="display:inline-block;background:#00d4ff;color:#000;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px">← Home</a>
+<a href="/" id="homeBtn" style="display:inline-block;background:#00d4ff;color:#000;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px">← Home</a>
 
 <div class="stats-row">
   <div class="stat-pill"><span id="statTotal">—</span>My Visits</div>
@@ -69,6 +69,17 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+
+// ── HOME BUTTON ROUTING ─────────────────────────────────────────
+(function(){
+  var ref=document.referrer||'';
+  var homeBtn=document.getElementById('homeBtn');
+  if(ref.includes('fieldiq.html')){
+    homeBtn.href='/fieldiq.html';
+  } else {
+    homeBtn.href='/';
+  }
+})();
 
 function formatDate(d){
   if(!d)return'—';
