@@ -3,39 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FieldIQ — Quick Start Guide</title>
+<title>FieldIQ — Visit History</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;padding:16px;padding-bottom:40px}
-.topbar{text-align:center;margin-bottom:20px;padding-top:8px}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;padding:16px;padding-bottom:32px;overflow-x:hidden}
+.topbar{text-align:center;margin-bottom:16px;padding-top:8px}
 .topbar h1{font-size:22px;color:#00d4ff;font-weight:700}
 .topbar p{color:#555;font-size:12px;margin-top:3px}
-.home-btn{display:inline-block;color:#555;font-size:12px;text-decoration:none;padding:5px 12px;border:1px solid #222;border-radius:6px;background:#1a1a1a;margin-bottom:20px}
+.home-btn{display:inline-block;color:#555;font-size:12px;text-decoration:none;padding:5px 12px;border:1px solid #222;border-radius:6px;background:#1a1a1a;margin-bottom:16px}
 .home-btn:hover{color:#00d4ff;border-color:#00d4ff}
-.section{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:16px;margin-bottom:12px}
-.section-num{display:inline-block;background:#00d4ff;color:#000;font-size:11px;font-weight:800;width:22px;height:22px;border-radius:50%;text-align:center;line-height:22px;margin-right:8px;flex-shrink:0}
-.section-title{font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;margin-bottom:10px}
-.step{font-size:13px;color:#aaa;line-height:1.7;padding:6px 0;border-bottom:1px solid #1a1a1a}
-.step:last-child{border-bottom:none;padding-bottom:0}
-.step strong{color:#fff}
-.tip{background:#0d1a0d;border:1px solid #00ff4422;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12px;color:#44cc88;line-height:1.6}
-.warning{background:#1a0d0d;border:1px solid #ff444422;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12px;color:#ff8888;line-height:1.6}
-.info{background:#0d0d1a;border:1px solid #00d4ff22;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12px;color:#00d4ff;line-height:1.6}
-.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700}
-.badge-blue{background:#00d4ff22;color:#00d4ff;border:1px solid #00d4ff33}
-.badge-green{background:#00880022;color:#44cc88;border:1px solid #00880033}
-.badge-orange{background:#ff880022;color:#ffaa44;border:1px solid #ff880033}
-.badge-red{background:#ff000022;color:#ff6666;border:1px solid #ff444433}
-.footer{text-align:center;color:#2a2a2a;font-size:11px;margin-top:24px}
+.stats-row{display:flex;gap:8px;margin-bottom:16px}
+.stat-pill{background:#111;border:1px solid #1a1a1a;border-radius:8px;padding:8px 12px;font-size:11px;color:#555;flex:1;text-align:center}
+.stat-pill span{display:block;font-size:20px;font-weight:700;color:#00d4ff;margin-bottom:2px}
+.visit-card{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:14px;margin-bottom:10px}
+.visit-card.new-account{border-color:#00d4ff33;background:#00d4ff05}
+.visit-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.visit-account{font-size:14px;font-weight:700;color:#fff;flex:1;margin-right:8px}
+.visit-date{font-size:11px;color:#555;white-space:nowrap}
+.visit-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.badge{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600}
+.badge-territory{background:#1a1a1a;color:#666;border:1px solid #222}
+.badge-type{background:#1a1a1a;color:#666;border:1px solid #222}
+.badge-high{background:#ff444422;color:#ff6666;border:1px solid #ff444433}
+.badge-medium{background:#ff880022;color:#ffaa44;border:1px solid #ff880033}
+.badge-low{background:#00880022;color:#44cc88;border:1px solid #00880033}
+.badge-new{background:#00d4ff22;color:#00d4ff;border:1px solid #00d4ff33}
+.visit-summary{font-size:11px;color:#666;line-height:1.6;margin-top:6px;padding-top:6px;border-top:1px solid #1a1a1a}
+.loading{text-align:center;padding:60px 20px;color:#555}
+.spinner{width:32px;height:32px;border:3px solid #1a1a1a;border-top:3px solid #00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;color:#333;font-size:13px;padding:40px 20px}
+.count-label{font-size:11px;color:#444;margin-bottom:12px;text-align:center}
+.container{max-width:1100px;margin:0 auto;width:100%;padding:0 8px}
+@media(min-width:768px){
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+  .stat-pill{padding:16px 20px;font-size:13px}
+  .stat-pill span{font-size:28px}
+  .visit-card{border:1px solid #2a2a2a;border-radius:14px;padding:18px 20px;margin-bottom:14px}
+  .visit-account{font-size:16px}
+  .visit-date{font-size:12px}
+  .visit-summary{font-size:12px;max-height:none}
+  .badge{font-size:11px;padding:3px 10px}
+}
+.visit-card{width:100%;overflow-wrap:break-word;word-break:break-word}
+.visit-summary{white-space:normal;overflow-wrap:break-word;word-break:break-word}
+.visit-account{overflow-wrap:break-word;word-break:break-word}
 </style>
 </head>
 <body>
+<div class="container">
 <div class="topbar">
-  <h1>📖 Quick Start Guide</h1>
-  <p>FieldIQ — Territory Intelligence Platform</p>
+  <h1>Visit History</h1>
+  <p id="lastUpdated">Loading...</p>
 </div>
 <a href="/" id="homeBtn" style="display:inline-block;background:#00d4ff;color:#000;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px">← Home</a>
+
+<div class="stats-row">
+  <div class="stat-pill"><span id="statTotal">—</span>My Visits</div>
+  <div class="stat-pill"><span id="statThisWeek">—</span>This Week</div>
+  <div class="stat-pill"><span id="statNewAccounts">—</span>New Accounts</div>
+</div>
+
+<div id="countLabel" class="count-label"></div>
+<div id="visitList"><div class="loading"><div class="spinner"></div>Loading visits...</div></div>
+
 <script>
+var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+
+// ── HOME BUTTON ROUTING ─────────────────────────────────────────
 (function(){
   var ref=document.referrer||'';
   var homeBtn=document.getElementById('homeBtn');
@@ -45,24 +80,122 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
     homeBtn.href='/';
   }
 })();
+
+function formatDate(d){
+  if(!d)return'—';
+  return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+
+function getPriorityClass(p){
+  if(!p)return'badge-medium';
+  p=p.toLowerCase();
+  if(p==='high')return'badge-high';
+  if(p==='low')return'badge-low';
+  return'badge-medium';
+}
+
+function truncateSummary(text,n){
+  if(!text)return'';
+  var i=text.indexOf('VISIT SUMMARY');
+  if(i>-1){
+    var s=text.substring(i+13,i+13+n).trim();
+    return s.length===n?s+'...':s;
+  }
+  return text.length>n?text.substring(0,n)+'...':text;
+}
+
+function renderVisits(records){
+  var today=new Date();today.setHours(0,0,0,0);
+  var weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
+  var thisWeek=0,newAccounts=0;
+
+  // Sort newest first
+  var sorted=records.slice().sort(function(a,b){
+    var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);
+    var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);
+    return db-da;
+  });
+
+  sorted.forEach(function(r){
+    var f=r.fields;
+    var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
+    if(vDate&&vDate>=weekAgo)thisWeek++;
+    if(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1')newAccounts++;
+  });
+
+  document.getElementById('statTotal').textContent=records.length;
+  document.getElementById('statThisWeek').textContent=thisWeek;
+  document.getElementById('statNewAccounts').textContent=newAccounts;
+  document.getElementById('countLabel').textContent='Showing '+sorted.length+' visit'+(sorted.length!==1?'s':'')+', most recent first';
+
+  if(sorted.length===0){
+    document.getElementById('visitList').innerHTML='<div class="empty">No visits logged yet.</div>';
+    return;
+  }
+
+  var html='';
+  sorted.forEach(function(r){
+    var f=r.fields;
+    var priority=f['Priority']||'Medium';
+    var isNew=(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1');
+    var summary=truncateSummary(f['AI Summary']||f['Meeting Notes']||'',180);
+
+    html+=
+      '<div class="visit-card'+(isNew?' new-account':'')+'">'+
+        '<div class="visit-header">'+
+          '<div class="visit-account">'+(f['Hospital Name']||'Unknown Account')+'</div>'+
+          '<div class="visit-date">'+formatDate(f['Visit Date'])+'</div>'+
+        '</div>'+
+        '<div class="visit-meta">'+
+          (f['Territory']?'<span class="badge badge-territory">'+f['Territory']+'</span>':'')+
+          (f['Visit Type']?'<span class="badge badge-type">'+f['Visit Type']+'</span>':'')+
+          '<span class="badge '+getPriorityClass(priority)+'">'+priority+'</span>'+
+          (f['Rep Name']?'<span class="badge badge-territory">'+f['Rep Name']+'</span>':'')+
+          (isNew?'<span class="badge badge-new">New Account</span>':'')+
+        '</div>'+
+        (summary?'<div class="visit-summary">'+summary+'</div>':'')+
+      '</div>';
+  });
+
+  document.getElementById('visitList').innerHTML=html;
+  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
+}
+
+var currentUser=null;
+
+async function loadCurrentUser(){
+  // Read from localStorage — set when rep selects name on Log Visit
+  var userId=localStorage.getItem('fieldiq_user_id');
+  var userName=localStorage.getItem('fieldiq_user_name');
+  var userRole=localStorage.getItem('fieldiq_user_role');
+  if(userId&&userName&&userRole){
+    currentUser={
+      userId:userId,
+      name:userName,
+      role:userRole
+    };
+  }
+}
+
+async function loadHistory(){
+  try{
+    var endpoint=WORKER+'/get-visits';
+    // Reps get only their own visits via server-side filter
+    if(currentUser&&currentUser.role!=='Manager'){
+      endpoint=WORKER+'/get-visits?filterByUser='+encodeURIComponent(currentUser.userId);
+    }
+    var res=await fetch(endpoint);
+    var data=await res.json();
+    if(!res.ok)throw new Error(JSON.stringify(data));
+    var records=data.records||[];
+    renderVisits(records);
+  }catch(err){
+    document.getElementById('visitList').innerHTML='<div class="empty">Failed to load: '+err.message+'</div>';
+  }
+}
+
+loadCurrentUser().then(function(){loadHistory();});
 </script>
-
-
-<!-- 2 Minute Quick Start -->
-<div class="section" style="border-color:#00d4ff44;background:#00d4ff08">
-  <div class="section-title" style="color:#00d4ff">⚡ 2-Minute First Visit</div>
-  <div class="step"><strong>1.</strong> Go to <strong>fieldiq.biz</strong> → enter email → get PIN → log in</div>
-  <div class="step"><strong>2.</strong> Tap <strong>Log Visit</strong></div>
-  <div class="step"><strong>3.</strong> Search and select your hospital</div>
-  <div class="step"><strong>4.</strong> Enter your name, territory, visit type</div>
-  <div class="step"><strong>5.</strong> Tap 🎙️ — speak about your visit — tap again to stop</div>
-  <div class="step"><strong>6.</strong> Tap <strong>Process Visit Log</strong></div>
-  <div class="tip">✅ That's it. FieldIQ does the rest automatically.</div>
 </div>
-
-<!-- GPS Notice -->
-<div class="section" style="border-color:#9b59b622;background:#9b59b608">
-  <div class="section-title" style="color:#bb88ff">📍 GPS & Privacy</div>
-  <div class="step">GPS location is captured <strong>only at the moment you submit a visit</strong>.</div>
-  <div class="step">FieldIQ does <strong>not</strong> continuously track your location.</div>
-  <div class="step">Location data is used only to plot your visit on th
+</body>
+</html>
