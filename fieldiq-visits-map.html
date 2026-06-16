@@ -117,7 +117,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div class="access-denied-icon">🔒</div>
   <h2>Manager Access Required</h2>
   <p>The Territory Map shows GPS locations and visit data for all reps. This page is restricted to Manager accounts.</p>
-  <a href="/">Return Home</a>
+  <a href="./index.html" id="accessDeniedHomeBtn">Return Home</a>
 </div>
 
 <script>
@@ -127,6 +127,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 // Manager branch below. Nothing map-related runs before this check passes.
 var role = localStorage.getItem('fieldiq_user_role');
 var isManager = (role === 'Manager');
+
+document.getElementById('accessDeniedHomeBtn').href = isManager ? './fieldiq.html' : './index.html';
 
 if (!isManager) {
   document.getElementById('loadingEl').style.display = 'none';
