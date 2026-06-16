@@ -92,7 +92,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <h1>Open Actions <span class="manager-badge">Manager</span></h1>
   <p id="lastUpdated">Loading...</p>
 </div>
-<a class="home-btn" href="https://fieldiq.biz/fieldiq.html">← Home</a>
+<a class="home-btn" href="./index.html" id="topHomeBtn">← Home</a>
 
 <div id="accessDenied" class="access-denied" style="display:none">
   <div class="access-denied-icon">🔒</div>
@@ -152,6 +152,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 var role = localStorage.getItem('fieldiq_user_role');
 var isManager = (role === 'Manager');
 
+document.getElementById('topHomeBtn').href = isManager ? './fieldiq.html' : './index.html';
 document.getElementById('accessDeniedHomeBtn').href = isManager ? './fieldiq.html' : './index.html';
 
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
