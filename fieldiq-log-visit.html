@@ -84,7 +84,7 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
   <h1>FieldIQ</h1>
   <p>Log Visit</p>
 </div>
-<a href="https://fieldiq.biz/fieldiq.html" style="display:inline-block;background:#00d4ff;color:#000;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px">← Home</a>
+<a href="/" id="homeBtn" style="display:inline-block;background:#00d4ff;color:#000;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px">← Home</a>
 
 <div class="fields">
   <div class="field field-full">
@@ -162,6 +162,18 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 window.onerror=function(msg){document.getElementById('status').textContent='Error: '+msg;};
+
+// ── HOME BUTTON ROUTING ─────────────────────────────────────────
+(function(){
+  var ref=document.referrer||'';
+  var homeBtn=document.getElementById('homeBtn');
+  if(ref.includes('fieldiq.html')){
+    homeBtn.href='/fieldiq.html';
+  } else {
+    homeBtn.href='/';
+  }
+})();
+
 
 // ── USER IDENTITY ──────────────────────────────────────────────
 var currentUserId='', currentUserName='', currentUserRole='';
