@@ -189,6 +189,7 @@ function renderUserIdentity(){
     currentUserId=savedId;
     currentUserName=savedName;
     currentUserRole=savedRole||'Sales Rep';
+    var switchBtnHtml = (currentUserRole==='Manager') ? '<button class="switch-user-btn" onclick="switchUser()">Switch User</button>' : '';
     section.innerHTML=
       '<div class="user-locked">'+
         '<div class="user-locked-info">'+
@@ -198,7 +199,7 @@ function renderUserIdentity(){
             '<div class="user-locked-role">'+currentUserRole+'</div>'+
           '</div>'+
         '</div>'+
-        '<button class="switch-user-btn" onclick="switchUser()">Switch User</button>'+
+        switchBtnHtml+
       '</div>';
   } else {
     // FIRST TIME — show dropdown
