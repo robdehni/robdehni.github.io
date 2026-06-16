@@ -237,6 +237,18 @@ async function loadUsers(){
         sel.appendChild(opt);
       });
     }
+    // Lock identity immediately on selection, not only after visit submission
+    sel.addEventListener('change',function(){
+      if(!sel.value)return;
+      var selectedOpt=sel.options[sel.selectedIndex];
+      var lockId=sel.value;
+      var lockName=selectedOpt.getAttribute('data-name')||sel.value;
+      var lockRole=selectedOpt.getAttribute('data-role')||'Sales Rep';
+      localStorage.setItem('fieldiq_user_id',lockId);
+      localStorage.setItem('fieldiq_user_name',lockName);
+      localStorage.setItem('fieldiq_user_role',lockRole);
+      renderUserIdentity();
+    });
   }catch(err){
     var sel=document.getElementById('userSelect');
     if(sel)sel.innerHTML='<option value="">Could not load users</option>';
