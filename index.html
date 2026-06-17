@@ -7,82 +7,86 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
-.logo{text-align:center;margin-bottom:40px}
-.logo h1{font-size:42px;font-weight:800;color:#00d4ff;letter-spacing:-1px}
-.logo p{color:#444;font-size:13px;margin-top:6px;letter-spacing:1px;text-transform:uppercase}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 24px 40px}
+.logo{text-align:center;margin-bottom:32px}
+.logo h1{font-size:32px;font-weight:800;color:#0b1f3a;letter-spacing:-0.5px}
+.logo h1 span{color:#2f8fff}
+.logo p{color:#8a9bb3;font-size:11px;margin-top:6px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700}
+
 .modules{width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}
-.module{display:flex;align-items:center;gap:16px;background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:18px 20px;text-decoration:none;color:#fff;transition:all 0.2s}
-.module:active{border-color:#00d4ff33;background:#141414}
-.module-icon{font-size:28px;width:44px;text-align:center;flex-shrink:0}
+.module{
+  display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #e3ebf5;border-radius:16px;
+  padding:18px 20px;text-decoration:none;color:#0b1f3a;box-shadow:0 4px 14px rgba(11,31,58,0.05);transition:transform 0.15s;
+}
+.module:active{transform:scale(0.98)}
+.module-icon{font-size:26px;width:44px;text-align:center;flex-shrink:0}
 .module-text{flex:1}
-.module-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:2px}
-.module-desc{font-size:11px;color:#555}
-.module.primary{border-color:#00d4ff44;background:#00d4ff08}
-.module.primary .module-title{color:#00d4ff}
-.divider{width:100%;max-width:380px;display:flex;align-items:center;gap:12px;margin:4px 0}
-.divider-line{flex:1;height:1px;background:#1a1a1a}
-.divider-text{font-size:10px;color:#333;text-transform:uppercase;letter-spacing:1px}
-.footer{margin-top:40px;text-align:center;color:#2a2a2a;font-size:11px}
-.version{color:#1a1a1a;font-size:10px;margin-top:4px}
-.user-locked{width:100%;max-width:380px;display:flex;align-items:center;justify-content:space-between;background:#0d1a0d;border:1px solid #00ff4422;border-radius:14px;padding:14px 18px;margin-bottom:16px}
+.module-title{font-size:15px;font-weight:700;color:#0b1f3a;margin-bottom:2px}
+.module-desc{font-size:11.5px;color:#7a8aa3}
+.module.primary{border-color:transparent;background:linear-gradient(135deg,#3d9bff,#1f6fe0);box-shadow:0 10px 24px rgba(47,143,255,0.32)}
+.module.primary .module-title{color:#fff}
+.module.primary .module-desc{color:#dbecff}
+
+.divider{width:100%;max-width:380px;display:flex;align-items:center;gap:12px;margin:6px 0}
+.divider-line{flex:1;height:1px;background:#e3ebf5}
+.divider-text{font-size:10px;color:#aab8cc;text-transform:uppercase;letter-spacing:1px;font-weight:800}
+
+.footer{margin-top:32px;text-align:center;color:#aab8cc;font-size:11px;font-weight:600}
+.version{color:#cdd9eb;font-size:10px;margin-top:4px}
+
+.user-locked{
+  width:100%;max-width:380px;display:flex;align-items:center;justify-content:space-between;
+  background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px 18px;margin-bottom:18px;
+  box-shadow:0 4px 14px rgba(11,31,58,0.05);
+}
 .user-locked-info{display:flex;align-items:center;gap:10px}
-.user-locked-avatar{font-size:22px}
-.user-locked-name{font-size:15px;font-weight:700;color:#00ff88}
-.user-locked-role{font-size:11px;color:#555;margin-top:2px}
-.switch-user-btn{font-size:11px;color:#333;background:none;border:none;cursor:pointer;text-decoration:underline;padding:4px}
-.switch-user-btn:hover{color:#888}
+.user-locked-avatar{font-size:20px}
+.user-locked-name{font-size:14.5px;font-weight:700;color:#0b1f3a}
+.user-locked-role{font-size:11px;color:#8a9bb3;margin-top:2px;font-weight:600}
+.switch-user-btn{font-size:11px;color:#2f8fff;background:none;border:none;cursor:pointer;text-decoration:underline;padding:4px;font-weight:600}
+.switch-user-btn:hover{color:#1f6fe0}
+
 .user-select-box{width:100%;max-width:380px;margin-bottom:16px}
-.user-select-box label{font-size:11px;color:#888;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.5px}
-.user-select-box select{width:100%;padding:14px;background:#111;border:1px solid #1a1a1a;border-radius:14px;color:#fff;font-size:15px;outline:none}
-.pin-box{width:100%;max-width:380px;margin-bottom:16px;background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:16px}
-.pin-box label{font-size:11px;color:#888;margin-bottom:8px;display:block;text-transform:uppercase;letter-spacing:0.5px}
-.pin-box input{width:100%;padding:14px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;color:#fff;font-size:18px;letter-spacing:4px;text-align:center;outline:none}
-.pin-box .pin-btn{width:100%;padding:12px;margin-top:10px;border:none;border-radius:10px;background:#00d4ff;color:#000;font-size:14px;font-weight:700;cursor:pointer}
-.pin-error{color:#ff6666;font-size:12px;margin-top:8px;text-align:center;display:none}
+.user-select-box label{font-size:11px;color:#8a9bb3;margin-bottom:8px;display:block;text-transform:uppercase;letter-spacing:0.6px;font-weight:700}
+.user-select-box select{
+  width:100%;padding:14px;background:#fff;border:1.5px solid #dde8f5;border-radius:14px;color:#0b1f3a;
+  font-size:15px;outline:none;font-weight:600;box-shadow:0 4px 14px rgba(11,31,58,0.05);
+}
+.user-select-box select:focus{border-color:#2f8fff}
+
+.pin-box{
+  width:100%;max-width:380px;margin-bottom:16px;background:#fff;border:1px solid #e3ebf5;
+  border-radius:16px;padding:18px;box-shadow:0 4px 14px rgba(11,31,58,0.05);
+}
+.pin-box label{font-size:11px;color:#8a9bb3;margin-bottom:10px;display:block;text-transform:uppercase;letter-spacing:0.6px;font-weight:700}
+.pin-box input{
+  width:100%;padding:16px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:12px;color:#0b1f3a;
+  font-size:20px;letter-spacing:6px;text-align:center;outline:none;font-weight:700;
+}
+.pin-box input:focus{border-color:#2f8fff}
+.pin-box .pin-btn{
+  width:100%;padding:14px;margin-top:12px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;
+  box-shadow:0 6px 16px rgba(47,143,255,0.3);
+}
+.pin-error{color:#e0344a;font-size:12px;margin-top:10px;text-align:center;display:none;font-weight:600}
 .pin-error.visible{display:block}
-.pin-cancel{font-size:11px;color:#555;text-align:center;margin-top:10px;display:block;cursor:pointer;text-decoration:underline}
+.pin-cancel{font-size:12px;color:#8a9bb3;text-align:center;margin-top:12px;display:block;cursor:pointer;text-decoration:underline;font-weight:600}
 </style>
 </head>
 <body>
 <div class="logo">
-  <h1>FieldIQ</h1>
+  <h1>Field<span>IQ</span></h1>
   <p>Territory Intelligence Platform</p>
 </div>
 
 <div id="identitySection" style="width:100%;max-width:380px"></div>
 
-<div class="modules">
-  <a class="module primary" href="./fieldiq-log-visit.html">
-    <div class="module-icon">🎙️</div>
-    <div class="module-text">
-      <div class="module-title">Log Visit</div>
-      <div class="module-desc">Record a field visit — voice to AI report</div>
-    </div>
-  </a>
-  <a class="module" href="./fieldiq-visit-history.html">
-    <div class="module-icon">📋</div>
-    <div class="module-text">
-      <div class="module-title">Visit History</div>
-      <div class="module-desc">Your logged visits — dates, accounts, summaries</div>
-    </div>
-  </a>
-  <div class="divider">
-    <div class="divider-line"></div>
-    <div class="divider-text">Help</div>
-    <div class="divider-line"></div>
-  </div>
-  <a class="module" href="./fieldiq-guide.html">
-    <div class="module-icon">📖</div>
-    <div class="module-text">
-      <div class="module-title">Quick Start Guide</div>
-      <div class="module-desc">How to use FieldIQ</div>
-    </div>
-  </a>
-</div>
+<div id="modulesSection"></div>
+
 <div class="footer">
   Mid East Medical FZC — UAE
-  <div class="version">FieldIQ v1.0 — 2026</div>
+  <div class="version">FieldIQ v2.0 — 2026</div>
 </div>
 
 <script>
@@ -165,6 +169,7 @@ function checkPin(){
     localStorage.setItem('fieldiq_user_role',pendingUser.role);
     pendingUser=null;
     renderIdentity();
+    renderModules();
   } else {
     errorEl.className='pin-error visible';
     document.getElementById('pinInput').value='';
@@ -206,7 +211,92 @@ async function loadUsers(){
   }
 }
 
+function renderModules(){
+  var role=localStorage.getItem('fieldiq_user_role');
+  var section=document.getElementById('modulesSection');
+  var isManager=(role==='Manager');
+
+  var html='<div class="modules">';
+
+  if(isManager){
+    html+=
+      '<div class="divider">'+
+        '<div class="divider-line"></div>'+
+        '<div class="divider-text">Management</div>'+
+        '<div class="divider-line"></div>'+
+      '</div>';
+  }
+
+  if(isManager){
+    html+=
+      '<a class="module primary" href="./dashboard.html">'+
+        '<div class="module-icon">📊</div>'+
+        '<div class="module-text">'+
+          '<div class="module-title">Dashboard</div>'+
+          '<div class="module-desc">KPIs, rep performance, territory coverage, filters</div>'+
+        '</div>'+
+      '</a>'+
+      '<a class="module" href="./fieldiq-actions.html">'+
+        '<div class="module-icon">✅</div>'+
+        '<div class="module-text">'+
+          '<div class="module-title">Open Actions</div>'+
+          '<div class="module-desc">Outstanding action items by account and rep</div>'+
+        '</div>'+
+      '</a>'+
+      '<a class="module" href="./fieldiq-visits-map.html">'+
+        '<div class="module-icon">📍</div>'+
+        '<div class="module-text">'+
+          '<div class="module-title">Visit Map</div>'+
+          '<div class="module-desc">Live GPS map of all field activity across GCC</div>'+
+        '</div>'+
+      '</a>'+
+      '<a class="module" href="./fieldiq-insights.html">'+
+        '<div class="module-icon">🧠</div>'+
+        '<div class="module-text">'+
+          '<div class="module-title">AI Insights</div>'+
+          '<div class="module-desc">Account intelligence, territory trends, institutional memory</div>'+
+        '</div>'+
+      '</a>'+
+      '<div class="divider">'+
+        '<div class="divider-line"></div>'+
+        '<div class="divider-text">Field Operations</div>'+
+        '<div class="divider-line"></div>'+
+      '</div>';
+  }
+
+  html+=
+    '<a class="module'+(isManager?'':' primary')+'" href="./fieldiq-log-visit.html">'+
+      '<div class="module-icon">🎙️</div>'+
+      '<div class="module-text">'+
+        '<div class="module-title">Log Visit</div>'+
+        '<div class="module-desc">Record a field visit — voice to AI report</div>'+
+      '</div>'+
+    '</a>'+
+    '<a class="module" href="./fieldiq-visit-history.html">'+
+      '<div class="module-icon">📋</div>'+
+      '<div class="module-text">'+
+        '<div class="module-title">Visit History</div>'+
+        '<div class="module-desc">Your logged visits — dates, accounts, summaries</div>'+
+      '</div>'+
+    '</a>'+
+    '<div class="divider">'+
+      '<div class="divider-line"></div>'+
+      '<div class="divider-text">Help</div>'+
+      '<div class="divider-line"></div>'+
+    '</div>'+
+    '<a class="module" href="./fieldiq-guide.html">'+
+      '<div class="module-icon">📖</div>'+
+      '<div class="module-text">'+
+        '<div class="module-title">Quick Start Guide</div>'+
+        '<div class="module-desc">How to use FieldIQ</div>'+
+      '</div>'+
+    '</a>';
+
+  html+='</div>';
+  section.innerHTML=html;
+}
+
 renderIdentity();
+renderModules();
 </script>
-</body>
-</html>
+</body></html>
