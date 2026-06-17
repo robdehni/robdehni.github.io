@@ -6,81 +6,78 @@
 <title>FieldIQ — AI Insights</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;padding:16px;padding-bottom:80px}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:16px;padding-bottom:80px}
 .topbar{text-align:center;margin-bottom:20px;padding-top:8px}
-.topbar h1{font-size:22px;color:#00d4ff;font-weight:700}
-.topbar p{color:#555;font-size:12px;margin-top:3px}
-.home-btn{display:inline-block;color:#555;font-size:12px;text-decoration:none;padding:5px 12px;border:1px solid #222;border-radius:6px;background:#1a1a1a;margin-bottom:12px}
-.home-btn:hover{color:#00d4ff;border-color:#00d4ff}
-.obs-note{background:#111;border:1px solid #1a1a1a;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#555;text-align:center}
-.obs-note span{color:#00d4ff}
-.search-box{width:100%;padding:13px 16px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;color:#fff;font-size:15px;outline:none;margin-bottom:8px}
-.search-box:focus{border-color:#00d4ff}
-.search-box::placeholder{color:#444}
-.search-result{background:#0d1a1a;border:1px solid #00d4ff33;border-radius:12px;padding:16px;margin-bottom:16px}
-.search-result-name{font-size:16px;font-weight:700;color:#00d4ff;margin-bottom:4px}
-.search-result-meta{font-size:11px;color:#555;margin-bottom:12px}
+.topbar h1{font-size:22px;color:#2f8fff;font-weight:800}
+.topbar p{color:#8a9bb3;font-size:12px;margin-top:3px}
+.obs-note{background:#fff;border:1px solid #e3ebf5;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#7a8aa3;text-align:center;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.obs-note span{color:#2f8fff;font-weight:700}
+.search-box{width:100%;padding:13px 16px;background:#fff;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;font-size:15px;outline:none;margin-bottom:8px}
+.search-box:focus{border-color:#2f8fff}
+.search-box::placeholder{color:#aab8cc}
+.search-result{background:#fff;border:1px solid #cfe3ff;border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 4px 14px rgba(11,31,58,0.06)}
+.search-result-name{font-size:16px;font-weight:700;color:#1f6fe0;margin-bottom:4px}
+.search-result-meta{font-size:11px;color:#8a9bb3;margin-bottom:12px}
 .sr-section{margin-bottom:12px}
-.sr-label{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px}
-.sr-value{font-size:12px;color:#ccc;line-height:1.6}
+.sr-label{font-size:10px;color:#8a9bb3;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;font-weight:700}
+.sr-value{font-size:12px;color:#3d4f6b;line-height:1.6}
 .sr-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.tag{font-size:10px;padding:3px 10px;border-radius:6px;font-weight:600}
-.tag-blue{background:#00d4ff11;color:#00d4ff;border:1px solid #00d4ff22}
-.tag-green{background:#44cc8822;color:#44cc88;border:1px solid #44cc8844}
-.tag-orange{background:#ffaa4422;color:#ffaa44;border:1px solid #ffaa4444}
-.tag-red{background:#ff666622;color:#ff6666;border:1px solid #ff666644}
-.tag-purple{background:#bb88ff22;color:#bb88ff;border:1px solid #bb88ff33}
-.visit-item{background:#111;border-radius:8px;padding:10px;margin-bottom:6px;border-left:3px solid #1a1a1a}
-.visit-item.positive{border-left-color:#44cc88}
-.visit-item.negative{border-left-color:#ff6666}
-.visit-item.neutral{border-left-color:#ffaa44}
+.tag{font-size:10px;padding:3px 10px;border-radius:6px;font-weight:700}
+.tag-blue{background:#2f8fff15;color:#1f6fe0;border:1px solid #2f8fff30}
+.tag-green{background:#1f8a5222;color:#1f8a52;border:1px solid #1f8a5244}
+.tag-orange{background:#b9711f22;color:#b9711f;border:1px solid #b9711f44}
+.tag-red{background:#c4304822;color:#c43048;border:1px solid #c4304844}
+.tag-purple{background:#8a5fd122;color:#8a5fd1;border:1px solid #8a5fd133}
+.visit-item{background:#f8fafd;border-radius:8px;padding:10px;margin-bottom:6px;border-left:3px solid #e3ebf5}
+.visit-item.positive{border-left-color:#1f8a52}
+.visit-item.negative{border-left-color:#c43048}
+.visit-item.neutral{border-left-color:#b9711f}
 .visit-header{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
-.visit-rep{color:#00d4ff;font-weight:600}
-.visit-date{color:#555}
-.visit-summary{font-size:11px;color:#777;line-height:1.5}
-.no-result{text-align:center;color:#333;font-size:13px;padding:20px}
-.section-title{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #1a1a1a}
-.insight-card{background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:12px;margin-bottom:8px}
-.insight-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #0d0d0d;font-size:12px}
+.visit-rep{color:#1f6fe0;font-weight:700}
+.visit-date{color:#8a9bb3}
+.visit-summary{font-size:11px;color:#5b6b85;line-height:1.5}
+.no-result{text-align:center;color:#aab8cc;font-size:13px;padding:20px}
+.section-title{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #e3ebf5;font-weight:700}
+.insight-card{background:#fff;border:1px solid #e3ebf5;border-radius:10px;padding:12px;margin-bottom:8px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.insight-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eef3fa;font-size:12px}
 .insight-row:last-child{border-bottom:none}
-.insight-label{color:#ccc}
-.insight-value{color:#00d4ff;font-weight:700}
-.insight-bar-bg{background:#1a1a1a;border-radius:4px;height:5px;margin-top:3px}
+.insight-label{color:#3d4f6b}
+.insight-value{color:#1f6fe0;font-weight:700}
+.insight-bar-bg{background:#eef3fa;border-radius:4px;height:5px;margin-top:3px}
 .insight-bar-fill{border-radius:4px;height:5px}
-.account-card{background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:12px;margin-bottom:8px}
-.account-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:6px}
-.account-meta{font-size:11px;color:#555;margin-bottom:6px}
+.account-card{background:#fff;border:1px solid #e3ebf5;border-radius:10px;padding:12px;margin-bottom:8px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.account-name{font-size:13px;font-weight:700;color:#0b1f3a;margin-bottom:6px}
+.account-meta{font-size:11px;color:#8a9bb3;margin-bottom:6px}
 .account-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.memory-card{background:#111;border-left:3px solid #00d4ff;border-radius:0 10px 10px 0;padding:12px;margin-bottom:8px}
-.memory-hospital{font-size:13px;font-weight:600;color:#00d4ff;margin-bottom:4px}
-.memory-line{font-size:11px;color:#888;margin:3px 0;line-height:1.5}
-.memory-label{color:#555;font-size:10px;text-transform:uppercase;letter-spacing:0.5px}
-.sentiment-pill{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600}
-.pill-positive{background:#44cc8822;color:#44cc88;border:1px solid #44cc8844}
-.pill-neutral{background:#ffaa4422;color:#ffaa44;border:1px solid #ffaa4444}
-.pill-negative{background:#ff666622;color:#ff6666;border:1px solid #ff666644}
-.empty{text-align:center;color:#333;font-size:13px;padding:20px}
-.timeline-btn{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:#00d4ff;font-size:12px;font-weight:600;padding:8px 14px;cursor:pointer;width:100%;text-align:left;margin-top:10px}
-.timeline-btn:hover{border-color:#00d4ff44;background:#0d1a1a}
-.timeline-container{display:none;margin-top:10px;border-top:1px solid #1a1a1a;padding-top:10px}
+.memory-card{background:#fff;border:1px solid #e3ebf5;border-left:3px solid #2f8fff;border-radius:0 10px 10px 0;padding:12px;margin-bottom:8px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.memory-hospital{font-size:13px;font-weight:700;color:#1f6fe0;margin-bottom:4px}
+.memory-line{font-size:11px;color:#5b6b85;margin:3px 0;line-height:1.5}
+.memory-label{color:#8a9bb3;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
+.sentiment-pill{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700}
+.pill-positive{background:#1f8a5222;color:#1f8a52;border:1px solid #1f8a5244}
+.pill-neutral{background:#b9711f22;color:#b9711f;border:1px solid #b9711f44}
+.pill-negative{background:#c4304822;color:#c43048;border:1px solid #c4304844}
+.empty{text-align:center;color:#aab8cc;font-size:13px;padding:20px}
+.timeline-btn{background:#eaf3ff;border:1px solid #cfe3ff;border-radius:8px;color:#1f6fe0;font-size:12px;font-weight:700;padding:8px 14px;cursor:pointer;width:100%;text-align:left;margin-top:10px}
+.timeline-container{display:none;margin-top:10px;border-top:1px solid #e3ebf5;padding-top:10px}
 .timeline-container.open{display:block}
-.timeline-entry{padding:10px 0;border-bottom:1px solid #111}
+.timeline-entry{padding:10px 0;border-bottom:1px solid #eef3fa}
 .timeline-entry:last-child{border-bottom:none}
-.timeline-date{font-size:12px;font-weight:700;color:#00d4ff;margin-bottom:4px}
+.timeline-date{font-size:12px;font-weight:700;color:#1f6fe0;margin-bottom:4px}
 .timeline-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
-.timeline-summary{font-size:11px;color:#666;line-height:1.5}
-.tl-badge{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600}
-.tl-rep{background:#00d4ff11;color:#00d4ff;border:1px solid #00d4ff22}
-.tl-type{background:#1a1a1a;color:#555;border:1px solid #222}
-.tl-high{background:#ff444422;color:#ff6666;border:1px solid #ff444433}
-.tl-medium{background:#ff880022;color:#ffaa44;border:1px solid #ff880033}
-.tl-low{background:#00880022;color:#44cc88;border:1px solid #00880033}
-.loading{text-align:center;padding:40px;color:#555;font-size:14px}
-.spinner{width:32px;height:32px;border:3px solid #1a1a1a;border-top:3px solid #00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+.timeline-summary{font-size:11px;color:#5b6b85;line-height:1.5}
+.tl-badge{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:700}
+.tl-rep{background:#2f8fff15;color:#1f6fe0;border:1px solid #2f8fff30}
+.tl-type{background:#eef3fa;color:#7a8aa3;border:1px solid #e3ebf5}
+.tl-high{background:#c4304822;color:#c43048;border:1px solid #c4304844}
+.tl-medium{background:#b9711f22;color:#b9711f;border:1px solid #b9711f44}
+.tl-low{background:#1f8a5222;color:#1f8a52;border:1px solid #1f8a5244}
+.loading{text-align:center;padding:40px;color:#8a9bb3;font-size:14px}
+.spinner{width:32px;height:32px;border:3px solid #e3ebf5;border-top:3px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:1px solid #1a1a1a;display:flex;z-index:9999}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:#555;font-size:11px;font-weight:600;letter-spacing:0.3px;transition:color 0.2s}
-.nav-item.active{color:#00d4ff}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e3ebf5;display:flex;z-index:9999;box-shadow:0 -4px 14px rgba(11,31,58,0.05)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:#aab8cc;font-size:11px;font-weight:700;letter-spacing:0.3px;transition:color 0.2s}
+.nav-item.active{color:#1f6fe0}
 .nav-icon{font-size:22px;margin-bottom:3px}
 </style>
 </head>
@@ -88,16 +85,11 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 <div class="topbar">
   <h1>🧠 AI Insights</h1>
   <p id="lastUpdated">Loading intelligence...</p>
-  <a href="https://fieldiq.biz/fieldiq.html" style="display:inline-block;background:#00d4ff;color:#000;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px">← Home</a>
+  <a href="https://fieldiq.biz/fieldiq.html" style="display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px;box-shadow:0 4px 12px rgba(47,143,255,0.25)">← Home</a>
 </div>
-<div class="obs-note">
-  Observations based on <span id="recordCount">0</span> field visits collected so far.
-  Intelligence grows with every visit logged.
-</div>
-
+<div class="obs-note">Observations based on <span id="recordCount">0</span> field visits collected so far. Intelligence grows with every visit logged.</div>
 <input class="search-box" id="searchInput" placeholder="🔍  Search hospital or account..." autocomplete="off">
 <div id="searchResult"></div>
-
 <div id="insightsContent" style="display:none">
   <div class="section-title">Account Insights</div>
   <div id="accountInsights"></div>
@@ -117,322 +109,78 @@ body{background:#0a0a0a;color:#fff;font-family:-apple-system,sans-serif;min-heig
 </nav>
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
-var allRecords=[];
-var accountMap={};
-
-function getSentiment(s){
-  if(!s)return'unknown';
-  s=s.toLowerCase();
-  var i=s.indexOf('sentiment');
-  if(i>-1){var t=s.substring(i,i+120);if(t.indexOf('positive')>-1)return'positive';if(t.indexOf('negative')>-1)return'negative';if(t.indexOf('neutral')>-1)return'neutral';}
-  if(s.indexOf('positive')>-1)return'positive';
-  if(s.indexOf('negative')>-1)return'negative';
-  if(s.indexOf('neutral')>-1)return'neutral';
-  return'unknown';
+var role = localStorage.getItem('fieldiq_user_role');
+if (role !== 'Manager') {
+  window.location.href = './index.html';
+  throw new Error('Manager access required');
 }
-
-function extractMentions(text,keywords){
-  var found=[];
-  if(!text)return found;
-  var lower=text.toLowerCase();
-  keywords.forEach(function(k){if(lower.indexOf(k.toLowerCase())>-1)found.push(k);});
-  return found;
-}
-
+var allRecords=[];var accountMap={};
+function getSentiment(s){if(!s)return'unknown';s=s.toLowerCase();var i=s.indexOf('sentiment');if(i>-1){var t=s.substring(i,i+120);if(t.indexOf('positive')>-1)return'positive';if(t.indexOf('negative')>-1)return'negative';if(t.indexOf('neutral')>-1)return'neutral';}if(s.indexOf('positive')>-1)return'positive';if(s.indexOf('negative')>-1)return'negative';if(s.indexOf('neutral')>-1)return'neutral';return'unknown';}
+function extractMentions(text,keywords){var found=[];if(!text)return found;var lower=text.toLowerCase();keywords.forEach(function(k){if(lower.indexOf(k.toLowerCase())>-1)found.push(k);});return found;}
 function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
-
 function truncate(t,n){if(!t)return'';return t.length>n?t.substring(0,n)+'...':t;}
-
 function buildAccountMap(records){
   accountMap={};
-  records.forEach(function(r){
-    var f=r.fields;
-    var hospital=f['Hospital Name']||'Unknown';
-    if(!accountMap[hospital]){
-      accountMap[hospital]={
-        name:hospital,
-        visits:[],
-        actionItems:[],
-        outcomes:[],
-        priorities:[],
-        sentiments:[],
-        reps:{},
-        territory:f['Territory']||'',
-        lastVisit:null
-      };
-    }
-    var acc=accountMap[hospital];
-    acc.visits.push(r);
-    var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
-    if(vDate&&(!acc.lastVisit||vDate>acc.lastVisit))acc.lastVisit=vDate;
-    if(f['Action Items'])acc.actionItems.push(f['Action Items']);
-    if(f['Outcome'])acc.outcomes.push(f['Outcome']);
-    if(f['Priority'])acc.priorities.push(f['Priority']);
-    acc.sentiments.push(getSentiment(f['AI Summary']||''));
-    var rep=f['Rep Name']||'Unknown';
-    acc.reps[rep]=(acc.reps[rep]||0)+1;
-  });
+  records.forEach(function(r){var f=r.fields;var hospital=f['Hospital Name']||'Unknown';if(!accountMap[hospital]){accountMap[hospital]={name:hospital,visits:[],actionItems:[],outcomes:[],priorities:[],sentiments:[],reps:{},territory:f['Territory']||'',lastVisit:null};}
+  var acc=accountMap[hospital];acc.visits.push(r);var vDate=f['Visit Date']?new Date(f['Visit Date']):null;if(vDate&&(!acc.lastVisit||vDate>acc.lastVisit))acc.lastVisit=vDate;if(f['Action Items'])acc.actionItems.push(f['Action Items']);if(f['Outcome'])acc.outcomes.push(f['Outcome']);if(f['Priority'])acc.priorities.push(f['Priority']);acc.sentiments.push(getSentiment(f['AI Summary']||''));var rep=f['Rep Name']||'Unknown';acc.reps[rep]=(acc.reps[rep]||0)+1;});
 }
-
 function renderAccountCard(acc){
-  var latestPriority=acc.priorities.length>0?acc.priorities[acc.priorities.length-1]:'—';
-  var latestOutcome=acc.outcomes.length>0?acc.outcomes[acc.outcomes.length-1]:'—';
-  var latestSentiment=acc.sentiments.length>0?acc.sentiments[acc.sentiments.length-1]:'unknown';
-  var repNames=Object.keys(acc.reps);
-  var competitors=extractMentions(
-    acc.visits.map(function(v){return v.fields['AI Summary']||'';}).join(' '),
-    ['Medtronic','Johnson & Johnson','J&J','Stryker','Zimmer','B. Braun','BBraun','Becton','BD','Abbott','Siemens','Philips','GE Healthcare','Olympus','Karl Storz','Covidien','Boston Scientific','Edwards','Baxter']
-  );
-  var priorityColor=latestPriority==='High'?'#ff4444':latestPriority==='Low'?'#44cc88':'#ffaa44';
-  var pillClass=latestSentiment==='positive'?'pill-positive':latestSentiment==='negative'?'pill-negative':'pill-neutral';
-
-  var sortedVisits=acc.visits.slice().sort(function(a,b){
-    var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);
-    var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);
-    return db-da;
-  });
-
-  var visitsHtml=sortedVisits.map(function(v){
-    var f=v.fields;
-    var sent=getSentiment(f['AI Summary']||'');
-    var summary=f['Meeting Notes']?truncate(f['Meeting Notes'],120):'No notes recorded.';
-    return '<div class="visit-item '+sent+'">'+
-      '<div class="visit-header">'+
-        '<span class="visit-rep">'+(f['Rep Name']||'Unknown')+'</span>'+
-        '<span class="visit-date">'+formatDate(f['Visit Date'])+(f['Visit Type']?' · '+f['Visit Type']:'')+'</span>'+
-      '</div>'+
-      '<div class="visit-summary">'+summary+'</div>'+
-    '</div>';
-  }).join('');
-
-  var actionsHtml='';
-  var allActions=[];
-  acc.actionItems.forEach(function(a){
-    if(a){a.split('\n').forEach(function(line){line=line.trim();if(line&&line.length>2)allActions.push(line);});}
-  });
-  if(allActions.length>0){
-    actionsHtml='<div class="sr-section">'+
-      '<div class="sr-label">Open Action Items</div>'+
-      allActions.slice(-6).map(function(a){return'<div class="sr-value">'+truncate(a,100)+'</div>';}).join('')+
-    '</div>';
-  }
-
-  return '<div class="search-result">'+
-    '<div class="search-result-name">'+acc.name+'</div>'+
-    '<div class="search-result-meta">'+
-      acc.visits.length+' visit'+(acc.visits.length!==1?'s':'')+
-      (acc.territory?' · '+acc.territory:'')+
-      (acc.lastVisit?' · Last: '+formatDate(acc.lastVisit):'')+
-    '</div>'+
-    '<div class="sr-tags">'+
-      (latestPriority!=='—'?'<span class="tag" style="background:'+priorityColor+'22;color:'+priorityColor+';border:1px solid '+priorityColor+'33">'+latestPriority+' Priority</span>':'')+
-      '<span class="sentiment-pill '+pillClass+'">'+latestSentiment+'</span>'+
-      (latestOutcome!=='—'?'<span class="tag tag-green">'+latestOutcome+'</span>':'')+
-      repNames.map(function(r){return'<span class="tag tag-blue">'+r+'</span>';}).join('')+
-      (competitors.length>0?competitors.map(function(c){return'<span class="tag tag-red">'+c+'</span>';}).join(''):'')+
-    '</div>'+
-    (actionsHtml)+
-    '<div class="sr-section">'+
-      '<div class="sr-label">Visit History ('+acc.visits.length+')</div>'+
-      visitsHtml+
-    '</div>'+
-    '<button class="timeline-btn" data-hospital="'+acc.name.replace(/&/g,"&amp;").replace(/"/g,"&quot;")+'">📜 View Visit Timeline ('+acc.visits.length+' visits)</button>'+
-    '<div class="timeline-container" data-tlid="'+acc.name.replace(/[^a-z0-9]/gi,"_")+'"></div>'+
-  '</div>';
+  var latestPriority=acc.priorities.length>0?acc.priorities[acc.priorities.length-1]:'—';var latestOutcome=acc.outcomes.length>0?acc.outcomes[acc.outcomes.length-1]:'—';var latestSentiment=acc.sentiments.length>0?acc.sentiments[acc.sentiments.length-1]:'unknown';var repNames=Object.keys(acc.reps);
+  var competitors=extractMentions(acc.visits.map(function(v){return v.fields['AI Summary']||'';}).join(' '),['Medtronic','Johnson & Johnson','J&J','Stryker','Zimmer','B. Braun','BBraun','Becton','BD','Abbott','Siemens','Philips','GE Healthcare','Olympus','Karl Storz','Covidien','Boston Scientific','Edwards','Baxter']);
+  var priorityColor=latestPriority==='High'?'#ff4444':latestPriority==='Low'?'#44cc88':'#ffaa44';var pillClass=latestSentiment==='positive'?'pill-positive':latestSentiment==='negative'?'pill-negative':'pill-neutral';
+  var sortedVisits=acc.visits.slice().sort(function(a,b){var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);return db-da;});
+  var visitsHtml=sortedVisits.map(function(v){var f=v.fields;var sent=getSentiment(f['AI Summary']||'');var summary=f['Meeting Notes']?truncate(f['Meeting Notes'],120):'No notes recorded.';return'<div class="visit-item '+sent+'"><div class="visit-header"><span class="visit-rep">'+(f['Rep Name']||'Unknown')+'</span><span class="visit-date">'+formatDate(f['Visit Date'])+(f['Visit Type']?' · '+f['Visit Type']:'')+'</span></div><div class="visit-summary">'+summary+'</div></div>';}).join('');
+  var actionsHtml='';var allActions=[];acc.actionItems.forEach(function(a){if(a){a.split('\n').forEach(function(line){line=line.trim();if(line&&line.length>2)allActions.push(line);});}});
+  if(allActions.length>0){actionsHtml='<div class="sr-section"><div class="sr-label">Open Action Items</div>'+allActions.slice(-6).map(function(a){return'<div class="sr-value">'+truncate(a,100)+'</div>';}).join('')+'</div>';}
+  return'<div class="search-result"><div class="search-result-name">'+acc.name+'</div><div class="search-result-meta">'+acc.visits.length+' visit'+(acc.visits.length!==1?'s':'')+(acc.territory?' · '+acc.territory:'')+(acc.lastVisit?' · Last: '+formatDate(acc.lastVisit):'')+'</div><div class="sr-tags">'+(latestPriority!=='—'?'<span class="tag" style="background:'+priorityColor+'22;color:'+priorityColor+';border:1px solid '+priorityColor+'33">'+latestPriority+' Priority</span>':'')+'<span class="sentiment-pill '+pillClass+'">'+latestSentiment+'</span>'+(latestOutcome!=='—'?'<span class="tag tag-green">'+latestOutcome+'</span>':'')+repNames.map(function(r){return'<span class="tag tag-blue">'+r+'</span>';}).join('')+(competitors.length>0?competitors.map(function(c){return'<span class="tag tag-red">'+c+'</span>';}).join(''):'')+' </div>'+(actionsHtml)+'<div class="sr-section"><div class="sr-label">Visit History ('+acc.visits.length+')</div>'+visitsHtml+'</div><button class="timeline-btn" data-hospital="'+acc.name.replace(/&/g,"&amp;").replace(/"/g,"&quot;")+'">📜 View Visit Timeline ('+acc.visits.length+' visits)</button><div class="timeline-container" data-tlid="'+acc.name.replace(/[^a-z0-9]/gi,"_")+'"></div></div>';
 }
-
-function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
-
 function renderTimeline(hospitalName){
-  var visits=allRecords.filter(function(r){
-    return(r.fields['Hospital Name']||'').toLowerCase()===hospitalName.toLowerCase();
-  }).sort(function(a,b){
-    var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);
-    var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);
-    return db-da;
-  });
+  var visits=allRecords.filter(function(r){return(r.fields['Hospital Name']||'').toLowerCase()===hospitalName.toLowerCase();}).sort(function(a,b){var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);return db-da;});
   if(visits.length===0)return'<div class="empty">No visits recorded yet.</div>';
-  return visits.map(function(r){
-    var f=r.fields;
-    var p=f['Priority']||'Medium';
-    var pc=p.toLowerCase()==='high'?'tl-high':p.toLowerCase()==='low'?'tl-low':'tl-medium';
-    var summary='';
-    if(f['AI Summary']){
-      var i=f['AI Summary'].indexOf('VISIT SUMMARY');
-      summary=i>-1?f['AI Summary'].substring(i+13,i+160).trim():f['AI Summary'].substring(0,160);
-      if(summary.length===160)summary+='...';
-    }
-    return'<div class="timeline-entry">'+
-      '<div class="timeline-date">'+formatDate(f['Visit Date'])+'</div>'+
-      '<div class="timeline-meta">'+
-        (f['Rep Name']?'<span class="tl-badge tl-rep">'+f['Rep Name']+'</span>':'')+
-        (f['Visit Type']?'<span class="tl-badge tl-type">'+f['Visit Type']+'</span>':'')+
-        '<span class="tl-badge '+pc+'">'+p+'</span>'+
-      '</div>'+
-      (summary?'<div class="timeline-summary">'+summary+'</div>':'')+
-    '</div>';
-  }).join('');
+  return visits.map(function(r){var f=r.fields;var p=f['Priority']||'Medium';var pc=p.toLowerCase()==='high'?'tl-high':p.toLowerCase()==='low'?'tl-low':'tl-medium';var summary='';if(f['AI Summary']){var i=f['AI Summary'].indexOf('VISIT SUMMARY');summary=i>-1?f['AI Summary'].substring(i+13,i+160).trim():f['AI Summary'].substring(0,160);if(summary.length===160)summary+='...';}
+  return'<div class="timeline-entry"><div class="timeline-date">'+formatDate(f['Visit Date'])+'</div><div class="timeline-meta">'+(f['Rep Name']?'<span class="tl-badge tl-rep">'+f['Rep Name']+'</span>':'')+(f['Visit Type']?'<span class="tl-badge tl-type">'+f['Visit Type']+'</span>':'')+'<span class="tl-badge '+pc+'">'+p+'</span></div>'+(summary?'<div class="timeline-summary">'+summary+'</div>':'')+'</div>';}).join('');
 }
-
 function doSearch(query){
-  var q=query.trim().toLowerCase();
-  var resultEl=document.getElementById('searchResult');
-  if(q.length<2){resultEl.innerHTML='';return;}
-  var matches=Object.values(accountMap).filter(function(acc){
-    return acc.name.toLowerCase().indexOf(q)>-1||acc.territory.toLowerCase().indexOf(q)>-1;
-  });
-  if(matches.length===0){
-    resultEl.innerHTML='<div class="no-result">No accounts found matching "'+query+'"</div>';
-    return;
-  }
+  var q=query.trim().toLowerCase();var resultEl=document.getElementById('searchResult');if(q.length<2){resultEl.innerHTML='';return;}
+  var matches=Object.values(accountMap).filter(function(acc){return acc.name.toLowerCase().indexOf(q)>-1||acc.territory.toLowerCase().indexOf(q)>-1;});
+  if(matches.length===0){resultEl.innerHTML='<div class="no-result">No accounts found matching "'+query+'"</div>';return;}
   resultEl.innerHTML=matches.map(renderAccountCard).join('');
+  attachTimelineListeners();
 }
-
-document.getElementById('searchInput').addEventListener('input',function(){
-  doSearch(this.value);
-});
-
+document.getElementById('searchInput').addEventListener('input',function(){doSearch(this.value);});
 function buildInsights(records){
-  allRecords=records;
-  document.getElementById('recordCount').textContent=records.length;
-  buildAccountMap(records);
-
-  var sortedAccounts=Object.values(accountMap).sort(function(a,b){return b.visits.length-a.visits.length;});
-  var maxVisits=sortedAccounts.length>0?sortedAccounts[0].visits.length:1;
-
+  allRecords=records;document.getElementById('recordCount').textContent=records.length;buildAccountMap(records);
+  var sortedAccounts=Object.values(accountMap).sort(function(a,b){return b.visits.length-a.visits.length;});var maxVisits=sortedAccounts.length>0?sortedAccounts[0].visits.length:1;
   var accountHtml='';
-  sortedAccounts.forEach(function(acc){
-    var latestPriority=acc.priorities.length>0?acc.priorities[acc.priorities.length-1]:'—';
-    var latestSentiment=acc.sentiments.length>0?acc.sentiments[acc.sentiments.length-1]:'unknown';
-    var pillClass=latestSentiment==='positive'?'pill-positive':latestSentiment==='negative'?'pill-negative':'pill-neutral';
-    var barPct=Math.round(acc.visits.length/maxVisits*100);
-    var priorityColor=latestPriority==='High'?'#ff4444':latestPriority==='Low'?'#44cc88':'#ffaa44';
-    accountHtml+=
-      '<div class="account-card">'+
-        '<div class="account-name">'+acc.name+'</div>'+
-        '<div class="account-meta">'+acc.visits.length+' visit'+(acc.visits.length!==1?'s':'')+
-        (acc.territory?' · '+acc.territory:'')+
-        (acc.lastVisit?' · Last: '+formatDate(acc.lastVisit):'')+'</div>'+
-        '<div class="insight-bar-bg"><div class="insight-bar-fill" style="width:'+barPct+'%;background:#00d4ff"></div></div>'+
-        '<div class="account-tags">'+
-          '<span class="tag tag-blue">'+acc.visits.length+' visits</span>'+
-          (latestPriority!=='—'?'<span class="tag" style="background:'+priorityColor+'22;color:'+priorityColor+';border:1px solid '+priorityColor+'33">'+latestPriority+' Priority</span>':'')+
-          '<span class="sentiment-pill '+pillClass+'">'+latestSentiment+'</span>'+
-          (acc.actionItems.length>0?'<span class="tag tag-orange">'+acc.actionItems.length+' action'+(acc.actionItems.length!==1?'s':'')+'</span>':'')+
-        '</div>'+
-      '</div>';
-  });
+  sortedAccounts.forEach(function(acc){var latestPriority=acc.priorities.length>0?acc.priorities[acc.priorities.length-1]:'—';var latestSentiment=acc.sentiments.length>0?acc.sentiments[acc.sentiments.length-1]:'unknown';var pillClass=latestSentiment==='positive'?'pill-positive':latestSentiment==='negative'?'pill-negative':'pill-neutral';var barPct=Math.round(acc.visits.length/maxVisits*100);var priorityColor=latestPriority==='High'?'#ff4444':latestPriority==='Low'?'#44cc88':'#ffaa44';
+  accountHtml+='<div class="account-card"><div class="account-name">'+acc.name+'</div><div class="account-meta">'+acc.visits.length+' visit'+(acc.visits.length!==1?'s':'')+(acc.territory?' · '+acc.territory:'')+(acc.lastVisit?' · Last: '+formatDate(acc.lastVisit):'')+'</div><div class="insight-bar-bg"><div class="insight-bar-fill" style="width:'+barPct+'%;background:#00d4ff"></div></div><div class="account-tags"><span class="tag tag-blue">'+acc.visits.length+' visits</span>'+(latestPriority!=='—'?'<span class="tag" style="background:'+priorityColor+'22;color:'+priorityColor+';border:1px solid '+priorityColor+'33">'+latestPriority+' Priority</span>':'')+'<span class="sentiment-pill '+pillClass+'">'+latestSentiment+'</span>'+(acc.actionItems.length>0?'<span class="tag tag-orange">'+acc.actionItems.length+' action'+(acc.actionItems.length!==1?'s':'')+'</span>':'')+'</div></div>';});
   document.getElementById('accountInsights').innerHTML=accountHtml||'<div class="empty">Logging visits will build account intelligence here.</div>';
-
-  var territories={};
-  var sentByTerr={};
-  records.forEach(function(r){
-    var f=r.fields;
-    var t=f['Territory']||'Unknown';
-    territories[t]=(territories[t]||0)+1;
-    if(!sentByTerr[t])sentByTerr[t]={positive:0,neutral:0,negative:0};
-    var s=getSentiment(f['AI Summary']||'');
-    if(sentByTerr[t][s]!==undefined)sentByTerr[t][s]++;
-  });
-  var maxTerr=Math.max.apply(null,Object.values(territories).concat([1]));
-  var terrHtml='<div class="insight-card">';
-  Object.keys(territories).sort(function(a,b){return territories[b]-territories[a];}).forEach(function(t){
-    var pct=Math.round(territories[t]/maxTerr*100);
-    var s=sentByTerr[t]||{};
-    var total=territories[t];
-    var posPct=total>0?Math.round((s.positive||0)/total*100):0;
-    terrHtml+=
-      '<div class="insight-row"><span class="insight-label">'+t+'</span><span class="insight-value">'+territories[t]+' visit'+(territories[t]!==1?'s':'')+'</span></div>'+
-      '<div class="insight-bar-bg"><div class="insight-bar-fill" style="width:'+pct+'%;background:#00d4ff"></div></div>'+
-      '<div style="font-size:10px;color:#555;margin:3px 0 8px">'+posPct+'% positive sentiment</div>';
-  });
-  terrHtml+='</div>';
+  var territories={};var sentByTerr={};
+  records.forEach(function(r){var f=r.fields;var t=f['Territory']||'Unknown';territories[t]=(territories[t]||0)+1;if(!sentByTerr[t])sentByTerr[t]={positive:0,neutral:0,negative:0};var s=getSentiment(f['AI Summary']||'');if(sentByTerr[t][s]!==undefined)sentByTerr[t][s]++;});
+  var maxTerr=Math.max.apply(null,Object.values(territories).concat([1]));var terrHtml='<div class="insight-card">';
+  Object.keys(territories).sort(function(a,b){return territories[b]-territories[a];}).forEach(function(t){var pct=Math.round(territories[t]/maxTerr*100);var s=sentByTerr[t]||{};var total=territories[t];var posPct=total>0?Math.round((s.positive||0)/total*100):0;terrHtml+='<div class="insight-row"><span class="insight-label">'+t+'</span><span class="insight-value">'+territories[t]+' visit'+(territories[t]!==1?'s':'')+'</span></div><div class="insight-bar-bg"><div class="insight-bar-fill" style="width:'+pct+'%;background:#00d4ff"></div></div><div style="font-size:10px;color:#555;margin:3px 0 8px">'+posPct+'% positive sentiment</div>';});terrHtml+='</div>';
   document.getElementById('territoryInsights').innerHTML=Object.keys(territories).length>0?terrHtml:'<div class="empty">Territory intelligence builds as visits are logged.</div>';
-
-  var mgmtItems=[];
-  var now=new Date();
-  sortedAccounts.forEach(function(acc){
-    var hasHigh=acc.priorities.indexOf('High')>-1;
-    if(hasHigh&&acc.lastVisit){
-      var daysSince=Math.round((now-acc.lastVisit)/(1000*60*60*24));
-      if(daysSince>=7)mgmtItems.push({text:acc.name+' — High Priority account. Last visit '+daysSince+' days ago.',color:'#ff4444'});
-    }
-    if(acc.visits.length>=3&&acc.priorities.length>=3){
-      var allSame=acc.priorities.every(function(p){return p===acc.priorities[0];});
-      if(allSame&&acc.priorities[0]==='Medium')mgmtItems.push({text:acc.name+' — '+acc.visits.length+' visits. Priority unchanged at Medium. May need manager review.',color:'#ffaa44'});
-    }
-    var repNames=Object.keys(acc.reps);
-    if(repNames.length>1)mgmtItems.push({text:acc.name+' — Visited by '+repNames.join(', ')+'. Multiple reps on same account.',color:'#00d4ff'});
-  });
-  var mgmtHtml='';
-  if(mgmtItems.length>0){
-    mgmtItems.forEach(function(item){mgmtHtml+='<div class="memory-card" style="border-left-color:'+item.color+'"><div class="memory-line">'+item.text+'</div></div>';});
-  }else{
-    mgmtHtml='<div class="insight-card"><div class="memory-line" style="color:#555;text-align:center;padding:8px">No attention items identified yet. Observations appear as patterns emerge.</div></div>';
-  }
+  var mgmtItems=[];var now=new Date();
+  sortedAccounts.forEach(function(acc){var hasHigh=acc.priorities.indexOf('High')>-1;if(hasHigh&&acc.lastVisit){var daysSince=Math.round((now-acc.lastVisit)/(1000*60*60*24));if(daysSince>=7)mgmtItems.push({text:acc.name+' — High Priority account. Last visit '+daysSince+' days ago.',color:'#ff4444'});}
+  if(acc.visits.length>=3&&acc.priorities.length>=3){var allSame=acc.priorities.every(function(p){return p===acc.priorities[0];});if(allSame&&acc.priorities[0]==='Medium')mgmtItems.push({text:acc.name+' — '+acc.visits.length+' visits. Priority unchanged at Medium. May need manager review.',color:'#ffaa44'});}
+  var repNames=Object.keys(acc.reps);if(repNames.length>1)mgmtItems.push({text:acc.name+' — Visited by '+repNames.join(', ')+'. Multiple reps on same account.',color:'#00d4ff'});});
+  var mgmtHtml='';if(mgmtItems.length>0){mgmtItems.forEach(function(item){mgmtHtml+='<div class="memory-card" style="border-left-color:'+item.color+'"><div class="memory-line">'+item.text+'</div></div>';});}else{mgmtHtml='<div class="insight-card"><div class="memory-line" style="color:#555;text-align:center;padding:8px">No attention items identified yet.</div></div>';}
   document.getElementById('managementInsights').innerHTML=mgmtHtml;
-
   var memoryHtml='';
-  sortedAccounts.forEach(function(acc){
-    var allActions=acc.actionItems.filter(Boolean);
-    var competitors=extractMentions(
-      acc.visits.map(function(v){return v.fields['AI Summary']||'';}).join(' '),
-      ['Medtronic','Johnson & Johnson','J&J','Stryker','Zimmer','B. Braun','BBraun','Becton','BD','Abbott','Siemens','Philips','GE Healthcare','Olympus','Karl Storz','Covidien','Boston Scientific','Edwards','Baxter']
-    );
-    memoryHtml+=
-      '<div class="memory-card">'+
-        '<div class="memory-hospital">'+acc.name+'</div>'+
-        '<div class="memory-label" style="margin:6px 0 3px">Territory</div>'+
-        '<div class="memory-line">'+(acc.territory||'Not specified')+'</div>'+
-        '<div class="memory-label" style="margin:6px 0 3px">Visit History</div>'+
-        '<div class="memory-line">'+acc.visits.length+' visit'+(acc.visits.length!==1?'s':'')+' recorded'+(acc.lastVisit?' · Most recent: '+formatDate(acc.lastVisit):'')+'</div>'+
-        (allActions.length>0?'<div class="memory-label" style="margin:6px 0 3px">Open Action Items</div>'+allActions.slice(-3).map(function(a){return'<div class="memory-line">'+truncate(a,120)+'</div>';}).join(''):'')+
-        (competitors.length>0?'<div class="memory-label" style="margin:6px 0 3px">Competitors Mentioned</div><div class="memory-line">'+competitors.join(', ')+'</div>':'')+
-        '<div class="account-tags" style="margin-top:8px">'+
-          acc.outcomes.filter(Boolean).slice(-1).map(function(o){var cls=o==='Positive'?'pill-positive':o==='Negative'?'pill-negative':'pill-neutral';return'<span class="sentiment-pill '+cls+'">'+o+'</span>';}).join('')+
-          (acc.priorities.slice(-1)[0]?'<span class="tag tag-blue">'+acc.priorities.slice(-1)[0]+' Priority</span>':'')+
-          Object.keys(acc.reps).map(function(r){return'<span class="tag tag-purple">'+r+'</span>';}).join('')+
-        '</div>'+
-      '</div>';
-  });
+  sortedAccounts.forEach(function(acc){var allActions=acc.actionItems.filter(Boolean);var competitors=extractMentions(acc.visits.map(function(v){return v.fields['AI Summary']||'';}).join(' '),['Medtronic','Johnson & Johnson','J&J','Stryker','Zimmer','B. Braun','BBraun','Becton','BD','Abbott','Siemens','Philips','GE Healthcare','Olympus','Karl Storz','Covidien','Boston Scientific','Edwards','Baxter']);
+  memoryHtml+='<div class="memory-card"><div class="memory-hospital">'+acc.name+'</div><div class="memory-label" style="margin:6px 0 3px">Territory</div><div class="memory-line">'+(acc.territory||'Not specified')+'</div><div class="memory-label" style="margin:6px 0 3px">Visit History</div><div class="memory-line">'+acc.visits.length+' visit'+(acc.visits.length!==1?'s':'')+' recorded'+(acc.lastVisit?' · Most recent: '+formatDate(acc.lastVisit):'')+'</div>'+(allActions.length>0?'<div class="memory-label" style="margin:6px 0 3px">Open Action Items</div>'+allActions.slice(-3).map(function(a){return'<div class="memory-line">'+truncate(a,120)+'</div>';}).join(''):'')+  (competitors.length>0?'<div class="memory-label" style="margin:6px 0 3px">Competitors Mentioned</div><div class="memory-line">'+competitors.join(', ')+'</div>':'')+'<div class="account-tags" style="margin-top:8px">'+acc.outcomes.filter(Boolean).slice(-1).map(function(o){var cls=o==='Positive'?'pill-positive':o==='Negative'?'pill-negative':'pill-neutral';return'<span class="sentiment-pill '+cls+'">'+o+'</span>';}).join('')+(acc.priorities.slice(-1)[0]?'<span class="tag tag-blue">'+acc.priorities.slice(-1)[0]+' Priority</span>':'')+Object.keys(acc.reps).map(function(r){return'<span class="tag tag-purple">'+r+'</span>';}).join('')+'</div></div>';});
   document.getElementById('institutionalMemory').innerHTML=memoryHtml||'<div class="empty">Account memory builds automatically with every visit logged.</div>';
-
-  document.getElementById('loadingEl').style.display='none';
-  document.getElementById('insightsContent').style.display='block';
-  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
+  document.getElementById('loadingEl').style.display='none';document.getElementById('insightsContent').style.display='block';document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
 }
-
 function toggleTimeline(btn){
-  var hospitalName=btn.getAttribute('data-hospital');
-  var tlId=hospitalName.replace(/[^a-z0-9]/gi,'_');
-  var container=btn.nextElementSibling;
-  if(!container||!container.hasAttribute('data-tlid'))return;
-  if(container.classList.contains('open')){
-    container.classList.remove('open');
-    var count=allRecords.filter(function(r){return(r.fields['Hospital Name']||'').toLowerCase()===hospitalName.toLowerCase();}).length;
-    btn.textContent='📜 View Visit Timeline ('+count+' visits)';
-  }else{
-    container.innerHTML=renderTimeline(hospitalName);
-    container.classList.add('open');
-    btn.textContent='▲ Hide Timeline';
-  }
+  var hospitalName=btn.getAttribute('data-hospital');var container=btn.nextElementSibling;if(!container||!container.hasAttribute('data-tlid'))return;
+  if(container.classList.contains('open')){container.classList.remove('open');var count=allRecords.filter(function(r){return(r.fields['Hospital Name']||'').toLowerCase()===hospitalName.toLowerCase();}).length;btn.textContent='📜 View Visit Timeline ('+count+' visits)';}
+  else{container.innerHTML=renderTimeline(hospitalName);container.classList.add('open');btn.textContent='▲ Hide Timeline';}
 }
-
-function attachTimelineListeners(){
-  document.querySelectorAll('.timeline-btn').forEach(function(btn){
-    btn.addEventListener('click',function(){toggleTimeline(btn);});
-  });
-}
-
+function attachTimelineListeners(){document.querySelectorAll('.timeline-btn').forEach(function(btn){btn.addEventListener('click',function(){toggleTimeline(btn);});});}
 async function loadInsights(){
-  try{
-    var res=await fetch(WORKER+'/get-visits');
-    var data=await res.json();
-    if(!res.ok)throw new Error(JSON.stringify(data));
-    buildInsights(data.records||[]);
-  }catch(err){
-    document.getElementById('loadingEl').textContent='Failed to load: '+err.message;
-  }
+  try{var res=await fetch(WORKER+'/get-visits');var data=await res.json();if(!res.ok)throw new Error(JSON.stringify(data));buildInsights(data.records||[]);}
+  catch(err){document.getElementById('loadingEl').textContent='Failed to load: '+err.message;}
 }
 loadInsights();
 </script>
