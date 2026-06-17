@@ -201,7 +201,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
     <thead><tr><th>Rep</th><th>Visits</th><th>Last Visit</th><th>Sentiment</th></tr></thead>
     <tbody id="repTable"></tbody>
   </table>
-  <div class="section-title">Territory Coverage (This Month)</div>
+  <div class="section-title">Territory Coverage</div>
   <div id="territoryBars"></div>
   <div class="section-title">Opportunity Signals</div>
   <div id="aiSignals"></div>
@@ -371,9 +371,9 @@ function buildDashboard(records){
       if(!reps[rep])reps[rep]={count:0,lastVisit:null,sentiments:[]};
       reps[rep].count++;reps[rep].sentiments.push(sent);
       if(!reps[rep].lastVisit||vDate>reps[rep].lastVisit)reps[rep].lastVisit=vDate;
-      var terr=f['Territory']||'Unknown';
-      territories[terr]=(territories[terr]||0)+1;
     }
+    var terr=f['Territory']||'Unknown';
+    territories[terr]=(territories[terr]||0)+1;
     var sig=extractSignals(f['AI Summary']||'');
     if(sig&&sig.length>10&&f['Reviewed']!==true)signals.push({hospital:f['Hospital Name']||'Unknown',signal:sig});
   });
