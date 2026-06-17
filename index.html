@@ -167,6 +167,10 @@ function checkPin(){
     localStorage.setItem('fieldiq_user_id',pendingUser.id);
     localStorage.setItem('fieldiq_user_name',pendingUser.name);
     localStorage.setItem('fieldiq_user_role',pendingUser.role);
+    if(pendingUser.role==='Manager'){
+      window.location.href='./fieldiq.html';
+      return;
+    }
     pendingUser=null;
     renderIdentity();
     renderModules();
@@ -296,6 +300,10 @@ function renderModules(){
   section.innerHTML=html;
 }
 
+if (localStorage.getItem('fieldiq_user_role') === 'Manager') {
+  window.location.href = './fieldiq.html';
+  throw new Error('Manager redirected to portal');
+}
 renderIdentity();
 renderModules();
 </script>
