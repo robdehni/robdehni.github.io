@@ -196,12 +196,12 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div id="priorityLow" class="priority-section"></div>
   </div>
   <div>
-  <div class="section-title">Rep Performance</div>
+  <div class="section-title">Rep Performance (This Month)</div>
   <table class="rep-table">
     <thead><tr><th>Rep</th><th>Visits</th><th>Last Visit</th><th>Sentiment</th></tr></thead>
     <tbody id="repTable"></tbody>
   </table>
-  <div class="section-title">Territory Coverage</div>
+  <div class="section-title">Territory Coverage (This Month)</div>
   <div id="territoryBars"></div>
   <div class="section-title">Opportunity Signals</div>
   <div id="aiSignals"></div>
@@ -357,6 +357,7 @@ function buildDashboard(records){
   allRecords=records;
   var today=new Date();today.setHours(0,0,0,0);
   var weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
+  var currentMonthStart=new Date(today.getFullYear(),today.getMonth(),1);
   var todayCount=0,weekCount=0,newAccountsCount=0,reps={},territories={},sentCounts={positive:0,neutral:0,negative:0,unknown:0},signals=[];
   records.forEach(function(r){
     var f=r.fields;
@@ -365,12 +366,14 @@ function buildDashboard(records){
     var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
     if(vDate){if(vDate>=today)todayCount++;if(vDate>=weekAgo)weekCount++;}
     if(f["New Account"]===true||f["New Account"]==="true"||f["New Account"]===1||f["New Account"]==="1")newAccountsCount++;
-    var rep=f['Rep Name']||'Unknown';rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
-    if(!reps[rep])reps[rep]={count:0,lastVisit:null,sentiments:[]};
-    reps[rep].count++;reps[rep].sentiments.push(sent);
-    if(vDate&&(!reps[rep].lastVisit||vDate>reps[rep].lastVisit))reps[rep].lastVisit=vDate;
-    var terr=f['Territory']||'Unknown';
-    territories[terr]=(territories[terr]||0)+1;
+    if(vDate&&vDate>=currentMonthStart){
+      var rep=f['Rep Name']||'Unknown';rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
+      if(!reps[rep])reps[rep]={count:0,lastVisit:null,sentiments:[]};
+      reps[rep].count++;reps[rep].sentiments.push(sent);
+      if(!reps[rep].lastVisit||vDate>reps[rep].lastVisit)reps[rep].lastVisit=vDate;
+      var terr=f['Territory']||'Unknown';
+      territories[terr]=(territories[terr]||0)+1;
+    }
     var sig=extractSignals(f['AI Summary']||'');
     if(sig&&sig.length>10&&f['Reviewed']!==true)signals.push({hospital:f['Hospital Name']||'Unknown',signal:sig});
   });
