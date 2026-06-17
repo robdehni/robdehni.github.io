@@ -15,11 +15,14 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
 .brand-text h1 span{color:#2f8fff}
 .brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+.manager-tag-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .manager-tag{
   display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#d98a1c;border:1px solid #ffe5b3;
   border-radius:20px;font-size:11px;font-weight:800;padding:6px 14px;letter-spacing:0.4px;text-transform:uppercase;
   box-shadow:0 2px 8px rgba(217,138,28,0.1);
 }
+.exit-manager-btn{font-size:11px;color:#c43048;background:none;border:none;cursor:pointer;text-decoration:underline;padding:2px;font-weight:700}
+.exit-manager-btn:hover{color:#e0445b}
 
 .section-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:22px 0 10px}
 
@@ -63,10 +66,13 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
       <span class="brand-cloud">☁️</span>
       <div class="brand-text">
         <h1>Field<span>IQ</span></h1>
-        <p>Territory Intelligence</p>
+        <p>Territory Intelligence Platform</p>
       </div>
     </div>
-    <div class="manager-tag">⭐ Manager Portal</div>
+    <div class="manager-tag-wrap">
+      <div class="manager-tag">⭐ Manager Portal</div>
+      <button class="exit-manager-btn" onclick="exitManager()">Exit Manager</button>
+    </div>
   </div>
 
   <div class="section-label">Management</div>
@@ -143,5 +149,18 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
   <div class="footer">FieldIQ v2.0 · Mid East Medical FZC · UAE · 2026 · Manager Portal</div>
 </div>
+<script>
+var role = localStorage.getItem('fieldiq_user_role');
+if (role !== 'Manager') {
+  window.location.href = './index.html';
+  throw new Error('Manager access required');
+}
+function exitManager(){
+  localStorage.removeItem('fieldiq_user_id');
+  localStorage.removeItem('fieldiq_user_name');
+  localStorage.removeItem('fieldiq_user_role');
+  window.location.href = './index.html';
+}
+</script>
 </body>
 </html>
