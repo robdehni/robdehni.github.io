@@ -69,6 +69,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .pbtn-active-high{background:#e0344a;color:#fff}
 .pbtn-active-medium{background:#d98a1c;color:#fff}
 .pbtn-active-low{background:#1fa861;color:#fff}
+.pbtn-reviewed{font-size:11px;padding:6px 11px;border-radius:8px;border:none;cursor:pointer;font-weight:800;background:#e3f8ea;color:#1fa861;width:100%;margin-top:8px;transition:opacity 0.2s}
+.pbtn-reviewed:disabled{opacity:0.45;cursor:not-allowed}
 .priority-label{font-size:11px;padding:4px 12px;border-radius:8px;font-weight:800;display:inline-block;margin-top:6px}
 .plabel-high{background:#ffe5e8;color:#e0344a}
 .plabel-medium{background:#fff3e0;color:#d98a1c}
@@ -261,6 +263,28 @@ async function updatePriority(recordId,newPriority,cardEl){
   }
 }
 
+async function markReviewed(recordId,btnEl){
+  btnEl.disabled=true;btnEl.textContent='Saving...';
+  try{
+    var res=await fetch(WORKER_URL+'/update-visit',{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({recordId:recordId,reviewed:true})
+    });
+    if(res.ok){
+      var idx=allRecordsRaw.findIndex(function(r){return r.id===recordId;});
+      if(idx>-1)allRecordsRaw[idx].fields['Reviewed']=true;
+      applyFilters();
+    }else{
+      btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';
+      alert('Failed to mark reviewed. Please try again.');
+    }
+  }catch(err){
+    btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';
+    alert('Error: '+err.message);
+  }
+}
+
 function makePriorityCard(record){
   var f=record.fields;
   var current=(f['Priority']||'Medium');
@@ -275,7 +299,8 @@ function makePriorityCard(record){
         '<button class="pbtn pbtn-high'+(current==='High'?' pbtn-active-high':'')+'" data-p="High">🔴 High</button>'+
         '<button class="pbtn pbtn-medium'+(current==='Medium'?' pbtn-active-medium':'')+'" data-p="Medium">🟠 Medium</button>'+
         '<button class="pbtn pbtn-low'+(current==='Low'?' pbtn-active-low':'')+'" data-p="Low">🟢 Low</button>'+
-      '</div>';
+      '</div>'+
+      '<button class="pbtn-reviewed">✓ Mark Reviewed</button>';
   }else{
     var labelClass=current==='High'?'plabel-high':current==='Low'?'plabel-low':'plabel-medium';
     var dot=current==='High'?'🔴':current==='Low'?'🟢':'🟠';
@@ -297,6 +322,12 @@ function makePriorityCard(record){
         }
       });
     });
+    var reviewedBtn=div.querySelector('.pbtn-reviewed');
+    if(reviewedBtn){
+      reviewedBtn.addEventListener('click',function(){
+        markReviewed(record.id,reviewedBtn);
+      });
+    }
   }
   return div;
 }
@@ -341,7 +372,7 @@ function buildDashboard(records){
     var terr=f['Territory']||'Unknown';
     territories[terr]=(territories[terr]||0)+1;
     var sig=extractSignals(f['AI Summary']||'');
-    if(sig&&sig.length>10)signals.push({hospital:f['Hospital Name']||'Unknown',signal:sig});
+    if(sig&&sig.length>10&&f['Reviewed']!==true)signals.push({hospital:f['Hospital Name']||'Unknown',signal:sig});
   });
   document.getElementById('kpiTotal').textContent=records.length;
   document.getElementById('kpiNewAccounts').textContent=newAccountsCount;
@@ -352,7 +383,7 @@ function buildDashboard(records){
   document.getElementById('sentPositive').textContent=pct(sentCounts.positive);
   document.getElementById('sentNeutral').textContent=pct(sentCounts.neutral);
   document.getElementById('sentNegative').textContent=pct(sentCounts.negative);
-  renderPrioritySection(records);
+  renderPrioritySection(records.filter(function(r){return r.fields['Reviewed']!==true;}));
   var repRows='';
   Object.keys(reps).sort(function(a,b){return reps[b].count-reps[a].count;}).forEach(function(rep){
     var r=reps[rep];
