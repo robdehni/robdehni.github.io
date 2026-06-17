@@ -71,7 +71,14 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
 <body>
 <div class="container">
 <div class="header"><h1>FieldIQ</h1><p>Log Visit</p></div>
-<a href="./index.html" style="display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px;box-shadow:0 4px 12px rgba(47,143,255,0.25)">← Home</a>
+<a href="./index.html" id="homeBtn" style="display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px;box-shadow:0 4px 12px rgba(47,143,255,0.25)">← Home</a>
+<script>
+(function(){
+  var role=localStorage.getItem('fieldiq_user_role');
+  var btn=document.getElementById('homeBtn');
+  if(btn){btn.href=(role==='Manager')?'./fieldiq.html':'./index.html';}
+})();
+</script>
 <div class="fields">
   <div class="field field-full">
     <label>Hospital / Account</label>
