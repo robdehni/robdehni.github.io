@@ -1,0 +1,26 @@
+FIQ Wallet v1.0
+
+Date: 19 June 2026
+
+Status:
+- Live and operational
+
+Infrastructure:
+- Airtable: FIQ Engine V2
+- Cloudflare Worker connected
+- GitHub Pages deployed
+- Custom domain active
+
+Features:
+- Live wallet balance
+- Airtable transaction feed
+- Founding Contributor badge
+- Real-time FIQ calculation
+
+Verified:
+- USER001
+- Lifetime FIQ: 250,100
+- Transaction count: 3
+
+Live URL:
+https://fieldiq.biz/fiq-wallet-live-1.html
