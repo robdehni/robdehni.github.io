@@ -217,6 +217,7 @@ function renderFullReport(text){
 
 var sortedRecords=[];
 var allRecordsRaw=[];
+var targetVisitId=null;
 
 function renderVisits(records){
   var today=new Date();today.setHours(0,0,0,0);
@@ -256,7 +257,7 @@ function renderVisits(records){
     var summary=truncateSummary(f['AI Summary']||f['Meeting Notes']||'',180);
 
     html+=
-      '<div class="visit-card'+(isNew?' new-account':'')+'" data-idx="'+idx+'">'+
+      '<div class="visit-card'+(isNew?' new-account':'')+'" data-idx="'+idx+'" data-id="'+r.id+'">'+
         '<div class="visit-header">'+
           '<div class="visit-account">'+(f['Hospital Name']||'Unknown Account')+'</div>'+
           '<div class="visit-date">'+formatDate(f['Visit Date'])+'</div>'+
@@ -406,10 +407,31 @@ function applyUrlParams(){
   var terr=params.get('territory');
   var priority=params.get('priority');
   var period=params.get('period');
+  targetVisitId=params.get('visitId');
   if(rep)document.getElementById('filterRep').value=rep;
   if(terr)document.getElementById('filterTerritory').value=terr;
   if(priority)document.getElementById('filterPriority').value=priority;
   if(period)document.getElementById('filterPeriod').value=period;
+}
+
+function expandAndScrollToVisit(recordId){
+  if(!recordId)return;
+  var card=document.querySelector('.visit-card[data-id="'+recordId+'"]');
+  if(!card)return;
+  var idx=card.getAttribute('data-idx');
+  var detail=document.getElementById('detail-'+idx);
+  var toggle=card.querySelector('.visit-toggle');
+  if(detail&&!detail.classList.contains('open')){
+    if(!detail.getAttribute('data-rendered')){
+      var f=sortedRecords[idx].fields;
+      detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'');
+      detail.setAttribute('data-rendered','1');
+    }
+    detail.classList.add('open');
+    card.classList.add('expanded');
+    if(toggle)toggle.textContent='▴ Tap to collapse';
+  }
+  card.scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 var currentUser=null;
@@ -450,6 +472,7 @@ async function loadHistory(){
       document.getElementById('filterBar').style.display='block';
       applyUrlParams();
       applyFilters();
+      expandAndScrollToVisit(targetVisitId);
     }else{
       renderVisits(allRecordsRaw);
     }
