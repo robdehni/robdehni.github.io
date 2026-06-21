@@ -108,13 +108,9 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .badge-territory{background:#eef3f9;color:#5b6b85}
 .activity-summary{font-size:11.5px;color:#7a8aa3;margin-top:8px;line-height:1.6}
 
-.radar-card{background:#fff;border:1px solid #e3ebf5;border-left:3px solid #2f8fff;border-radius:0 14px 14px 0;padding:14px;margin-bottom:8px;box-shadow:0 3px 10px rgba(11,31,58,0.04)}
-.radar-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
-.radar-account{font-size:13.5px;font-weight:800;color:#0b1f3a}
-.radar-evidence{font-size:11.5px;color:#3a4a63;line-height:1.8}
-.radar-evidence-line{position:relative;padding-left:12px}
-.radar-evidence-line:before{content:"•";color:#2f8fff;font-weight:800;position:absolute;left:0}
-.radar-date{font-size:11px;color:#aab8cc;font-weight:600;margin-top:8px}
+.signal-item{background:#fff;border-left:3px solid #2f8fff;border-radius:0 14px 14px 0;padding:12px 14px;margin-bottom:8px;box-shadow:0 3px 10px rgba(11,31,58,0.04)}
+.signal-hospital{font-size:13px;font-weight:800;color:#2f8fff;margin-bottom:4px}
+.signal-text{font-size:11.5px;color:#7a8aa3;line-height:1.6}
 
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e3ebf5;display:flex;z-index:9999;box-shadow:0 -4px 16px rgba(11,31,58,0.06)}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:#aab8cc;font-size:11px;font-weight:700;transition:color 0.2s}
@@ -222,8 +218,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div id="priorityHigh" class="priority-section"></div>
   <div id="priorityMedium" class="priority-section"></div>
   <div id="priorityLow" class="priority-section"></div>
-  <div class="section-title">Management Radar</div>
-  <div id="managementRadar"></div>
   </div>
   <div>
   <div class="section-title">Rep Performance</div>
@@ -233,6 +227,10 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   </table>
   <div class="section-title">Territory Coverage</div>
   <div id="territoryBars"></div>
+  <div class="section-title">Opportunity Signals</div>
+  <div id="aiSignals"></div>
+  <div class="section-title">Recent Activity</div>
+  <div id="activityFeed"></div>
   </div>
   </div>
 </div>
@@ -262,6 +260,8 @@ var allRecords=[];
 
 function getSentiment(s){if(!s)return'unknown';s=s.toLowerCase();var i=s.indexOf('sentiment');if(i>-1){var t=s.substring(i,i+120);if(t.indexOf('positive')>-1)return'positive';if(t.indexOf('negative')>-1)return'negative';if(t.indexOf('neutral')>-1)return'neutral';}if(s.indexOf('positive')>-1)return'positive';if(s.indexOf('negative')>-1)return'negative';if(s.indexOf('neutral')>-1)return'neutral';return'unknown';}
 function getBadgeClass(s){if(s==='positive')return'badge-positive';if(s==='neutral')return'badge-neutral';if(s==='negative')return'badge-negative';return'badge-unknown';}
+function extractSignals(ai){if(!ai)return'';var i=ai.indexOf('OPPORTUNITY');if(i>-1){var e=ai.indexOf('\n\n',i+10);return ai.substring(i+20,e>-1?e:i+300).trim();}return'';}
+function truncate(t,n){if(!t)return'';var i=t.indexOf('VISIT SUMMARY');if(i>-1){var s=t.substring(i+13,i+13+n).trim();return s.length===n?s+'...':s;}return t.length>n?t.substring(0,n)+'...':t;}
 function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
 
 function getPeriodRange(period){
@@ -424,7 +424,7 @@ function buildDashboard(records){
   var today=new Date();today.setHours(0,0,0,0);
   var weekRange=getPeriodRange('thisWeek');
   var monthRange=getPeriodRange('thisMonth');
-  var todayCount=0,weekCount=0,monthCount=0,newAccountsCount=0,reps={},territories={},sentCounts={positive:0,neutral:0,negative:0,unknown:0};
+  var todayCount=0,weekCount=0,monthCount=0,newAccountsCount=0,reps={},territories={},sentCounts={positive:0,neutral:0,negative:0,unknown:0},signals=[];
   records.forEach(function(r){
     var f=r.fields;
     var sent=getSentiment(f['AI Summary']||'');
@@ -438,6 +438,8 @@ function buildDashboard(records){
     if(vDate&&(!reps[rep].lastVisit||vDate>reps[rep].lastVisit))reps[rep].lastVisit=vDate;
     var terr=f['Territory']||'Unknown';
     territories[terr]=(territories[terr]||0)+1;
+    var sig=extractSignals(f['AI Summary']||'');
+    if(sig&&sig.length>10&&f['Reviewed']!==true)signals.push({hospital:f['Hospital Name']||'Unknown',signal:sig});
   });
   document.getElementById('kpiTotal').textContent=records.length;
   document.getElementById('kpiNewAccounts').textContent=newAccountsCount;
@@ -466,70 +468,19 @@ function buildDashboard(records){
     terrHtml+='<a href="'+buildVisitHistoryLink({territory:t})+'" style="text-decoration:none;color:inherit;display:block"><div class="territory-item"><div class="territory-header"><span class="territory-name">'+t+'</span><span class="territory-count">'+territories[t]+' visits</span></div><div class="territory-bar-bg"><div class="territory-bar-fill" style="width:'+pw+'%"></div></div></div></a>';
   });
   document.getElementById('territoryBars').innerHTML=terrHtml||'<div class="empty">No territory data yet</div>';
-  buildManagementRadar(records);
+  var sigHtml='';
+  signals.slice(0,6).forEach(function(s){sigHtml+='<a href="'+buildVisitHistoryLink({})+'" style="text-decoration:none;color:inherit;display:block"><div class="signal-item"><div class="signal-hospital">'+s.hospital+'</div><div class="signal-text">'+s.signal.substring(0,200)+'</div></div></a>';});
+  document.getElementById('aiSignals').innerHTML=sigHtml||'<div class="empty">No signals yet</div>';
+  var sorted=records.slice().sort(function(a,b){var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);return db-da;}).slice(0,20);
+  var feedHtml='';
+  sorted.forEach(function(r){
+    var f=r.fields;var sent=getSentiment(f['AI Summary']||'');var sum=truncate(f['AI Summary']||'',120);
+    feedHtml+='<div class="activity-item"><div class="activity-header"><div class="activity-hospital">'+(f['Hospital Name']||'Unknown')+'</div><div class="activity-date">'+formatDate(f['Visit Date'])+'</div></div><div class="activity-meta"><span class="activity-badge '+getBadgeClass(sent)+'">'+sent+'</span>'+(f['Rep Name']?'<span class="activity-badge badge-rep">'+f['Rep Name']+'</span>':'')+(f['Territory']?'<span class="activity-badge badge-territory">'+f['Territory']+'</span>':'')+(f['Visit Type']?'<span class="activity-badge badge-territory">'+f['Visit Type']+'</span>':'')+'</div>'+(sum?'<div class="activity-summary">'+sum+'</div>':'')+'</div>';
+  });
+  document.getElementById('activityFeed').innerHTML=feedHtml||'<div class="empty">No visits yet</div>';
   document.getElementById('loadingEl').style.display='none';
   document.getElementById('dashContent').style.display='block';
   document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
-}
-
-// Management Radar v1 — evidence-based, structured-field only. No AI text
-// interpretation, no keyword matching. One card per account; an account only
-// appears if at least one of the four defined signals is true for it.
-// Scoped to whatever records buildDashboard() was called with, so it
-// automatically respects the dashboard's existing Rep/Territory/Date/Priority
-// filters — same data already on screen, nothing fetched separately.
-function buildManagementRadar(records){
-  var accounts={};
-  records.forEach(function(r){
-    var f=r.fields;
-    var key=(f['Hospital Name']||'Unknown').trim();
-    if(!accounts[key]){
-      accounts[key]={name:key,territory:f['Territory']||'',visits:[],reps:{},lastVisit:null};
-    }
-    var acc=accounts[key];
-    acc.visits.push(r);
-    if(!acc.territory&&f['Territory'])acc.territory=f['Territory'];
-    var rep=(f['Rep Name']||'Unknown').trim();
-    rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
-    acc.reps[rep]=true;
-    var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
-    if(vDate&&!isNaN(vDate)&&(!acc.lastVisit||vDate>acc.lastVisit))acc.lastVisit=vDate;
-  });
-
-  var flagged=[];
-  Object.keys(accounts).forEach(function(key){
-    var acc=accounts[key];
-    var evidence=[];
-    var highPriorityUnreviewed=acc.visits.some(function(r){return r.fields['Priority']==='High'&&r.fields['Reviewed']!==true;});
-    var negativeUnreviewed=acc.visits.some(function(r){return r.fields['Outcome']==='Negative'&&r.fields['Reviewed']!==true;});
-    var positiveWithFollowUp=acc.visits.some(function(r){return r.fields['Outcome']==='Positive'&&r.fields['Action Items']&&String(r.fields['Action Items']).trim();});
-    var repCount=Object.keys(acc.reps).length;
-
-    if(highPriorityUnreviewed)evidence.push('High Priority visit not reviewed');
-    if(negativeUnreviewed)evidence.push('Negative outcome not reviewed');
-    if(positiveWithFollowUp)evidence.push('Open follow-up recorded');
-    if(repCount>=2)evidence.push('Visited by '+repCount+' different reps in the selected period');
-
-    if(evidence.length>0){
-      flagged.push({name:acc.name,territory:acc.territory,evidence:evidence,lastVisit:acc.lastVisit,score:evidence.length});
-    }
-  });
-
-  flagged.sort(function(a,b){
-    if(b.score!==a.score)return b.score-a.score;
-    var ad=a.lastVisit?a.lastVisit.getTime():0,bd=b.lastVisit?b.lastVisit.getTime():0;
-    return bd-ad;
-  });
-
-  var html='';
-  flagged.slice(0,8).forEach(function(acc){
-    html+='<a href="'+buildVisitHistoryLink({})+'" style="text-decoration:none;color:inherit;display:block"><div class="radar-card">'+
-      '<div class="radar-card-header"><div class="radar-account">'+escapeHtml(acc.name)+'</div>'+(acc.territory?'<span class="activity-badge badge-territory">'+escapeHtml(acc.territory)+'</span>':'')+'</div>'+
-      '<div class="radar-evidence">'+acc.evidence.map(function(e){return'<div class="radar-evidence-line">'+escapeHtml(e)+'</div>';}).join('')+'</div>'+
-      '<div class="radar-date">Last visit: '+formatDate(acc.lastVisit)+'</div>'+
-    '</div></a>';
-  });
-  document.getElementById('managementRadar').innerHTML=html||'<div class="empty">No accounts currently need attention</div>';
 }
 var allRecordsRaw=[];
 
@@ -856,6 +807,12 @@ async function loadDashboard(){
     var data=await res.json();
     if(!res.ok)throw new Error(JSON.stringify(data));
     allRecordsRaw=data.records||[];
+    allRecordsRaw.filter(function(r){
+      var f=r.fields;
+      return f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1';
+    }).forEach(function(r){
+      console.log('[FieldIQ DEBUG] '+(r.fields['Hospital Name']||'Unknown')+' | record '+r.id+' | Pending Review raw value:',r.fields['Pending Review'],'| typeof:',typeof r.fields['Pending Review'],'| key present:',('Pending Review' in r.fields));
+    });
     populateRepFilter(allRecordsRaw);
     document.getElementById('filterBar').style.display='block';
     buildDashboard(allRecordsRaw);
