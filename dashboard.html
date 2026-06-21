@@ -192,6 +192,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
     <div class="sent-card sent-neutral"><div class="sent-label">Neutral</div><div class="sent-value" id="sentNeutral">0%</div></div>
     <div class="sent-card sent-negative"><div class="sent-label">Negative</div><div class="sent-value" id="sentNegative">0%</div></div>
   </div>
+  <div class="section-title">New Accounts Added</div>
+  <div id="newAccountsList"></div>
   <div class="section-title">Manager Priority View</div>
   <div id="priorityHigh" class="priority-section"></div>
   <div id="priorityMedium" class="priority-section"></div>
@@ -537,9 +539,29 @@ async function loadDashboard(){
     populateRepFilter(allRecordsRaw);
     document.getElementById('filterBar').style.display='block';
     buildDashboard(allRecordsRaw);
+    buildNewAccountsCard(allRecordsRaw);
   }catch(err){
     document.getElementById('loadingEl').textContent='Failed to load: '+err.message;
   }
+}
+
+function buildNewAccountsCard(records){
+  var newOnes=records.filter(function(r){
+    var f=r.fields;
+    return f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1';
+  });
+  newOnes.sort(function(a,b){
+    var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):0;
+    var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):0;
+    return db-da;
+  });
+  newOnes=newOnes.slice(0,10);
+  var html='';
+  newOnes.forEach(function(r){
+    var f=r.fields;
+    html+='<div class="activity-item"><div class="activity-header"><div class="activity-hospital">'+(f['Hospital Name']||'Unknown')+'</div><div class="activity-date">'+formatDate(f['Visit Date'])+'</div></div><div class="activity-meta">'+(f['Rep Name']?'<span class="activity-badge badge-rep">'+f['Rep Name']+'</span>':'')+(f['Territory']?'<span class="activity-badge badge-territory">'+f['Territory']+'</span>':'')+'</div></div>';
+  });
+  document.getElementById('newAccountsList').innerHTML=html||'<div class="empty">No new accounts added recently</div>';
 }
 if (role !== 'Manager') {
   document.getElementById('loadingEl').style.display = 'none';
