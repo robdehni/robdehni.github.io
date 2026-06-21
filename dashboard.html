@@ -484,13 +484,17 @@ function buildDashboard(records){
 // Scoped to whatever records buildDashboard() was called with, so it
 // automatically respects the dashboard's existing Rep/Territory/Date/Priority
 // filters — same data already on screen, nothing fetched separately.
+// Card links use visitId (the most recent visit's Airtable record ID),
+// matching the deep-link pattern already proven by New Accounts cards, since
+// Visit History only reads visitId — it has no handling for a hospital-name
+// parameter, so that approach was confirmed not to work and is not used here.
 function buildManagementRadar(records){
   var accounts={};
   records.forEach(function(r){
     var f=r.fields;
     var key=String(f['Hospital Name']||'Unknown').trim();
     if(!accounts[key]){
-      accounts[key]={name:key,territory:f['Territory']||'',visits:[],reps:{},lastVisit:null};
+      accounts[key]={name:key,territory:f['Territory']||'',visits:[],reps:{},lastVisit:null,lastVisitRecord:null};
     }
     var acc=accounts[key];
     acc.visits.push(r);
@@ -499,7 +503,10 @@ function buildManagementRadar(records){
     rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
     acc.reps[rep]=true;
     var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
-    if(vDate&&!isNaN(vDate)&&(!acc.lastVisit||vDate>acc.lastVisit))acc.lastVisit=vDate;
+    if(vDate&&!isNaN(vDate)&&(!acc.lastVisit||vDate>acc.lastVisit)){
+      acc.lastVisit=vDate;
+      acc.lastVisitRecord=r;
+    }
   });
 
   var flagged=[];
@@ -517,7 +524,14 @@ function buildManagementRadar(records){
     if(repCount>=2)evidence.push('Visited by '+repCount+' different reps in the selected period');
 
     if(evidence.length>0){
-      flagged.push({name:acc.name,territory:acc.territory,evidence:evidence,lastVisit:acc.lastVisit,score:evidence.length});
+      flagged.push({
+        name:acc.name,
+        territory:acc.territory,
+        evidence:evidence,
+        lastVisit:acc.lastVisit,
+        score:evidence.length,
+        visitId:acc.lastVisitRecord?acc.lastVisitRecord.id:null
+      });
     }
   });
 
@@ -529,7 +543,8 @@ function buildManagementRadar(records){
 
   var html='';
   flagged.slice(0,8).forEach(function(acc){
-    html+='<a href="'+buildVisitHistoryLink({})+'" style="text-decoration:none;color:inherit;display:block"><div class="radar-card">'+
+    var link=acc.visitId?('fieldiq-visit-history.html?visitId='+encodeURIComponent(acc.visitId)):buildVisitHistoryLink({});
+    html+='<a href="'+link+'" style="text-decoration:none;color:inherit;display:block"><div class="radar-card">'+
       '<div class="radar-card-header"><div class="radar-account">'+escapeHtml(acc.name)+'</div>'+(acc.territory?'<span class="activity-badge badge-territory">'+escapeHtml(acc.territory)+'</span>':'')+'</div>'+
       '<div class="radar-evidence">'+acc.evidence.map(function(e){return'<div class="radar-evidence-line">'+escapeHtml(e)+'</div>';}).join('')+'</div>'+
       '<div class="radar-date">Last visit: '+formatDate(acc.lastVisit)+'</div>'+
