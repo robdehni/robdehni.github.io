@@ -149,10 +149,18 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 
 // ── HOME BUTTON ROUTING ─────────────────────────────────────────
+// Managers arriving from Dashboard (via Management Radar or New Accounts)
+// are mid-investigation, not leaving the app — label reflects that instead
+// of reading "Home" when the destination is actually back to Dashboard.
 (function(){
   var role = localStorage.getItem('fieldiq_user_role');
   var homeBtn=document.getElementById('homeBtn');
-  homeBtn.href = (role === 'Manager') ? './dashboard.html' : './index.html';
+  if(role === 'Manager'){
+    homeBtn.href='./dashboard.html';
+    homeBtn.textContent='← Back to Dashboard';
+  }else{
+    homeBtn.href='./index.html';
+  }
 })();
 
 function formatDate(d){
