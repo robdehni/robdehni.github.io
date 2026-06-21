@@ -182,10 +182,10 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div class="dash-grid">
   <div>
   <div class="kpi-grid">
-    <div class="kpi-card"><div class="kpi-label">Total Visits</div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-sub">All time</div></div>
-    <div class="kpi-card"><div class="kpi-label">New Accounts</div><div class="kpi-value" id="kpiNewAccounts">0</div><div class="kpi-sub">Pending review</div></div>
-    <div class="kpi-card"><div class="kpi-label">This Week</div><div class="kpi-value" id="kpiWeek">0</div><div class="kpi-sub">This week</div></div>
-    <div class="kpi-card"><div class="kpi-label">Active Reps</div><div class="kpi-value" id="kpiReps">0</div><div class="kpi-sub">Unique reps</div></div>
+    <div class="kpi-card"><div class="kpi-label">Lifetime Activity</div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-sub">All time visits</div></div>
+    <div class="kpi-card"><div class="kpi-label">Current Month Activity</div><div class="kpi-value" id="kpiMonth">0</div><div class="kpi-sub" id="kpiWeekSub">— this week</div></div>
+    <div class="kpi-card"><div class="kpi-label">Rep Activity</div><div class="kpi-value" id="kpiReps">0</div><div class="kpi-sub">Unique active reps</div></div>
+    <div class="kpi-card"><div class="kpi-label">New Accounts Pending Review</div><div class="kpi-value" id="kpiNewAccounts">0</div><div class="kpi-sub">Awaiting manager review</div></div>
   </div>
   <div class="sentiment-row">
     <div class="sent-card sent-positive"><div class="sent-label">Positive</div><div class="sent-value" id="sentPositive">0%</div></div>
@@ -402,14 +402,15 @@ function renderPrioritySection(records){
 function buildDashboard(records){
   allRecords=records;
   var today=new Date();today.setHours(0,0,0,0);
-  var weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
-  var todayCount=0,weekCount=0,newAccountsCount=0,reps={},territories={},sentCounts={positive:0,neutral:0,negative:0,unknown:0},signals=[];
+  var weekRange=getPeriodRange('thisWeek');
+  var monthRange=getPeriodRange('thisMonth');
+  var todayCount=0,weekCount=0,monthCount=0,newAccountsCount=0,reps={},territories={},sentCounts={positive:0,neutral:0,negative:0,unknown:0},signals=[];
   records.forEach(function(r){
     var f=r.fields;
     var sent=getSentiment(f['AI Summary']||'');
     sentCounts[sent]=(sentCounts[sent]||0)+1;
     var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
-    if(vDate){if(vDate>=today)todayCount++;if(vDate>=weekAgo)weekCount++;}
+    if(vDate){if(vDate>=today)todayCount++;if(vDate>=weekRange.start)weekCount++;if(vDate>=monthRange.start)monthCount++;}
     if((f["New Account"]===true||f["New Account"]==="true"||f["New Account"]===1||f["New Account"]==="1")&&f["Pending Review"]===true)newAccountsCount++;
     var rep=f['Rep Name']||'Unknown';rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
     if(!reps[rep])reps[rep]={count:0,lastVisit:null,sentiments:[]};
@@ -422,7 +423,8 @@ function buildDashboard(records){
   });
   document.getElementById('kpiTotal').textContent=records.length;
   document.getElementById('kpiNewAccounts').textContent=newAccountsCount;
-  document.getElementById('kpiWeek').textContent=weekCount;
+  document.getElementById('kpiMonth').textContent=monthCount;
+  document.getElementById('kpiWeekSub').textContent=weekCount+' this week';
   document.getElementById('kpiReps').textContent=Object.keys(reps).length;
   var ws=sentCounts.positive+sentCounts.neutral+sentCounts.negative;
   function pct(n){return ws>0?Math.round(n/ws*100)+'%':'0%';}
