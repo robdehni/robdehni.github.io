@@ -545,10 +545,34 @@ async function loadDashboard(){
   }
 }
 
+async function markPendingReviewed(recordId,btnEl){
+  btnEl.disabled=true;btnEl.textContent='Saving...';
+  try{
+    var res=await fetch(WORKER_URL+'/update-visit',{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({recordId:recordId,pendingReview:false})
+    });
+    if(res.ok){
+      var idx=allRecordsRaw.findIndex(function(r){return r.id===recordId;});
+      if(idx>-1)allRecordsRaw[idx].fields['Pending Review']=false;
+      buildNewAccountsCard(allRecordsRaw);
+    }else{
+      btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';
+      alert('Failed to mark reviewed. Please try again.');
+    }
+  }catch(err){
+    btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';
+    alert('Error: '+err.message);
+  }
+}
+
 function buildNewAccountsCard(records){
   var newOnes=records.filter(function(r){
     var f=r.fields;
-    return f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1';
+    var isNew=f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1';
+    var alreadyReviewed=f['Pending Review']===false||f['Pending Review']==='false'||f['Pending Review']===0||f['Pending Review']==='0';
+    return isNew&&!alreadyReviewed;
   });
   newOnes.sort(function(a,b){
     var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):0;
@@ -556,12 +580,33 @@ function buildNewAccountsCard(records){
     return db-da;
   });
   newOnes=newOnes.slice(0,10);
-  var html='';
+  var container=document.getElementById('newAccountsList');
+  container.innerHTML='';
+  if(newOnes.length===0){
+    container.innerHTML='<div class="empty">No new accounts added recently</div>';
+    return;
+  }
   newOnes.forEach(function(r){
     var f=r.fields;
-    html+='<div class="activity-item"><div class="activity-header"><div class="activity-hospital">'+(f['Hospital Name']||'Unknown')+'</div><div class="activity-date">'+formatDate(f['Visit Date'])+'</div></div><div class="activity-meta">'+(f['Rep Name']?'<span class="activity-badge badge-rep">'+f['Rep Name']+'</span>':'')+(f['Territory']?'<span class="activity-badge badge-territory">'+f['Territory']+'</span>':'')+'</div></div>';
+    var div=document.createElement('div');
+    div.className='activity-item';
+    div.innerHTML=
+      '<a href="fieldiq-visit-history.html?visitId='+encodeURIComponent(r.id)+'" style="text-decoration:none;color:inherit;display:block">'+
+        '<div class="activity-header"><div class="activity-hospital">'+(f['Hospital Name']||'Unknown')+'</div><div class="activity-date">'+formatDate(f['Visit Date'])+'</div></div>'+
+        '<div class="activity-meta">'+
+          (f['Rep Name']?'<span class="activity-badge badge-rep">'+f['Rep Name']+'</span>':'')+
+          (f['Territory']?'<span class="activity-badge badge-territory">'+f['Territory']+'</span>':'')+
+          (f['City']?'<span class="activity-badge badge-territory">'+f['City']+'</span>':'')+
+        '</div>'+
+      '</a>';
+    var btn=document.createElement('button');
+    btn.className='pbtn-reviewed';
+    btn.style.marginTop='8px';
+    btn.textContent='✓ Mark Reviewed';
+    btn.addEventListener('click',function(){markPendingReviewed(r.id,btn);});
+    div.appendChild(btn);
+    container.appendChild(div);
   });
-  document.getElementById('newAccountsList').innerHTML=html||'<div class="empty">No new accounts added recently</div>';
 }
 if (role !== 'Manager') {
   document.getElementById('loadingEl').style.display = 'none';
