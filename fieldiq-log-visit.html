@@ -81,20 +81,24 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
 </script>
 <div class="fields">
   <div class="field field-full">
+    <label>Territory</label>
+    <select id="territory"><option value="">Select territory first</option><option>UAE</option><option>KSA</option><option>Qatar</option><option>Kuwait</option><option>Bahrain</option><option>Oman</option></select>
+  </div>
+  <div class="field field-full" id="accountBlock" style="opacity:0.5;pointer-events:none">
     <label>Account</label>
     <div class="hospital-wrapper">
-      <input type="text" id="hospital" placeholder="Search accounts..." autocomplete="off">
+      <input type="text" id="hospital" placeholder="Select a territory first" autocomplete="off" disabled>
       <div class="hospital-list" id="hospitalList"></div>
     </div>
-    <label class="not-listed-check"><input type="checkbox" id="notListedCheck"><span>Account not listed</span></label>
+    <label class="not-listed-check"><input type="checkbox" id="notListedCheck" disabled><span>Account not listed</span></label>
     <div class="new-account-fields" id="newAccountFields">
       <div class="new-account-badge">New Account</div>
       <div class="field"><label>Account Name</label><input type="text" id="newAccountName" placeholder="Enter account name"></div>
+      <div id="duplicateWarning" style="display:none;background:#fff3e0;border:1px solid #ffe5b3;border-radius:8px;padding:10px 12px;font-size:12px;color:#7a6000;margin-bottom:10px"></div>
       <div class="field"><label>City</label><input type="text" id="newAccountCity" placeholder="e.g. Dubai, Riyadh, Doha"></div>
     </div>
   </div>
   <div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
-  <div class="field"><label>Territory</label><select id="territory"><option value="">Select territory</option><option>UAE</option><option>KSA</option><option>Qatar</option><option>Kuwait</option><option>Bahrain</option><option>Oman</option></select></div>
   <div class="field"><label>Visit Type</label><select id="visitType"><option value="">Select type</option><option>In-person</option><option>Virtual</option><option>Phone</option></select></div>
 </div>
 <div id="identityBar" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#7a8aa3;box-shadow:0 4px 14px rgba(11,31,58,0.05)"></div>
@@ -125,8 +129,30 @@ if(!currentUserId||!currentUserName){
   throw new Error('No identity locked — redirecting to home.');
 }
 document.getElementById('identityBar').innerHTML='Logging visit as <strong style="color:#00d4ff">'+currentUserName+'</strong> ('+(currentUserRole||'Sales Rep')+')';
-var notListedCheck=document.getElementById('notListedCheck');var newAccountFields=document.getElementById('newAccountFields');var hospitalInput=document.getElementById('hospital');var hospitalList=document.getElementById('hospitalList');
+var notListedCheck=document.getElementById('notListedCheck');var newAccountFields=document.getElementById('newAccountFields');var hospitalInput=document.getElementById('hospital');var hospitalList=document.getElementById('hospitalList');var territorySelect=document.getElementById('territory');var accountBlock=document.getElementById('accountBlock');
 notListedCheck.addEventListener('change',function(){if(this.checked){newAccountFields.classList.add('visible');hospitalInput.value='';selectedAccountId=null;hospitalList.classList.remove('open');hospitalInput.style.display='none';}else{newAccountFields.classList.remove('visible');hospitalInput.style.display='';}});
+
+territorySelect.addEventListener('change',function(){
+  selectedAccountId=null;
+  hospitalInput.value='';
+  notListedCheck.checked=false;
+  newAccountFields.classList.remove('visible');
+  hospitalInput.style.display='';
+  hospitalList.classList.remove('open');
+  if(this.value){
+    accountBlock.style.opacity='1';
+    accountBlock.style.pointerEvents='auto';
+    hospitalInput.disabled=false;
+    notListedCheck.disabled=false;
+    hospitalInput.placeholder='Search '+this.value+' accounts...';
+  }else{
+    accountBlock.style.opacity='0.5';
+    accountBlock.style.pointerEvents='none';
+    hospitalInput.disabled=true;
+    notListedCheck.disabled=true;
+    hospitalInput.placeholder='Select a territory first';
+  }
+});
 
 var ACCOUNTS=[];
 var accountsLoaded=false;
@@ -157,11 +183,35 @@ function loadAccounts(){
 }
 loadAccounts();
 
+function findPossibleDuplicates(name){
+  var q=name.trim().toLowerCase();
+  if(q.length<3)return[];
+  return ACCOUNTS.filter(function(a){
+    var n=a.name.trim().toLowerCase();
+    return n.indexOf(q)>-1||q.indexOf(n)>-1;
+  });
+}
+
+var newAccountNameInput=document.getElementById('newAccountName');
+var duplicateWarningEl=document.getElementById('duplicateWarning');
+newAccountNameInput.addEventListener('input',function(){
+  var matches=findPossibleDuplicates(this.value);
+  if(matches.length>0){
+    var names=matches.slice(0,3).map(function(m){return m.name;}).join(', ');
+    duplicateWarningEl.innerHTML='⚠️ This may already exist: <strong>'+names+'</strong>. Please check Account search before adding as new.';
+    duplicateWarningEl.style.display='block';
+  }else{
+    duplicateWarningEl.style.display='none';
+  }
+});
+
 function showList(query){
   if(!accountsLoaded){hospitalList.classList.add('open');return;}
   hospitalList.innerHTML='';
   var q=query.toLowerCase().trim();
-  var filtered=(q.length===0?ACCOUNTS.slice(0,50):ACCOUNTS.filter(function(a){return a.name.toLowerCase().indexOf(q)>-1||a.territory.toLowerCase().indexOf(q)>-1;})).slice(0,50);
+  var selTerr=territorySelect.value.trim().toUpperCase();
+  var inTerritory=ACCOUNTS.filter(function(a){return a.territory.trim().toUpperCase()===selTerr;});
+  var filtered=(q.length===0?inTerritory.slice(0,50):inTerritory.filter(function(a){return a.name.toLowerCase().indexOf(q)>-1;})).slice(0,50);
   filtered.forEach(function(a){
     var div=document.createElement('div');
     div.className='hospital-option';
@@ -194,7 +244,7 @@ async function startRecording(){
   }catch(e){isRecording=false;statusEl.textContent='Mic error: '+e.message;}
 }
 function stopRecording(){clearInterval(timerInterval);document.getElementById('recordingIndicator').className='recording-indicator';if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}
-document.getElementById('clearBtn').addEventListener('click',function(){isRecording=false;transcriptText.value='';audioPlayer.style.display='none';audioPlayer.src='';successCard.style.display='none';processingOverlay.style.display='none';statusEl.textContent='Tap mic to start recording';statusEl.className='status';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';micBtn.className='mic-btn';micBtn.textContent='🎙️';document.getElementById('recordingIndicator').className='recording-indicator';clearInterval(timerInterval);seconds=0;document.getElementById('recordingTimer').textContent='0:00';if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});streamRef=null;mediaRecorder=null;document.getElementById('editNotice').className='edit-notice';notListedCheck.checked=false;newAccountFields.classList.remove('visible');hospitalInput.style.display='';document.getElementById('newAccountName').value='';document.getElementById('newAccountCity').value='';selectedAccountId=null;});
+document.getElementById('clearBtn').addEventListener('click',function(){isRecording=false;transcriptText.value='';audioPlayer.style.display='none';audioPlayer.src='';successCard.style.display='none';processingOverlay.style.display='none';statusEl.textContent='Tap mic to start recording';statusEl.className='status';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';micBtn.className='mic-btn';micBtn.textContent='🎙️';document.getElementById('recordingIndicator').className='recording-indicator';clearInterval(timerInterval);seconds=0;document.getElementById('recordingTimer').textContent='0:00';if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});streamRef=null;mediaRecorder=null;document.getElementById('editNotice').className='edit-notice';notListedCheck.checked=false;newAccountFields.classList.remove('visible');hospitalInput.style.display='';document.getElementById('newAccountName').value='';document.getElementById('newAccountCity').value='';selectedAccountId=null;hospitalInput.value='';territorySelect.value='';accountBlock.style.opacity='0.5';accountBlock.style.pointerEvents='none';hospitalInput.disabled=true;notListedCheck.disabled=true;hospitalInput.placeholder='Select a territory first';duplicateWarningEl.style.display='none';});
 function parseReport(text){var sections={summary:'',contacts:'',outcomes:'',nextSteps:'',signals:'',sentiment:'',priority:''};var lines=text.split('\n'),current='';for(var i=0;i<lines.length;i++){var l=lines[i].trim();if(l.match(/VISIT SUMMARY/i))current='summary';else if(l.match(/KEY CONTACTS/i))current='contacts';else if(l.match(/OUTCOMES/i))current='outcomes';else if(l.match(/NEXT STEPS/i))current='nextSteps';else if(l.match(/OPPORTUNITY/i))current='signals';else if(l.match(/SENTIMENT/i))current='sentiment';else if(l.match(/PRIORITY/i))current='priority';else if(l&&current)sections[current]+=(sections[current]?'\n':'')+l;}return sections;}
 function getOutcome(sentiment){sentiment=(sentiment||'').toLowerCase();if(sentiment.includes('positive'))return'Positive';if(sentiment.includes('negative'))return'Negative';return'Neutral';}
 function extractPriority(text){text=(text||'').toLowerCase();if(text.includes('high'))return'High';if(text.includes('medium'))return'Medium';if(text.includes('low'))return'Low';return'Medium';}
@@ -202,9 +252,21 @@ function getPriorityClass(t){t=t.toLowerCase();if(t.indexOf('high')>-1)return'pr
 function renderReport(text){var s=parseReport(text),html='';if(s.summary)html+='<div class="report-section"><h4>Visit Summary</h4><p>'+s.summary.replace(/\n/g,'<br>')+'</p></div>';if(s.contacts)html+='<div class="report-section"><h4>Key Contacts</h4><p>'+s.contacts.replace(/\n/g,'<br>')+'</p></div>';if(s.outcomes)html+='<div class="report-section"><h4>Outcomes & Decisions</h4><p>'+s.outcomes.replace(/\n/g,'<br>')+'</p></div>';if(s.nextSteps)html+='<div class="report-section"><h4>Next Steps</h4><p>'+s.nextSteps.replace(/\n/g,'<br>')+'</p></div>';if(s.signals)html+='<div class="report-section"><h4>Opportunity Signals</h4><p>'+s.signals.replace(/\n/g,'<br>')+'</p></div>';if(s.sentiment)html+='<div class="report-section"><h4>Sentiment</h4><p>'+s.sentiment.replace(/\n/g,'<br>')+'</p></div>';if(s.priority)html+='<div class="report-section"><h4>Priority</h4><span class="priority-badge '+getPriorityClass(s.priority)+'">'+s.priority.replace(/\*\*/g,'').trim()+'</span></div>';return html||'<div class="report-section"><p>'+text+'</p></div>';}
 submitBtn.addEventListener('click',async function(){
   var transcript=transcriptText.value.trim();if(!transcript||transcript.length<3){alert('Please record a visit first.');return;}
+  if(!territorySelect.value){alert('Please select a territory first.');return;}
   var repName=currentUserName;var userRole=currentUserRole||'Sales Rep';var userId=currentUserId;
   var isNewAccount=notListedCheck.checked;var hospitalName='';
-  if(isNewAccount){var newName=document.getElementById('newAccountName').value.trim();if(!newName){alert('Please enter the account name.');return;}hospitalName=newName;}else{hospitalName=hospitalInput.value.trim();if(!hospitalName){alert('Please select an account from the list, or check "Account not listed" to add a new one.');return;}if(!selectedAccountId){alert('Please select the account from the dropdown list so it links correctly.');return;}}
+  if(isNewAccount){
+    var newName=document.getElementById('newAccountName').value.trim();
+    if(!newName){alert('Please enter the account name.');return;}
+    var dupMatches=findPossibleDuplicates(newName);
+    if(dupMatches.length>0){
+      var matchNames=dupMatches.slice(0,3).map(function(m){return m.name;}).join(', ');
+      if(!confirm('This may already exist as: '+matchNames+'.\n\nAre you sure "'+newName+'" is a different, genuinely new account?')){
+        return;
+      }
+    }
+    hospitalName=newName;
+  }else{hospitalName=hospitalInput.value.trim();if(!hospitalName){alert('Please select an account from the list, or check "Account not listed" to add a new one.');return;}if(!selectedAccountId){alert('Please select the account from the dropdown list so it links correctly.');return;}}
   submitBtn.disabled=true;submitBtn.textContent='Processing...';processingOverlay.style.display='block';successCard.style.display='none';
   var latitude=null,longitude=null,accuracy=null;
   await new Promise(function(resolve){if(!navigator.geolocation){resolve();return;}navigator.geolocation.getCurrentPosition(function(pos){latitude=pos.coords.latitude;longitude=pos.coords.longitude;accuracy=Math.round(pos.coords.accuracy);resolve();},function(){resolve();},{timeout:3000,enableHighAccuracy:false});});
