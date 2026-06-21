@@ -123,6 +123,9 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
       <option value="thisWeek">This Week</option>
       <option value="lastWeek">Last Week</option>
       <option value="thisMonth">This Month</option>
+      <option value="lastMonth">Last Month</option>
+      <option value="30">Last 30 Days</option>
+      <option value="90">Last 90 Days</option>
     </select>
   </div>
   <div class="filter-btns">
@@ -333,6 +336,12 @@ function getPeriodRange(period){
   if(period==='thisMonth'){
     return {start:new Date(now.getFullYear(),now.getMonth(),1),end:null};
   }
+  if(period==='lastMonth'){
+    var lm=new Date(now.getFullYear(),now.getMonth()-1,1);
+    var lmEnd=new Date(now.getFullYear(),now.getMonth(),0);
+    lmEnd.setHours(23,59,59,999);
+    return {start:lm,end:lmEnd};
+  }
   return {start:null,end:null};
 }
 
@@ -341,7 +350,13 @@ function getFilteredRecords(){
   var terr=document.getElementById('filterTerritory').value;
   var priority=document.getElementById('filterPriority').value;
   var period=document.getElementById('filterPeriod').value;
-  var range=getPeriodRange(period);
+  var cutoff=null;
+  var range={start:null,end:null};
+  if(period==='30'||period==='90'){
+    cutoff=new Date(Date.now()-parseInt(period)*24*60*60*1000);
+  }else if(period){
+    range=getPeriodRange(period);
+  }
   return allRecordsRaw.filter(function(r){
     var f=r.fields;
     var repName=(f['Rep Name']||'').trim();
@@ -349,9 +364,10 @@ function getFilteredRecords(){
     if(rep&&repName!==rep)return false;
     if(terr&&f['Territory']!==terr)return false;
     if(priority&&f['Priority']!==priority)return false;
+    if(cutoff&&f['Visit Date']&&new Date(f['Visit Date'])<cutoff)return false;
     if(range.start||range.end){
-      var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
-      if(!vDate)return false;
+      if(!f['Visit Date'])return false;
+      var vDate=new Date(f['Visit Date']);
       if(range.start&&vDate<range.start)return false;
       if(range.end&&vDate>range.end)return false;
     }
@@ -365,7 +381,7 @@ function applyFilters(){
   var terr=document.getElementById('filterTerritory').value;
   var priority=document.getElementById('filterPriority').value;
   var period=document.getElementById('filterPeriod').value;
-  var periodLabels={thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month'};
+  var periodLabels={thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};
   var parts=[];
   if(rep)parts.push('Rep: '+rep);
   if(terr)parts.push('Territory: '+terr);
@@ -389,9 +405,11 @@ function applyUrlParams(){
   var rep=params.get('rep');
   var terr=params.get('territory');
   var priority=params.get('priority');
+  var period=params.get('period');
   if(rep)document.getElementById('filterRep').value=rep;
   if(terr)document.getElementById('filterTerritory').value=terr;
   if(priority)document.getElementById('filterPriority').value=priority;
+  if(period)document.getElementById('filterPeriod').value=period;
 }
 
 var currentUser=null;
