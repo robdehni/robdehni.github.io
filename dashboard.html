@@ -159,8 +159,10 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div class="filter-row">
     <select class="filter-select" id="filterDate">
       <option value="">All Time</option>
-      <option value="7">This Week</option>
-      <option value="month">This Month</option>
+      <option value="thisWeek">This Week</option>
+      <option value="lastWeek">Last Week</option>
+      <option value="thisMonth">This Month</option>
+      <option value="lastMonth">Last Month</option>
       <option value="30">Last 30 Days</option>
       <option value="90">Last 90 Days</option>
     </select>
@@ -182,7 +184,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div class="kpi-grid">
     <div class="kpi-card"><div class="kpi-label">Total Visits</div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-sub">All time</div></div>
     <div class="kpi-card"><div class="kpi-label">New Accounts</div><div class="kpi-value" id="kpiNewAccounts">0</div><div class="kpi-sub">Pending review</div></div>
-    <div class="kpi-card"><div class="kpi-label">This Week</div><div class="kpi-value" id="kpiWeek">0</div><div class="kpi-sub">Last 7 days</div></div>
+    <div class="kpi-card"><div class="kpi-label">This Week</div><div class="kpi-value" id="kpiWeek">0</div><div class="kpi-sub">This week</div></div>
     <div class="kpi-card"><div class="kpi-label">Active Reps</div><div class="kpi-value" id="kpiReps">0</div><div class="kpi-sub">Unique reps</div></div>
   </div>
   <div class="sentiment-row">
@@ -196,7 +198,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div id="priorityLow" class="priority-section"></div>
   </div>
   <div>
-  <div class="section-title">Rep Performance (This Month)</div>
+  <div class="section-title">Rep Performance</div>
   <table class="rep-table">
     <thead><tr><th>Rep</th><th>Visits</th><th>Last Visit</th><th>Sentiment</th></tr></thead>
     <tbody id="repTable"></tbody>
@@ -239,6 +241,48 @@ function getBadgeClass(s){if(s==='positive')return'badge-positive';if(s==='neutr
 function extractSignals(ai){if(!ai)return'';var i=ai.indexOf('OPPORTUNITY');if(i>-1){var e=ai.indexOf('\n\n',i+10);return ai.substring(i+20,e>-1?e:i+300).trim();}return'';}
 function truncate(t,n){if(!t)return'';var i=t.indexOf('VISIT SUMMARY');if(i>-1){var s=t.substring(i+13,i+13+n).trim();return s.length===n?s+'...':s;}return t.length>n?t.substring(0,n)+'...':t;}
 function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+
+function getPeriodRange(period){
+  var now=new Date();
+  var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  var dayOfWeek=today.getDay();
+  var diffToMonday=(dayOfWeek===0?6:dayOfWeek-1);
+  var thisMonday=new Date(today);thisMonday.setDate(today.getDate()-diffToMonday);
+  if(period==='thisWeek'){
+    return {start:thisMonday,end:null};
+  }
+  if(period==='lastWeek'){
+    var lastMonday=new Date(thisMonday);lastMonday.setDate(thisMonday.getDate()-7);
+    var lastSunday=new Date(thisMonday);lastSunday.setDate(thisMonday.getDate()-1);
+    lastSunday.setHours(23,59,59,999);
+    return {start:lastMonday,end:lastSunday};
+  }
+  if(period==='thisMonth'){
+    return {start:new Date(now.getFullYear(),now.getMonth(),1),end:null};
+  }
+  if(period==='lastMonth'){
+    var lm=new Date(now.getFullYear(),now.getMonth()-1,1);
+    var lmEnd=new Date(now.getFullYear(),now.getMonth(),0);
+    lmEnd.setHours(23,59,59,999);
+    return {start:lm,end:lmEnd};
+  }
+  return {start:null,end:null};
+}
+
+function buildVisitHistoryLink(overrides){
+  var params={
+    rep:document.getElementById('filterRep').value,
+    territory:document.getElementById('filterTerritory').value,
+    priority:document.getElementById('filterPriority').value,
+    period:document.getElementById('filterDate').value
+  };
+  for(var k in overrides){params[k]=overrides[k];}
+  var qs=[];
+  Object.keys(params).forEach(function(k){
+    if(params[k])qs.push(k+'='+encodeURIComponent(params[k]));
+  });
+  return 'fieldiq-visit-history.html'+(qs.length?'?'+qs.join('&'):'');
+}
 
 async function updatePriority(recordId,newPriority,cardEl){
   var btns=cardEl.querySelectorAll('.pbtn');
@@ -341,7 +385,7 @@ function renderPrioritySection(records){
     else if(p==='Low')low.push(r);
   });
   function renderBucket(el,list,label,dot,priorityValue){
-    el.innerHTML='<a href="fieldiq-visit-history.html?priority='+encodeURIComponent(priorityValue)+'" class="priority-header" style="text-decoration:none;color:inherit"><div class="priority-dot" style="background:'+dot+'"></div><span class="priority-title">'+label+' →</span><span class="priority-count">('+list.length+')</span></a>';
+    el.innerHTML='<a href="'+buildVisitHistoryLink({priority:priorityValue})+'" class="priority-header" style="text-decoration:none;color:inherit"><div class="priority-dot" style="background:'+dot+'"></div><span class="priority-title">'+label+' →</span><span class="priority-count">('+list.length+')</span></a>';
     if(list.length===0){
       el.innerHTML+='<div class="empty" style="padding:8px">None</div>';
     }else{
@@ -357,7 +401,6 @@ function buildDashboard(records){
   allRecords=records;
   var today=new Date();today.setHours(0,0,0,0);
   var weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
-  var currentMonthStart=new Date(today.getFullYear(),today.getMonth(),1);
   var todayCount=0,weekCount=0,newAccountsCount=0,reps={},territories={},sentCounts={positive:0,neutral:0,negative:0,unknown:0},signals=[];
   records.forEach(function(r){
     var f=r.fields;
@@ -366,12 +409,10 @@ function buildDashboard(records){
     var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
     if(vDate){if(vDate>=today)todayCount++;if(vDate>=weekAgo)weekCount++;}
     if(f["New Account"]===true||f["New Account"]==="true"||f["New Account"]===1||f["New Account"]==="1")newAccountsCount++;
-    if(vDate&&vDate>=currentMonthStart){
-      var rep=f['Rep Name']||'Unknown';rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
-      if(!reps[rep])reps[rep]={count:0,lastVisit:null,sentiments:[]};
-      reps[rep].count++;reps[rep].sentiments.push(sent);
-      if(!reps[rep].lastVisit||vDate>reps[rep].lastVisit)reps[rep].lastVisit=vDate;
-    }
+    var rep=f['Rep Name']||'Unknown';rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
+    if(!reps[rep])reps[rep]={count:0,lastVisit:null,sentiments:[]};
+    reps[rep].count++;reps[rep].sentiments.push(sent);
+    if(vDate&&(!reps[rep].lastVisit||vDate>reps[rep].lastVisit))reps[rep].lastVisit=vDate;
     var terr=f['Territory']||'Unknown';
     territories[terr]=(territories[terr]||0)+1;
     var sig=extractSignals(f['AI Summary']||'');
@@ -393,18 +434,18 @@ function buildDashboard(records){
     var ds=r.sentiments.reduce(function(a,s){a[s]=(a[s]||0)+1;return a;},{});
     var ts=Object.keys(ds).sort(function(a,b){return ds[b]-ds[a];})[0]||'unknown';
     var ld=r.lastVisit?r.lastVisit.toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'—';
-    repRows+='<tr><td><a href="fieldiq-visit-history.html?rep='+encodeURIComponent(rep)+'" style="color:#0b1f3a;font-weight:700;text-decoration:none">'+rep+' →</a></td><td style="color:#2f8fff;font-weight:800">'+r.count+'</td><td>'+ld+'</td><td><span class="activity-badge '+getBadgeClass(ts)+'">'+ts+'</span></td></tr>';
+    repRows+='<tr><td><a href="'+buildVisitHistoryLink({rep:rep})+'" style="color:#0b1f3a;font-weight:700;text-decoration:none">'+rep+' →</a></td><td style="color:#2f8fff;font-weight:800">'+r.count+'</td><td>'+ld+'</td><td><span class="activity-badge '+getBadgeClass(ts)+'">'+ts+'</span></td></tr>';
   });
   document.getElementById('repTable').innerHTML=repRows||'<tr><td colspan="4" class="empty">No rep data yet</td></tr>';
   var maxT=Math.max.apply(null,Object.values(territories).concat([1]));
   var terrHtml='';
   Object.keys(territories).sort(function(a,b){return territories[b]-territories[a];}).forEach(function(t){
     var pw=Math.round(territories[t]/maxT*100);
-    terrHtml+='<a href="fieldiq-visit-history.html?territory='+encodeURIComponent(t)+'" style="text-decoration:none;color:inherit;display:block"><div class="territory-item"><div class="territory-header"><span class="territory-name">'+t+'</span><span class="territory-count">'+territories[t]+' visits</span></div><div class="territory-bar-bg"><div class="territory-bar-fill" style="width:'+pw+'%"></div></div></div></a>';
+    terrHtml+='<a href="'+buildVisitHistoryLink({territory:t})+'" style="text-decoration:none;color:inherit;display:block"><div class="territory-item"><div class="territory-header"><span class="territory-name">'+t+'</span><span class="territory-count">'+territories[t]+' visits</span></div><div class="territory-bar-bg"><div class="territory-bar-fill" style="width:'+pw+'%"></div></div></div></a>';
   });
   document.getElementById('territoryBars').innerHTML=terrHtml||'<div class="empty">No territory data yet</div>';
   var sigHtml='';
-  signals.slice(0,6).forEach(function(s){sigHtml+='<div class="signal-item"><div class="signal-hospital">'+s.hospital+'</div><div class="signal-text">'+s.signal.substring(0,200)+'</div></div>';});
+  signals.slice(0,6).forEach(function(s){sigHtml+='<a href="'+buildVisitHistoryLink({})+'" style="text-decoration:none;color:inherit;display:block"><div class="signal-item"><div class="signal-hospital">'+s.hospital+'</div><div class="signal-text">'+s.signal.substring(0,200)+'</div></div></a>';});
   document.getElementById('aiSignals').innerHTML=sigHtml||'<div class="empty">No signals yet</div>';
   var sorted=records.slice().sort(function(a,b){var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);return db-da;}).slice(0,20);
   var feedHtml='';
@@ -435,11 +476,15 @@ function populateRepFilter(records){
 function getFilteredRecords(){
   var rep=document.getElementById('filterRep').value;
   var terr=document.getElementById('filterTerritory').value;
-  var days=document.getElementById('filterDate').value;
+  var period=document.getElementById('filterDate').value;
   var priority=document.getElementById('filterPriority').value;
   var cutoff=null;
-  if(days==='month'){var now=new Date();cutoff=new Date(now.getFullYear(),now.getMonth(),1);}
-  else if(days){cutoff=new Date(Date.now()-parseInt(days)*24*60*60*1000);}
+  var range={start:null,end:null};
+  if(period==='30'||period==='90'){
+    cutoff=new Date(Date.now()-parseInt(period)*24*60*60*1000);
+  }else if(period){
+    range=getPeriodRange(period);
+  }
   return allRecordsRaw.filter(function(r){
     var f=r.fields;
     var repName=(f['Rep Name']||'').trim();
@@ -448,6 +493,12 @@ function getFilteredRecords(){
     if(terr&&f['Territory']!==terr)return false;
     if(priority&&f['Priority']!==priority)return false;
     if(cutoff&&f['Visit Date']&&new Date(f['Visit Date'])<cutoff)return false;
+    if(range.start||range.end){
+      if(!f['Visit Date'])return false;
+      var vDate=new Date(f['Visit Date']);
+      if(range.start&&vDate<range.start)return false;
+      if(range.end&&vDate>range.end)return false;
+    }
     return true;
   });
 }
@@ -456,12 +507,13 @@ function applyFilters(){
   var filtered=getFilteredRecords();
   var rep=document.getElementById('filterRep').value;
   var terr=document.getElementById('filterTerritory').value;
-  var days=document.getElementById('filterDate').value;
+  var period=document.getElementById('filterDate').value;
   var priority=document.getElementById('filterPriority').value;
+  var periodLabels={thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};
   var parts=[];
   if(rep)parts.push('Rep: '+rep);
   if(terr)parts.push('Territory: '+terr);
-  if(days)parts.push('Last '+days+' days');
+  if(period)parts.push(periodLabels[period]||period);
   if(priority)parts.push('Priority: '+priority);
   document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+filtered.length+' visits)':'';
   buildDashboard(filtered);
