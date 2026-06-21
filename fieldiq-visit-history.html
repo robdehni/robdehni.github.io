@@ -152,7 +152,7 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 (function(){
   var role = localStorage.getItem('fieldiq_user_role');
   var homeBtn=document.getElementById('homeBtn');
-  homeBtn.href = (role === 'Manager') ? './fieldiq.html' : './index.html';
+  homeBtn.href = (role === 'Manager') ? './dashboard.html' : './index.html';
 })();
 
 function formatDate(d){
