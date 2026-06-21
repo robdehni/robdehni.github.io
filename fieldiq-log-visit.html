@@ -312,7 +312,7 @@ submitBtn.addEventListener('click',async function(){
 
       if(newContactName){
         document.getElementById('processingText').textContent='Saving contact...';
-        var contactPayload={'Contact Name':newContactName,'Mobile':newContactPhone,'Email':newContactEmail,'Status':'Current','Account':[newAccountId],'Added By':userId};
+        var contactPayload={'Contact Name':newContactName,'Mobile':newContactPhone,'Email':newContactEmail,'Status':'Current','Accounts':[newAccountId],'Added By':userId};
         var contactRes=await fetch(WORKER+'/save-contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(contactPayload)});
         var contactData=await contactRes.json();
         if(!contactRes.ok){
