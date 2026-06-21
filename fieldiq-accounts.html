@@ -85,39 +85,57 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .detail-meta-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 
 .detail-body{padding:16px 18px 36px}
-.detail-section{margin-bottom:22px}
+.detail-section{margin-bottom:18px}
 .detail-section-title{
   font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:10px;
 }
 
-.snapshot-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.snapshot-item{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:10px 12px}
-.snapshot-label{font-size:9.5px;color:#aab8cc;font-weight:700;text-transform:uppercase;letter-spacing:0.4px}
-.snapshot-value{font-size:14px;font-weight:800;color:#0b1f3a;margin-top:3px}
+/* Section 1 — Current Account Status */
+.status-hero{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:6px 14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.status-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f0f4f9}
+.status-row:last-child{border-bottom:none}
+.status-label{font-size:11.5px;color:#7a8aa3;font-weight:700;white-space:nowrap}
+.status-value{font-size:13px;font-weight:800;color:#0b1f3a;text-align:right}
+.trend-up{color:#1e9e52}
+.trend-down{color:#d9483c}
+.trend-flat{color:#7a8aa3}
 
-.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.kpi-card{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:12px;text-align:center}
-.kpi-num{font-size:22px;font-weight:800;color:#2f8fff}
-.kpi-label{font-size:10px;color:#7a8aa3;font-weight:700;margin-top:2px}
+/* Section 2 — Ownership */
+.ownership-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.ownership-card{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:10px 12px}
+.ownership-label{font-size:9.5px;color:#aab8cc;font-weight:700;text-transform:uppercase;letter-spacing:0.3px}
+.ownership-name{font-size:13.5px;font-weight:800;color:#0b1f3a;margin-top:3px}
+.ownership-sub{font-size:10.5px;color:#7a8aa3;font-weight:600;margin-top:1px}
+.ownership-breakdown{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:10px 12px}
+.ownership-bar-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;font-weight:700;color:#3a4a63}
 
-.sentiment-row{display:flex;gap:8px;margin-top:8px}
-.sentiment-pill{flex:1;text-align:center;border-radius:10px;padding:9px 4px;font-weight:800;font-size:15px}
-.sentiment-pill span{display:block;font-size:9.5px;font-weight:700;margin-top:2px}
-.sentiment-pos{background:#e9f9ee;color:#1e9e52}
-.sentiment-neu{background:#eef3f9;color:#5b6b85}
-.sentiment-neg{background:#fdeceb;color:#d9483c}
+/* Section 3 — Time Filter */
+.filter-pills{display:flex;gap:6px}
+.filter-pill{flex:1;text-align:center;padding:9px 4px;border-radius:10px;font-size:12px;font-weight:800;background:#fff;border:1.5px solid #e3ebf5;color:#5b6b85;cursor:pointer}
+.filter-pill.active{background:#2f8fff;border-color:#2f8fff;color:#fff}
 
-.discovery-box{background:#eaf3ff;border:1px solid #cfe3ff;border-radius:14px;padding:6px 14px}
-.discovery-row{display:flex;justify-content:space-between;padding:8px 0;font-size:12.5px;border-bottom:1px solid rgba(47,143,255,0.12)}
-.discovery-row:last-child{border-bottom:none}
-.discovery-row span{color:#5b6b85;font-weight:600}
-.discovery-row strong{color:#0b1f3a;font-weight:800}
+/* Section 4 — Attention Required */
+.attn-group{margin-bottom:10px}
+.attn-group-title{font-size:10.5px;color:#5b6b85;font-weight:800;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px}
+.attn-item{background:#fff;border:1px solid #e3ebf5;border-left:3px solid #d9483c;border-radius:10px;padding:10px 12px;margin-bottom:6px}
+.attn-item.attn-action{border-left-color:#2f8fff}
+.attn-item.attn-priority{border-left-color:#c9871c}
+.attn-item-top{display:flex;justify-content:space-between;font-size:11px;color:#7a8aa3;font-weight:700;margin-bottom:4px}
+.attn-item-text{font-size:12px;color:#3a4a63;line-height:1.5}
 
+/* Section 5 — Timeline + truncated summaries */
 .timeline-item{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:12px;margin-bottom:8px}
 .timeline-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px}
 .timeline-date{font-size:12.5px;font-weight:800;color:#0b1f3a;white-space:nowrap}
 .timeline-badges{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
 .timeline-meta{font-size:11.5px;color:#7a8aa3;font-weight:600}
+.intel-text{font-size:12px;color:#3a4a63;line-height:1.6;white-space:pre-wrap;margin-top:6px}
+.summary-toggle{color:#2f8fff;font-weight:700;font-size:11px;cursor:pointer;display:inline-block;margin-top:2px}
+.summary-wrap .summary-full{display:none}
+.summary-wrap.expanded .summary-short{display:none}
+.summary-wrap.expanded .summary-full{display:block}
+.summary-wrap.expanded .toggle-more{display:none}
+.summary-wrap:not(.expanded) .toggle-less{display:none}
 
 .priority-high{background:#fdeceb;color:#d9483c}
 .priority-medium{background:#fff6e0;color:#c9871c}
@@ -126,9 +144,14 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .outcome-negative{background:#fdeceb;color:#d9483c}
 .outcome-neutral{background:#eef3f9;color:#5b6b85}
 
-.intel-item{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:12px;margin-bottom:8px}
-.intel-date{font-size:10.5px;color:#aab8cc;font-weight:700;margin-bottom:5px}
-.intel-text{font-size:12.5px;color:#3a4a63;line-height:1.6;white-space:pre-wrap}
+/* Section 6 — Full History collapsed */
+.section-toggle{display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:12px 14px}
+.toggle-arrow{color:#aab8cc;font-size:14px;transition:transform 0.2s}
+.toggle-arrow.rotated{transform:rotate(180deg)}
+.full-history-content{display:none;margin-top:8px}
+.full-history-content.open{display:block}
+.discovery-mini{font-size:11.5px;color:#3a4a63;background:#eaf3ff;border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.6}
+.discovery-mini b{color:#0b1f3a}
 
 .detail-empty{font-size:12px;color:#aab8cc;font-weight:600;padding:14px;text-align:center;background:#fff;border:1px solid #e3ebf5;border-radius:12px}
 </style>
@@ -188,11 +211,19 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
 var role=localStorage.getItem('fieldiq_user_role');
 var ACCOUNTS=[];
+var currentDetailAccountId=null;
+var currentDetailFilter='30';
 
 function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
 
 function escapeHtml(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function truncate(text,len){
+  var t=String(text||'');
+  if(t.length<=len)return t;
+  return t.slice(0,len).trim()+'…';
 }
 
 function matchesTerritoryFilter(accountTerritory,selectedTerritory){
@@ -224,7 +255,6 @@ async function loadDirectory(){
         territory:f['Territory']||'',
         city:f['City']||'',
         visitCount:0,
-        firstVisit:null,
         lastVisit:null,
         matchedVisits:[]
       };
@@ -249,9 +279,8 @@ async function loadDirectory(){
         matched.visitCount++;
         var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
         var vDateValid=vDate&&!isNaN(vDate);
-        if(vDateValid){
-          if(!matched.lastVisit||vDate>matched.lastVisit)matched.lastVisit=vDate;
-          if(!matched.firstVisit||vDate<matched.firstVisit)matched.firstVisit=vDate;
+        if(vDateValid&&(!matched.lastVisit||vDate>matched.lastVisit)){
+          matched.lastVisit=vDate;
         }
         matched.matchedVisits.push({
           id:v.id,
@@ -316,7 +345,6 @@ function priorityClass(p){
   var s=String(p).toLowerCase();
   if(s==='high')return'priority-high';
   if(s==='medium'||s==='med')return'priority-medium';
-  if(s==='low')return'priority-low';
   return'priority-low';
 }
 function outcomeClass(o){
@@ -325,9 +353,78 @@ function outcomeClass(o){
   if(s==='negative')return'outcome-negative';
   return'outcome-neutral';
 }
+function filterLabel(key){
+  if(key==='7')return'Last 7 Days';
+  if(key==='30')return'Last 30 Days';
+  if(key==='90')return'Last 90 Days';
+  return'All Time';
+}
+function getFilterDays(key){
+  if(key==='7')return 7;
+  if(key==='30')return 30;
+  if(key==='90')return 90;
+  return null;
+}
+
+// Period-over-period sentiment comparison. Score = positiveCount - negativeCount
+// within each window. Not meaningful for "All Time" (no prior window to compare
+// against), and not meaningful if the prior window has zero visits — both cases
+// are surfaced as explicit states rather than a misleading arrow.
+function computeTrend(allVisits,filterKey){
+  var days=getFilterDays(filterKey);
+  if(days===null)return null;
+  var now=new Date();
+  var curStart=new Date(now.getTime()-days*86400000);
+  var priorStart=new Date(now.getTime()-2*days*86400000);
+  var cur=[],prior=[];
+  allVisits.forEach(function(v){
+    if(!v.date)return;
+    if(v.date>curStart&&v.date<=now)cur.push(v);
+    else if(v.date>priorStart&&v.date<=curStart)prior.push(v);
+  });
+  function score(vs){var s=0;vs.forEach(function(v){var o=String(v.outcome).toLowerCase();if(o==='positive')s++;else if(o==='negative')s--;});return s;}
+  if(cur.length===0)return{label:'No recent activity',cls:'trend-flat',arrow:'—'};
+  if(prior.length===0)return{label:'New activity',cls:'trend-flat',arrow:'•'};
+  var cs=score(cur),ps=score(prior);
+  if(cs>ps)return{label:'Improving',cls:'trend-up',arrow:'↑'};
+  if(cs<ps)return{label:'Declining',cls:'trend-down',arrow:'↓'};
+  return{label:'Flat',cls:'trend-flat',arrow:'→'};
+}
+
+function buildSummaryHtml(text){
+  var t=String(text);
+  if(t.length<=140){
+    return'<div class="intel-text">'+escapeHtml(t)+'</div>';
+  }
+  var shortText=t.slice(0,140).trim()+'…';
+  return'<div class="summary-wrap">'+
+    '<div class="intel-text summary-short">'+escapeHtml(shortText)+'</div>'+
+    '<div class="intel-text summary-full">'+escapeHtml(t)+'</div>'+
+    '<span class="summary-toggle toggle-more" onclick="this.closest(\'.summary-wrap\').classList.add(\'expanded\')">Show more</span>'+
+    '<span class="summary-toggle toggle-less" onclick="this.closest(\'.summary-wrap\').classList.remove(\'expanded\')">Show less</span>'+
+  '</div>';
+}
 
 function openAccountDetail(id){
-  var acc=ACCOUNTS.find(function(a){return a.id===id;});
+  currentDetailAccountId=id;
+  currentDetailFilter='30';
+  renderAccountDetail();
+  document.getElementById('accountDetailOverlay').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+
+function setDetailFilter(key){
+  currentDetailFilter=key;
+  renderAccountDetail();
+}
+
+function closeAccountDetail(){
+  document.getElementById('accountDetailOverlay').style.display='none';
+  document.body.style.overflow='';
+}
+
+function renderAccountDetail(){
+  var acc=ACCOUNTS.find(function(a){return a.id===currentDetailAccountId;});
   if(!acc)return;
 
   document.getElementById('detailAccountName').textContent=acc.name;
@@ -336,69 +433,111 @@ function openAccountDetail(id){
   if(acc.city)metaHtml+='<span class="activity-badge badge-territory">'+acc.city+'</span>';
   document.getElementById('detailMeta').innerHTML=metaHtml;
 
-  var visits=acc.matchedVisits.slice().sort(function(a,b){
+  var allVisits=acc.matchedVisits.slice().sort(function(a,b){
     var ad=a.date?a.date.getTime():0,bd=b.date?b.date.getTime():0;
     return bd-ad;
   });
 
-  // KPIs — Open Actions counts visits carrying a non-empty Action Items value.
-  // There's no separate open/closed status field on Action Items in the current schema,
-  // so "open" here means "an action item is recorded," consistent with how the
-  // Rep Review Report's Open Follow-Ups section already reads this field.
-  var uniqueReps={};
-  var highPriority=0,openActions=0,pos=0,neu=0,neg=0;
-  visits.forEach(function(v){
-    if(v.rep)uniqueReps[v.rep]=true;
-    if(String(v.priority).toLowerCase()==='high')highPriority++;
-    if(v.actionItems&&String(v.actionItems).trim())openActions++;
-    var o=String(v.outcome).toLowerCase();
-    if(o==='positive')pos++;else if(o==='negative')neg++;else if(o==='neutral')neu++;
+  var days=getFilterDays(currentDetailFilter);
+  var now=new Date();
+  var windowVisits=allVisits.filter(function(v){
+    if(days===null)return true;
+    if(!v.date)return false;
+    return(now.getTime()-v.date.getTime())<=days*86400000&&v.date<=now;
   });
 
-  var bodyHtml='';
+  var lastVisit=allVisits.length?allVisits[0]:null;
 
-  // Account Snapshot
-  bodyHtml+='<div class="detail-section"><div class="detail-section-title">Account Snapshot</div>'+
-    '<div class="snapshot-grid">'+
-      '<div class="snapshot-item"><div class="snapshot-label">Territory</div><div class="snapshot-value">'+(acc.territory||'—')+'</div></div>'+
-      '<div class="snapshot-item"><div class="snapshot-label">City</div><div class="snapshot-value">'+(acc.city||'—')+'</div></div>'+
-      '<div class="snapshot-item"><div class="snapshot-label">First Visit</div><div class="snapshot-value">'+(acc.firstVisit?formatDate(acc.firstVisit):'—')+'</div></div>'+
-      '<div class="snapshot-item"><div class="snapshot-label">Last Visit</div><div class="snapshot-value">'+(acc.lastVisit?formatDate(acc.lastVisit):'—')+'</div></div>'+
+  // Section 1 — scoped-by-window counts, plus unscoped facts (Last Visit/Rep, Next Action)
+  var openActionsCount=windowVisits.filter(function(v){return v.actionItems&&String(v.actionItems).trim();}).length;
+  var highPriorityCount=windowVisits.filter(function(v){return String(v.priority).toLowerCase()==='high';}).length;
+  var nextAction=allVisits.find(function(v){return v.actionItems&&String(v.actionItems).trim();});
+  var trend=computeTrend(allVisits,currentDetailFilter);
+
+  // Section 2 — ownership
+  var allTimeRepCounts={};
+  allVisits.forEach(function(v){allTimeRepCounts[v.rep]=(allTimeRepCounts[v.rep]||0)+1;});
+  var mostActiveRep=null,mostActiveCount=0;
+  Object.keys(allTimeRepCounts).forEach(function(r){if(allTimeRepCounts[r]>mostActiveCount){mostActiveCount=allTimeRepCounts[r];mostActiveRep=r;}});
+  var periodRepCounts={};
+  windowVisits.forEach(function(v){periodRepCounts[v.rep]=(periodRepCounts[v.rep]||0)+1;});
+  var periodRepList=Object.keys(periodRepCounts).map(function(r){return{rep:r,count:periodRepCounts[r]};}).sort(function(a,b){return b.count-a.count;});
+
+  var html='';
+
+  // SECTION 1 — Current Account Status
+  html+='<div class="detail-section"><div class="detail-section-title">Current Account Status</div>'+
+    '<div class="status-hero">'+
+      '<div class="status-row"><span class="status-label">Last Visit</span><span class="status-value">'+(lastVisit&&lastVisit.date?formatDate(lastVisit.date):'—')+'</span></div>'+
+      '<div class="status-row"><span class="status-label">Last Rep</span><span class="status-value">'+(lastVisit?escapeHtml(lastVisit.rep):'—')+'</span></div>'+
+      '<div class="status-row"><span class="status-label">Current Sentiment</span><span class="status-value">'+
+        (lastVisit&&lastVisit.outcome?'<span class="activity-badge '+outcomeClass(lastVisit.outcome)+'">'+escapeHtml(lastVisit.outcome)+'</span>':'—')+
+        (trend?' <span class="'+trend.cls+'" style="font-size:11px;font-weight:800;margin-left:4px">'+trend.arrow+' '+trend.label+'</span>':'')+
+      '</span></div>'+
+      '<div class="status-row"><span class="status-label">Open Actions ('+filterLabel(currentDetailFilter)+')</span><span class="status-value">'+openActionsCount+'</span></div>'+
+      '<div class="status-row"><span class="status-label">High Priority ('+filterLabel(currentDetailFilter)+')</span><span class="status-value">'+highPriorityCount+'</span></div>'+
+      '<div class="status-row"><span class="status-label">Next Required Action</span><span class="status-value">'+(nextAction?escapeHtml(truncate(nextAction.actionItems,60)):'None recorded')+'</span></div>'+
     '</div></div>';
 
-  // KPIs
-  bodyHtml+='<div class="detail-section"><div class="detail-section-title">Key Metrics</div>'+
-    '<div class="kpi-grid">'+
-      '<div class="kpi-card"><div class="kpi-num">'+visits.length+'</div><div class="kpi-label">Total Visits</div></div>'+
-      '<div class="kpi-card"><div class="kpi-num">'+Object.keys(uniqueReps).length+'</div><div class="kpi-label">Unique Reps</div></div>'+
-      '<div class="kpi-card"><div class="kpi-num">'+highPriority+'</div><div class="kpi-label">High Priority</div></div>'+
-      '<div class="kpi-card"><div class="kpi-num">'+openActions+'</div><div class="kpi-label">Open Actions</div></div>'+
+  // SECTION 2 — Account Ownership
+  html+='<div class="detail-section"><div class="detail-section-title">Account Ownership</div>'+
+    '<div class="ownership-grid">'+
+      '<div class="ownership-card"><div class="ownership-label">Most Active (All-Time)</div><div class="ownership-name">'+(mostActiveRep?escapeHtml(mostActiveRep):'—')+'</div><div class="ownership-sub">'+mostActiveCount+' visit'+(mostActiveCount!==1?'s':'')+'</div></div>'+
+      '<div class="ownership-card"><div class="ownership-label">Most Recent</div><div class="ownership-name">'+(lastVisit?escapeHtml(lastVisit.rep):'—')+'</div><div class="ownership-sub">'+(lastVisit&&lastVisit.date?formatDate(lastVisit.date):'—')+'</div></div>'+
     '</div>'+
-    '<div class="sentiment-row">'+
-      '<div class="sentiment-pill sentiment-pos">'+pos+'<span>Positive</span></div>'+
-      '<div class="sentiment-pill sentiment-neu">'+neu+'<span>Neutral</span></div>'+
-      '<div class="sentiment-pill sentiment-neg">'+neg+'<span>Negative</span></div>'+
+    '<div class="ownership-breakdown"><div class="ownership-label" style="margin-bottom:4px">Visits in '+filterLabel(currentDetailFilter)+'</div>'+
+    (periodRepList.length===0?'<div style="font-size:11.5px;color:#aab8cc;font-weight:600">No visits in this period.</div>':
+      periodRepList.map(function(r){return'<div class="ownership-bar-row"><span>'+escapeHtml(r.rep)+'</span><span>'+r.count+'</span></div>';}).join('')
+    )+
     '</div></div>';
 
-  // Discovery Information — only shown if this account originated via Account Not Listed
-  var discoveryVisit=visits.find(function(v){return v.newAccount;});
-  if(discoveryVisit){
-    var reviewStatus=discoveryVisit.reviewed?'Reviewed':(discoveryVisit.pendingReview?'Pending Review':'—');
-    bodyHtml+='<div class="detail-section"><div class="detail-section-title">Discovery Information</div>'+
-      '<div class="discovery-box">'+
-        '<div class="discovery-row"><span>Discovery Date</span><strong>'+(discoveryVisit.date?formatDate(discoveryVisit.date):'—')+'</strong></div>'+
-        '<div class="discovery-row"><span>Discovering Rep</span><strong>'+escapeHtml(discoveryVisit.rep)+'</strong></div>'+
-        '<div class="discovery-row"><span>Review Status</span><strong>'+reviewStatus+'</strong></div>'+
-      '</div></div>';
-  }
+  // SECTION 3 — Time Filter
+  html+='<div class="detail-section"><div class="detail-section-title">Activity Window</div>'+
+    '<div class="filter-pills">'+
+      ['7','30','90','all'].map(function(k){
+        return'<div class="filter-pill'+(currentDetailFilter===k?' active':'')+'" onclick="setDetailFilter(\''+k+'\')">'+filterLabel(k)+'</div>';
+      }).join('')+
+    '</div></div>';
 
-  // Visit Timeline
-  bodyHtml+='<div class="detail-section"><div class="detail-section-title">Visit Timeline</div>';
-  if(visits.length===0){
-    bodyHtml+='<div class="detail-empty">No visits logged yet.</div>';
+  // SECTION 4 — Attention Required
+  var attnActions=windowVisits.filter(function(v){return v.actionItems&&String(v.actionItems).trim();});
+  var attnPriority=windowVisits.filter(function(v){return String(v.priority).toLowerCase()==='high';});
+  var attnNegative=windowVisits.filter(function(v){return String(v.outcome).toLowerCase()==='negative';});
+  html+='<div class="detail-section"><div class="detail-section-title">Attention Required</div>';
+  if(attnActions.length===0&&attnPriority.length===0&&attnNegative.length===0){
+    html+='<div class="detail-empty">Nothing requires attention in '+filterLabel(currentDetailFilter).toLowerCase()+'.</div>';
   }else{
-    visits.forEach(function(v){
-      bodyHtml+='<div class="timeline-item">'+
+    if(attnActions.length){
+      html+='<div class="attn-group"><div class="attn-group-title">Open Actions ('+attnActions.length+')</div>';
+      attnActions.forEach(function(v){
+        html+='<div class="attn-item attn-action"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div><div class="attn-item-text">'+escapeHtml(v.actionItems)+'</div></div>';
+      });
+      html+='</div>';
+    }
+    if(attnPriority.length){
+      html+='<div class="attn-group"><div class="attn-group-title">High Priority ('+attnPriority.length+')</div>';
+      attnPriority.forEach(function(v){
+        html+='<div class="attn-item attn-priority"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div><div class="attn-item-text">'+escapeHtml(truncate(v.aiSummary||v.type||'High priority visit',140))+'</div></div>';
+      });
+      html+='</div>';
+    }
+    if(attnNegative.length){
+      html+='<div class="attn-group"><div class="attn-group-title">Negative Sentiment ('+attnNegative.length+')</div>';
+      attnNegative.forEach(function(v){
+        html+='<div class="attn-item"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div><div class="attn-item-text">'+escapeHtml(truncate(v.aiSummary||'Negative outcome recorded',140))+'</div></div>';
+      });
+      html+='</div>';
+    }
+  }
+  html+='</div>';
+
+  // SECTION 5 — Intelligence Timeline
+  html+='<div class="detail-section"><div class="detail-section-title">Intelligence Timeline ('+filterLabel(currentDetailFilter)+')</div>';
+  if(windowVisits.length===0){
+    html+='<div class="detail-empty">No visits in this period.</div>';
+  }else{
+    windowVisits.forEach(function(v){
+      html+='<div class="timeline-item">'+
         '<div class="timeline-top">'+
           '<div class="timeline-date">'+(v.date?formatDate(v.date):'—')+'</div>'+
           '<div class="timeline-badges">'+
@@ -407,45 +546,44 @@ function openAccountDetail(id){
           '</div>'+
         '</div>'+
         '<div class="timeline-meta">'+escapeHtml(v.rep)+(v.type?' · '+escapeHtml(v.type):'')+'</div>'+
+        (v.aiSummary?buildSummaryHtml(v.aiSummary):'')+
       '</div>';
     });
   }
-  bodyHtml+='</div>';
+  html+='</div>';
 
-  // AI Intelligence
-  bodyHtml+='<div class="detail-section"><div class="detail-section-title">AI Intelligence</div>';
-  var summaries=visits.filter(function(v){return v.aiSummary&&String(v.aiSummary).trim();});
-  if(summaries.length===0){
-    bodyHtml+='<div class="detail-empty">No AI summaries recorded.</div>';
+  // SECTION 6 — Full History (collapsed)
+  var discoveryVisit=allVisits.find(function(v){return v.newAccount;});
+  html+='<div class="detail-section">'+
+    '<div class="section-toggle" onclick="var c=this.nextElementSibling;c.classList.toggle(\'open\');this.querySelector(\'.toggle-arrow\').classList.toggle(\'rotated\')">'+
+      '<span class="detail-section-title" style="margin-bottom:0">Full History ('+allVisits.length+' total visits)</span>'+
+      '<span class="toggle-arrow">▾</span>'+
+    '</div>'+
+    '<div class="full-history-content">';
+  if(discoveryVisit){
+    var reviewStatus=discoveryVisit.reviewed?'Reviewed':(discoveryVisit.pendingReview?'Pending Review':'—');
+    html+='<div class="discovery-mini"><b>Discovered</b> '+(discoveryVisit.date?formatDate(discoveryVisit.date):'—')+' by '+escapeHtml(discoveryVisit.rep)+' · Review status: '+reviewStatus+'</div>';
+  }
+  if(allVisits.length===0){
+    html+='<div class="detail-empty">No visits logged yet.</div>';
   }else{
-    summaries.forEach(function(v){
-      bodyHtml+='<div class="intel-item"><div class="intel-date">'+(v.date?formatDate(v.date):'—')+' · '+escapeHtml(v.rep)+'</div>'+
-        '<div class="intel-text">'+escapeHtml(v.aiSummary)+'</div></div>';
+    allVisits.forEach(function(v){
+      html+='<div class="timeline-item">'+
+        '<div class="timeline-top">'+
+          '<div class="timeline-date">'+(v.date?formatDate(v.date):'—')+'</div>'+
+          '<div class="timeline-badges">'+
+            (v.priority?'<span class="activity-badge '+priorityClass(v.priority)+'">'+escapeHtml(v.priority)+'</span>':'')+
+            (v.outcome?'<span class="activity-badge '+outcomeClass(v.outcome)+'">'+escapeHtml(v.outcome)+'</span>':'')+
+          '</div>'+
+        '</div>'+
+        '<div class="timeline-meta">'+escapeHtml(v.rep)+(v.type?' · '+escapeHtml(v.type):'')+'</div>'+
+        (v.aiSummary?buildSummaryHtml(v.aiSummary):'')+
+      '</div>';
     });
   }
-  bodyHtml+='</div>';
+  html+='</div></div>';
 
-  // Action Items
-  bodyHtml+='<div class="detail-section"><div class="detail-section-title">Action Items</div>';
-  var actions=visits.filter(function(v){return v.actionItems&&String(v.actionItems).trim();});
-  if(actions.length===0){
-    bodyHtml+='<div class="detail-empty">No action items recorded.</div>';
-  }else{
-    actions.forEach(function(v){
-      bodyHtml+='<div class="intel-item"><div class="intel-date">'+(v.date?formatDate(v.date):'—')+' · '+escapeHtml(v.rep)+'</div>'+
-        '<div class="intel-text">'+escapeHtml(v.actionItems)+'</div></div>';
-    });
-  }
-  bodyHtml+='</div>';
-
-  document.getElementById('detailBody').innerHTML=bodyHtml;
-  document.getElementById('accountDetailOverlay').style.display='flex';
-  document.body.style.overflow='hidden';
-}
-
-function closeAccountDetail(){
-  document.getElementById('accountDetailOverlay').style.display='none';
-  document.body.style.overflow='';
+  document.getElementById('detailBody').innerHTML=html;
 }
 
 if(role!=='Manager'){
@@ -457,4 +595,4 @@ if(role!=='Manager'){
 }
 </script>
 </body>
-</html>          
+</html>
