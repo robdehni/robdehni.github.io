@@ -210,7 +210,11 @@ function showList(query){
   hospitalList.innerHTML='';
   var q=query.toLowerCase().trim();
   var selTerr=territorySelect.value.trim().toUpperCase();
-  var inTerritory=ACCOUNTS.filter(function(a){return a.territory.trim().toUpperCase()===selTerr;});
+  var inTerritory=ACCOUNTS.filter(function(a){
+    var at=a.territory.trim().toUpperCase();
+    if(selTerr==='KSA')return at.indexOf('SAUDI ARABIA')===0;
+    return at===selTerr;
+  });
   var filtered=(q.length===0?inTerritory.slice(0,50):inTerritory.filter(function(a){return a.name.toLowerCase().indexOf(q)>-1;})).slice(0,50);
   filtered.forEach(function(a){
     var div=document.createElement('div');
