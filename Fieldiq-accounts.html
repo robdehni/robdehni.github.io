@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldIQ — Account Directory</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px 18px 40px}
+.container{max-width:780px;margin:0 auto}
+
+.topbar{text-align:center;margin-bottom:18px}
+.topbar h1{font-size:24px;color:#0b1f3a;font-weight:800;letter-spacing:-0.4px}
+.topbar p{color:#7a8aa3;font-size:12.5px;margin-top:4px;font-weight:600}
+.manager-badge{
+  display:inline-block;background:#fff3e0;color:#d98a1c;border:1px solid #ffe5b3;border-radius:8px;
+  font-size:10.5px;font-weight:800;padding:3px 10px;margin-left:8px;text-transform:uppercase;letter-spacing:0.5px;
+}
+.home-btn{
+  display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
+  text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:14px;border:1px solid #e3ebf5;
+  box-shadow:0 2px 8px rgba(11,31,58,0.05);
+}
+.home-btn:hover{border-color:#2f8fff}
+
+.filter-bar{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:16px;margin-bottom:18px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.filter-bar h3{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:12px}
+.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.filter-select,.search-input{
+  width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #e3ebf5;border-radius:10px;color:#0b1f3a;
+  font-size:13.5px;outline:none;font-weight:600;
+}
+.filter-select:focus,.search-input:focus{border-color:#2f8fff}
+
+.count-label{font-size:11.5px;color:#aab8cc;font-weight:700;margin-bottom:10px}
+
+.activity-item{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:14px;margin-bottom:8px;box-shadow:0 3px 10px rgba(11,31,58,0.04)}
+.activity-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.activity-hospital{font-size:13.5px;font-weight:800;color:#0b1f3a}
+.activity-meta{display:flex;gap:6px;flex-wrap:wrap}
+.activity-badge{font-size:10px;padding:3px 10px;border-radius:8px;font-weight:700}
+.badge-rep{background:#eaf3ff;color:#2f8fff}
+.badge-territory{background:#eef3f9;color:#5b6b85}
+.activity-summary{font-size:11.5px;color:#7a8aa3;margin-top:8px;line-height:1.6}
+
+.loading{text-align:center;padding:50px;color:#aab8cc;font-weight:600}
+.spinner{width:36px;height:36px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;color:#aab8cc;font-size:13px;padding:30px;font-weight:600}
+
+.access-denied{
+  text-align:center;padding:60px 20px;display:none;flex-direction:column;align-items:center;
+}
+.access-denied-icon{font-size:54px;margin-bottom:16px}
+.access-denied h2{font-size:20px;color:#0b1f3a;font-weight:800;margin-bottom:8px}
+.access-denied p{font-size:13.5px;color:#7a8aa3;font-weight:600;max-width:340px;line-height:1.6;margin-bottom:20px}
+.access-denied a{
+  display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;
+  text-decoration:none;padding:12px 28px;border-radius:12px;box-shadow:0 6px 16px rgba(47,143,255,0.3);
+}
+</style>
+</head>
+<body>
+<div class="container">
+<a href="./fieldiq.html" class="home-btn">← Home</a>
+<div class="topbar">
+  <h1>FieldIQ<span id="managerBadge" style="display:none" class="manager-badge">Manager</span></h1>
+  <p>Account Directory</p>
+</div>
+
+<div id="accessDeniedEl" class="access-denied">
+  <div class="access-denied-icon">🔒</div>
+  <h2>Manager Access Required</h2>
+  <p>The Account Directory lists every account across all reps and territories. This page is restricted to Manager accounts.</p>
+  <a href="./index.html">Return Home</a>
+</div>
+
+<div id="loadingEl" class="loading"><div class="spinner"></div>Loading accounts...</div>
+
+<div id="directoryContent" style="display:none">
+  <div class="filter-bar">
+    <h3>Search &amp; Filter</h3>
+    <div class="filter-row">
+      <input type="text" id="directorySearch" class="search-input" placeholder="Search account name...">
+      <select id="directoryTerritory" class="filter-select">
+        <option value="">All Territories</option>
+        <option value="UAE">UAE</option>
+        <option value="KSA">KSA</option>
+        <option value="Qatar">Qatar</option>
+        <option value="Kuwait">Kuwait</option>
+        <option value="Bahrain">Bahrain</option>
+        <option value="Oman">Oman</option>
+      </select>
+    </div>
+  </div>
+  <div class="count-label" id="directoryCount">0 accounts</div>
+  <div id="directoryList"></div>
+</div>
+
+</div>
+<script>
+var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
+var role=localStorage.getItem('fieldiq_user_role');
+var ACCOUNTS=[];
+
+function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+
+function matchesTerritoryFilter(accountTerritory,selectedTerritory){
+  if(!selectedTerritory)return true;
+  var at=(accountTerritory||'').trim().toUpperCase();
+  if(selectedTerritory==='KSA')return at.indexOf('SAUDI ARABIA')===0;
+  return at===selectedTerritory.toUpperCase();
+}
+
+async function loadDirectory(){
+  try{
+    var accRes=await fetch(WORKER_URL+'/get-accounts');
+    var accData=await accRes.json();
+    if(!accRes.ok)throw new Error(JSON.stringify(accData));
+    var visRes=await fetch(WORKER_URL+'/get-visits');
+    var visData=await visRes.json();
+    if(!visRes.ok)throw new Error(JSON.stringify(visData));
+
+    var accountRecords=accData.records||[];
+    var visitRecords=visData.records||[];
+
+    var byId={};
+    var byNameLower={};
+    ACCOUNTS=accountRecords.map(function(r){
+      var f=r.fields||{};
+      var acc={
+        id:r.id,
+        name:f['Account Name']||'Unknown',
+        territory:f['Territory']||'',
+        city:f['City']||'',
+        visitCount:0,
+        lastVisit:null
+      };
+      byId[r.id]=acc;
+      byNameLower[acc.name.trim().toLowerCase()]=acc;
+      return acc;
+    });
+
+    visitRecords.forEach(function(v){
+      var f=v.fields||{};
+      var matched=null;
+      // Defensive join: only trust Account when it's a real linked-record array.
+      // Anything else (true, missing, malformed) is treated as no linked account.
+      if(Array.isArray(f['Account'])&&f['Account'].length>0){
+        matched=byId[f['Account'][0]]||null;
+      }
+      // Fallback for legacy/unlinked visits: exact Hospital Name match.
+      if(!matched&&f['Hospital Name']){
+        matched=byNameLower[String(f['Hospital Name']).trim().toLowerCase()]||null;
+      }
+      if(matched){
+        matched.visitCount++;
+        var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
+        if(vDate&&!isNaN(vDate)&&(!matched.lastVisit||vDate>matched.lastVisit)){
+          matched.lastVisit=vDate;
+        }
+      }
+    });
+
+    ACCOUNTS.sort(function(a,b){return a.name.localeCompare(b.name);});
+    document.getElementById('loadingEl').style.display='none';
+    document.getElementById('directoryContent').style.display='block';
+    renderDirectory();
+  }catch(err){
+    document.getElementById('loadingEl').innerHTML='<div class="empty">Failed to load: '+err.message+'</div>';
+  }
+}
+
+function renderDirectory(){
+  var q=document.getElementById('directorySearch').value.trim().toLowerCase();
+  var selTerr=document.getElementById('directoryTerritory').value;
+  var filtered=ACCOUNTS.filter(function(a){
+    var nameMatch=!q||a.name.toLowerCase().indexOf(q)>-1;
+    var terrMatch=matchesTerritoryFilter(a.territory,selTerr);
+    return nameMatch&&terrMatch;
+  });
+  document.getElementById('directoryCount').textContent=filtered.length+' account'+(filtered.length!==1?'s':'');
+  if(filtered.length===0){
+    document.getElementById('directoryList').innerHTML='<div class="empty">No accounts match your search.</div>';
+    return;
+  }
+  var html='';
+  filtered.forEach(function(a){
+    html+=
+      '<div class="activity-item">'+
+        '<div class="activity-header"><div class="activity-hospital">'+a.name+'</div></div>'+
+        '<div class="activity-meta">'+
+          (a.territory?'<span class="activity-badge badge-territory">'+a.territory+'</span>':'')+
+          (a.city?'<span class="activity-badge badge-territory">'+a.city+'</span>':'')+
+          '<span class="activity-badge badge-rep">'+a.visitCount+' visit'+(a.visitCount!==1?'s':'')+'</span>'+
+        '</div>'+
+        '<div class="activity-summary">'+(a.lastVisit?'Last visit: '+formatDate(a.lastVisit):'No visits logged yet')+'</div>'+
+      '</div>';
+  });
+  document.getElementById('directoryList').innerHTML=html;
+}
+
+document.getElementById('directorySearch').addEventListener('input',renderDirectory);
+document.getElementById('directoryTerritory').addEventListener('change',renderDirectory);
+
+if(role!=='Manager'){
+  document.getElementById('loadingEl').style.display='none';
+  document.getElementById('accessDeniedEl').style.display='flex';
+}else{
+  document.getElementById('managerBadge').style.display='inline-block';
+  loadDirectory();
+}
+</script>
+</body>
+</html>
