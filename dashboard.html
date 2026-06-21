@@ -536,6 +536,12 @@ async function loadDashboard(){
     var data=await res.json();
     if(!res.ok)throw new Error(JSON.stringify(data));
     allRecordsRaw=data.records||[];
+    allRecordsRaw.filter(function(r){
+      var f=r.fields;
+      return f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1';
+    }).forEach(function(r){
+      console.log('[FieldIQ DEBUG] '+(r.fields['Hospital Name']||'Unknown')+' | record '+r.id+' | Pending Review raw value:',r.fields['Pending Review'],'| typeof:',typeof r.fields['Pending Review'],'| key present:',('Pending Review' in r.fields));
+    });
     populateRepFilter(allRecordsRaw);
     document.getElementById('filterBar').style.display='block';
     buildDashboard(allRecordsRaw);
@@ -571,8 +577,8 @@ function buildNewAccountsCard(records){
   var newOnes=records.filter(function(r){
     var f=r.fields;
     var isNew=f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1';
-    var alreadyReviewed=f['Pending Review']===false||f['Pending Review']==='false'||f['Pending Review']===0||f['Pending Review']==='0';
-    return isNew&&!alreadyReviewed;
+    var stillPending=f['Pending Review']===true;
+    return isNew&&stillPending;
   });
   newOnes.sort(function(a,b){
     var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):0;
