@@ -34,9 +34,11 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
 .count-label{font-size:11.5px;color:#aab8cc;font-weight:700;margin-bottom:10px}
 
-.activity-item{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:14px;margin-bottom:8px;box-shadow:0 3px 10px rgba(11,31,58,0.04)}
+.activity-item{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:14px;margin-bottom:8px;box-shadow:0 3px 10px rgba(11,31,58,0.04);cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s}
+.activity-item:hover{border-color:#bcd8ff;box-shadow:0 4px 14px rgba(47,143,255,0.12)}
 .activity-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
 .activity-hospital{font-size:13.5px;font-weight:800;color:#0b1f3a}
+.activity-chevron{color:#bcc9da;font-size:16px;font-weight:700;line-height:1}
 .activity-meta{display:flex;gap:6px;flex-wrap:wrap}
 .activity-badge{font-size:10px;padding:3px 10px;border-radius:8px;font-weight:700}
 .badge-rep{background:#eaf3ff;color:#2f8fff}
@@ -58,6 +60,77 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;
   text-decoration:none;padding:12px 28px;border-radius:12px;box-shadow:0 6px 16px rgba(47,143,255,0.3);
 }
+
+/* Account Intelligence View */
+.detail-overlay{
+  display:none;position:fixed;inset:0;background:rgba(11,31,58,0.45);z-index:1000;
+  align-items:flex-end;justify-content:center;
+}
+.detail-panel{
+  background:#f4f8fc;width:100%;max-width:780px;max-height:92vh;border-radius:22px 22px 0 0;
+  overflow-y:auto;box-shadow:0 -10px 34px rgba(11,31,58,0.28);
+  animation:slideUp 0.22s ease-out;
+}
+@keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.detail-header{
+  position:sticky;top:0;background:#fff;padding:18px 50px 14px 18px;border-bottom:1px solid #e3ebf5;
+  border-radius:22px 22px 0 0;z-index:2;
+}
+.detail-close{
+  position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;border:none;
+  background:#f4f8fc;color:#7a8aa3;font-size:15px;font-weight:700;cursor:pointer;
+}
+.detail-close:hover{background:#eaf3ff;color:#2f8fff}
+.detail-header h2{font-size:18px;font-weight:800;color:#0b1f3a;letter-spacing:-0.3px}
+.detail-meta-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+
+.detail-body{padding:16px 18px 36px}
+.detail-section{margin-bottom:22px}
+.detail-section-title{
+  font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:10px;
+}
+
+.snapshot-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.snapshot-item{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:10px 12px}
+.snapshot-label{font-size:9.5px;color:#aab8cc;font-weight:700;text-transform:uppercase;letter-spacing:0.4px}
+.snapshot-value{font-size:14px;font-weight:800;color:#0b1f3a;margin-top:3px}
+
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi-card{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:12px;text-align:center}
+.kpi-num{font-size:22px;font-weight:800;color:#2f8fff}
+.kpi-label{font-size:10px;color:#7a8aa3;font-weight:700;margin-top:2px}
+
+.sentiment-row{display:flex;gap:8px;margin-top:8px}
+.sentiment-pill{flex:1;text-align:center;border-radius:10px;padding:9px 4px;font-weight:800;font-size:15px}
+.sentiment-pill span{display:block;font-size:9.5px;font-weight:700;margin-top:2px}
+.sentiment-pos{background:#e9f9ee;color:#1e9e52}
+.sentiment-neu{background:#eef3f9;color:#5b6b85}
+.sentiment-neg{background:#fdeceb;color:#d9483c}
+
+.discovery-box{background:#eaf3ff;border:1px solid #cfe3ff;border-radius:14px;padding:6px 14px}
+.discovery-row{display:flex;justify-content:space-between;padding:8px 0;font-size:12.5px;border-bottom:1px solid rgba(47,143,255,0.12)}
+.discovery-row:last-child{border-bottom:none}
+.discovery-row span{color:#5b6b85;font-weight:600}
+.discovery-row strong{color:#0b1f3a;font-weight:800}
+
+.timeline-item{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:12px;margin-bottom:8px}
+.timeline-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px}
+.timeline-date{font-size:12.5px;font-weight:800;color:#0b1f3a;white-space:nowrap}
+.timeline-badges{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.timeline-meta{font-size:11.5px;color:#7a8aa3;font-weight:600}
+
+.priority-high{background:#fdeceb;color:#d9483c}
+.priority-medium{background:#fff6e0;color:#c9871c}
+.priority-low{background:#eef3f9;color:#5b6b85}
+.outcome-positive{background:#e9f9ee;color:#1e9e52}
+.outcome-negative{background:#fdeceb;color:#d9483c}
+.outcome-neutral{background:#eef3f9;color:#5b6b85}
+
+.intel-item{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:12px;margin-bottom:8px}
+.intel-date{font-size:10.5px;color:#aab8cc;font-weight:700;margin-bottom:5px}
+.intel-text{font-size:12.5px;color:#3a4a63;line-height:1.6;white-space:pre-wrap}
+
+.detail-empty{font-size:12px;color:#aab8cc;font-weight:600;padding:14px;text-align:center;background:#fff;border:1px solid #e3ebf5;border-radius:12px}
 </style>
 </head>
 <body>
@@ -98,12 +171,29 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 </div>
 
 </div>
+
+<!-- Account Intelligence View -->
+<div id="accountDetailOverlay" class="detail-overlay" onclick="if(event.target===this)closeAccountDetail()">
+  <div class="detail-panel">
+    <div class="detail-header">
+      <button class="detail-close" onclick="closeAccountDetail()">✕</button>
+      <h2 id="detailAccountName"></h2>
+      <div class="detail-meta-row" id="detailMeta"></div>
+    </div>
+    <div class="detail-body" id="detailBody"></div>
+  </div>
+</div>
+
 <script>
 var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
 var role=localStorage.getItem('fieldiq_user_role');
 var ACCOUNTS=[];
 
 function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
 function matchesTerritoryFilter(accountTerritory,selectedTerritory){
   if(!selectedTerritory)return true;
@@ -134,7 +224,9 @@ async function loadDirectory(){
         territory:f['Territory']||'',
         city:f['City']||'',
         visitCount:0,
-        lastVisit:null
+        firstVisit:null,
+        lastVisit:null,
+        matchedVisits:[]
       };
       byId[r.id]=acc;
       byNameLower[acc.name.trim().toLowerCase()]=acc;
@@ -156,9 +248,24 @@ async function loadDirectory(){
       if(matched){
         matched.visitCount++;
         var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
-        if(vDate&&!isNaN(vDate)&&(!matched.lastVisit||vDate>matched.lastVisit)){
-          matched.lastVisit=vDate;
+        var vDateValid=vDate&&!isNaN(vDate);
+        if(vDateValid){
+          if(!matched.lastVisit||vDate>matched.lastVisit)matched.lastVisit=vDate;
+          if(!matched.firstVisit||vDate<matched.firstVisit)matched.firstVisit=vDate;
         }
+        matched.matchedVisits.push({
+          id:v.id,
+          date:vDateValid?vDate:null,
+          type:f['Visit Type']||'',
+          rep:f['Rep Name']||'Unknown rep',
+          priority:f['Priority']||'',
+          outcome:f['Outcome']||'',
+          aiSummary:f['AI Summary']||'',
+          actionItems:f['Action Items']||'',
+          newAccount:f['New Account']===true,
+          pendingReview:f['Pending Review']===true,
+          reviewed:f['Reviewed']===true
+        });
       }
     });
 
@@ -187,8 +294,8 @@ function renderDirectory(){
   var html='';
   filtered.forEach(function(a){
     html+=
-      '<div class="activity-item">'+
-        '<div class="activity-header"><div class="activity-hospital">'+a.name+'</div></div>'+
+      '<div class="activity-item" onclick="openAccountDetail(\''+a.id+'\')">'+
+        '<div class="activity-header"><div class="activity-hospital">'+a.name+'</div><div class="activity-chevron">›</div></div>'+
         '<div class="activity-meta">'+
           (a.territory?'<span class="activity-badge badge-territory">'+a.territory+'</span>':'')+
           (a.city?'<span class="activity-badge badge-territory">'+a.city+'</span>':'')+
@@ -203,6 +310,144 @@ function renderDirectory(){
 document.getElementById('directorySearch').addEventListener('input',renderDirectory);
 document.getElementById('directoryTerritory').addEventListener('change',renderDirectory);
 
+// ---------- Account Intelligence View ----------
+
+function priorityClass(p){
+  var s=String(p).toLowerCase();
+  if(s==='high')return'priority-high';
+  if(s==='medium'||s==='med')return'priority-medium';
+  if(s==='low')return'priority-low';
+  return'priority-low';
+}
+function outcomeClass(o){
+  var s=String(o).toLowerCase();
+  if(s==='positive')return'outcome-positive';
+  if(s==='negative')return'outcome-negative';
+  return'outcome-neutral';
+}
+
+function openAccountDetail(id){
+  var acc=ACCOUNTS.find(function(a){return a.id===id;});
+  if(!acc)return;
+
+  document.getElementById('detailAccountName').textContent=acc.name;
+  var metaHtml='';
+  if(acc.territory)metaHtml+='<span class="activity-badge badge-territory">'+acc.territory+'</span>';
+  if(acc.city)metaHtml+='<span class="activity-badge badge-territory">'+acc.city+'</span>';
+  document.getElementById('detailMeta').innerHTML=metaHtml;
+
+  var visits=acc.matchedVisits.slice().sort(function(a,b){
+    var ad=a.date?a.date.getTime():0,bd=b.date?b.date.getTime():0;
+    return bd-ad;
+  });
+
+  // KPIs — Open Actions counts visits carrying a non-empty Action Items value.
+  // There's no separate open/closed status field on Action Items in the current schema,
+  // so "open" here means "an action item is recorded," consistent with how the
+  // Rep Review Report's Open Follow-Ups section already reads this field.
+  var uniqueReps={};
+  var highPriority=0,openActions=0,pos=0,neu=0,neg=0;
+  visits.forEach(function(v){
+    if(v.rep)uniqueReps[v.rep]=true;
+    if(String(v.priority).toLowerCase()==='high')highPriority++;
+    if(v.actionItems&&String(v.actionItems).trim())openActions++;
+    var o=String(v.outcome).toLowerCase();
+    if(o==='positive')pos++;else if(o==='negative')neg++;else if(o==='neutral')neu++;
+  });
+
+  var bodyHtml='';
+
+  // Account Snapshot
+  bodyHtml+='<div class="detail-section"><div class="detail-section-title">Account Snapshot</div>'+
+    '<div class="snapshot-grid">'+
+      '<div class="snapshot-item"><div class="snapshot-label">Territory</div><div class="snapshot-value">'+(acc.territory||'—')+'</div></div>'+
+      '<div class="snapshot-item"><div class="snapshot-label">City</div><div class="snapshot-value">'+(acc.city||'—')+'</div></div>'+
+      '<div class="snapshot-item"><div class="snapshot-label">First Visit</div><div class="snapshot-value">'+(acc.firstVisit?formatDate(acc.firstVisit):'—')+'</div></div>'+
+      '<div class="snapshot-item"><div class="snapshot-label">Last Visit</div><div class="snapshot-value">'+(acc.lastVisit?formatDate(acc.lastVisit):'—')+'</div></div>'+
+    '</div></div>';
+
+  // KPIs
+  bodyHtml+='<div class="detail-section"><div class="detail-section-title">Key Metrics</div>'+
+    '<div class="kpi-grid">'+
+      '<div class="kpi-card"><div class="kpi-num">'+visits.length+'</div><div class="kpi-label">Total Visits</div></div>'+
+      '<div class="kpi-card"><div class="kpi-num">'+Object.keys(uniqueReps).length+'</div><div class="kpi-label">Unique Reps</div></div>'+
+      '<div class="kpi-card"><div class="kpi-num">'+highPriority+'</div><div class="kpi-label">High Priority</div></div>'+
+      '<div class="kpi-card"><div class="kpi-num">'+openActions+'</div><div class="kpi-label">Open Actions</div></div>'+
+    '</div>'+
+    '<div class="sentiment-row">'+
+      '<div class="sentiment-pill sentiment-pos">'+pos+'<span>Positive</span></div>'+
+      '<div class="sentiment-pill sentiment-neu">'+neu+'<span>Neutral</span></div>'+
+      '<div class="sentiment-pill sentiment-neg">'+neg+'<span>Negative</span></div>'+
+    '</div></div>';
+
+  // Discovery Information — only shown if this account originated via Account Not Listed
+  var discoveryVisit=visits.find(function(v){return v.newAccount;});
+  if(discoveryVisit){
+    var reviewStatus=discoveryVisit.reviewed?'Reviewed':(discoveryVisit.pendingReview?'Pending Review':'—');
+    bodyHtml+='<div class="detail-section"><div class="detail-section-title">Discovery Information</div>'+
+      '<div class="discovery-box">'+
+        '<div class="discovery-row"><span>Discovery Date</span><strong>'+(discoveryVisit.date?formatDate(discoveryVisit.date):'—')+'</strong></div>'+
+        '<div class="discovery-row"><span>Discovering Rep</span><strong>'+escapeHtml(discoveryVisit.rep)+'</strong></div>'+
+        '<div class="discovery-row"><span>Review Status</span><strong>'+reviewStatus+'</strong></div>'+
+      '</div></div>';
+  }
+
+  // Visit Timeline
+  bodyHtml+='<div class="detail-section"><div class="detail-section-title">Visit Timeline</div>';
+  if(visits.length===0){
+    bodyHtml+='<div class="detail-empty">No visits logged yet.</div>';
+  }else{
+    visits.forEach(function(v){
+      bodyHtml+='<div class="timeline-item">'+
+        '<div class="timeline-top">'+
+          '<div class="timeline-date">'+(v.date?formatDate(v.date):'—')+'</div>'+
+          '<div class="timeline-badges">'+
+            (v.priority?'<span class="activity-badge '+priorityClass(v.priority)+'">'+escapeHtml(v.priority)+'</span>':'')+
+            (v.outcome?'<span class="activity-badge '+outcomeClass(v.outcome)+'">'+escapeHtml(v.outcome)+'</span>':'')+
+          '</div>'+
+        '</div>'+
+        '<div class="timeline-meta">'+escapeHtml(v.rep)+(v.type?' · '+escapeHtml(v.type):'')+'</div>'+
+      '</div>';
+    });
+  }
+  bodyHtml+='</div>';
+
+  // AI Intelligence
+  bodyHtml+='<div class="detail-section"><div class="detail-section-title">AI Intelligence</div>';
+  var summaries=visits.filter(function(v){return v.aiSummary&&String(v.aiSummary).trim();});
+  if(summaries.length===0){
+    bodyHtml+='<div class="detail-empty">No AI summaries recorded.</div>';
+  }else{
+    summaries.forEach(function(v){
+      bodyHtml+='<div class="intel-item"><div class="intel-date">'+(v.date?formatDate(v.date):'—')+' · '+escapeHtml(v.rep)+'</div>'+
+        '<div class="intel-text">'+escapeHtml(v.aiSummary)+'</div></div>';
+    });
+  }
+  bodyHtml+='</div>';
+
+  // Action Items
+  bodyHtml+='<div class="detail-section"><div class="detail-section-title">Action Items</div>';
+  var actions=visits.filter(function(v){return v.actionItems&&String(v.actionItems).trim();});
+  if(actions.length===0){
+    bodyHtml+='<div class="detail-empty">No action items recorded.</div>';
+  }else{
+    actions.forEach(function(v){
+      bodyHtml+='<div class="intel-item"><div class="intel-date">'+(v.date?formatDate(v.date):'—')+' · '+escapeHtml(v.rep)+'</div>'+
+        '<div class="intel-text">'+escapeHtml(v.actionItems)+'</div></div>';
+    });
+  }
+  bodyHtml+='</div>';
+
+  document.getElementById('detailBody').innerHTML=bodyHtml;
+  document.getElementById('accountDetailOverlay').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+
+function closeAccountDetail(){
+  document.getElementById('accountDetailOverlay').style.display='none';
+  document.body.style.overflow='';
+}
+
 if(role!=='Manager'){
   document.getElementById('loadingEl').style.display='none';
   document.getElementById('accessDeniedEl').style.display='flex';
@@ -212,4 +457,4 @@ if(role!=='Manager'){
 }
 </script>
 </body>
-</html>
+</html>          
