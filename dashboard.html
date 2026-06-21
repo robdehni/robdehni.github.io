@@ -58,4 +58,445 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .priority-count{font-size:11.5px;color:#aab8cc;font-weight:600}
 .priority-card{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:14px;margin-bottom:8px;box-shadow:0 3px 10px rgba(11,31,58,0.04)}
 .priority-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.priority-hospital{font-size:13.5px;font-weight:800;color
+.priority-hospital{font-size:13.5px;font-weight:800;color:#0b1f3a}
+.priority-meta{font-size:11.5px;color:#aab8cc;margin-top:2px;font-weight:600}
+.priority-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.pbtn{font-size:11px;padding:5px 11px;border-radius:8px;border:none;cursor:pointer;font-weight:800;transition:opacity 0.2s}
+.pbtn:disabled{opacity:0.45;cursor:not-allowed}
+.pbtn-high{background:#ffe5e8;color:#e0344a}
+.pbtn-medium{background:#fff3e0;color:#d98a1c}
+.pbtn-low{background:#e3f8ea;color:#1fa861}
+.pbtn-active-high{background:#e0344a;color:#fff}
+.pbtn-active-medium{background:#d98a1c;color:#fff}
+.pbtn-active-low{background:#1fa861;color:#fff}
+.pbtn-reviewed{font-size:11px;padding:6px 11px;border-radius:8px;border:none;cursor:pointer;font-weight:800;background:#e3f8ea;color:#1fa861;width:100%;margin-top:8px;transition:opacity 0.2s}
+.pbtn-reviewed:disabled{opacity:0.45;cursor:not-allowed}
+.priority-label{font-size:11px;padding:4px 12px;border-radius:8px;font-weight:800;display:inline-block;margin-top:6px}
+.plabel-high{background:#ffe5e8;color:#e0344a}
+.plabel-medium{background:#fff3e0;color:#d98a1c}
+.plabel-low{background:#e3f8ea;color:#1fa861}
+
+.rep-table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid #e3ebf5;border-radius:14px;overflow:hidden;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.rep-table th{color:#8a9bb3;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;font-weight:800;padding:10px 12px;text-align:left;border-bottom:1px solid #eef3f9}
+.rep-table td{padding:12px;border-bottom:1px solid #f4f8fc;color:#3a4a63}
+.rep-table tr:last-child td{border-bottom:none}
+
+.territory-item{margin-bottom:12px;background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:14px;box-shadow:0 3px 10px rgba(11,31,58,0.04)}
+.territory-header{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px}
+.territory-name{color:#3a4a63;font-weight:700}.territory-count{color:#2f8fff;font-weight:800}
+.territory-bar-bg{background:#eef3f9;border-radius:4px;height:7px}
+.territory-bar-fill{background:linear-gradient(90deg,#3d9bff,#2f8fff);border-radius:4px;height:7px}
+
+.activity-item{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:14px;margin-bottom:8px;box-shadow:0 3px 10px rgba(11,31,58,0.04)}
+.activity-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.activity-hospital{font-size:13.5px;font-weight:800;color:#0b1f3a}
+.activity-date{font-size:11px;color:#aab8cc;font-weight:600}
+.activity-meta{display:flex;gap:6px;flex-wrap:wrap}
+.activity-badge{font-size:10px;padding:3px 10px;border-radius:8px;font-weight:700}
+.badge-positive{background:#e3f8ea;color:#1fa861}
+.badge-neutral{background:#fff3e0;color:#d98a1c}
+.badge-negative{background:#ffe5e8;color:#e0344a}
+.badge-unknown{background:#eef3f9;color:#7a8aa3}
+.badge-rep{background:#eaf3ff;color:#2f8fff}
+.badge-territory{background:#eef3f9;color:#5b6b85}
+.activity-summary{font-size:11.5px;color:#7a8aa3;margin-top:8px;line-height:1.6}
+
+.signal-item{background:#fff;border-left:3px solid #2f8fff;border-radius:0 14px 14px 0;padding:12px 14px;margin-bottom:8px;box-shadow:0 3px 10px rgba(11,31,58,0.04)}
+.signal-hospital{font-size:13px;font-weight:800;color:#2f8fff;margin-bottom:4px}
+.signal-text{font-size:11.5px;color:#7a8aa3;line-height:1.6}
+
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e3ebf5;display:flex;z-index:9999;box-shadow:0 -4px 16px rgba(11,31,58,0.06)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:#aab8cc;font-size:11px;font-weight:700;transition:color 0.2s}
+.nav-item.active{color:#2f8fff}
+.nav-icon{font-size:22px;margin-bottom:3px}
+
+.loading{text-align:center;padding:50px;color:#aab8cc;font-weight:600}
+.spinner{width:36px;height:36px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;color:#aab8cc;font-size:13px;padding:20px;font-weight:600}
+
+.access-denied{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:80px 24px;
+}
+.access-denied-icon{font-size:54px;margin-bottom:16px}
+.access-denied h2{font-size:20px;color:#0b1f3a;font-weight:800;margin-bottom:8px}
+.access-denied p{font-size:13.5px;color:#7a8aa3;font-weight:600;max-width:340px;line-height:1.6;margin-bottom:20px}
+.access-denied a{
+  display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;
+  text-decoration:none;padding:13px 28px;border-radius:14px;box-shadow:0 8px 20px rgba(47,143,255,0.32);font-size:14px;
+}
+
+@media(min-width:1100px){
+  .container{max-width:1300px}
+  body{padding:32px 40px 90px}
+  .kpi-grid{grid-template-columns:repeat(4,1fr)}
+  .sentiment-row{grid-template-columns:repeat(3,1fr);max-width:600px}
+  .dash-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="topbar">
+  <h1>FieldIQ<span id="managerBadge" style="display:none" class="manager-badge">Manager</span></h1>
+  <p id="lastUpdated">Loading dashboard...</p>
+</div>
+<a href="https://fieldiq.biz/fieldiq.html" class="home-btn">← Home</a>
+
+<div id="filterBar" class="filter-bar" style="display:none">
+  <h3>Manager Filters</h3>
+  <div class="filter-row">
+    <select class="filter-select" id="filterRep">
+      <option value="">All Reps</option>
+    </select>
+    <select class="filter-select" id="filterTerritory">
+      <option value="">All Territories</option>
+      <option>UAE</option><option>KSA</option><option>Qatar</option>
+      <option>Kuwait</option><option>Bahrain</option><option>Oman</option>
+    </select>
+  </div>
+  <div class="filter-row">
+    <select class="filter-select" id="filterDate">
+      <option value="">All Time</option>
+      <option value="7">This Week</option>
+      <option value="month">This Month</option>
+      <option value="30">Last 30 Days</option>
+      <option value="90">Last 90 Days</option>
+    </select>
+    <select class="filter-select" id="filterPriority">
+      <option value="">All Priorities</option>
+      <option>High</option><option>Medium</option><option>Low</option>
+    </select>
+  </div>
+  <div class="filter-btns">
+    <button class="fbtn-apply" onclick="applyFilters()">Apply Filters</button>
+    <button class="fbtn-reset" onclick="resetFilters()">Reset</button>
+  </div>
+  <div class="filter-active" id="filterStatus"></div>
+</div>
+
+<div id="dashContent" style="display:none">
+  <div class="dash-grid">
+  <div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Total Visits</div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-sub">All time</div></div>
+    <div class="kpi-card"><div class="kpi-label">New Accounts</div><div class="kpi-value" id="kpiNewAccounts">0</div><div class="kpi-sub">Pending review</div></div>
+    <div class="kpi-card"><div class="kpi-label">This Week</div><div class="kpi-value" id="kpiWeek">0</div><div class="kpi-sub">Last 7 days</div></div>
+    <div class="kpi-card"><div class="kpi-label">Active Reps</div><div class="kpi-value" id="kpiReps">0</div><div class="kpi-sub">Unique reps</div></div>
+  </div>
+  <div class="sentiment-row">
+    <div class="sent-card sent-positive"><div class="sent-label">Positive</div><div class="sent-value" id="sentPositive">0%</div></div>
+    <div class="sent-card sent-neutral"><div class="sent-label">Neutral</div><div class="sent-value" id="sentNeutral">0%</div></div>
+    <div class="sent-card sent-negative"><div class="sent-label">Negative</div><div class="sent-value" id="sentNegative">0%</div></div>
+  </div>
+  <div class="section-title">Manager Priority View</div>
+  <div id="priorityHigh" class="priority-section"></div>
+  <div id="priorityMedium" class="priority-section"></div>
+  <div id="priorityLow" class="priority-section"></div>
+  </div>
+  <div>
+  <div class="section-title">Rep Performance (This Month)</div>
+  <table class="rep-table">
+    <thead><tr><th>Rep</th><th>Visits</th><th>Last Visit</th><th>Sentiment</th></tr></thead>
+    <tbody id="repTable"></tbody>
+  </table>
+  <div class="section-title">Territory Coverage</div>
+  <div id="territoryBars"></div>
+  <div class="section-title">Opportunity Signals</div>
+  <div id="aiSignals"></div>
+  <div class="section-title">Recent Activity</div>
+  <div id="activityFeed"></div>
+  </div>
+  </div>
+</div>
+<div class="loading" id="loadingEl"><div class="spinner"></div>Loading dashboard...</div>
+<div class="access-denied" id="accessDeniedEl" style="display:none">
+  <div class="access-denied-icon">🔒</div>
+  <h2>Manager Access Required</h2>
+  <p>The Dashboard shows KPIs, rep performance, and territory data across all reps. This page is restricted to Manager accounts.</p>
+  <a href="./index.html" id="accessDeniedHomeBtn">Return Home</a>
+</div>
+</div>
+<nav class="bottom-nav">
+  <a class="nav-item" href="fieldiq-log-visit.html"><span class="nav-icon">🎙️</span>Log Visit</a>
+  <a class="nav-item" href="fieldiq-visits-map.html"><span class="nav-icon">📍</span>Visit Map</a>
+  <a class="nav-item active" href="dashboard.html"><span class="nav-icon">📊</span>Dashboard</a>
+</nav>
+
+<script>
+// ── MANAGER ACCESS CONTROL ───────────────────────────────────
+// Real role check using the locked identity from PIN login.
+// loadDashboard() is only called inside the Manager branch below.
+var role = localStorage.getItem('fieldiq_user_role');
+var isManager = (role === 'Manager');
+
+var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
+var allRecords=[];
+
+function getSentiment(s){if(!s)return'unknown';s=s.toLowerCase();var i=s.indexOf('sentiment');if(i>-1){var t=s.substring(i,i+120);if(t.indexOf('positive')>-1)return'positive';if(t.indexOf('negative')>-1)return'negative';if(t.indexOf('neutral')>-1)return'neutral';}if(s.indexOf('positive')>-1)return'positive';if(s.indexOf('negative')>-1)return'negative';if(s.indexOf('neutral')>-1)return'neutral';return'unknown';}
+function getBadgeClass(s){if(s==='positive')return'badge-positive';if(s==='neutral')return'badge-neutral';if(s==='negative')return'badge-negative';return'badge-unknown';}
+function extractSignals(ai){if(!ai)return'';var i=ai.indexOf('OPPORTUNITY');if(i>-1){var e=ai.indexOf('\n\n',i+10);return ai.substring(i+20,e>-1?e:i+300).trim();}return'';}
+function truncate(t,n){if(!t)return'';var i=t.indexOf('VISIT SUMMARY');if(i>-1){var s=t.substring(i+13,i+13+n).trim();return s.length===n?s+'...':s;}return t.length>n?t.substring(0,n)+'...':t;}
+function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+
+async function updatePriority(recordId,newPriority,cardEl){
+  var btns=cardEl.querySelectorAll('.pbtn');
+  btns.forEach(function(b){b.disabled=true;});
+  try{
+    var res=await fetch(WORKER_URL+'/update-visit',{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({recordId:recordId,priority:newPriority})
+    });
+    if(res.ok){
+      var rec=allRecords.find(function(r){return r.id===recordId;});
+      if(rec)rec.fields['Priority']=newPriority;
+      applyFilters();
+    }else{
+      btns.forEach(function(b){b.disabled=false;});
+      alert('Failed to update priority. Please try again.');
+    }
+  }catch(err){
+    btns.forEach(function(b){b.disabled=false;});
+    alert('Error: '+err.message);
+  }
+}
+
+async function markReviewed(recordId,btnEl){
+  btnEl.disabled=true;btnEl.textContent='Saving...';
+  try{
+    var res=await fetch(WORKER_URL+'/update-visit',{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({recordId:recordId,reviewed:true})
+    });
+    if(res.ok){
+      var idx=allRecordsRaw.findIndex(function(r){return r.id===recordId;});
+      if(idx>-1)allRecordsRaw[idx].fields['Reviewed']=true;
+      applyFilters();
+    }else{
+      btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';
+      alert('Failed to mark reviewed. Please try again.');
+    }
+  }catch(err){
+    btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';
+    alert('Error: '+err.message);
+  }
+}
+
+function makePriorityCard(record){
+  var f=record.fields;
+  var current=(f['Priority']||'Medium');
+  var rep=f['Rep Name']||'Unknown';
+  var date=formatDate(f['Visit Date']);
+  var div=document.createElement('div');
+  div.className='priority-card';
+  var buttonsHtml='';
+  if(isManager){
+    buttonsHtml=
+      '<div class="priority-btns">'+
+        '<button class="pbtn pbtn-high'+(current==='High'?' pbtn-active-high':'')+'" data-p="High">🔴 High</button>'+
+        '<button class="pbtn pbtn-medium'+(current==='Medium'?' pbtn-active-medium':'')+'" data-p="Medium">🟠 Medium</button>'+
+        '<button class="pbtn pbtn-low'+(current==='Low'?' pbtn-active-low':'')+'" data-p="Low">🟢 Low</button>'+
+      '</div>'+
+      '<button class="pbtn-reviewed">✓ Mark Reviewed</button>';
+  }else{
+    var labelClass=current==='High'?'plabel-high':current==='Low'?'plabel-low':'plabel-medium';
+    var dot=current==='High'?'🔴':current==='Low'?'🟢':'🟠';
+    buttonsHtml='<div><span class="priority-label '+labelClass+'">'+dot+' '+current+'</span></div>';
+  }
+  div.innerHTML=
+    '<div class="priority-card-header">'+
+      '<div>'+
+        '<div class="priority-hospital">'+(f['Hospital Name']||'Unknown')+'</div>'+
+        '<div class="priority-meta">'+rep+' · '+date+(f['Territory']?' · '+f['Territory']:'')+'</div>'+
+      '</div>'+
+    '</div>'+
+    buttonsHtml;
+  if(isManager){
+    div.querySelectorAll('.pbtn').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        if(btn.getAttribute('data-p')!==current){
+          updatePriority(record.id,btn.getAttribute('data-p'),div);
+        }
+      });
+    });
+    var reviewedBtn=div.querySelector('.pbtn-reviewed');
+    if(reviewedBtn){
+      reviewedBtn.addEventListener('click',function(){
+        markReviewed(record.id,reviewedBtn);
+      });
+    }
+  }
+  return div;
+}
+
+function renderPrioritySection(records){
+  var high=[],medium=[],low=[];
+  records.forEach(function(r){
+    var p=r.fields['Priority']||'';
+    if(p==='High')high.push(r);
+    else if(p==='Medium')medium.push(r);
+    else if(p==='Low')low.push(r);
+  });
+  function renderBucket(el,list,label,dot,priorityValue){
+    el.innerHTML='<a href="fieldiq-visit-history.html?priority='+encodeURIComponent(priorityValue)+'" class="priority-header" style="text-decoration:none;color:inherit"><div class="priority-dot" style="background:'+dot+'"></div><span class="priority-title">'+label+' →</span><span class="priority-count">('+list.length+')</span></a>';
+    if(list.length===0){
+      el.innerHTML+='<div class="empty" style="padding:8px">None</div>';
+    }else{
+      list.forEach(function(r){el.appendChild(makePriorityCard(r));});
+    }
+  }
+  renderBucket(document.getElementById('priorityHigh'),high,'High Priority','#ff4444','High');
+  renderBucket(document.getElementById('priorityMedium'),medium,'Medium Priority','#ffaa44','Medium');
+  renderBucket(document.getElementById('priorityLow'),low,'Low Priority','#44cc88','Low');
+}
+
+function buildDashboard(records){
+  allRecords=records;
+  var today=new Date();today.setHours(0,0,0,0);
+  var weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
+  var currentMonthStart=new Date(today.getFullYear(),today.getMonth(),1);
+  var todayCount=0,weekCount=0,newAccountsCount=0,reps={},territories={},sentCounts={positive:0,neutral:0,negative:0,unknown:0},signals=[];
+  records.forEach(function(r){
+    var f=r.fields;
+    var sent=getSentiment(f['AI Summary']||'');
+    sentCounts[sent]=(sentCounts[sent]||0)+1;
+    var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
+    if(vDate){if(vDate>=today)todayCount++;if(vDate>=weekAgo)weekCount++;}
+    if(f["New Account"]===true||f["New Account"]==="true"||f["New Account"]===1||f["New Account"]==="1")newAccountsCount++;
+    if(vDate&&vDate>=currentMonthStart){
+      var rep=f['Rep Name']||'Unknown';rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
+      if(!reps[rep])reps[rep]={count:0,lastVisit:null,sentiments:[]};
+      reps[rep].count++;reps[rep].sentiments.push(sent);
+      if(!reps[rep].lastVisit||vDate>reps[rep].lastVisit)reps[rep].lastVisit=vDate;
+    }
+    var terr=f['Territory']||'Unknown';
+    territories[terr]=(territories[terr]||0)+1;
+    var sig=extractSignals(f['AI Summary']||'');
+    if(sig&&sig.length>10&&f['Reviewed']!==true)signals.push({hospital:f['Hospital Name']||'Unknown',signal:sig});
+  });
+  document.getElementById('kpiTotal').textContent=records.length;
+  document.getElementById('kpiNewAccounts').textContent=newAccountsCount;
+  document.getElementById('kpiWeek').textContent=weekCount;
+  document.getElementById('kpiReps').textContent=Object.keys(reps).length;
+  var ws=sentCounts.positive+sentCounts.neutral+sentCounts.negative;
+  function pct(n){return ws>0?Math.round(n/ws*100)+'%':'0%';}
+  document.getElementById('sentPositive').textContent=pct(sentCounts.positive);
+  document.getElementById('sentNeutral').textContent=pct(sentCounts.neutral);
+  document.getElementById('sentNegative').textContent=pct(sentCounts.negative);
+  renderPrioritySection(records.filter(function(r){return r.fields['Reviewed']!==true;}));
+  var repRows='';
+  Object.keys(reps).sort(function(a,b){return reps[b].count-reps[a].count;}).forEach(function(rep){
+    var r=reps[rep];
+    var ds=r.sentiments.reduce(function(a,s){a[s]=(a[s]||0)+1;return a;},{});
+    var ts=Object.keys(ds).sort(function(a,b){return ds[b]-ds[a];})[0]||'unknown';
+    var ld=r.lastVisit?r.lastVisit.toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'—';
+    repRows+='<tr><td><a href="fieldiq-visit-history.html?rep='+encodeURIComponent(rep)+'" style="color:#0b1f3a;font-weight:700;text-decoration:none">'+rep+' →</a></td><td style="color:#2f8fff;font-weight:800">'+r.count+'</td><td>'+ld+'</td><td><span class="activity-badge '+getBadgeClass(ts)+'">'+ts+'</span></td></tr>';
+  });
+  document.getElementById('repTable').innerHTML=repRows||'<tr><td colspan="4" class="empty">No rep data yet</td></tr>';
+  var maxT=Math.max.apply(null,Object.values(territories).concat([1]));
+  var terrHtml='';
+  Object.keys(territories).sort(function(a,b){return territories[b]-territories[a];}).forEach(function(t){
+    var pw=Math.round(territories[t]/maxT*100);
+    terrHtml+='<a href="fieldiq-visit-history.html?territory='+encodeURIComponent(t)+'" style="text-decoration:none;color:inherit;display:block"><div class="territory-item"><div class="territory-header"><span class="territory-name">'+t+'</span><span class="territory-count">'+territories[t]+' visits</span></div><div class="territory-bar-bg"><div class="territory-bar-fill" style="width:'+pw+'%"></div></div></div></a>';
+  });
+  document.getElementById('territoryBars').innerHTML=terrHtml||'<div class="empty">No territory data yet</div>';
+  var sigHtml='';
+  signals.slice(0,6).forEach(function(s){sigHtml+='<div class="signal-item"><div class="signal-hospital">'+s.hospital+'</div><div class="signal-text">'+s.signal.substring(0,200)+'</div></div>';});
+  document.getElementById('aiSignals').innerHTML=sigHtml||'<div class="empty">No signals yet</div>';
+  var sorted=records.slice().sort(function(a,b){var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);return db-da;}).slice(0,20);
+  var feedHtml='';
+  sorted.forEach(function(r){
+    var f=r.fields;var sent=getSentiment(f['AI Summary']||'');var sum=truncate(f['AI Summary']||'',120);
+    feedHtml+='<div class="activity-item"><div class="activity-header"><div class="activity-hospital">'+(f['Hospital Name']||'Unknown')+'</div><div class="activity-date">'+formatDate(f['Visit Date'])+'</div></div><div class="activity-meta"><span class="activity-badge '+getBadgeClass(sent)+'">'+sent+'</span>'+(f['Rep Name']?'<span class="activity-badge badge-rep">'+f['Rep Name']+'</span>':'')+(f['Territory']?'<span class="activity-badge badge-territory">'+f['Territory']+'</span>':'')+(f['Visit Type']?'<span class="activity-badge badge-territory">'+f['Visit Type']+'</span>':'')+'</div>'+(sum?'<div class="activity-summary">'+sum+'</div>':'')+'</div>';
+  });
+  document.getElementById('activityFeed').innerHTML=feedHtml||'<div class="empty">No visits yet</div>';
+  document.getElementById('loadingEl').style.display='none';
+  document.getElementById('dashContent').style.display='block';
+  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
+}
+var allRecordsRaw=[];
+
+function populateRepFilter(records){
+  var reps={};
+  records.forEach(function(r){
+    var rep=r.fields['Rep Name']||'';
+    if(rep){rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();reps[rep]=1;}
+  });
+  var sel=document.getElementById('filterRep');
+  while(sel.options.length>1)sel.remove(1);
+  Object.keys(reps).sort().forEach(function(r){
+    var o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);
+  });
+}
+
+function getFilteredRecords(){
+  var rep=document.getElementById('filterRep').value;
+  var terr=document.getElementById('filterTerritory').value;
+  var days=document.getElementById('filterDate').value;
+  var priority=document.getElementById('filterPriority').value;
+  var cutoff=null;
+  if(days==='month'){var now=new Date();cutoff=new Date(now.getFullYear(),now.getMonth(),1);}
+  else if(days){cutoff=new Date(Date.now()-parseInt(days)*24*60*60*1000);}
+  return allRecordsRaw.filter(function(r){
+    var f=r.fields;
+    var repName=(f['Rep Name']||'').trim();
+    repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();
+    if(rep&&repName!==rep)return false;
+    if(terr&&f['Territory']!==terr)return false;
+    if(priority&&f['Priority']!==priority)return false;
+    if(cutoff&&f['Visit Date']&&new Date(f['Visit Date'])<cutoff)return false;
+    return true;
+  });
+}
+
+function applyFilters(){
+  var filtered=getFilteredRecords();
+  var rep=document.getElementById('filterRep').value;
+  var terr=document.getElementById('filterTerritory').value;
+  var days=document.getElementById('filterDate').value;
+  var priority=document.getElementById('filterPriority').value;
+  var parts=[];
+  if(rep)parts.push('Rep: '+rep);
+  if(terr)parts.push('Territory: '+terr);
+  if(days)parts.push('Last '+days+' days');
+  if(priority)parts.push('Priority: '+priority);
+  document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+filtered.length+' visits)':'';
+  buildDashboard(filtered);
+}
+
+function resetFilters(){
+  document.getElementById('filterRep').value='';
+  document.getElementById('filterTerritory').value='';
+  document.getElementById('filterDate').value='';
+  document.getElementById('filterPriority').value='';
+  document.getElementById('filterStatus').textContent='';
+  buildDashboard(allRecordsRaw);
+}
+
+async function loadDashboard(){
+  try{
+    var res=await fetch(WORKER_URL+'/get-visits');
+    var data=await res.json();
+    if(!res.ok)throw new Error(JSON.stringify(data));
+    allRecordsRaw=data.records||[];
+    populateRepFilter(allRecordsRaw);
+    document.getElementById('filterBar').style.display='block';
+    buildDashboard(allRecordsRaw);
+  }catch(err){
+    document.getElementById('loadingEl').textContent='Failed to load: '+err.message;
+  }
+}
+if (role !== 'Manager') {
+  document.getElementById('loadingEl').style.display = 'none';
+  document.getElementById('accessDeniedHomeBtn').href = './index.html';
+  document.getElementById('accessDeniedEl').style.display = 'flex';
+} else {
+  document.getElementById('managerBadge').style.display='inline-block';
+  loadDashboard();
+}
+</script>
+</body>
+</html>
