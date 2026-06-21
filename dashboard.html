@@ -410,7 +410,7 @@ function buildDashboard(records){
     sentCounts[sent]=(sentCounts[sent]||0)+1;
     var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
     if(vDate){if(vDate>=today)todayCount++;if(vDate>=weekAgo)weekCount++;}
-    if(f["New Account"]===true||f["New Account"]==="true"||f["New Account"]===1||f["New Account"]==="1")newAccountsCount++;
+    if((f["New Account"]===true||f["New Account"]==="true"||f["New Account"]===1||f["New Account"]==="1")&&f["Pending Review"]===true)newAccountsCount++;
     var rep=f['Rep Name']||'Unknown';rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
     if(!reps[rep])reps[rep]={count:0,lastVisit:null,sentiments:[]};
     reps[rep].count++;reps[rep].sentiments.push(sent);
@@ -563,6 +563,7 @@ async function markPendingReviewed(recordId,btnEl){
       var idx=allRecordsRaw.findIndex(function(r){return r.id===recordId;});
       if(idx>-1)allRecordsRaw[idx].fields['Pending Review']=false;
       buildNewAccountsCard(allRecordsRaw);
+      applyFilters();
     }else{
       btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';
       alert('Failed to mark reviewed. Please try again.');
