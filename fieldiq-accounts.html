@@ -30,6 +30,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .account-name{font-size:15px;font-weight:800;color:#0b1f3a;overflow-wrap:break-word;word-break:break-word}
 .account-city{font-size:12px;color:#7a8aa3;font-weight:600;margin-top:2px}
 .account-right{text-align:right;flex-shrink:0}
+.account-reps{font-size:11.5px;color:#3d4f6b;font-weight:600;margin-top:6px}
+.account-snippet{font-size:11.5px;color:#5b6b85;line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid #f4f8fc}
 .account-count{font-size:11px;color:#2f8fff;font-weight:800}
 .account-last{font-size:11px;color:#aab8cc;font-weight:600;margin-top:2px}
 .account-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
@@ -136,31 +138,14 @@ function getVisitsForAccount(account){
 }
 
 function buildIntelPanel(account,visits){
-  if(!visits.length){
-    return'<div class="intel-section"><div class="intel-label">Visit History</div><div class="empty" style="padding:12px 0">No visits recorded for this account yet.</div></div>';
-  }
+  if(!visits.length){return'';}
   var sorted=visits.slice().sort(function(a,b){
     var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);
     var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);
     return db-da;
   });
-  var reps={};
-  sorted.forEach(function(v){reps[(v.fields['Rep Name']||'Unknown').trim()]=true;});
-  var openFollowUps=sorted.filter(function(v){
-    var f=v.fields;
-    return f['Action Items']&&String(f['Action Items']).trim()&&f['Reviewed']!==true;
-  });
-  var html='';
-  html+='<div class="intel-section"><div class="intel-label">Rep Coverage</div><div class="intel-rep-list">'+Object.keys(reps).join(' · ')+'</div></div>';
-  if(openFollowUps.length>0){
-    html+='<div class="intel-section"><div class="intel-label">Open Follow-Ups ('+openFollowUps.length+')</div>';
-    openFollowUps.slice(0,5).forEach(function(v){
-      html+='<div class="intel-action"><div class="intel-action-meta">'+formatDate(v.fields['Visit Date'])+' · '+(v.fields['Rep Name']||'Unknown')+'</div>'+truncate(v.fields['Action Items'],140)+'</div>';
-    });
-    html+='</div>';
-  }
-  html+='<div class="intel-section"><div class="intel-label">Recent Visits</div>';
-  sorted.slice(0,5).forEach(function(v){
+  var html='<div class="intel-section"><div class="intel-label">Full Visit Timeline</div>';
+  sorted.forEach(function(v){
     var f=v.fields;
     var sent=getSentiment(f['AI Summary']||f['Outcome']||'');
     var summary='';
@@ -169,7 +154,6 @@ function buildIntelPanel(account,visits){
     html+='<div class="intel-visit '+sent+'"><div class="intel-visit-header"><span class="intel-visit-rep">'+(f['Rep Name']||'Unknown')+'</span><span class="intel-visit-date">'+formatDate(f['Visit Date'])+(f['Priority']?' · '+f['Priority']:'')+'</span></div>'+(summary?'<div class="intel-visit-summary">'+summary+'</div>':'')+'</div>';
   });
   html+='</div>';
-  html+='<a href="fieldiq-visit-history.html?territory='+encodeURIComponent(selectedTerritory)+'" class="intel-history-btn">View Visit History →</a>';
   return html;
 }
 
@@ -191,7 +175,6 @@ function toggleAccount(accId){
     panel.classList.add('open');
     if(card)card.classList.add('open');
     toggle.textContent='▴ Collapse';
-    card.scrollIntoView({behavior:'smooth',block:'nearest'});
   }
 }
 
@@ -235,6 +218,18 @@ function renderAccounts(accounts){
     var latestSent=lastVisit?getSentiment(lastVisit.fields['AI Summary']||lastVisit.fields['Outcome']||''):'unknown';
     var openActions=visits.filter(function(v){return v.fields['Action Items']&&String(v.fields['Action Items']).trim()&&v.fields['Reviewed']!==true;}).length;
     var highUnreviewed=visits.filter(function(v){return v.fields['Priority']==='High'&&v.fields['Reviewed']!==true;}).length;
+    // Rep coverage — unique reps across all visits for this account
+    var repsMap={};
+    sorted.forEach(function(v){var r=(v.fields['Rep Name']||'Unknown').trim();repsMap[r]=true;});
+    var repList=Object.keys(repsMap).join(' · ');
+    // Latest visit summary snippet — visible on card without expanding
+    var snippet='';
+    if(lastVisit){
+      var ai=lastVisit.fields['AI Summary']||lastVisit.fields['Meeting Notes']||'';
+      if(ai){var si=ai.indexOf('VISIT SUMMARY');snippet=si>-1?ai.substring(si+13,si+160).trim():ai.substring(0,160);if(snippet.length>=140)snippet=snippet.substring(0,140)+'...';}
+    }
+    // Deep-link to most recent visit — same visitId pattern used by Radar and New Accounts
+    var historyLink=lastVisit?'<a href="fieldiq-visit-history.html?visitId='+encodeURIComponent(lastVisit.id)+'" class="intel-history-btn" onclick="event.stopPropagation()">View latest visit →</a>':'';
     html+=
       '<div class="account-card" id="card-'+id+'" onclick="toggleAccount(\''+id+'\')">'+
         '<div class="account-header">'+
@@ -248,9 +243,12 @@ function renderAccounts(accounts){
           (openActions>0?'<span class="badge badge-followup">'+openActions+' follow-up'+(openActions!==1?'s':'')+'</span>':'')+
           (highUnreviewed>0?'<span class="badge badge-high">'+highUnreviewed+' high priority</span>':'')+
         '</div>'+
-        '<div class="account-meta">Last rep: '+lastRep+'</div>'+
-        '<div class="account-toggle" id="toggle-'+id+'">▾ View account intelligence</div>'+
-        '<div class="intel-panel" id="intel-'+id+'"></div>'+
+        '<div class="account-reps">Reps: '+repList+'</div>'+
+        (snippet?'<div class="account-snippet">'+snippet+'</div>':'')+
+        '<div class="account-meta" style="margin-top:6px">Last visit: '+lastDate+'</div>'+
+        historyLink+
+        (count>1?'<div class="account-toggle" id="toggle-'+id+'">▾ View full timeline</div>'+
+        '<div class="intel-panel" id="intel-'+id+'"></div>':'')+
       '</div>';
   });
   listEl.innerHTML=html;
@@ -297,4 +295,4 @@ async function loadData(){
 loadData();
 </script>
 </body>
-</html>       
+</html>
