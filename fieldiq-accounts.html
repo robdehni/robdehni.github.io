@@ -33,7 +33,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
 .count-label{font-size:11.5px;color:#aab8cc;font-weight:700;margin-bottom:10px}
 
-/* Territory-first navigation */
 .territory-group{margin-bottom:10px}
 .territory-header{
   display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #e3ebf5;
@@ -75,7 +74,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   text-decoration:none;padding:12px 28px;border-radius:12px;box-shadow:0 6px 16px rgba(47,143,255,0.3);
 }
 
-/* Account Intelligence View */
 .detail-overlay{
   display:none;position:fixed;inset:0;background:rgba(11,31,58,0.45);z-index:1000;
   align-items:flex-end;justify-content:center;
@@ -104,7 +102,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:10px;
 }
 
-/* Section 1 — Current Account Status */
 .status-hero{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:6px 14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .status-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f0f4f9}
 .status-row:last-child{border-bottom:none}
@@ -114,7 +111,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .trend-down{color:#d9483c}
 .trend-flat{color:#7a8aa3}
 
-/* Section 2 — Ownership */
 .ownership-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .ownership-card{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:10px 12px}
 .ownership-label{font-size:9.5px;color:#aab8cc;font-weight:700;text-transform:uppercase;letter-spacing:0.3px}
@@ -123,12 +119,10 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .ownership-breakdown{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:10px 12px}
 .ownership-bar-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;font-weight:700;color:#3a4a63}
 
-/* Section 3 — Time Filter */
 .filter-pills{display:flex;gap:6px}
 .filter-pill{flex:1;text-align:center;padding:9px 4px;border-radius:10px;font-size:12px;font-weight:800;background:#fff;border:1.5px solid #e3ebf5;color:#5b6b85;cursor:pointer}
 .filter-pill.active{background:#2f8fff;border-color:#2f8fff;color:#fff}
 
-/* Section 4 — Attention Required */
 .attn-group{margin-bottom:10px}
 .attn-group-title{font-size:10.5px;color:#5b6b85;font-weight:800;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px}
 .attn-item{background:#fff;border:1px solid #e3ebf5;border-left:3px solid #d9483c;border-radius:10px;padding:10px 12px;margin-bottom:6px}
@@ -137,7 +131,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .attn-item-top{display:flex;justify-content:space-between;font-size:11px;color:#7a8aa3;font-weight:700;margin-bottom:4px}
 .attn-item-text{font-size:12px;color:#3a4a63;line-height:1.5}
 
-/* Section 5 — Timeline + truncated summaries */
 .timeline-item{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:12px;margin-bottom:8px}
 .timeline-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px}
 .timeline-date{font-size:12.5px;font-weight:800;color:#0b1f3a;white-space:nowrap}
@@ -158,12 +151,16 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .outcome-negative{background:#fdeceb;color:#d9483c}
 .outcome-neutral{background:#eef3f9;color:#5b6b85}
 
-/* Section 6 — Full History collapsed */
 .section-toggle{display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:12px 14px}
+.section-toggle:hover{border-color:#bcd8ff}
 .toggle-arrow{color:#aab8cc;font-size:14px;transition:transform 0.2s}
 .toggle-arrow.rotated{transform:rotate(180deg)}
 .full-history-content{display:none;margin-top:8px}
 .full-history-content.open{display:block}
+/* Collapsible sections — Priority Attention, Open Actions, Timeline */
+.collapsible-content{display:none;margin-top:8px}
+.collapsible-content.open{display:block}
+
 .discovery-mini{font-size:11.5px;color:#3a4a63;background:#eaf3ff;border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.6}
 .discovery-mini b{color:#0b1f3a}
 
@@ -198,7 +195,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
 </div>
 
-<!-- Account Intelligence View -->
 <div id="accountDetailOverlay" class="detail-overlay" onclick="if(event.target===this)closeAccountDetail()">
   <div class="detail-panel">
     <div class="detail-header">
@@ -246,11 +242,13 @@ function getCanonicalTerritory(raw){
 
 async function loadDirectory(){
   try{
-    var accRes=await fetch(WORKER_URL+'/get-accounts');
+    var [accRes,visRes]=await Promise.all([
+      fetch(WORKER_URL+'/get-accounts'),
+      fetch(WORKER_URL+'/get-visits')
+    ]);
     var accData=await accRes.json();
-    if(!accRes.ok)throw new Error(JSON.stringify(accData));
-    var visRes=await fetch(WORKER_URL+'/get-visits');
     var visData=await visRes.json();
+    if(!accRes.ok)throw new Error(JSON.stringify(accData));
     if(!visRes.ok)throw new Error(JSON.stringify(visData));
 
     var accountRecords=accData.records||[];
@@ -278,12 +276,9 @@ async function loadDirectory(){
     visitRecords.forEach(function(v){
       var f=v.fields||{};
       var matched=null;
-      // Defensive join: only trust Account when it's a real linked-record array.
-      // Anything else (true, missing, malformed) is treated as no linked account.
       if(Array.isArray(f['Account'])&&f['Account'].length>0){
         matched=byId[f['Account'][0]]||null;
       }
-      // Fallback for legacy/unlinked visits: exact Hospital Name match.
       if(!matched&&f['Hospital Name']){
         matched=byNameLower[String(f['Hospital Name']).trim().toLowerCase()]||null;
       }
@@ -321,10 +316,10 @@ async function loadDirectory(){
 
 function accountCardHtml(a){
   return'<div class="activity-item" onclick="openAccountDetail(\''+a.id+'\')">'+
-      '<div class="activity-header"><div class="activity-hospital">'+a.name+'</div><div class="activity-chevron">›</div></div>'+
+      '<div class="activity-header"><div class="activity-hospital">'+escapeHtml(a.name)+'</div><div class="activity-chevron">›</div></div>'+
       '<div class="activity-meta">'+
-        (a.territory?'<span class="activity-badge badge-territory">'+a.territory+'</span>':'')+
-        (a.city?'<span class="activity-badge badge-territory">'+a.city+'</span>':'')+
+        (a.territory?'<span class="activity-badge badge-territory">'+escapeHtml(a.territory)+'</span>':'')+
+        (a.city?'<span class="activity-badge badge-territory">'+escapeHtml(a.city)+'</span>':'')+
         '<span class="activity-badge badge-rep">'+a.visitCount+' visit'+(a.visitCount!==1?'s':'')+'</span>'+
       '</div>'+
       '<div class="activity-summary">'+(a.lastVisit?'Last visit: '+formatDate(a.lastVisit):'No visits logged yet')+'</div>'+
@@ -340,8 +335,6 @@ function renderDirectory(){
   }
 }
 
-// Active search bypasses territory grouping entirely — a manager who already
-// knows an account name shouldn't have to expand a territory to find it.
 function renderFlatList(q){
   var filtered=ACCOUNTS.filter(function(a){return a.name.toLowerCase().indexOf(q)>-1;});
   document.getElementById('directoryCount').textContent=filtered.length+' account'+(filtered.length!==1?'s':'');
@@ -352,8 +345,6 @@ function renderFlatList(q){
   document.getElementById('directoryList').innerHTML=filtered.map(accountCardHtml).join('');
 }
 
-// Default view: Territory → Account → Intelligence. Collapsed by default,
-// fixed GCC order, empty territories omitted rather than shown with a 0 count.
 function renderTerritoryGroups(){
   var total=ACCOUNTS.length;
   document.getElementById('directoryCount').textContent=total+' account'+(total!==1?'s':'');
@@ -390,8 +381,6 @@ function toggleTerritory(headerEl){
 
 document.getElementById('directorySearch').addEventListener('input',renderDirectory);
 
-// ---------- Account Intelligence View ----------
-
 function priorityClass(p){
   var s=String(p).toLowerCase();
   if(s==='high')return'priority-high';
@@ -417,10 +406,6 @@ function getFilterDays(key){
   return null;
 }
 
-// Period-over-period sentiment comparison. Score = positiveCount - negativeCount
-// within each window. Not meaningful for "All Time" (no prior window to compare
-// against), and not meaningful if the prior window has zero visits — both cases
-// are surfaced as explicit states rather than a misleading arrow.
 function computeTrend(allVisits,filterKey){
   var days=getFilterDays(filterKey);
   if(days===null)return null;
@@ -474,14 +459,19 @@ function closeAccountDetail(){
   document.body.style.overflow='';
 }
 
+function toggleSection(headerEl){
+  headerEl.nextElementSibling.classList.toggle('open');
+  headerEl.querySelector('.toggle-arrow').classList.toggle('rotated');
+}
+
 function renderAccountDetail(){
   var acc=ACCOUNTS.find(function(a){return a.id===currentDetailAccountId;});
   if(!acc)return;
 
   document.getElementById('detailAccountName').textContent=acc.name;
   var metaHtml='';
-  if(acc.territory)metaHtml+='<span class="activity-badge badge-territory">'+acc.territory+'</span>';
-  if(acc.city)metaHtml+='<span class="activity-badge badge-territory">'+acc.city+'</span>';
+  if(acc.territory)metaHtml+='<span class="activity-badge badge-territory">'+escapeHtml(acc.territory)+'</span>';
+  if(acc.city)metaHtml+='<span class="activity-badge badge-territory">'+escapeHtml(acc.city)+'</span>';
   document.getElementById('detailMeta').innerHTML=metaHtml;
 
   var allVisits=acc.matchedVisits.slice().sort(function(a,b){
@@ -499,13 +489,16 @@ function renderAccountDetail(){
 
   var lastVisit=allVisits.length?allVisits[0]:null;
 
-  // Section 1 — scoped-by-window counts, plus unscoped facts (Last Visit/Rep, Next Action)
-  var openActionsCount=windowVisits.filter(function(v){return v.actionItems&&String(v.actionItems).trim();}).length;
-  var highPriorityCount=windowVisits.filter(function(v){return String(v.priority).toLowerCase()==='high';}).length;
+  var attnActions=windowVisits.filter(function(v){return v.actionItems&&String(v.actionItems).trim();});
+  var attnPriority=windowVisits.filter(function(v){return String(v.priority).toLowerCase()==='high';});
+  var attnNegative=windowVisits.filter(function(v){return String(v.outcome).toLowerCase()==='negative';});
+  var priorityAttnCount=attnPriority.length+attnNegative.length;
+
+  var openActionsCount=attnActions.length;
+  var highPriorityCount=attnPriority.length;
   var nextAction=allVisits.find(function(v){return v.actionItems&&String(v.actionItems).trim();});
   var trend=computeTrend(allVisits,currentDetailFilter);
 
-  // Section 2 — ownership
   var allTimeRepCounts={};
   allVisits.forEach(function(v){allTimeRepCounts[v.rep]=(allTimeRepCounts[v.rep]||0)+1;});
   var mostActiveRep=null,mostActiveCount=0;
@@ -516,7 +509,7 @@ function renderAccountDetail(){
 
   var html='';
 
-  // SECTION 1 — Current Account Status
+  // SECTION 1 — Current Account Status (always visible)
   html+='<div class="detail-section"><div class="detail-section-title">Current Account Status</div>'+
     '<div class="status-hero">'+
       '<div class="status-row"><span class="status-label">Last Visit</span><span class="status-value">'+(lastVisit&&lastVisit.date?formatDate(lastVisit.date):'—')+'</span></div>'+
@@ -530,7 +523,7 @@ function renderAccountDetail(){
       '<div class="status-row"><span class="status-label">Next Required Action</span><span class="status-value">'+(nextAction?escapeHtml(truncate(nextAction.actionItems,60)):'None recorded')+'</span></div>'+
     '</div></div>';
 
-  // SECTION 2 — Account Ownership
+  // SECTION 2 — Account Ownership (always visible)
   html+='<div class="detail-section"><div class="detail-section-title">Account Ownership</div>'+
     '<div class="ownership-grid">'+
       '<div class="ownership-card"><div class="ownership-label">Most Active (All-Time)</div><div class="ownership-name">'+(mostActiveRep?escapeHtml(mostActiveRep):'—')+'</div><div class="ownership-sub">'+mostActiveCount+' visit'+(mostActiveCount!==1?'s':'')+'</div></div>'+
@@ -542,7 +535,7 @@ function renderAccountDetail(){
     )+
     '</div></div>';
 
-  // SECTION 3 — Time Filter
+  // SECTION 3 — Activity Window filter pills (always visible)
   html+='<div class="detail-section"><div class="detail-section-title">Activity Window</div>'+
     '<div class="filter-pills">'+
       ['7','30','90','all'].map(function(k){
@@ -550,21 +543,16 @@ function renderAccountDetail(){
       }).join('')+
     '</div></div>';
 
-  // SECTION 4 — Attention Required
-  var attnActions=windowVisits.filter(function(v){return v.actionItems&&String(v.actionItems).trim();});
-  var attnPriority=windowVisits.filter(function(v){return String(v.priority).toLowerCase()==='high';});
-  var attnNegative=windowVisits.filter(function(v){return String(v.outcome).toLowerCase()==='negative';});
-  html+='<div class="detail-section"><div class="detail-section-title">Attention Required</div>';
-  if(attnActions.length===0&&attnPriority.length===0&&attnNegative.length===0){
-    html+='<div class="detail-empty">Nothing requires attention in '+filterLabel(currentDetailFilter).toLowerCase()+'.</div>';
+  // SECTION 4a — Priority Attention (collapsed by default)
+  html+='<div class="detail-section">'+
+    '<div class="section-toggle" onclick="toggleSection(this)">'+
+      '<span class="detail-section-title" style="margin-bottom:0">Priority Attention ('+priorityAttnCount+')</span>'+
+      '<span class="toggle-arrow">▾</span>'+
+    '</div>'+
+    '<div class="collapsible-content">';
+  if(priorityAttnCount===0){
+    html+='<div class="detail-empty">Nothing requires priority attention in '+filterLabel(currentDetailFilter).toLowerCase()+'.</div>';
   }else{
-    if(attnActions.length){
-      html+='<div class="attn-group"><div class="attn-group-title">Open Actions ('+attnActions.length+')</div>';
-      attnActions.forEach(function(v){
-        html+='<div class="attn-item attn-action"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div><div class="attn-item-text">'+escapeHtml(v.actionItems)+'</div></div>';
-      });
-      html+='</div>';
-    }
     if(attnPriority.length){
       html+='<div class="attn-group"><div class="attn-group-title">High Priority ('+attnPriority.length+')</div>';
       attnPriority.forEach(function(v){
@@ -580,10 +568,31 @@ function renderAccountDetail(){
       html+='</div>';
     }
   }
-  html+='</div>';
+  html+='</div></div>';
 
-  // SECTION 5 — Intelligence Timeline
-  html+='<div class="detail-section"><div class="detail-section-title">Intelligence Timeline ('+filterLabel(currentDetailFilter)+')</div>';
+  // SECTION 4b — Open Actions (collapsed by default)
+  html+='<div class="detail-section">'+
+    '<div class="section-toggle" onclick="toggleSection(this)">'+
+      '<span class="detail-section-title" style="margin-bottom:0">Open Actions ('+attnActions.length+')</span>'+
+      '<span class="toggle-arrow">▾</span>'+
+    '</div>'+
+    '<div class="collapsible-content">';
+  if(attnActions.length===0){
+    html+='<div class="detail-empty">No open actions in '+filterLabel(currentDetailFilter).toLowerCase()+'.</div>';
+  }else{
+    attnActions.forEach(function(v){
+      html+='<div class="attn-item attn-action"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div><div class="attn-item-text">'+escapeHtml(v.actionItems)+'</div></div>';
+    });
+  }
+  html+='</div></div>';
+
+  // SECTION 5 — Intelligence Timeline (collapsed by default)
+  html+='<div class="detail-section">'+
+    '<div class="section-toggle" onclick="toggleSection(this)">'+
+      '<span class="detail-section-title" style="margin-bottom:0">Timeline ('+windowVisits.length+')</span>'+
+      '<span class="toggle-arrow">▾</span>'+
+    '</div>'+
+    '<div class="collapsible-content">';
   if(windowVisits.length===0){
     html+='<div class="detail-empty">No visits in this period.</div>';
   }else{
@@ -601,9 +610,9 @@ function renderAccountDetail(){
       '</div>';
     });
   }
-  html+='</div>';
+  html+='</div></div>';
 
-  // SECTION 6 — Full History (collapsed)
+  // SECTION 6 — Full History (already collapsible — unchanged)
   var discoveryVisit=allVisits.find(function(v){return v.newAccount;});
   html+='<div class="detail-section">'+
     '<div class="section-toggle" onclick="var c=this.nextElementSibling;c.classList.toggle(\'open\');this.querySelector(\'.toggle-arrow\').classList.toggle(\'rotated\')">'+
@@ -646,4 +655,4 @@ if(role!=='Manager'){
 }
 </script>
 </body>
-</html>
+</html>  
