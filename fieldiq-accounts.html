@@ -500,6 +500,9 @@ function gotoTimeline(itemId){
     el.scrollIntoView({behavior:'smooth',block:'nearest'});
     el.classList.add('tl-highlight');
     setTimeout(function(){el.classList.remove('tl-highlight');},1700);
+    // Auto-expand collapsed AI summary so manager sees full story without a second click
+    var wrap=el.querySelector('.summary-wrap');
+    if(wrap)wrap.classList.add('expanded');
   },150);
 }
 
