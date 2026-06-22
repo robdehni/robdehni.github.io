@@ -6,7 +6,10 @@
 <title>FieldIQ — Territory Map</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
+[data-lucide]{display:inline-block;vertical-align:middle;stroke-width:2}
+.access-denied-icon [data-lucide]{width:54px;height:54px;stroke:#d98a1c}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;width:100%;overflow:hidden}
 body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:flex;flex-direction:column}
@@ -23,7 +26,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .filters{background:#fff;border-bottom:1px solid #e3ebf5;padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;align-items:center}
 .filters select{
   background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;padding:8px 12px;
-  font-size:12.5px;outline:none;max-width:140px;font-weight:600;
+  font-size:12.5px;outline:none;max-width:150px;font-weight:600;
 }
 .filters select:focus{border-color:#2f8fff}
 .fbtn{
@@ -86,6 +89,15 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   </div>
 </div>
 <div class="filters">
+  <select id="fPeriod">
+    <option value="today">Today</option>
+    <option value="yesterday">Yesterday</option>
+    <option value="thisWeek">This Week</option>
+    <option value="7">Last 7 Days</option>
+    <option value="30" selected>Last 30 Days</option>
+    <option value="90">Last 90 Days</option>
+    <option value="">All Time</option>
+  </select>
   <select id="fTerr"><option value="">All Territories</option></select>
   <select id="fRep"><option value="">All Reps</option></select>
   <select id="fSent"><option value="">All Sentiment</option><option value="positive">Positive</option><option value="neutral">Neutral</option><option value="negative">Negative</option></select>
@@ -114,7 +126,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <button class="fbtn" style="margin-top:12px" onclick="loadVisits()">Retry</button>
 </div>
 <div class="access-denied" id="accessDeniedEl" style="display:none">
-  <div class="access-denied-icon">🔒</div>
+  <div class="access-denied-icon"><i data-lucide="lock"></i></div>
   <h2>Manager Access Required</h2>
   <p>The Territory Map shows GPS locations and visit data for all reps. This page is restricted to Manager accounts.</p>
   <a href="./index.html" id="accessDeniedHomeBtn">Return Home</a>
@@ -122,14 +134,11 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
 <script>
 // ── MANAGER ACCESS CONTROL ───────────────────────────────────
-// Real role check using the locked identity from PIN login.
-// Map is only initialized and visits are only fetched inside the
-// Manager branch below. Nothing map-related runs before this check passes.
 var role = localStorage.getItem('fieldiq_user_role');
 var isManager = (role === 'Manager');
 
-document.getElementById('topHomeBtn').href = isManager ? './fieldiq.html' : './index.html';
-document.getElementById('accessDeniedHomeBtn').href = isManager ? './fieldiq.html' : './index.html';
+document.getElementById('topHomeBtn').href = isManager ? './dashboard.html' : './index.html';
+document.getElementById('accessDeniedHomeBtn').href = isManager ? './dashboard.html' : './index.html';
 
 if (!isManager) {
   document.getElementById('loadingEl').style.display = 'none';
@@ -148,13 +157,20 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 }).addTo(theMap);
 markers=L.layerGroup().addTo(theMap);
 
-
 setTimeout(function(){theMap.invalidateSize();},300);
 
 function formatDate(d){
   if(!d)return'—';
   return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 }
+
+// Visit time from Airtable createdTime (record submission timestamp).
+// This is the most accurate proxy for visit time since Visit Date is date-only.
+function formatTime(t){
+  if(!t)return'—';
+  return new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
 function getSent(s){
   if(!s)return'unknown';
   s=s.toLowerCase();
@@ -191,6 +207,41 @@ function trunc(t,n){
   return t.length>n?t.substring(0,n)+'...':t;
 }
 
+// ── PERIOD FILTER ─────────────────────────────────────────────────────────────
+// Returns {start, end} Date objects for the selected period.
+// Visit Date is compared against these cutoffs.
+function getDateCutoffs(period){
+  var now=new Date();
+  var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  if(period==='today'){
+    return {start:today,end:null};
+  }
+  if(period==='yesterday'){
+    var yest=new Date(today);yest.setDate(today.getDate()-1);
+    var yestEnd=new Date(today);yestEnd.setMilliseconds(-1);
+    return {start:yest,end:yestEnd};
+  }
+  if(period==='thisWeek'){
+    var dow=today.getDay();
+    var diff=(dow===0?6:dow-1);
+    var monday=new Date(today);monday.setDate(today.getDate()-diff);
+    return {start:monday,end:null};
+  }
+  if(period==='30'){
+    var cutoff=new Date(today);cutoff.setDate(today.getDate()-30);
+    return {start:cutoff,end:null};
+  }
+  if(period==='7'){
+    var cutoff7=new Date(today);cutoff7.setDate(today.getDate()-7);
+    return {start:cutoff7,end:null};
+  }
+  if(period==='90'){
+    var cutoff90=new Date(today);cutoff90.setDate(today.getDate()-90);
+    return {start:cutoff90,end:null};
+  }
+  return {start:null,end:null}; // All Time
+}
+
 function renderMarkers(visits){
   markers.clearLayers();
   var p=0,n=0,neg=0,shown=0;
@@ -203,13 +254,13 @@ function renderMarkers(visits){
     else if(sent==='neutral')n++;
     else if(sent==='negative')neg++;
     var popup=
-      '<div class="ph">'+(f['Hospital Name']||'Unknown Hospital')+'</div>'+
+      '<div class="ph">'+(f['Hospital Name']||'Unknown Account')+'</div>'+
       '<span class="ps" style="'+getBadgeStyle(sent)+'">'+sent.charAt(0).toUpperCase()+sent.slice(1)+'</span>'+
       '<div class="pr"><span class="pl">Rep</span><span class="pv">'+(f['Rep Name']||'—')+'</span></div>'+
       '<div class="pr"><span class="pl">Date</span><span class="pv">'+formatDate(f['Visit Date'])+'</span></div>'+
-      '<div class="pr"><span class="pl">Type</span><span class="pv">'+(f['Visit Type']||'—')+'</span></div>'+
+      '<div class="pr"><span class="pl">Time</span><span class="pv">'+formatTime(v.createdTime)+'</span></div>'+
       '<div class="pr"><span class="pl">Territory</span><span class="pv">'+(f['Territory']||'—')+'</span></div>'+
-      (f['AI Summary']?'<div class="psum">'+trunc(f['AI Summary'],160)+'</div>':'');
+      '<div class="pr"><span class="pl">Type</span><span class="pv">'+(f['Visit Type']||'—')+'</span></div>';
     markers.addLayer(
       L.marker([f.Latitude,f.Longitude],{icon:makeIcon(getColor(sent))})
        .bindPopup(popup,{maxWidth:280})
@@ -241,24 +292,36 @@ function populateFilters(visits){
 }
 
 function applyFilters(){
+  var period=document.getElementById('fPeriod').value;
   var t=document.getElementById('fTerr').value;
   var r=document.getElementById('fRep').value;
   var s=document.getElementById('fSent').value;
+
+  var cutoffs=getDateCutoffs(period);
+
   var filtered=allVisits.filter(function(v){
     var f=v.fields;
     if(t&&f.Territory!==t)return false;
     if(r&&f['Rep Name']!==r)return false;
     if(s&&getSent(f['AI Summary']||'')!==s)return false;
+    // Period filter — match against Visit Date field
+    if(cutoffs.start||cutoffs.end){
+      if(!f['Visit Date'])return false;
+      var vDate=new Date(f['Visit Date']);
+      if(cutoffs.start&&vDate<cutoffs.start)return false;
+      if(cutoffs.end&&vDate>cutoffs.end)return false;
+    }
     return true;
   });
   renderMarkers(filtered);
 }
 
 function resetFilters(){
+  document.getElementById('fPeriod').value='30';
   document.getElementById('fTerr').value='';
   document.getElementById('fRep').value='';
   document.getElementById('fSent').value='';
-  renderMarkers(allVisits);
+  applyFilters();
 }
 
 async function loadVisits(){
@@ -276,7 +339,9 @@ async function loadVisits(){
       return;
     }
     populateFilters(allVisits);
-    renderMarkers(allVisits);
+    // Default to Last 30 Days — morning review view for manager
+    document.getElementById('fPeriod').value='30';
+    applyFilters();
     document.getElementById('updated').textContent='Updated '+new Date().toLocaleTimeString();
     document.getElementById('loadingEl').style.display='none';
     setTimeout(function(){theMap.invalidateSize();},100);
@@ -288,6 +353,7 @@ async function loadVisits(){
 }
 
 loadVisits();
+document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
 </body>
 </html>
