@@ -171,6 +171,11 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .oa-headline{font-size:12px;color:#3a4a63;margin-top:4px;line-height:1.4}
 .oa-full{font-size:12px;color:#3a4a63;margin-top:6px;line-height:1.5;white-space:pre-wrap}
 .oa-toggle{font-size:11px;color:#2f8fff;font-weight:700;cursor:pointer;display:inline-block;margin-top:4px;user-select:none}
+/* View visit — shortcut from Priority Attention / Open Actions into Timeline */
+.view-in-timeline{font-size:11px;color:#2f8fff;font-weight:700;cursor:pointer;background:none;border:none;padding:0;display:inline-block;margin-top:6px;text-decoration:none;user-select:none}
+.view-in-timeline:hover{text-decoration:underline}
+@keyframes tlPulse{0%{background:#eaf3ff}70%{background:#eaf3ff}100%{background:transparent}}
+.tl-highlight{animation:tlPulse 1.6s ease-out;border-radius:12px}
 
 .detail-empty{font-size:12px;color:#aab8cc;font-weight:600;padding:14px;text-align:center;background:#fff;border:1px solid #e3ebf5;border-radius:12px}
 </style>
@@ -480,6 +485,24 @@ function toggleOA(id,btn){
   btn.textContent=open?'▸ Expand':'▴ Collapse';
 }
 
+// Priority Attention and Open Actions link here.
+// Opens Timeline section if collapsed, scrolls to the originating visit card,
+// briefly highlights it. Timeline is the source of truth — no duplication.
+function gotoTimeline(itemId){
+  var body=document.getElementById('timeline-body');
+  var toggle=document.getElementById('timeline-toggle');
+  if(body&&!body.classList.contains('open')){
+    if(toggle)toggleSection(toggle);
+  }
+  setTimeout(function(){
+    var el=document.getElementById(itemId);
+    if(!el)return;
+    el.scrollIntoView({behavior:'smooth',block:'nearest'});
+    el.classList.add('tl-highlight');
+    setTimeout(function(){el.classList.remove('tl-highlight');},1700);
+  },150);
+}
+
 function renderAccountDetail(){
   var acc=ACCOUNTS.find(function(a){return a.id===currentDetailAccountId;});
   if(!acc)return;
@@ -572,14 +595,14 @@ function renderAccountDetail(){
     if(attnPriority.length){
       html+='<div class="attn-group"><div class="attn-group-title">High Priority ('+attnPriority.length+')</div>';
       attnPriority.forEach(function(v){
-        html+='<div class="attn-item attn-priority"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div><span class="signal-badge badge-priority-high">High Priority</span></div>';
+        html+='<div class="attn-item attn-priority"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div><span class="signal-badge badge-priority-high">High Priority</span><button class="view-in-timeline" onclick="gotoTimeline(\'tl-'+v.id+'\')">→ View visit</button></div>';
       });
       html+='</div>';
     }
     if(attnNegative.length){
       html+='<div class="attn-group"><div class="attn-group-title">Negative Sentiment ('+attnNegative.length+')</div>';
       attnNegative.forEach(function(v){
-        html+='<div class="attn-item"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div><span class="signal-badge badge-negative-outcome">Negative Outcome</span></div>';
+        html+='<div class="attn-item"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div><span class="signal-badge badge-negative-outcome">Negative Outcome</span><button class="view-in-timeline" onclick="gotoTimeline(\'tl-'+v.id+'\')">→ View visit</button></div>';
       });
       html+='</div>';
     }
@@ -611,23 +634,25 @@ function renderAccountDetail(){
         :
           '<div class="attn-item-text">'+escapeHtml(aText)+'</div>'
         )+
+        '<button class="view-in-timeline" onclick="gotoTimeline(\'tl-'+v.id+'\')">→ View visit</button>'+
       '</div>';
     });
   }
   html+='</div></div>';
 
   // SECTION 5 — Intelligence Timeline (collapsed by default)
+  // IDs on toggle + body allow gotoTimeline() to open and scroll to specific cards
   html+='<div class="detail-section">'+
-    '<div class="section-toggle" onclick="toggleSection(this)">'+
+    '<div class="section-toggle" id="timeline-toggle" onclick="toggleSection(this)">'+
       '<span class="detail-section-title" style="margin-bottom:0">Timeline ('+windowVisits.length+')</span>'+
       '<span class="toggle-arrow">▾</span>'+
     '</div>'+
-    '<div class="collapsible-content">';
+    '<div class="collapsible-content" id="timeline-body">';
   if(windowVisits.length===0){
     html+='<div class="detail-empty">No visits in this period.</div>';
   }else{
     windowVisits.forEach(function(v){
-      html+='<div class="timeline-item">'+
+      html+='<div class="timeline-item" id="tl-'+v.id+'">'+
         '<div class="timeline-top">'+
           '<div class="timeline-date">'+(v.date?formatDate(v.date):'—')+'</div>'+
           '<div class="timeline-badges">'+
