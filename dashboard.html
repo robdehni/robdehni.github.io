@@ -702,6 +702,159 @@ function getReportRecords(days){
   });
 }
 
+function buildRepReviewReport(){
+  var days=reportPeriodDays;
+  var endDate=new Date();
+  var startDate=new Date(endDate.getTime()-days*24*60*60*1000);
+  var records=getReportRecords(days);
+  var rep=document.getElementById('filterRep').value||'All Reps';
+  var terr=document.getElementById('filterTerritory').value||'All Territories';
+  var periodLabel=REPORT_PERIOD_LABELS[days]||(days+' Days');
+  var startLabel=formatDate(startDate);
+  var endLabel=formatDate(endDate);
+  var generated=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+  document.getElementById('reportPeriodPanel').style.display='none';
+
+  if(!records.length){
+    var emptyWin=window.open('','_blank');
+    if(!emptyWin){
+      alert('Please allow pop-ups for this site to generate the report.');
+      return;
+    }
+    emptyWin.document.write('<html><head><title>Rep Review Report</title></head><body style="font-family:sans-serif;padding:40px;text-align:center;color:#555"><h2>No visits match the current filters</h2><p>Reporting Period: '+escapeHtml(periodLabel)+' ('+startLabel+' – '+endLabel+')</p><p>Adjust the filters or choose a longer period and try again.</p></body></html>');
+    emptyWin.document.close();
+    return;
+  }
+
+  var totalVisits=records.length;
+  var accountSet={};
+  records.forEach(function(r){accountSet[(r.fields['Hospital Name']||'Unknown').trim()]=true;});
+  var accountsVisited=Object.keys(accountSet).length;
+  var newAccounts=records.filter(function(r){return r.fields['New Account']===true;});
+  var visitTypeCounts=groupCount(records,function(r){return r.fields['Visit Type'];});
+  var outcomeCounts=groupCount(records,function(r){return r.fields['Outcome'];});
+  var priorityCounts=groupCount(records,function(r){return r.fields['Priority'];});
+  var highPriority=records.filter(function(r){return r.fields['Priority']==='High';});
+  var followUps=records.filter(function(r){return r.fields['Action Items']&&String(r.fields['Action Items']).trim();});
+
+  var prompts=[];
+  if(highPriority.length>0){
+    prompts.push('Discuss the '+highPriority.length+' High Priority opportunit'+(highPriority.length===1?'y':'ies')+' below — what is the next step on each?');
+  }
+  var negNeutral=(outcomeCounts['Negative']||0)+(outcomeCounts['Neutral']||0);
+  if(negNeutral>0){
+    prompts.push(negNeutral+' visit'+(negNeutral===1?'':'s')+' had a Negative or Neutral outcome — what happened, and what is the plan?');
+  }
+  var pendingNew=newAccounts.filter(function(r){return r.fields['Pending Review']===true;});
+  if(pendingNew.length>0){
+    prompts.push(pendingNew.length+' new account'+(pendingNew.length===1?'':'s')+' still awaiting review — confirm details and prioritize next steps.');
+  }
+  if(followUps.length>0){
+    prompts.push(followUps.length+' visit'+(followUps.length===1?'':'s')+' have open follow-ups — confirm status on each below.');
+  }
+  if(prompts.length===0){
+    prompts.push('No specific flags this period — use this time for general check-in and forward planning.');
+  }
+
+  var visitRows=records.slice().sort(function(a,b){return new Date(b.fields['Visit Date'])-new Date(a.fields['Visit Date']);}).map(function(r){
+    var f=r.fields;
+    return '<tr><td>'+escapeHtml(f['Hospital Name']||'—')+'</td><td>'+escapeHtml(f['Territory']||'—')+'</td><td>'+formatDate(f['Visit Date'])+'</td><td>'+escapeHtml(f['Visit Type']||'—')+'</td><td>'+escapeHtml(f['Priority']||'—')+'</td><td>'+escapeHtml(f['Outcome']||'—')+'</td></tr>';
+  }).join('');
+
+  var newAccountRows=newAccounts.length?newAccounts.map(function(r){
+    var f=r.fields;
+    return '<tr><td>'+escapeHtml(f['Hospital Name']||'—')+'</td><td>'+escapeHtml(f['Territory']||'—')+'</td><td>'+escapeHtml(f['Rep Name']||'—')+'</td><td>'+formatDate(f['Visit Date'])+'</td><td>'+(f['Pending Review']===true?'Pending':'Reviewed')+'</td></tr>';
+  }).join(''):'<tr><td colspan="5" class="rr-empty">No new accounts discovered this period.</td></tr>';
+
+  var highPriorityBlocks=highPriority.length?highPriority.map(function(r){
+    var f=r.fields;
+    var summary=f['Meeting Notes']||f['AI Summary']||'No summary available.';
+    return '<div class="rr-highlight"><div class="rr-highlight-head"><strong>'+escapeHtml(f['Hospital Name']||'—')+'</strong> · '+escapeHtml(f['Rep Name']||'—')+' · '+formatDate(f['Visit Date'])+' · <span class="rr-priority-tag">'+escapeHtml(f['Priority']||'—')+'</span></div><div class="rr-highlight-body">'+escapeHtml(summary)+'</div></div>';
+  }).join(''):'<p class="rr-empty">No High Priority visits this period.</p>';
+
+  var followUpRows=followUps.length?followUps.map(function(r){
+    var f=r.fields;
+    return '<tr><td>'+escapeHtml(f['Hospital Name']||'—')+'</td><td>'+escapeHtml(f['Rep Name']||'—')+'</td><td>'+formatDate(f['Visit Date'])+'</td><td>'+escapeHtml(f['Action Items'])+'</td></tr>';
+  }).join(''):'<tr><td colspan="4" class="rr-empty">No open follow-ups logged this period.</td></tr>';
+
+  var promptItems=prompts.map(function(p){return '<li>'+escapeHtml(p)+'</li>';}).join('');
+
+  var html=''+
+  '<html><head><title>Rep Review Report — '+escapeHtml(rep)+'</title>'+
+  '<style>'+
+  '*{box-sizing:border-box}'+
+  'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#0b1f3a;padding:30px;max-width:800px;margin:0 auto}'+
+  'h1{font-size:20px;margin-bottom:2px}'+
+  '.rr-meta{color:#5b6b85;font-size:12.5px;margin-bottom:24px}'+
+  '.rr-meta div{margin-bottom:3px}'+
+  '.rr-meta strong{color:#0b1f3a}'+
+  'h2{font-size:14px;text-transform:uppercase;letter-spacing:0.5px;color:#2f8fff;border-bottom:2px solid #eaf3ff;padding-bottom:6px;margin:26px 0 12px;page-break-after:avoid}'+
+  '.rr-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:6px}'+
+  '.rr-stat{background:#f4f8fc;border-radius:8px;padding:10px 12px}'+
+  '.rr-stat .num{font-size:20px;font-weight:800}'+
+  '.rr-stat .label{font-size:11px;color:#5b6b85}'+
+  '.rr-count-row{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;border-bottom:1px solid #f0f3f8}'+
+  'table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}'+
+  'th{text-align:left;background:#f4f8fc;padding:6px 8px;font-size:10.5px;text-transform:uppercase;color:#5b6b85}'+
+  'td{padding:6px 8px;border-bottom:1px solid #f0f3f8}'+
+  '.rr-highlight{border:1px solid #eaf3ff;border-radius:8px;padding:10px 12px;margin-bottom:8px;page-break-inside:avoid}'+
+  '.rr-highlight-head{font-size:12.5px;margin-bottom:4px}'+
+  '.rr-priority-tag{font-weight:700;color:#d9534f}'+
+  '.rr-highlight-body{font-size:12px;color:#3a4a63;line-height:1.5}'+
+  '.rr-empty{color:#aab8cc;font-style:italic;font-size:12px}'+
+  'ul{font-size:13px;line-height:1.8;padding-left:18px}'+
+  '@media print{body{padding:0}.no-print{display:none}}'+
+  '.rr-print-btn{background:#2f8fff;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:18px}'+
+  '</style></head><body>'+
+  '<button class="rr-print-btn no-print" onclick="window.print()">🖨️ Print / Save as PDF</button>'+
+  '<h1>Rep Review Report</h1>'+
+  '<div class="rr-meta">'+
+    '<div><strong>Rep:</strong> '+escapeHtml(rep)+'</div>'+
+    '<div><strong>Territory:</strong> '+escapeHtml(terr)+'</div>'+
+    '<div><strong>Reporting Period:</strong> '+escapeHtml(periodLabel)+' ('+startLabel+' – '+endLabel+')</div>'+
+    '<div><strong>Generated:</strong> '+generated+'</div>'+
+  '</div>'+
+
+  '<h2>Activity Summary</h2>'+
+  '<div class="rr-summary-grid">'+
+    '<div class="rr-stat"><div class="num">'+totalVisits+'</div><div class="label">Total Visits</div></div>'+
+    '<div class="rr-stat"><div class="num">'+accountsVisited+'</div><div class="label">Accounts Visited</div></div>'+
+    '<div class="rr-stat"><div class="num">'+newAccounts.length+'</div><div class="label">New Accounts Discovered</div></div>'+
+    '<div class="rr-stat"><div class="num">'+highPriority.length+'</div><div class="label">High Priority Visits</div></div>'+
+  '</div>'+
+  '<div class="rr-summary-grid" style="margin-top:14px">'+
+    '<div><strong style="font-size:12px">Visit Type</strong>'+countsToRows(visitTypeCounts)+'</div>'+
+    '<div><strong style="font-size:12px">Sentiment</strong>'+countsToRows(outcomeCounts)+'</div>'+
+  '</div>'+
+  '<div style="margin-top:10px"><strong style="font-size:12px">Priority</strong>'+countsToRows(priorityCounts)+'</div>'+
+
+  '<h2>Accounts Visited</h2>'+
+  '<table><tr><th>Account</th><th>Territory</th><th>Date</th><th>Visit Type</th><th>Priority</th><th>Outcome</th></tr>'+visitRows+'</table>'+
+
+  '<h2>New Accounts Discovered</h2>'+
+  '<table><tr><th>Account</th><th>Territory</th><th>Rep</th><th>Date</th><th>Review Status</th></tr>'+newAccountRows+'</table>'+
+
+  '<h2>High Priority / Opportunity Highlights</h2>'+
+  highPriorityBlocks+
+
+  '<h2>Open Follow-Ups Required</h2>'+
+  '<table><tr><th>Account</th><th>Rep</th><th>Date</th><th>Action Items</th></tr>'+followUpRows+'</table>'+
+
+  '<h2>Manager Discussion / Coaching Prompts</h2>'+
+  '<ul>'+promptItems+'</ul>'+
+
+  '</body></html>';
+
+  var win=window.open('','_blank');
+  if(!win){
+    alert('Please allow pop-ups for this site to generate the report.');
+    return;
+  }
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+}
 
 function applyFilters(){
   var filtered=getFilteredRecords();
