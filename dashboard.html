@@ -847,19 +847,22 @@ function buildRepReviewReport(){
   '<script>window.addEventListener("afterprint",function(){try{if(window.opener&&!window.opener.closed){window.opener.focus();}}catch(e){}});<\/script>'+
   '</body></html>';
 
-  var win=window.open('','_blank');
+  // Use a Blob URL instead of window.open('','_blank') + document.write().
+  // document.write() on an about:blank popup keeps both windows in the same
+  // renderer process. Edge print preview then suspends the shared renderer,
+  // turning the dashboard white and freezing refresh. A Blob URL loads the
+  // report via a real navigation into a decoupled context — print preview on
+  // the report tab no longer touches the dashboard's renderer.
+  var reportBlob=new Blob([html],{type:'text/html'});
+  var reportBlobUrl=URL.createObjectURL(reportBlob);
+  var win=window.open(reportBlobUrl,'_blank');
   if(!win){
+    URL.revokeObjectURL(reportBlobUrl);
     alert('Please allow pop-ups for this site to generate the report.');
     return;
   }
-  // Restore dashboard focus when popup closes (fixes PC control freeze).
-  // win.focus() was moving OS-level focus to the popup; on Windows the
-  // dashboard then couldn't receive input until explicitly clicked.
-  // window.focus() keeps focus here; the unload handler restores it if
-  // the user switches away and closes the popup. No-op on mobile.
-  win.addEventListener('unload',function(){setTimeout(function(){window.focus();},50);});
-  win.document.write(html);
-  win.document.close();
+  // Clean up the blob URL after a generous delay — the tab has loaded by then.
+  setTimeout(function(){URL.revokeObjectURL(reportBlobUrl);},60000);
   window.focus();
 }
 
