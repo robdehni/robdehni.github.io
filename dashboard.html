@@ -4,7 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FieldIQ — Dashboard</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
+[data-lucide]{display:inline-block;vertical-align:middle;stroke-width:2}
+.nav-icon [data-lucide]{width:22px;height:22px}
+.access-denied-icon [data-lucide]{width:54px;height:54px;stroke:#d98a1c}
+/* Priority dot — replaces coloured circle emoji */
+.pdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle;flex-shrink:0}
+.pdot-high{background:#e0344a}
+.pdot-medium{background:#d98a1c}
+.pdot-low{background:#1fa861}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px 18px 80px}
 .container{max-width:780px;margin:0 auto}
@@ -58,6 +67,13 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .sent-negative .sent-label,.sent-negative .sent-value{color:#e0344a}
 
 .section-title{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #e3ebf5}
+.open-actions-toggle{display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #e3ebf5;user-select:none}
+.open-actions-toggle:hover .open-actions-label{color:#2f8fff}
+.open-actions-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;transition:color 0.15s}
+.oa-arrow{color:#aab8cc;font-size:14px;font-weight:700;transition:transform 0.2s;flex-shrink:0}
+.oa-arrow.rotated{transform:rotate(180deg)}
+.oa-body{display:none}
+.oa-body.open{display:block}
 .priority-section{margin-bottom:8px}
 .priority-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .priority-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
@@ -153,7 +169,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <h1>FieldIQ<span id="managerBadge" style="display:none" class="manager-badge">Manager</span></h1>
   <p id="lastUpdated">Loading dashboard...</p>
 </div>
-<a href="https://fieldiq.biz/fieldiq.html" class="home-btn">← Home</a>
+<a href="./fieldiq.html" class="home-btn">← Home</a>
 
 <div id="filterBar" class="filter-bar" style="display:none">
   <h3>Manager Filters</h3>
@@ -218,10 +234,15 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   </div>
   <div class="section-title">New Accounts Added</div>
   <div id="newAccountsList"></div>
-  <div class="section-title">Manager Priority View</div>
-  <div id="priorityHigh" class="priority-section"></div>
-  <div id="priorityMedium" class="priority-section"></div>
-  <div id="priorityLow" class="priority-section"></div>
+  <div class="open-actions-toggle" id="openActionsToggle" onclick="toggleOpenActions()">
+    <span class="open-actions-label">Priority Review (<span id="openActionsCount">0</span>)</span>
+    <span class="oa-arrow" id="oaArrow">▾</span>
+  </div>
+  <div class="oa-body" id="openActionsBody">
+    <div id="priorityHigh" class="priority-section"></div>
+    <div id="priorityMedium" class="priority-section"></div>
+    <div id="priorityLow" class="priority-section"></div>
+  </div>
   </div>
   <div>
   <div class="section-title">Rep Performance</div>
@@ -238,16 +259,16 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 </div>
 <div class="loading" id="loadingEl"><div class="spinner"></div>Loading dashboard...</div>
 <div class="access-denied" id="accessDeniedEl" style="display:none">
-  <div class="access-denied-icon">🔒</div>
+  <div class="access-denied-icon"><i data-lucide="lock"></i></div>
   <h2>Manager Access Required</h2>
   <p>The Dashboard shows KPIs, rep performance, and territory data across all reps. This page is restricted to Manager accounts.</p>
   <a href="./index.html" id="accessDeniedHomeBtn">Return Home</a>
 </div>
 </div>
 <nav class="bottom-nav">
-  <a class="nav-item" href="fieldiq-log-visit.html"><span class="nav-icon">🎙️</span>Log Visit</a>
-  <a class="nav-item" href="fieldiq-visits-map.html"><span class="nav-icon">📍</span>Visit Map</a>
-  <a class="nav-item active" href="dashboard.html"><span class="nav-icon">📊</span>Dashboard</a>
+  <a class="nav-item" href="fieldiq-log-visit.html"><span class="nav-icon"><i data-lucide="mic"></i></span>Log Visit</a>
+  <a class="nav-item" href="fieldiq-visits-map.html"><span class="nav-icon"><i data-lucide="map-pin"></i></span>Visit Map</a>
+  <a class="nav-item active" href="dashboard.html"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>Dashboard</a>
 </nav>
 
 <script>
@@ -362,14 +383,15 @@ function makePriorityCard(record){
   if(isManager){
     buttonsHtml=
       '<div class="priority-btns">'+
-        '<button class="pbtn pbtn-high'+(current==='High'?' pbtn-active-high':'')+'" data-p="High">🔴 High</button>'+
-        '<button class="pbtn pbtn-medium'+(current==='Medium'?' pbtn-active-medium':'')+'" data-p="Medium">🟠 Medium</button>'+
-        '<button class="pbtn pbtn-low'+(current==='Low'?' pbtn-active-low':'')+'" data-p="Low">🟢 Low</button>'+
+        '<button class="pbtn pbtn-high'+(current==="High"?' pbtn-active-high':'')+'" data-p="High"><span class="pdot pdot-high"></span>High</button>'+
+        '<button class="pbtn pbtn-medium'+(current==="Medium"?' pbtn-active-medium':'')+'" data-p="Medium"><span class="pdot pdot-medium"></span>Medium</button>'+
+        '<button class="pbtn pbtn-low'+(current==="Low"?' pbtn-active-low':'')+' " data-p="Low"><span class="pdot pdot-low"></span>Low</button>'+
       '</div>'+
       '<button class="pbtn-reviewed">✓ Mark Reviewed</button>';
   }else{
     var labelClass=current==='High'?'plabel-high':current==='Low'?'plabel-low':'plabel-medium';
-    var dot=current==='High'?'🔴':current==='Low'?'🟢':'🟠';
+    var dotCls=current==='High'?'pdot-high':current==='Low'?'pdot-low':'pdot-medium';
+    var dot='<span class="pdot '+dotCls+'"></span>';
     buttonsHtml='<div><span class="priority-label '+labelClass+'">'+dot+' '+current+'</span></div>';
   }
   div.innerHTML=
@@ -398,6 +420,11 @@ function makePriorityCard(record){
   return div;
 }
 
+function toggleOpenActions(){
+  document.getElementById('openActionsBody').classList.toggle('open');
+  document.getElementById('oaArrow').classList.toggle('rotated');
+}
+
 function renderPrioritySection(records){
   var high=[],medium=[],low=[];
   records.forEach(function(r){
@@ -406,6 +433,9 @@ function renderPrioritySection(records){
     else if(p==='Medium')medium.push(r);
     else if(p==='Low')low.push(r);
   });
+  // Update count in collapsed header
+  var countEl=document.getElementById('openActionsCount');
+  if(countEl)countEl.textContent=high.length+medium.length+low.length;
   function renderBucket(el,list,label,dot,priorityValue){
     el.innerHTML='<a href="'+buildVisitHistoryLink({priority:priorityValue})+'" class="priority-header" style="text-decoration:none;color:inherit"><div class="priority-dot" style="background:'+dot+'"></div><span class="priority-title">'+label+' →</span><span class="priority-count">('+list.length+')</span></a>';
     if(list.length===0){
@@ -933,6 +963,7 @@ if (role !== 'Manager') {
   document.getElementById('managerBadge').style.display='inline-block';
   loadDashboard();
 }
+document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
 </body>
-</html>
+</html>          
