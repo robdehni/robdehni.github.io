@@ -235,7 +235,7 @@ function getFilteredRecords(){
 function toggleAccountCard(cardId,btn){
   var body=document.getElementById(cardId+'-body');
   if(!body)return;
-  var open=body.style.display!=='none';
+  var open=window.getComputedStyle(body).display!=='none';
   body.style.display=open?'none':'block';
   btn.textContent=open?'▸ Expand':'▴ Collapse';
 }
@@ -245,7 +245,7 @@ function toggleAI(id,btn){
   var full=document.getElementById(id);
   var hl=document.getElementById(id+'-h');
   if(!full)return;
-  var open=full.style.display!=='none';
+  var open=window.getComputedStyle(full).display!=='none';
   full.style.display=open?'none':'block';
   if(hl)hl.style.display=open?'':'none';
   btn.textContent=open?'▸ More':'▴ Less';
@@ -309,10 +309,10 @@ function buildActionsView(records){
 
       // Build action items — long items get expand/collapse treatment
       var actionItemsHtml=acc.actions.map(function(a,ai){
-        var needsExpand=a.length>80;
+        var needsExpand=a.length>160;
         if(needsExpand){
           var aiId=cardId+'-ai-'+ai;
-          var headline=a.substring(0,70)+'…';
+          var headline=a.substring(0,120)+'…';
           return'<div class="action-item">'+
             '<span class="action-bullet">→</span>'+
             '<span>'+
