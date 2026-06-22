@@ -478,16 +478,6 @@ function buildDashboard(records){
   document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
 }
 
-// Management Radar v1 — evidence-based, structured-field only. No AI text
-// interpretation, no keyword matching. One card per account; an account only
-// appears if at least one of the four defined signals is true for it.
-// Scoped to whatever records buildDashboard() was called with, so it
-// automatically respects the dashboard's existing Rep/Territory/Date/Priority
-// filters — same data already on screen, nothing fetched separately.
-// Card links use visitId (the most recent visit's Airtable record ID),
-// matching the deep-link pattern already proven by New Accounts cards, since
-// Visit History only reads visitId — it has no handling for a hospital-name
-// parameter, so that approach was confirmed not to work and is not used here.
 function buildManagementRadar(records){
   var accounts={};
   records.forEach(function(r){
@@ -657,9 +647,6 @@ function countsToRows(counts){
 var reportPeriodDays=30;
 var REPORT_PERIOD_LABELS={7:'Last 7 Days',30:'Last 30 Days',90:'Quarterly',180:'Half-Yearly',365:'Annual'};
 
-// Opening the period panel always resets to 30 Days — never remembers the
-// previous choice, so a manager can't accidentally print an Annual report
-// because the browser recalled an earlier session's selection.
 function toggleReportPeriodPanel(){
   var panel=document.getElementById('reportPeriodPanel');
   var willOpen=panel.style.display!=='block';
@@ -678,10 +665,6 @@ function selectReportPeriod(days,el){
   el.classList.add('active');
 }
 
-// Report period is deliberately independent of the dashboard's own filterDate
-// select (which keeps "All Time" for the live KPI view). Rep/Territory/Priority
-// filters are still honored from the dashboard so the report can't drift from
-// what's on screen for those dimensions — only the date window is decoupled.
 function getReportRecords(days){
   var rep=document.getElementById('filterRep').value;
   var terr=document.getElementById('filterTerritory').value;
@@ -851,9 +834,19 @@ function buildRepReviewReport(){
     alert('Please allow pop-ups for this site to generate the report.');
     return;
   }
+  // ── FOCUS FIX ──────────────────────────────────────────────────────────────
+  // win.focus() was transferring OS-level window focus to the popup on PC,
+  // leaving the dashboard unable to receive input events until the user
+  // explicitly clicked on it. The fix: keep focus on the dashboard window,
+  // and restore it again if the popup is closed (unload fires on close/tab-switch).
+  // The popup still opens and is fully visible; the user can switch to it
+  // manually. window.focus() on the opener is a no-op on mobile where this
+  // was never an issue — safe on all platforms.
+  win.addEventListener('unload', function(){ setTimeout(function(){ window.focus(); }, 50); });
   win.document.write(html);
   win.document.close();
-  win.focus();
+  window.focus();
+  // ── END FOCUS FIX ──────────────────────────────────────────────────────────
 }
 
 function applyFilters(){
