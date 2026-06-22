@@ -50,7 +50,7 @@ li{margin-bottom:4px}
 
   // ── READ PAYLOAD ────────────────────────────────────────────────────────────
   var raw=null;
-  try{raw=sessionStorage.getItem('fieldiq_report');}catch(e){}
+  try{raw=localStorage.getItem('fieldiq_report');}catch(e){}
 
   if(!raw){
     root.innerHTML='<div class="state-msg">No report data found.<br><br><a href="./dashboard.html">← Return to Dashboard</a></div>';
@@ -66,7 +66,7 @@ li{margin-bottom:4px}
   }
 
   // Clear immediately — data is now in memory, no need to persist
-  try{sessionStorage.removeItem('fieldiq_report');}catch(e){}
+  try{localStorage.removeItem('fieldiq_report');}catch(e){}
 
   // ── RENDER ──────────────────────────────────────────────────────────────────
   var m=d.meta;
