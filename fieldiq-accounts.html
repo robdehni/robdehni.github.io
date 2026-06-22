@@ -6,293 +6,644 @@
 <title>FieldIQ — Account Directory</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px 18px 60px}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px 18px 40px}
 .container{max-width:780px;margin:0 auto}
+
 .topbar{text-align:center;margin-bottom:18px}
 .topbar h1{font-size:24px;color:#0b1f3a;font-weight:800;letter-spacing:-0.4px}
 .topbar p{color:#7a8aa3;font-size:12.5px;margin-top:4px;font-weight:600}
-.home-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:14px;border:1px solid #e3ebf5;box-shadow:0 2px 8px rgba(11,31,58,0.05)}
+.manager-badge{
+  display:inline-block;background:#fff3e0;color:#d98a1c;border:1px solid #ffe5b3;border-radius:8px;
+  font-size:10.5px;font-weight:800;padding:3px 10px;margin-left:8px;text-transform:uppercase;letter-spacing:0.5px;
+}
+.home-btn{
+  display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
+  text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:14px;border:1px solid #e3ebf5;
+  box-shadow:0 2px 8px rgba(11,31,58,0.05);
+}
 .home-btn:hover{border-color:#2f8fff}
+
 .filter-bar{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:16px;margin-bottom:18px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
-.filter-select{width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;font-size:12.5px;outline:none;font-weight:600}
-.filter-select:focus{border-color:#2f8fff}
-.search-input{display:none;width:100%;margin-top:10px;padding:11px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;font-size:12.5px;outline:none;font-weight:600}
-.search-input.visible{display:block}
+.filter-bar h3{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:12px}
+.search-input{
+  width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #e3ebf5;border-radius:10px;color:#0b1f3a;
+  font-size:13.5px;outline:none;font-weight:600;
+}
 .search-input:focus{border-color:#2f8fff}
-.search-input::placeholder{color:#aab8cc;font-weight:400}
-.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px}
-.stat-pill{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:12px 8px;text-align:center;font-size:11px;color:#7a8aa3;font-weight:700;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
-.stat-pill span{display:block;font-size:22px;font-weight:800;color:#2f8fff;margin-bottom:3px}
-.account-card{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px 18px;margin-bottom:10px;box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color 0.15s}
-.account-card:hover{border-color:#2f8fff}
-.account-card.open{border-color:#2f8fff}
-.account-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
-.account-name{font-size:15px;font-weight:800;color:#0b1f3a;overflow-wrap:break-word;word-break:break-word}
-.account-city{font-size:12px;color:#7a8aa3;font-weight:600;margin-top:2px}
-.account-right{text-align:right;flex-shrink:0}
-.account-reps{font-size:11.5px;color:#3d4f6b;font-weight:600;margin-top:6px}
-.account-snippet{font-size:11.5px;color:#5b6b85;line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid #f4f8fc}
-.account-count{font-size:11px;color:#2f8fff;font-weight:800}
-.account-last{font-size:11px;color:#aab8cc;font-weight:600;margin-top:2px}
-.account-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
-.badge{font-size:10.5px;padding:3px 10px;border-radius:8px;font-weight:700}
+
+.count-label{font-size:11.5px;color:#aab8cc;font-weight:700;margin-bottom:10px}
+
+/* Territory-first navigation */
+.territory-group{margin-bottom:10px}
+.territory-header{
+  display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #e3ebf5;
+  border-radius:14px;padding:14px 16px;cursor:pointer;box-shadow:0 3px 10px rgba(11,31,58,0.04);
+  transition:border-color 0.15s;
+}
+.territory-header:hover{border-color:#bcd8ff}
+.territory-name{font-size:14.5px;font-weight:800;color:#0b1f3a}
+.territory-count{font-size:11px;color:#7a8aa3;font-weight:700;margin-top:2px}
+.territory-chevron{color:#aab8cc;font-size:14px;font-weight:700;transition:transform 0.2s}
+.territory-chevron.rotated{transform:rotate(180deg)}
+.territory-accounts{display:none;padding-top:8px}
+.territory-accounts.open{display:block}
+
+.activity-item{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:14px;margin-bottom:8px;box-shadow:0 3px 10px rgba(11,31,58,0.04);cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s}
+.activity-item:hover{border-color:#bcd8ff;box-shadow:0 4px 14px rgba(47,143,255,0.12)}
+.activity-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.activity-hospital{font-size:13.5px;font-weight:800;color:#0b1f3a}
+.activity-chevron{color:#bcc9da;font-size:16px;font-weight:700;line-height:1}
+.activity-meta{display:flex;gap:6px;flex-wrap:wrap}
+.activity-badge{font-size:10px;padding:3px 10px;border-radius:8px;font-weight:700}
+.badge-rep{background:#eaf3ff;color:#2f8fff}
 .badge-territory{background:#eef3f9;color:#5b6b85}
-.badge-positive{background:#e3f8ea;color:#1fa861}
-.badge-neutral{background:#fff3e0;color:#d98a1c}
-.badge-negative{background:#ffe5e8;color:#e0344a}
-.badge-unknown{background:#eef3f9;color:#7a8aa3}
-.badge-followup{background:#fff8e1;color:#b8860b}
-.badge-high{background:#ffe5e8;color:#e0344a}
-.account-meta{font-size:11.5px;color:#aab8cc;font-weight:600}
-.account-toggle{font-size:11px;color:#2f8fff;font-weight:700;text-align:center;margin-top:10px;user-select:none}
-.intel-panel{display:none;margin-top:12px;padding-top:12px;border-top:1px solid #eef3f9}
-.intel-panel.open{display:block}
-.intel-section{margin-bottom:14px}
-.intel-label{font-size:10px;color:#8a9bb3;text-transform:uppercase;letter-spacing:0.8px;font-weight:800;margin-bottom:6px}
-.intel-rep-list{font-size:12.5px;color:#3d4f6b;font-weight:600;line-height:1.6}
-.intel-action{font-size:12px;color:#3d4f6b;padding:6px 0;border-bottom:1px solid #f4f8fc;line-height:1.5}
-.intel-action:last-child{border-bottom:none}
-.intel-action-meta{font-size:10.5px;color:#aab8cc;font-weight:600;margin-bottom:2px}
-.intel-visit{background:#f8fafd;border-radius:8px;padding:10px 12px;margin-bottom:6px;border-left:3px solid #e3ebf5}
-.intel-visit.positive{border-left-color:#1fa861}
-.intel-visit.negative{border-left-color:#e0344a}
-.intel-visit.neutral{border-left-color:#d98a1c}
-.intel-visit-header{display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px}
-.intel-visit-rep{color:#2f8fff;font-weight:700}
-.intel-visit-date{color:#aab8cc;font-weight:600}
-.intel-visit-summary{font-size:11px;color:#5b6b85;line-height:1.5}
-.intel-history-btn{display:inline-block;margin-top:8px;background:#eaf3ff;color:#2f8fff;border:1px solid #cfe3ff;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;text-decoration:none}
-.intel-history-btn:hover{background:#dceeff}
-.prompt-msg{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:30px;text-align:center;color:#7a8aa3;font-size:13.5px;font-weight:600;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
-.empty{text-align:center;color:#aab8cc;font-size:13.5px;padding:40px 20px;font-weight:600}
-.loading{text-align:center;padding:60px;color:#aab8cc;font-weight:600}
+.activity-summary{font-size:11.5px;color:#7a8aa3;margin-top:8px;line-height:1.6}
+
+.loading{text-align:center;padding:50px;color:#aab8cc;font-weight:600}
 .spinner{width:36px;height:36px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
-@media(min-width:768px){.container{max-width:900px}}
-@media(min-width:1100px){.container{max-width:1100px}body{padding:32px 40px 60px}}
+.empty{text-align:center;color:#aab8cc;font-size:13px;padding:30px;font-weight:600}
+
+.access-denied{
+  text-align:center;padding:60px 20px;display:none;flex-direction:column;align-items:center;
+}
+.access-denied-icon{font-size:54px;margin-bottom:16px}
+.access-denied h2{font-size:20px;color:#0b1f3a;font-weight:800;margin-bottom:8px}
+.access-denied p{font-size:13.5px;color:#7a8aa3;font-weight:600;max-width:340px;line-height:1.6;margin-bottom:20px}
+.access-denied a{
+  display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;
+  text-decoration:none;padding:12px 28px;border-radius:12px;box-shadow:0 6px 16px rgba(47,143,255,0.3);
+}
+
+/* Account Intelligence View */
+.detail-overlay{
+  display:none;position:fixed;inset:0;background:rgba(11,31,58,0.45);z-index:1000;
+  align-items:flex-end;justify-content:center;
+}
+.detail-panel{
+  background:#f4f8fc;width:100%;max-width:780px;max-height:92vh;border-radius:22px 22px 0 0;
+  overflow-y:auto;box-shadow:0 -10px 34px rgba(11,31,58,0.28);
+  animation:slideUp 0.22s ease-out;
+}
+@keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.detail-header{
+  position:sticky;top:0;background:#fff;padding:18px 50px 14px 18px;border-bottom:1px solid #e3ebf5;
+  border-radius:22px 22px 0 0;z-index:2;
+}
+.detail-close{
+  position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;border:none;
+  background:#f4f8fc;color:#7a8aa3;font-size:15px;font-weight:700;cursor:pointer;
+}
+.detail-close:hover{background:#eaf3ff;color:#2f8fff}
+.detail-header h2{font-size:18px;font-weight:800;color:#0b1f3a;letter-spacing:-0.3px}
+.detail-meta-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+
+.detail-body{padding:16px 18px 36px}
+.detail-section{margin-bottom:18px}
+.detail-section-title{
+  font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:10px;
+}
+
+/* Section 1 — Current Account Status */
+.status-hero{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:6px 14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.status-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f0f4f9}
+.status-row:last-child{border-bottom:none}
+.status-label{font-size:11.5px;color:#7a8aa3;font-weight:700;white-space:nowrap}
+.status-value{font-size:13px;font-weight:800;color:#0b1f3a;text-align:right}
+.trend-up{color:#1e9e52}
+.trend-down{color:#d9483c}
+.trend-flat{color:#7a8aa3}
+
+/* Section 2 — Ownership */
+.ownership-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.ownership-card{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:10px 12px}
+.ownership-label{font-size:9.5px;color:#aab8cc;font-weight:700;text-transform:uppercase;letter-spacing:0.3px}
+.ownership-name{font-size:13.5px;font-weight:800;color:#0b1f3a;margin-top:3px}
+.ownership-sub{font-size:10.5px;color:#7a8aa3;font-weight:600;margin-top:1px}
+.ownership-breakdown{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:10px 12px}
+.ownership-bar-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;font-weight:700;color:#3a4a63}
+
+/* Section 3 — Time Filter */
+.filter-pills{display:flex;gap:6px}
+.filter-pill{flex:1;text-align:center;padding:9px 4px;border-radius:10px;font-size:12px;font-weight:800;background:#fff;border:1.5px solid #e3ebf5;color:#5b6b85;cursor:pointer}
+.filter-pill.active{background:#2f8fff;border-color:#2f8fff;color:#fff}
+
+/* Section 4 — Attention Required */
+.attn-group{margin-bottom:10px}
+.attn-group-title{font-size:10.5px;color:#5b6b85;font-weight:800;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px}
+.attn-item{background:#fff;border:1px solid #e3ebf5;border-left:3px solid #d9483c;border-radius:10px;padding:10px 12px;margin-bottom:6px}
+.attn-item.attn-action{border-left-color:#2f8fff}
+.attn-item.attn-priority{border-left-color:#c9871c}
+.attn-item-top{display:flex;justify-content:space-between;font-size:11px;color:#7a8aa3;font-weight:700;margin-bottom:4px}
+.attn-item-text{font-size:12px;color:#3a4a63;line-height:1.5}
+
+/* Section 5 — Timeline + truncated summaries */
+.timeline-item{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:12px;margin-bottom:8px}
+.timeline-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px}
+.timeline-date{font-size:12.5px;font-weight:800;color:#0b1f3a;white-space:nowrap}
+.timeline-badges{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.timeline-meta{font-size:11.5px;color:#7a8aa3;font-weight:600}
+.intel-text{font-size:12px;color:#3a4a63;line-height:1.6;white-space:pre-wrap;margin-top:6px}
+.summary-toggle{color:#2f8fff;font-weight:700;font-size:11px;cursor:pointer;display:inline-block;margin-top:2px}
+.summary-wrap .summary-full{display:none}
+.summary-wrap.expanded .summary-short{display:none}
+.summary-wrap.expanded .summary-full{display:block}
+.summary-wrap.expanded .toggle-more{display:none}
+.summary-wrap:not(.expanded) .toggle-less{display:none}
+
+.priority-high{background:#fdeceb;color:#d9483c}
+.priority-medium{background:#fff6e0;color:#c9871c}
+.priority-low{background:#eef3f9;color:#5b6b85}
+.outcome-positive{background:#e9f9ee;color:#1e9e52}
+.outcome-negative{background:#fdeceb;color:#d9483c}
+.outcome-neutral{background:#eef3f9;color:#5b6b85}
+
+/* Section 6 — Full History collapsed */
+.section-toggle{display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:12px 14px}
+.toggle-arrow{color:#aab8cc;font-size:14px;transition:transform 0.2s}
+.toggle-arrow.rotated{transform:rotate(180deg)}
+.full-history-content{display:none;margin-top:8px}
+.full-history-content.open{display:block}
+.discovery-mini{font-size:11.5px;color:#3a4a63;background:#eaf3ff;border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.6}
+.discovery-mini b{color:#0b1f3a}
+
+.detail-empty{font-size:12px;color:#aab8cc;font-weight:600;padding:14px;text-align:center;background:#fff;border:1px solid #e3ebf5;border-radius:12px}
 </style>
 </head>
 <body>
 <div class="container">
+<a href="./fieldiq.html" class="home-btn">← Home</a>
 <div class="topbar">
-  <h1>FieldIQ</h1>
-  <p id="lastUpdated">Loading...</p>
-</div>
-<a href="./dashboard.html" class="home-btn">← Dashboard</a>
-
-<div class="filter-bar">
-  <select class="filter-select" id="territorySelect" onchange="onTerritoryChange(this)">
-    <option value="">Select territory first</option>
-    <option>UAE</option><option>KSA</option><option>Qatar</option>
-    <option>Kuwait</option><option>Bahrain</option><option>Oman</option>
-  </select>
-  <input type="text" id="accountSearch" class="search-input" placeholder="🔍  Search accounts or cities..." oninput="onSearch(this.value)" autocomplete="off">
+  <h1>FieldIQ<span id="managerBadge" style="display:none" class="manager-badge">Manager</span></h1>
+  <p>Account Directory</p>
 </div>
 
-<div class="stats-row" id="statsRow" style="display:none">
-  <div class="stat-pill"><span id="statAccounts">—</span>Accounts</div>
-  <div class="stat-pill"><span id="statVisits">—</span>Total Visits</div>
-  <div class="stat-pill"><span id="statFollowUps">—</span>Open Follow-Ups</div>
+<div id="accessDeniedEl" class="access-denied">
+  <div class="access-denied-icon">🔒</div>
+  <h2>Manager Access Required</h2>
+  <p>The Account Directory lists every account across all reps and territories. This page is restricted to Manager accounts.</p>
+  <a href="./index.html">Return Home</a>
 </div>
 
-<div id="accountList">
-  <div class="prompt-msg">Select a territory to view accounts</div>
+<div id="loadingEl" class="loading"><div class="spinner"></div>Loading accounts...</div>
+
+<div id="directoryContent" style="display:none">
+  <div class="filter-bar">
+    <h3>Search</h3>
+    <input type="text" id="directorySearch" class="search-input" placeholder="Search account name...">
+  </div>
+  <div class="count-label" id="directoryCount">0 accounts</div>
+  <div id="directoryList"></div>
 </div>
+
+</div>
+
+<!-- Account Intelligence View -->
+<div id="accountDetailOverlay" class="detail-overlay" onclick="if(event.target===this)closeAccountDetail()">
+  <div class="detail-panel">
+    <div class="detail-header">
+      <button class="detail-close" onclick="closeAccountDetail()">✕</button>
+      <h2 id="detailAccountName"></h2>
+      <div class="detail-meta-row" id="detailMeta"></div>
+    </div>
+    <div class="detail-body" id="detailBody"></div>
+  </div>
 </div>
 
 <script>
-var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
 var role=localStorage.getItem('fieldiq_user_role');
-if(role!=='Manager'){window.location.href='./index.html';throw new Error('Manager only');}
-
-var allAccounts=[];
-var allVisits=[];
-var dataLoaded=false;
-var selectedTerritory='';
+var ACCOUNTS=[];
+var currentDetailAccountId=null;
+var currentDetailFilter='30';
 
 function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
-function truncate(t,n){if(!t)return'';t=String(t).trim();return t.length>n?t.substring(0,n)+'...':t;}
 
-function getSentiment(s){
-  if(!s)return'unknown';s=s.toLowerCase();
-  var i=s.indexOf('sentiment');
-  if(i>-1){var t=s.substring(i,i+120);if(t.indexOf('positive')>-1)return'positive';if(t.indexOf('negative')>-1)return'negative';if(t.indexOf('neutral')>-1)return'neutral';}
-  if(s.indexOf('positive')>-1)return'positive';if(s.indexOf('negative')>-1)return'negative';if(s.indexOf('neutral')>-1)return'neutral';
-  return'unknown';
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function sentBadgeClass(s){
-  return s==='positive'?'badge-positive':s==='negative'?'badge-negative':s==='neutral'?'badge-neutral':'badge-unknown';
+function truncate(text,len){
+  var t=String(text||'');
+  if(t.length<=len)return t;
+  return t.slice(0,len).trim()+'…';
 }
 
-// Primary join: Account linked-record field (array of Airtable record IDs).
-// Fallback: Hospital Name text match for visits without Account link.
-function getVisitsForAccount(account){
-  var accId=account.id;
-  var accName=(account.fields['Account Name']||'').trim().toLowerCase();
-  return allVisits.filter(function(v){
-    var f=v.fields;
-    if(f['Account']&&f['Account'].length>0){return f['Account'].indexOf(accId)>-1;}
-    return(f['Hospital Name']||'').trim().toLowerCase()===accName;
-  });
+var TERRITORY_ORDER=['UAE','KSA','Qatar','Kuwait','Bahrain','Oman','Unassigned'];
+
+function getCanonicalTerritory(raw){
+  var t=(raw||'').trim();
+  if(!t)return'Unassigned';
+  var tu=t.toUpperCase();
+  if(tu.indexOf('SAUDI ARABIA')===0||tu==='KSA')return'KSA';
+  if(tu==='UAE')return'UAE';
+  if(tu==='QATAR')return'Qatar';
+  if(tu==='KUWAIT')return'Kuwait';
+  if(tu==='BAHRAIN')return'Bahrain';
+  if(tu==='OMAN')return'Oman';
+  return'Unassigned';
 }
 
-function buildIntelPanel(account,visits){
-  if(!visits.length){return'';}
-  var sorted=visits.slice().sort(function(a,b){
-    var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);
-    var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);
-    return db-da;
-  });
-  var html='<div class="intel-section"><div class="intel-label">Full Visit Timeline</div>';
-  sorted.forEach(function(v){
-    var f=v.fields;
-    var sent=getSentiment(f['AI Summary']||f['Outcome']||'');
-    var summary='';
-    if(f['AI Summary']){var idx=f['AI Summary'].indexOf('VISIT SUMMARY');summary=idx>-1?f['AI Summary'].substring(idx+13,idx+160).trim():f['AI Summary'].substring(0,160);if(summary.length>=140)summary=summary.substring(0,140)+'...';}
-    else if(f['Meeting Notes']){summary=truncate(f['Meeting Notes'],140);}
-    html+='<div class="intel-visit '+sent+'"><div class="intel-visit-header"><span class="intel-visit-rep">'+(f['Rep Name']||'Unknown')+'</span><span class="intel-visit-date">'+formatDate(f['Visit Date'])+(f['Priority']?' · '+f['Priority']:'')+'</span></div>'+(summary?'<div class="intel-visit-summary">'+summary+'</div>':'')+'</div>';
-  });
-  html+='</div>';
-  return html;
-}
+async function loadDirectory(){
+  try{
+    var accRes=await fetch(WORKER_URL+'/get-accounts');
+    var accData=await accRes.json();
+    if(!accRes.ok)throw new Error(JSON.stringify(accData));
+    var visRes=await fetch(WORKER_URL+'/get-visits');
+    var visData=await visRes.json();
+    if(!visRes.ok)throw new Error(JSON.stringify(visData));
 
-function toggleAccount(accId){
-  var panel=document.getElementById('intel-'+accId);
-  var toggle=document.getElementById('toggle-'+accId);
-  var card=document.getElementById('card-'+accId);
-  if(!panel)return;
-  var isOpen=panel.classList.contains('open');
-  if(isOpen){
-    panel.classList.remove('open');
-    if(card)card.classList.remove('open');
-    toggle.textContent='▾ View account intelligence';
-  }else{
-    if(!panel.getAttribute('data-rendered')){
-      var account=allAccounts.find(function(a){return a.id===accId;});
-      if(account){panel.innerHTML=buildIntelPanel(account,getVisitsForAccount(account));panel.setAttribute('data-rendered','1');}
-    }
-    panel.classList.add('open');
-    if(card)card.classList.add('open');
-    toggle.textContent='▴ Collapse';
+    var accountRecords=accData.records||[];
+    var visitRecords=visData.records||[];
+
+    var byId={};
+    var byNameLower={};
+    ACCOUNTS=accountRecords.map(function(r){
+      var f=r.fields||{};
+      var acc={
+        id:r.id,
+        name:f['Account Name']||'Unknown',
+        territory:f['Territory']||'',
+        canonicalTerritory:getCanonicalTerritory(f['Territory']),
+        city:f['City']||'',
+        visitCount:0,
+        lastVisit:null,
+        matchedVisits:[]
+      };
+      byId[r.id]=acc;
+      byNameLower[acc.name.trim().toLowerCase()]=acc;
+      return acc;
+    });
+
+    visitRecords.forEach(function(v){
+      var f=v.fields||{};
+      var matched=null;
+      // Defensive join: only trust Account when it's a real linked-record array.
+      // Anything else (true, missing, malformed) is treated as no linked account.
+      if(Array.isArray(f['Account'])&&f['Account'].length>0){
+        matched=byId[f['Account'][0]]||null;
+      }
+      // Fallback for legacy/unlinked visits: exact Hospital Name match.
+      if(!matched&&f['Hospital Name']){
+        matched=byNameLower[String(f['Hospital Name']).trim().toLowerCase()]||null;
+      }
+      if(matched){
+        matched.visitCount++;
+        var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
+        var vDateValid=vDate&&!isNaN(vDate);
+        if(vDateValid&&(!matched.lastVisit||vDate>matched.lastVisit)){
+          matched.lastVisit=vDate;
+        }
+        matched.matchedVisits.push({
+          id:v.id,
+          date:vDateValid?vDate:null,
+          type:f['Visit Type']||'',
+          rep:f['Rep Name']||'Unknown rep',
+          priority:f['Priority']||'',
+          outcome:f['Outcome']||'',
+          aiSummary:f['AI Summary']||'',
+          actionItems:f['Action Items']||'',
+          newAccount:f['New Account']===true,
+          pendingReview:f['Pending Review']===true,
+          reviewed:f['Reviewed']===true
+        });
+      }
+    });
+
+    ACCOUNTS.sort(function(a,b){return a.name.localeCompare(b.name);});
+    document.getElementById('loadingEl').style.display='none';
+    document.getElementById('directoryContent').style.display='block';
+    renderDirectory();
+  }catch(err){
+    document.getElementById('loadingEl').innerHTML='<div class="empty">Failed to load: '+err.message+'</div>';
   }
 }
 
-function getFilteredAccounts(territory,query){
-  var q=(query||'').trim().toLowerCase();
-  return allAccounts.filter(function(acc){
-    var f=acc.fields;
-    if(territory&&(f['Territory']||'').trim()!==territory)return false;
-    if(q){var name=(f['Account Name']||'').toLowerCase();var city=(f['City']||'').toLowerCase();if(name.indexOf(q)===-1&&city.indexOf(q)===-1)return false;}
-    return true;
-  });
+function accountCardHtml(a){
+  return'<div class="activity-item" onclick="openAccountDetail(\''+a.id+'\')">'+
+      '<div class="activity-header"><div class="activity-hospital">'+a.name+'</div><div class="activity-chevron">›</div></div>'+
+      '<div class="activity-meta">'+
+        (a.territory?'<span class="activity-badge badge-territory">'+a.territory+'</span>':'')+
+        (a.city?'<span class="activity-badge badge-territory">'+a.city+'</span>':'')+
+        '<span class="activity-badge badge-rep">'+a.visitCount+' visit'+(a.visitCount!==1?'s':'')+'</span>'+
+      '</div>'+
+      '<div class="activity-summary">'+(a.lastVisit?'Last visit: '+formatDate(a.lastVisit):'No visits logged yet')+'</div>'+
+    '</div>';
 }
 
-function renderAccounts(accounts){
-  var listEl=document.getElementById('accountList');
-  if(!accounts.length){
-    listEl.innerHTML='<div class="empty">No accounts found in this territory.</div>';
-    document.getElementById('statsRow').style.display='none';
+function renderDirectory(){
+  var q=document.getElementById('directorySearch').value.trim().toLowerCase();
+  if(q){
+    renderFlatList(q);
+  }else{
+    renderTerritoryGroups();
+  }
+}
+
+// Active search bypasses territory grouping entirely — a manager who already
+// knows an account name shouldn't have to expand a territory to find it.
+function renderFlatList(q){
+  var filtered=ACCOUNTS.filter(function(a){return a.name.toLowerCase().indexOf(q)>-1;});
+  document.getElementById('directoryCount').textContent=filtered.length+' account'+(filtered.length!==1?'s':'');
+  if(filtered.length===0){
+    document.getElementById('directoryList').innerHTML='<div class="empty">No accounts match your search.</div>';
     return;
   }
-  var totalVisits=0,totalFollowUps=0;
-  accounts.forEach(function(acc){
-    var visits=getVisitsForAccount(acc);
-    totalVisits+=visits.length;
-    visits.forEach(function(v){if(v.fields['Action Items']&&String(v.fields['Action Items']).trim()&&v.fields['Reviewed']!==true)totalFollowUps++;});
+  document.getElementById('directoryList').innerHTML=filtered.map(accountCardHtml).join('');
+}
+
+// Default view: Territory → Account → Intelligence. Collapsed by default,
+// fixed GCC order, empty territories omitted rather than shown with a 0 count.
+function renderTerritoryGroups(){
+  var total=ACCOUNTS.length;
+  document.getElementById('directoryCount').textContent=total+' account'+(total!==1?'s':'');
+  if(total===0){
+    document.getElementById('directoryList').innerHTML='<div class="empty">No accounts found.</div>';
+    return;
+  }
+  var grouped={};
+  ACCOUNTS.forEach(function(a){
+    var key=a.canonicalTerritory;
+    if(!grouped[key])grouped[key]=[];
+    grouped[key].push(a);
   });
-  document.getElementById('statAccounts').textContent=accounts.length;
-  document.getElementById('statVisits').textContent=totalVisits;
-  document.getElementById('statFollowUps').textContent=totalFollowUps;
-  document.getElementById('statsRow').style.display='grid';
+  var html='';
+  TERRITORY_ORDER.forEach(function(territoryName){
+    var accs=grouped[territoryName];
+    if(!accs||accs.length===0)return;
+    accs.sort(function(a,b){return a.name.localeCompare(b.name);});
+    html+='<div class="territory-group">'+
+      '<div class="territory-header" onclick="toggleTerritory(this)">'+
+        '<div><div class="territory-name">'+territoryName+'</div><div class="territory-count">'+accs.length+' account'+(accs.length!==1?'s':'')+'</div></div>'+
+        '<div class="territory-chevron">▾</div>'+
+      '</div>'+
+      '<div class="territory-accounts">'+accs.map(accountCardHtml).join('')+'</div>'+
+    '</div>';
+  });
+  document.getElementById('directoryList').innerHTML=html;
+}
+
+function toggleTerritory(headerEl){
+  headerEl.nextElementSibling.classList.toggle('open');
+  headerEl.querySelector('.territory-chevron').classList.toggle('rotated');
+}
+
+document.getElementById('directorySearch').addEventListener('input',renderDirectory);
+
+// ---------- Account Intelligence View ----------
+
+function priorityClass(p){
+  var s=String(p).toLowerCase();
+  if(s==='high')return'priority-high';
+  if(s==='medium'||s==='med')return'priority-medium';
+  return'priority-low';
+}
+function outcomeClass(o){
+  var s=String(o).toLowerCase();
+  if(s==='positive')return'outcome-positive';
+  if(s==='negative')return'outcome-negative';
+  return'outcome-neutral';
+}
+function filterLabel(key){
+  if(key==='7')return'Last 7 Days';
+  if(key==='30')return'Last 30 Days';
+  if(key==='90')return'Last 90 Days';
+  return'All Time';
+}
+function getFilterDays(key){
+  if(key==='7')return 7;
+  if(key==='30')return 30;
+  if(key==='90')return 90;
+  return null;
+}
+
+// Period-over-period sentiment comparison. Score = positiveCount - negativeCount
+// within each window. Not meaningful for "All Time" (no prior window to compare
+// against), and not meaningful if the prior window has zero visits — both cases
+// are surfaced as explicit states rather than a misleading arrow.
+function computeTrend(allVisits,filterKey){
+  var days=getFilterDays(filterKey);
+  if(days===null)return null;
+  var now=new Date();
+  var curStart=new Date(now.getTime()-days*86400000);
+  var priorStart=new Date(now.getTime()-2*days*86400000);
+  var cur=[],prior=[];
+  allVisits.forEach(function(v){
+    if(!v.date)return;
+    if(v.date>curStart&&v.date<=now)cur.push(v);
+    else if(v.date>priorStart&&v.date<=curStart)prior.push(v);
+  });
+  function score(vs){var s=0;vs.forEach(function(v){var o=String(v.outcome).toLowerCase();if(o==='positive')s++;else if(o==='negative')s--;});return s;}
+  if(cur.length===0)return{label:'No recent activity',cls:'trend-flat',arrow:'—'};
+  if(prior.length===0)return{label:'New activity',cls:'trend-flat',arrow:'•'};
+  var cs=score(cur),ps=score(prior);
+  if(cs>ps)return{label:'Improving',cls:'trend-up',arrow:'↑'};
+  if(cs<ps)return{label:'Declining',cls:'trend-down',arrow:'↓'};
+  return{label:'Flat',cls:'trend-flat',arrow:'→'};
+}
+
+function buildSummaryHtml(text){
+  var t=String(text);
+  if(t.length<=140){
+    return'<div class="intel-text">'+escapeHtml(t)+'</div>';
+  }
+  var shortText=t.slice(0,140).trim()+'…';
+  return'<div class="summary-wrap">'+
+    '<div class="intel-text summary-short">'+escapeHtml(shortText)+'</div>'+
+    '<div class="intel-text summary-full">'+escapeHtml(t)+'</div>'+
+    '<span class="summary-toggle toggle-more" onclick="this.closest(\'.summary-wrap\').classList.add(\'expanded\')">Show more</span>'+
+    '<span class="summary-toggle toggle-less" onclick="this.closest(\'.summary-wrap\').classList.remove(\'expanded\')">Show less</span>'+
+  '</div>';
+}
+
+function openAccountDetail(id){
+  currentDetailAccountId=id;
+  currentDetailFilter='30';
+  renderAccountDetail();
+  document.getElementById('accountDetailOverlay').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+
+function setDetailFilter(key){
+  currentDetailFilter=key;
+  renderAccountDetail();
+}
+
+function closeAccountDetail(){
+  document.getElementById('accountDetailOverlay').style.display='none';
+  document.body.style.overflow='';
+}
+
+function renderAccountDetail(){
+  var acc=ACCOUNTS.find(function(a){return a.id===currentDetailAccountId;});
+  if(!acc)return;
+
+  document.getElementById('detailAccountName').textContent=acc.name;
+  var metaHtml='';
+  if(acc.territory)metaHtml+='<span class="activity-badge badge-territory">'+acc.territory+'</span>';
+  if(acc.city)metaHtml+='<span class="activity-badge badge-territory">'+acc.city+'</span>';
+  document.getElementById('detailMeta').innerHTML=metaHtml;
+
+  var allVisits=acc.matchedVisits.slice().sort(function(a,b){
+    var ad=a.date?a.date.getTime():0,bd=b.date?b.date.getTime():0;
+    return bd-ad;
+  });
+
+  var days=getFilterDays(currentDetailFilter);
+  var now=new Date();
+  var windowVisits=allVisits.filter(function(v){
+    if(days===null)return true;
+    if(!v.date)return false;
+    return(now.getTime()-v.date.getTime())<=days*86400000&&v.date<=now;
+  });
+
+  var lastVisit=allVisits.length?allVisits[0]:null;
+
+  // Section 1 — scoped-by-window counts, plus unscoped facts (Last Visit/Rep, Next Action)
+  var openActionsCount=windowVisits.filter(function(v){return v.actionItems&&String(v.actionItems).trim();}).length;
+  var highPriorityCount=windowVisits.filter(function(v){return String(v.priority).toLowerCase()==='high';}).length;
+  var nextAction=allVisits.find(function(v){return v.actionItems&&String(v.actionItems).trim();});
+  var trend=computeTrend(allVisits,currentDetailFilter);
+
+  // Section 2 — ownership
+  var allTimeRepCounts={};
+  allVisits.forEach(function(v){allTimeRepCounts[v.rep]=(allTimeRepCounts[v.rep]||0)+1;});
+  var mostActiveRep=null,mostActiveCount=0;
+  Object.keys(allTimeRepCounts).forEach(function(r){if(allTimeRepCounts[r]>mostActiveCount){mostActiveCount=allTimeRepCounts[r];mostActiveRep=r;}});
+  var periodRepCounts={};
+  windowVisits.forEach(function(v){periodRepCounts[v.rep]=(periodRepCounts[v.rep]||0)+1;});
+  var periodRepList=Object.keys(periodRepCounts).map(function(r){return{rep:r,count:periodRepCounts[r]};}).sort(function(a,b){return b.count-a.count;});
 
   var html='';
-  accounts.forEach(function(acc){
-    var f=acc.fields;var id=acc.id;
-    var name=f['Account Name']||'Unknown';var city=f['City']||'';var territory=f['Territory']||'';
-    var visits=getVisitsForAccount(acc);var count=visits.length;
-    var sorted=visits.slice().sort(function(a,b){var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);return db-da;});
-    var lastVisit=sorted[0]||null;
-    var lastDate=lastVisit?formatDate(lastVisit.fields['Visit Date']):'No visits';
-    var lastRep=lastVisit?(lastVisit.fields['Rep Name']||'Unknown'):'—';
-    var latestSent=lastVisit?getSentiment(lastVisit.fields['AI Summary']||lastVisit.fields['Outcome']||''):'unknown';
-    var openActions=visits.filter(function(v){return v.fields['Action Items']&&String(v.fields['Action Items']).trim()&&v.fields['Reviewed']!==true;}).length;
-    var highUnreviewed=visits.filter(function(v){return v.fields['Priority']==='High'&&v.fields['Reviewed']!==true;}).length;
-    // Rep coverage — unique reps across all visits for this account
-    var repsMap={};
-    sorted.forEach(function(v){var r=(v.fields['Rep Name']||'Unknown').trim();repsMap[r]=true;});
-    var repList=Object.keys(repsMap).join(' · ');
-    // Latest visit summary snippet — visible on card without expanding
-    var snippet='';
-    if(lastVisit){
-      var ai=lastVisit.fields['AI Summary']||lastVisit.fields['Meeting Notes']||'';
-      if(ai){var si=ai.indexOf('VISIT SUMMARY');snippet=si>-1?ai.substring(si+13,si+160).trim():ai.substring(0,160);if(snippet.length>=140)snippet=snippet.substring(0,140)+'...';}
+
+  // SECTION 1 — Current Account Status
+  html+='<div class="detail-section"><div class="detail-section-title">Current Account Status</div>'+
+    '<div class="status-hero">'+
+      '<div class="status-row"><span class="status-label">Last Visit</span><span class="status-value">'+(lastVisit&&lastVisit.date?formatDate(lastVisit.date):'—')+'</span></div>'+
+      '<div class="status-row"><span class="status-label">Last Rep</span><span class="status-value">'+(lastVisit?escapeHtml(lastVisit.rep):'—')+'</span></div>'+
+      '<div class="status-row"><span class="status-label">Current Sentiment</span><span class="status-value">'+
+        (lastVisit&&lastVisit.outcome?'<span class="activity-badge '+outcomeClass(lastVisit.outcome)+'">'+escapeHtml(lastVisit.outcome)+'</span>':'—')+
+        (trend?' <span class="'+trend.cls+'" style="font-size:11px;font-weight:800;margin-left:4px">'+trend.arrow+' '+trend.label+'</span>':'')+
+      '</span></div>'+
+      '<div class="status-row"><span class="status-label">Open Actions ('+filterLabel(currentDetailFilter)+')</span><span class="status-value">'+openActionsCount+'</span></div>'+
+      '<div class="status-row"><span class="status-label">High Priority ('+filterLabel(currentDetailFilter)+')</span><span class="status-value">'+highPriorityCount+'</span></div>'+
+      '<div class="status-row"><span class="status-label">Next Required Action</span><span class="status-value">'+(nextAction?escapeHtml(truncate(nextAction.actionItems,60)):'None recorded')+'</span></div>'+
+    '</div></div>';
+
+  // SECTION 2 — Account Ownership
+  html+='<div class="detail-section"><div class="detail-section-title">Account Ownership</div>'+
+    '<div class="ownership-grid">'+
+      '<div class="ownership-card"><div class="ownership-label">Most Active (All-Time)</div><div class="ownership-name">'+(mostActiveRep?escapeHtml(mostActiveRep):'—')+'</div><div class="ownership-sub">'+mostActiveCount+' visit'+(mostActiveCount!==1?'s':'')+'</div></div>'+
+      '<div class="ownership-card"><div class="ownership-label">Most Recent</div><div class="ownership-name">'+(lastVisit?escapeHtml(lastVisit.rep):'—')+'</div><div class="ownership-sub">'+(lastVisit&&lastVisit.date?formatDate(lastVisit.date):'—')+'</div></div>'+
+    '</div>'+
+    '<div class="ownership-breakdown"><div class="ownership-label" style="margin-bottom:4px">Visits in '+filterLabel(currentDetailFilter)+'</div>'+
+    (periodRepList.length===0?'<div style="font-size:11.5px;color:#aab8cc;font-weight:600">No visits in this period.</div>':
+      periodRepList.map(function(r){return'<div class="ownership-bar-row"><span>'+escapeHtml(r.rep)+'</span><span>'+r.count+'</span></div>';}).join('')
+    )+
+    '</div></div>';
+
+  // SECTION 3 — Time Filter
+  html+='<div class="detail-section"><div class="detail-section-title">Activity Window</div>'+
+    '<div class="filter-pills">'+
+      ['7','30','90','all'].map(function(k){
+        return'<div class="filter-pill'+(currentDetailFilter===k?' active':'')+'" onclick="setDetailFilter(\''+k+'\')">'+filterLabel(k)+'</div>';
+      }).join('')+
+    '</div></div>';
+
+  // SECTION 4 — Attention Required
+  var attnActions=windowVisits.filter(function(v){return v.actionItems&&String(v.actionItems).trim();});
+  var attnPriority=windowVisits.filter(function(v){return String(v.priority).toLowerCase()==='high';});
+  var attnNegative=windowVisits.filter(function(v){return String(v.outcome).toLowerCase()==='negative';});
+  html+='<div class="detail-section"><div class="detail-section-title">Attention Required</div>';
+  if(attnActions.length===0&&attnPriority.length===0&&attnNegative.length===0){
+    html+='<div class="detail-empty">Nothing requires attention in '+filterLabel(currentDetailFilter).toLowerCase()+'.</div>';
+  }else{
+    if(attnActions.length){
+      html+='<div class="attn-group"><div class="attn-group-title">Open Actions ('+attnActions.length+')</div>';
+      attnActions.forEach(function(v){
+        html+='<div class="attn-item attn-action"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div><div class="attn-item-text">'+escapeHtml(v.actionItems)+'</div></div>';
+      });
+      html+='</div>';
     }
-    // Deep-link to most recent visit — same visitId pattern used by Radar and New Accounts
-    var historyLink=lastVisit?'<a href="fieldiq-visit-history.html?visitId='+encodeURIComponent(lastVisit.id)+'" class="intel-history-btn" onclick="event.stopPropagation()">View latest visit →</a>':'';
-    html+=
-      '<div class="account-card" id="card-'+id+'" onclick="toggleAccount(\''+id+'\')">'+
-        '<div class="account-header">'+
-          '<div><div class="account-name">'+name+'</div>'+(city?'<div class="account-city">'+city+'</div>':'')+
+    if(attnPriority.length){
+      html+='<div class="attn-group"><div class="attn-group-title">High Priority ('+attnPriority.length+')</div>';
+      attnPriority.forEach(function(v){
+        html+='<div class="attn-item attn-priority"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div><div class="attn-item-text">'+escapeHtml(truncate(v.aiSummary||v.type||'High priority visit',140))+'</div></div>';
+      });
+      html+='</div>';
+    }
+    if(attnNegative.length){
+      html+='<div class="attn-group"><div class="attn-group-title">Negative Sentiment ('+attnNegative.length+')</div>';
+      attnNegative.forEach(function(v){
+        html+='<div class="attn-item"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div><div class="attn-item-text">'+escapeHtml(truncate(v.aiSummary||'Negative outcome recorded',140))+'</div></div>';
+      });
+      html+='</div>';
+    }
+  }
+  html+='</div>';
+
+  // SECTION 5 — Intelligence Timeline
+  html+='<div class="detail-section"><div class="detail-section-title">Intelligence Timeline ('+filterLabel(currentDetailFilter)+')</div>';
+  if(windowVisits.length===0){
+    html+='<div class="detail-empty">No visits in this period.</div>';
+  }else{
+    windowVisits.forEach(function(v){
+      html+='<div class="timeline-item">'+
+        '<div class="timeline-top">'+
+          '<div class="timeline-date">'+(v.date?formatDate(v.date):'—')+'</div>'+
+          '<div class="timeline-badges">'+
+            (v.priority?'<span class="activity-badge '+priorityClass(v.priority)+'">'+escapeHtml(v.priority)+'</span>':'')+
+            (v.outcome?'<span class="activity-badge '+outcomeClass(v.outcome)+'">'+escapeHtml(v.outcome)+'</span>':'')+
           '</div>'+
-          '<div class="account-right"><div class="account-count">'+count+' visit'+(count!==1?'s':'')+'</div><div class="account-last">Last: '+lastDate+'</div></div>'+
         '</div>'+
-        '<div class="account-badges">'+
-          '<span class="badge badge-territory">'+territory+'</span>'+
-          '<span class="badge '+sentBadgeClass(latestSent)+'">'+latestSent+'</span>'+
-          (openActions>0?'<span class="badge badge-followup">'+openActions+' follow-up'+(openActions!==1?'s':'')+'</span>':'')+
-          (highUnreviewed>0?'<span class="badge badge-high">'+highUnreviewed+' high priority</span>':'')+
-        '</div>'+
-        '<div class="account-reps">Reps: '+repList+'</div>'+
-        (snippet?'<div class="account-snippet">'+snippet+'</div>':'')+
-        '<div class="account-meta" style="margin-top:6px">Last visit: '+lastDate+'</div>'+
-        historyLink+
-        (count>1?'<div class="account-toggle" id="toggle-'+id+'">▾ View full timeline</div>'+
-        '<div class="intel-panel" id="intel-'+id+'"></div>':'')+
+        '<div class="timeline-meta">'+escapeHtml(v.rep)+(v.type?' · '+escapeHtml(v.type):'')+'</div>'+
+        (v.aiSummary?buildSummaryHtml(v.aiSummary):'')+
       '</div>';
-  });
-  listEl.innerHTML=html;
-}
-
-function onTerritoryChange(sel){
-  selectedTerritory=sel.value;
-  var searchEl=document.getElementById('accountSearch');
-  searchEl.value='';
-  if(!selectedTerritory){
-    searchEl.classList.remove('visible');
-    document.getElementById('accountList').innerHTML='<div class="prompt-msg">Select a territory to view accounts</div>';
-    document.getElementById('statsRow').style.display='none';
-    return;
+    });
   }
-  searchEl.classList.add('visible');
-  if(!dataLoaded){document.getElementById('accountList').innerHTML='<div class="loading"><div class="spinner"></div>Loading...</div>';return;}
-  renderAccounts(getFilteredAccounts(selectedTerritory,''));
-}
+  html+='</div>';
 
-function onSearch(query){
-  if(!selectedTerritory||!dataLoaded)return;
-  renderAccounts(getFilteredAccounts(selectedTerritory,query));
-}
-
-async function loadData(){
-  try{
-    var results=await Promise.all([fetch(WORKER+'/get-accounts'),fetch(WORKER+'/get-visits')]);
-    var accData=await results[0].json();
-    var visData=await results[1].json();
-    if(!results[0].ok)throw new Error('Accounts: '+JSON.stringify(accData));
-    if(!results[1].ok)throw new Error('Visits: '+JSON.stringify(visData));
-    allAccounts=(accData.records||[]).sort(function(a,b){return(a.fields['Account Name']||'').localeCompare(b.fields['Account Name']||'');});
-    allVisits=visData.records||[];
-    dataLoaded=true;
-    document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
-    if(selectedTerritory){renderAccounts(getFilteredAccounts(selectedTerritory,''));}
-  }catch(err){
-    document.getElementById('lastUpdated').textContent='Load error';
-    document.getElementById('accountList').innerHTML='<div class="empty">Failed to load data.<br>'+err.message+'</div>';
+  // SECTION 6 — Full History (collapsed)
+  var discoveryVisit=allVisits.find(function(v){return v.newAccount;});
+  html+='<div class="detail-section">'+
+    '<div class="section-toggle" onclick="var c=this.nextElementSibling;c.classList.toggle(\'open\');this.querySelector(\'.toggle-arrow\').classList.toggle(\'rotated\')">'+
+      '<span class="detail-section-title" style="margin-bottom:0">Full History ('+allVisits.length+' total visits)</span>'+
+      '<span class="toggle-arrow">▾</span>'+
+    '</div>'+
+    '<div class="full-history-content">';
+  if(discoveryVisit){
+    var reviewStatus=discoveryVisit.reviewed?'Reviewed':(discoveryVisit.pendingReview?'Pending Review':'—');
+    html+='<div class="discovery-mini"><b>Discovered</b> '+(discoveryVisit.date?formatDate(discoveryVisit.date):'—')+' by '+escapeHtml(discoveryVisit.rep)+' · Review status: '+reviewStatus+'</div>';
   }
+  if(allVisits.length===0){
+    html+='<div class="detail-empty">No visits logged yet.</div>';
+  }else{
+    allVisits.forEach(function(v){
+      html+='<div class="timeline-item">'+
+        '<div class="timeline-top">'+
+          '<div class="timeline-date">'+(v.date?formatDate(v.date):'—')+'</div>'+
+          '<div class="timeline-badges">'+
+            (v.priority?'<span class="activity-badge '+priorityClass(v.priority)+'">'+escapeHtml(v.priority)+'</span>':'')+
+            (v.outcome?'<span class="activity-badge '+outcomeClass(v.outcome)+'">'+escapeHtml(v.outcome)+'</span>':'')+
+          '</div>'+
+        '</div>'+
+        '<div class="timeline-meta">'+escapeHtml(v.rep)+(v.type?' · '+escapeHtml(v.type):'')+'</div>'+
+        (v.aiSummary?buildSummaryHtml(v.aiSummary):'')+
+      '</div>';
+    });
+  }
+  html+='</div></div>';
+
+  document.getElementById('detailBody').innerHTML=html;
 }
 
-loadData();
+if(role!=='Manager'){
+  document.getElementById('loadingEl').style.display='none';
+  document.getElementById('accessDeniedEl').style.display='flex';
+}else{
+  document.getElementById('managerBadge').style.display='inline-block';
+  loadDirectory();
+}
 </script>
 </body>
 </html>
