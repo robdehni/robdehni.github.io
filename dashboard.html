@@ -778,7 +778,7 @@ function buildRepReviewReport(){
     return '<tr><td>'+escapeHtml(f['Hospital Name']||'—')+'</td><td>'+escapeHtml(f['Rep Name']||'—')+'</td><td>'+formatDate(f['Visit Date'])+'</td><td>'+escapeHtml(f['Action Items'])+'</td></tr>';
   }).join(''):'<tr><td colspan="4" class="rr-empty">No open follow-ups logged this period.</td></tr>';
 
-  // Store report payload in sessionStorage then navigate to fieldiq-report.html.
+  // Store report payload in localStorage then open fieldiq-report.html in a new tab.
   // No popup, no window.open(), no document.write(), no opener relationship.
   // The report page owns its own print/PDF flow in complete isolation from the
   // dashboard — eliminates the Edge/Chromium renderer suspension that froze
@@ -798,12 +798,22 @@ function buildRepReviewReport(){
     html:{visitRows:visitRows,newAccountRows:newAccountRows,highPriorityBlocks:highPriorityBlocks,followUpRows:followUpRows}
   });
   try{
-    sessionStorage.setItem('fieldiq_report',reportPayload);
+    localStorage.setItem('fieldiq_report',reportPayload);
   }catch(e){
     alert('Report data is too large for this device. Please filter by Rep or use a shorter reporting period.');
     return;
   }
-  window.location.href='fieldiq-report.html';
+  // Open report in a new tab with no opener relationship.
+  // localStorage (not sessionStorage) is used because sessionStorage is
+  // tab-scoped — a noopener tab cannot read the opener's sessionStorage.
+  // localStorage is shared across all tabs of the same origin.
+  var rLink=document.createElement('a');
+  rLink.href='fieldiq-report.html';
+  rLink.target='_blank';
+  rLink.rel='noopener noreferrer';
+  document.body.appendChild(rLink);
+  rLink.click();
+  document.body.removeChild(rLink);
 }
 
 function applyFilters(){
