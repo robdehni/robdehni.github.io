@@ -489,7 +489,6 @@ function buildDashboard(records){
   document.getElementById('sentPositive').textContent=pct(sentCounts.positive);
   document.getElementById('sentNeutral').textContent=pct(sentCounts.neutral);
   document.getElementById('sentNegative').textContent=pct(sentCounts.negative);
-  renderPrioritySection(records.filter(function(r){return r.fields['Reviewed']!==true;}));
   var repRows='';
   Object.keys(reps).sort(function(a,b){return reps[b].count-reps[a].count;}).forEach(function(rep){
     var r=reps[rep];
@@ -870,6 +869,7 @@ function applyFilters(){
   if(priority)parts.push('Priority: '+priority);
   document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+filtered.length+' visits)':'';
   buildDashboard(filtered);
+  renderPrioritySection(allRecordsRaw.filter(function(r){return r.fields['Reviewed']!==true;}));
 }
 
 function resetFilters(){
@@ -884,6 +884,7 @@ function resetFilters(){
     p.classList.toggle('active',p.getAttribute('data-days')==='30');
   });
   buildDashboard(allRecordsRaw);
+  renderPrioritySection(allRecordsRaw.filter(function(r){return r.fields['Reviewed']!==true;}));
 }
 
 async function loadDashboard(){
@@ -896,6 +897,7 @@ async function loadDashboard(){
     document.getElementById('filterBar').style.display='block';
     buildDashboard(allRecordsRaw);
     buildNewAccountsCard(allRecordsRaw);
+    renderPrioritySection(allRecordsRaw.filter(function(r){return r.fields['Reviewed']!==true;}));
   }catch(err){
     document.getElementById('loadingEl').textContent='Failed to load: '+err.message;
   }
