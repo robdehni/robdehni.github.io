@@ -89,7 +89,10 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .visit-card{width:100%;overflow-wrap:break-word;word-break:break-word}
 .visit-summary{white-space:normal;overflow-wrap:break-word;word-break:break-word}
 .visit-account{overflow-wrap:break-word;word-break:break-word}
+[data-lucide]{display:inline-block;vertical-align:middle;stroke-width:1.8}
+.visit-toggle [data-lucide]{width:12px;height:12px}
 </style>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -278,12 +281,12 @@ function renderVisits(records){
           (isNew?'<span class="badge badge-new">New Account</span>':'')+
         '</div>'+
         (summary?'<div class="visit-summary">'+summary+'</div>':'')+
-        '<div class="visit-toggle">▾ Tap to view full report</div>'+
+        '<div class="visit-toggle"><i data-lucide=\"chevron-down\"></i> Tap to view full report</div>'+
         '<div class="visit-detail" id="detail-'+idx+'"></div>'+
       '</div>';
   });
 
-  document.getElementById('visitList').innerHTML=html;
+  document.getElementById('visitList').innerHTML=html;lucide.createIcons();
   document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
 }
 
@@ -300,7 +303,7 @@ document.getElementById('visitList').addEventListener('click',function(e){
   if(isOpen){
     detail.classList.remove('open');
     card.classList.remove('expanded');
-    toggle.textContent='▾ Tap to view full report';
+    toggle.innerHTML='<i data-lucide="chevron-down"></i> Tap to view full report';lucide.createIcons({el:toggle});
   }else{
     if(!detail.getAttribute('data-rendered')){
       var f=sortedRecords[idx].fields;
@@ -309,7 +312,7 @@ document.getElementById('visitList').addEventListener('click',function(e){
     }
     detail.classList.add('open');
     card.classList.add('expanded');
-    toggle.textContent='▴ Tap to collapse';
+    toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});
   }
 });
 
@@ -437,7 +440,7 @@ function expandAndScrollToVisit(recordId){
     }
     detail.classList.add('open');
     card.classList.add('expanded');
-    if(toggle)toggle.textContent='▴ Tap to collapse';
+    if(toggle)toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});
   }
   card.scrollIntoView({behavior:'smooth',block:'center'});
 }
