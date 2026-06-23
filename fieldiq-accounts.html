@@ -178,7 +178,14 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .tl-highlight{animation:tlPulse 1.8s ease-out;border-radius:12px}
 
 .detail-empty{font-size:12px;color:#aab8cc;font-weight:600;padding:14px;text-align:center;background:#fff;border:1px solid #e3ebf5;border-radius:12px}
+[data-lucide]{display:inline-block;vertical-align:middle;stroke-width:1.8}
+.access-denied-icon [data-lucide]{width:54px;height:54px;color:#d98a1c}
+.detail-close [data-lucide]{width:15px;height:15px}
+.activity-chevron [data-lucide]{width:16px;height:16px}
+.territory-chevron [data-lucide]{width:14px;height:14px}
+.toggle-arrow [data-lucide]{width:14px;height:14px}
 </style>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -189,7 +196,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 </div>
 
 <div id="accessDeniedEl" class="access-denied">
-  <div class="access-denied-icon">🔒</div>
+  <div class="access-denied-icon"><i data-lucide="lock"></i></div>
   <h2>Manager Access Required</h2>
   <p>The Account Directory lists every account across all reps and territories. This page is restricted to Manager accounts.</p>
   <a href="./index.html">Return Home</a>
@@ -211,7 +218,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 <div id="accountDetailOverlay" class="detail-overlay" onclick="if(event.target===this)closeAccountDetail()">
   <div class="detail-panel">
     <div class="detail-header">
-      <button class="detail-close" onclick="closeAccountDetail()">✕</button>
+      <button class="detail-close" onclick="closeAccountDetail()"><i data-lucide="x"></i></button>
       <h2 id="detailAccountName"></h2>
       <div class="detail-meta-row" id="detailMeta"></div>
     </div>
@@ -329,7 +336,7 @@ async function loadDirectory(){
 
 function accountCardHtml(a){
   return'<div class="activity-item" onclick="openAccountDetail(\''+a.id+'\')">'+
-      '<div class="activity-header"><div class="activity-hospital">'+escapeHtml(a.name)+'</div><div class="activity-chevron">›</div></div>'+
+      '<div class="activity-header"><div class="activity-hospital">'+escapeHtml(a.name)+'</div><div class="activity-chevron"><i data-lucide="chevron-right"></i></div></div>'+
       '<div class="activity-meta">'+
         (a.territory?'<span class="activity-badge badge-territory">'+escapeHtml(a.territory)+'</span>':'')+
         (a.city?'<span class="activity-badge badge-territory">'+escapeHtml(a.city)+'</span>':'')+
@@ -355,7 +362,7 @@ function renderFlatList(q){
     document.getElementById('directoryList').innerHTML='<div class="empty">No accounts match your search.</div>';
     return;
   }
-  document.getElementById('directoryList').innerHTML=filtered.map(accountCardHtml).join('');
+  document.getElementById('directoryList').innerHTML=filtered.map(accountCardHtml).join('');lucide.createIcons();
 }
 
 function renderTerritoryGroups(){
@@ -379,12 +386,12 @@ function renderTerritoryGroups(){
     html+='<div class="territory-group">'+
       '<div class="territory-header" onclick="toggleTerritory(this)">'+
         '<div><div class="territory-name">'+territoryName+'</div><div class="territory-count">'+accs.length+' account'+(accs.length!==1?'s':'')+'</div></div>'+
-        '<div class="territory-chevron">▾</div>'+
+        '<div class="territory-chevron"><i data-lucide="chevron-down"></i></div>'+
       '</div>'+
       '<div class="territory-accounts">'+accs.map(accountCardHtml).join('')+'</div>'+
     '</div>';
   });
-  document.getElementById('directoryList').innerHTML=html;
+  document.getElementById('directoryList').innerHTML=html;lucide.createIcons();
 }
 
 function toggleTerritory(headerEl){
@@ -589,7 +596,7 @@ function renderAccountDetail(){
   html+='<div class="detail-section">'+
     '<div class="section-toggle" onclick="toggleSection(this)">'+
       '<span class="detail-section-title" style="margin-bottom:0">Priority Attention ('+priorityAttnCount+')</span>'+
-      '<span class="toggle-arrow">▾</span>'+
+      '<span class="toggle-arrow"><i data-lucide="chevron-down"></i></span>'+
     '</div>'+
     '<div class="collapsible-content">';
   if(priorityAttnCount===0){
@@ -616,7 +623,7 @@ function renderAccountDetail(){
   html+='<div class="detail-section">'+
     '<div class="section-toggle" onclick="toggleSection(this)">'+
       '<span class="detail-section-title" style="margin-bottom:0">Open Actions ('+attnActions.length+')</span>'+
-      '<span class="toggle-arrow">▾</span>'+
+      '<span class="toggle-arrow"><i data-lucide="chevron-down"></i></span>'+
     '</div>'+
     '<div class="collapsible-content">';
   if(attnActions.length===0){
@@ -648,7 +655,7 @@ function renderAccountDetail(){
   html+='<div class="detail-section">'+
     '<div class="section-toggle" id="timeline-toggle" onclick="toggleSection(this)">'+
       '<span class="detail-section-title" style="margin-bottom:0">Timeline ('+windowVisits.length+')</span>'+
-      '<span class="toggle-arrow">▾</span>'+
+      '<span class="toggle-arrow"><i data-lucide="chevron-down"></i></span>'+
     '</div>'+
     '<div class="collapsible-content" id="timeline-body">';
   if(windowVisits.length===0){
@@ -675,7 +682,7 @@ function renderAccountDetail(){
   html+='<div class="detail-section">'+
     '<div class="section-toggle" onclick="var c=this.nextElementSibling;c.classList.toggle(\'open\');this.querySelector(\'.toggle-arrow\').classList.toggle(\'rotated\')">'+
       '<span class="detail-section-title" style="margin-bottom:0">Full History ('+allVisits.length+' total visits)</span>'+
-      '<span class="toggle-arrow">▾</span>'+
+      '<span class="toggle-arrow"><i data-lucide="chevron-down"></i></span>'+
     '</div>'+
     '<div class="full-history-content">';
   if(discoveryVisit){
@@ -701,7 +708,7 @@ function renderAccountDetail(){
   }
   html+='</div></div>';
 
-  document.getElementById('detailBody').innerHTML=html;
+  document.getElementById('detailBody').innerHTML=html;lucide.createIcons();
 }
 
 if(role!=='Manager'){
@@ -711,6 +718,7 @@ if(role!=='Manager'){
   document.getElementById('managerBadge').style.display='inline-block';
   loadDirectory();
 }
+document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
 </body>
 </html>
