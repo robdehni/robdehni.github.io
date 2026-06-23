@@ -4,7 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FieldIQ — Log Visit</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
+[data-lucide]{display:inline-block;vertical-align:middle;stroke-width:2}
+.mic-btn [data-lucide]{width:36px;height:36px}
+.tick [data-lucide]{width:48px;height:48px;stroke:#1fa861}
+.edit-notice [data-lucide]{width:14px;height:14px}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px}
 .container{max-width:600px;margin:0 auto}
@@ -68,7 +73,9 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
 .processing-overlay p{color:#7a8aa3;font-size:14px}
 .edit-notice{background:#fff8e1;border:1px solid #ffe066;border-radius:8px;padding:10px 14px;font-size:13px;color:#7a6000;margin-bottom:4px;display:none}
 .edit-notice.visible{display:block}
+.mic-btn.recording [data-lucide]{width:36px;height:36px;color:#e0445b}
 </style>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -109,20 +116,20 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
 <div id="identityBar" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#7a8aa3;box-shadow:0 4px 14px rgba(11,31,58,0.05)"></div>
 <div class="validation-message" id="validationMessage"></div>
 <div class="mic-section">
-  <button class="mic-btn" id="micBtn">🎙️</button>
+  <button class="mic-btn" id="micBtn"><i data-lucide="mic"></i></button>
   <div class="status" id="status">Tap mic to start recording</div>
   <div class="recording-indicator" id="recordingIndicator"><div class="recording-timer" id="recordingTimer">0:00</div></div>
   <audio id="audioPlayer" controls></audio>
 </div>
 <div style="position:relative">
-  <div class="edit-notice" id="editNotice">✏️ <strong>Review your transcript.</strong> Tap to correct any mistakes before processing.</div>
+  <div class="edit-notice" id="editNotice"><i data-lucide="pencil"></i> <strong>Review your transcript.</strong> Tap to correct any mistakes before processing.</div>
   <textarea class="transcript-box" id="transcriptText" placeholder="Your speech will appear here automatically after recording... tap to edit before processing."></textarea>
   <div style="font-size:11px;color:#555;text-align:right;margin-top:-8px;margin-bottom:8px;">Tap to edit before processing</div>
 </div>
 <button class="btn btn-primary" id="submitBtn">Process Visit Log</button>
 <button class="btn btn-secondary" id="clearBtn">Clear</button>
 <div class="processing-overlay" id="processingOverlay"><div class="spinner"></div><p id="processingText">Analysing your visit...</p></div>
-<div class="success-card" id="successCard"><div class="tick">✅</div><h3>Visit Logged Successfully</h3><div id="reportContent"></div><button class="btn btn-primary" style="margin-top:16px" onclick="location.reload()">Log Another Visit</button></div>
+<div class="success-card" id="successCard"><div class="tick"><i data-lucide="check-circle"></i></div><h3>Visit Logged Successfully</h3><div id="reportContent"></div><button class="btn btn-primary" style="margin-top:16px" onclick="location.reload()">Log Another Visit</button></div>
 </div>
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
@@ -205,7 +212,7 @@ newAccountNameInput.addEventListener('input',function(){
   var matches=findPossibleDuplicates(this.value);
   if(matches.length>0){
     var names=matches.slice(0,3).map(function(m){return m.name;}).join(', ');
-    duplicateWarningEl.innerHTML='⚠️ This may already exist: <strong>'+names+'</strong>. Please check Account search before adding as new.';
+    duplicateWarningEl.innerHTML='<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"vertical-align:middle;margin-right:3px\"><path d=\"M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z\"/><line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"13\"/><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"/></svg> This may already exist: <strong>'+names+'</strong>. Please check Account search before adding as new.';
     duplicateWarningEl.style.display='block';
   }else{
     duplicateWarningEl.style.display='none';
@@ -278,15 +285,15 @@ async function startRecording(){
   try{isRecording=true;chunks=[];seconds=0;document.getElementById('recordingTimer').textContent='0:00';transcriptText.value='';audioPlayer.style.display='none';successCard.style.display='none';statusEl.className='status active';
   streamRef=await navigator.mediaDevices.getUserMedia({audio:true});mediaRecorder=new MediaRecorder(streamRef);
   mediaRecorder.ondataavailable=function(e){if(e.data&&e.data.size>0)chunks.push(e.data);};
-  mediaRecorder.onstop=function(){isRecording=false;var blob=new Blob(chunks,{type:'audio/webm'});audioPlayer.src=URL.createObjectURL(blob);audioPlayer.style.display='block';micBtn.className='mic-btn';micBtn.textContent='🎙️';document.getElementById('recordingIndicator').className='recording-indicator';statusEl.className='status transcribing';statusEl.textContent='Transcribing visit...';if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});
+  mediaRecorder.onstop=function(){isRecording=false;var blob=new Blob(chunks,{type:'audio/webm'});audioPlayer.src=URL.createObjectURL(blob);audioPlayer.style.display='block';micBtn.className='mic-btn';micBtn.innerHTML='<i data-lucide="mic"></i>';lucide.createIcons({el:micBtn});document.getElementById('recordingIndicator').className='recording-indicator';statusEl.className='status transcribing';statusEl.textContent='Transcribing visit...';if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});
   var fd=new FormData();fd.append('file',blob,'visit.webm');fd.append('model','whisper-1');
   fetch(WORKER+'/transcribe',{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(d){var t=d.text||d.transcript||'';if(t){transcriptText.value=t;statusEl.className='status done';statusEl.textContent='Transcript ready. Edit if needed then process.';document.getElementById('editNotice').className='edit-notice visible';}else{statusEl.className='status';statusEl.textContent='Transcription failed. Type notes manually.';}}).catch(function(){statusEl.className='status';statusEl.textContent='Transcription error — type notes manually.';});};
   mediaRecorder.start();timerInterval=setInterval(function(){seconds++;var m=Math.floor(seconds/60),s=seconds%60;document.getElementById('recordingTimer').textContent=m+':'+(s<10?'0':'')+s;},1000);
-  micBtn.className='mic-btn recording';micBtn.textContent='⏹';document.getElementById('recordingIndicator').className='recording-indicator visible';statusEl.textContent='Recording... tap mic to stop';
+  micBtn.className='mic-btn recording';micBtn.innerHTML='<i data-lucide="square"></i>';lucide.createIcons({el:micBtn});document.getElementById('recordingIndicator').className='recording-indicator visible';statusEl.textContent='Recording... tap mic to stop';
   }catch(e){isRecording=false;statusEl.textContent='Mic error: '+e.message;}
 }
 function stopRecording(){clearInterval(timerInterval);document.getElementById('recordingIndicator').className='recording-indicator';if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}
-document.getElementById('clearBtn').addEventListener('click',function(){isRecording=false;transcriptText.value='';audioPlayer.style.display='none';audioPlayer.src='';successCard.style.display='none';processingOverlay.style.display='none';statusEl.textContent='Tap mic to start recording';statusEl.className='status';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';micBtn.className='mic-btn';micBtn.textContent='🎙️';document.getElementById('recordingIndicator').className='recording-indicator';clearInterval(timerInterval);seconds=0;document.getElementById('recordingTimer').textContent='0:00';if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});streamRef=null;mediaRecorder=null;document.getElementById('editNotice').className='edit-notice';notListedCheck.checked=false;newAccountFields.classList.remove('visible');hospitalInput.style.display='';document.getElementById('newAccountName').value='';document.getElementById('newAccountCity').value='';document.getElementById('newContactName').value='';document.getElementById('newContactPhone').value='';document.getElementById('newContactEmail').value='';selectedAccountId=null;hospitalInput.value='';territorySelect.value='';accountBlock.style.opacity='0.5';accountBlock.style.pointerEvents='none';hospitalInput.disabled=true;notListedCheck.disabled=true;hospitalInput.placeholder='Select a territory first';duplicateWarningEl.style.display='none';updateMicAvailability();});
+document.getElementById('clearBtn').addEventListener('click',function(){isRecording=false;transcriptText.value='';audioPlayer.style.display='none';audioPlayer.src='';successCard.style.display='none';processingOverlay.style.display='none';statusEl.textContent='Tap mic to start recording';statusEl.className='status';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';micBtn.className='mic-btn';micBtn.innerHTML='<i data-lucide="mic"></i>';lucide.createIcons({el:micBtn});document.getElementById('recordingIndicator').className='recording-indicator';clearInterval(timerInterval);seconds=0;document.getElementById('recordingTimer').textContent='0:00';if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});streamRef=null;mediaRecorder=null;document.getElementById('editNotice').className='edit-notice';notListedCheck.checked=false;newAccountFields.classList.remove('visible');hospitalInput.style.display='';document.getElementById('newAccountName').value='';document.getElementById('newAccountCity').value='';document.getElementById('newContactName').value='';document.getElementById('newContactPhone').value='';document.getElementById('newContactEmail').value='';selectedAccountId=null;hospitalInput.value='';territorySelect.value='';accountBlock.style.opacity='0.5';accountBlock.style.pointerEvents='none';hospitalInput.disabled=true;notListedCheck.disabled=true;hospitalInput.placeholder='Select a territory first';duplicateWarningEl.style.display='none';updateMicAvailability();});
 function parseReport(text){var sections={summary:'',contacts:'',outcomes:'',nextSteps:'',signals:'',sentiment:'',priority:''};var lines=text.split('\n'),current='';for(var i=0;i<lines.length;i++){var l=lines[i].trim();if(l.match(/VISIT SUMMARY/i))current='summary';else if(l.match(/KEY CONTACTS/i))current='contacts';else if(l.match(/OUTCOMES/i))current='outcomes';else if(l.match(/NEXT STEPS/i))current='nextSteps';else if(l.match(/OPPORTUNITY/i))current='signals';else if(l.match(/SENTIMENT/i))current='sentiment';else if(l.match(/PRIORITY/i))current='priority';else if(l&&current)sections[current]+=(sections[current]?'\n':'')+l;}return sections;}
 function getOutcome(sentiment){sentiment=(sentiment||'').toLowerCase();if(sentiment.includes('positive'))return'Positive';if(sentiment.includes('negative'))return'Negative';return'Neutral';}
 function extractPriority(text){text=(text||'').toLowerCase();if(text.includes('high'))return'High';if(text.includes('medium'))return'Medium';if(text.includes('low'))return'Low';return'Medium';}
@@ -376,6 +383,7 @@ submitBtn.addEventListener('click',async function(){
     processingOverlay.style.display='none';successCard.style.display='block';document.getElementById('reportContent').innerHTML=renderReport(result);
   }catch(err){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';alert('Error: '+err.message);}
 });
+document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
 </body>
 </html>
