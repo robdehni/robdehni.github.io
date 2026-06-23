@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FieldIQ — Manager</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 20px 50px}
@@ -41,6 +42,10 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   width:50px;height:50px;border-radius:14px;background:#eaf3ff;display:flex;align-items:center;
   justify-content:center;font-size:24px;flex-shrink:0;
 }
+/* Lucide icon sizing inside module icon containers */
+.module-icon-wrap [data-lucide]{width:26px;height:26px;stroke-width:1.8;color:#2f8fff}
+.module-card.primary .module-icon-wrap [data-lucide]{color:#2f8fff}
+
 .module-text{flex:1}
 .module-title{font-size:15.5px;font-weight:800;color:#0b1f3a;margin-bottom:2px}
 .module-desc{font-size:12px;color:#7a8aa3;font-weight:500}
@@ -78,7 +83,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div class="section-label">Management</div>
   <div class="module-grid">
     <a class="module-card primary" href="https://fieldiq.biz/dashboard.html">
-      <div class="module-icon-wrap">📊</div>
+      <div class="module-icon-wrap"><i data-lucide="layout-dashboard"></i></div>
       <div class="module-text">
         <div class="module-title">Dashboard</div>
         <div class="module-desc">KPIs, rep performance, territory coverage, filters</div>
@@ -86,7 +91,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
       <div class="module-arrow">›</div>
     </a>
     <a class="module-card" href="https://fieldiq.biz/fieldiq-actions.html">
-      <div class="module-icon-wrap">✅</div>
+      <div class="module-icon-wrap"><i data-lucide="check-square"></i></div>
       <div class="module-text">
         <div class="module-title">Open Actions</div>
         <div class="module-desc">Outstanding action items by account and rep</div>
@@ -94,7 +99,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
       <div class="module-arrow">›</div>
     </a>
     <a class="module-card" href="https://fieldiq.biz/fieldiq-visits-map.html">
-      <div class="module-icon-wrap">📍</div>
+      <div class="module-icon-wrap"><i data-lucide="map-pin"></i></div>
       <div class="module-text">
         <div class="module-title">Visit Map</div>
         <div class="module-desc">Live GPS map of all field activity across GCC</div>
@@ -102,7 +107,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
       <div class="module-arrow">›</div>
     </a>
     <a class="module-card" href="https://fieldiq.biz/fieldiq-accounts.html">
-      <div class="module-icon-wrap">🏥</div>
+      <div class="module-icon-wrap"><i data-lucide="building-2"></i></div>
       <div class="module-text">
         <div class="module-title">Account Directory</div>
         <div class="module-desc">Search and browse all accounts by territory</div>
@@ -114,7 +119,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div class="section-label">Intelligence</div>
   <div class="module-grid">
     <a class="module-card" href="https://fieldiq.biz/fieldiq-insights.html">
-      <div class="module-icon-wrap">🧠</div>
+      <div class="module-icon-wrap"><i data-lucide="brain-circuit"></i></div>
       <div class="module-text">
         <div class="module-title">AI Insights</div>
         <div class="module-desc">Account intelligence, territory trends, institutional memory</div>
@@ -126,7 +131,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div class="section-label">Field Operations</div>
   <div class="module-grid">
     <a class="module-card" href="./fieldiq-log-visit.html">
-      <div class="module-icon-wrap">🎙️</div>
+      <div class="module-icon-wrap"><i data-lucide="mic"></i></div>
       <div class="module-text">
         <div class="module-title">Log Visit</div>
         <div class="module-desc">Record a field visit — voice to AI report</div>
@@ -134,7 +139,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
       <div class="module-arrow">›</div>
     </a>
     <a class="module-card" href="./fieldiq-visit-history.html">
-      <div class="module-icon-wrap">📋</div>
+      <div class="module-icon-wrap"><i data-lucide="clock"></i></div>
       <div class="module-text">
         <div class="module-title">Visit History</div>
         <div class="module-desc">Your logged visits — dates, accounts, summaries</div>
@@ -146,7 +151,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div class="section-label">Help</div>
   <div class="module-grid">
     <a class="module-card" href="./fieldiq-guide.html">
-      <div class="module-icon-wrap">📖</div>
+      <div class="module-icon-wrap"><i data-lucide="book-open"></i></div>
       <div class="module-text">
         <div class="module-title">Quick Start Guide</div>
         <div class="module-desc">How to use FieldIQ — for reps and managers</div>
@@ -169,6 +174,7 @@ function exitManager(){
   localStorage.removeItem('fieldiq_user_role');
   window.location.href = './index.html';
 }
+document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
 </body>
 </html>
