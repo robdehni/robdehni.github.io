@@ -186,6 +186,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div class="filter-row">
     <select class="filter-select" id="filterDate">
       <option value="">All Time</option>
+      <option value="today">Today</option>
+      <option value="yesterday">Yesterday</option>
       <option value="thisWeek">This Week</option>
       <option value="lastWeek">Last Week</option>
       <option value="thisMonth">This Month</option>
@@ -291,6 +293,14 @@ function getPeriodRange(period){
   var dayOfWeek=today.getDay();
   var diffToMonday=(dayOfWeek===0?6:dayOfWeek-1);
   var thisMonday=new Date(today);thisMonday.setDate(today.getDate()-diffToMonday);
+  if(period==='today'){
+    return {start:today,end:null};
+  }
+  if(period==='yesterday'){
+    var yest=new Date(today);yest.setDate(today.getDate()-1);
+    var yestEnd=new Date(today);yestEnd.setMilliseconds(-1);
+    return {start:yest,end:yestEnd};
+  }
   if(period==='thisWeek'){
     return {start:thisMonday,end:null};
   }
@@ -852,7 +862,7 @@ function applyFilters(){
   var terr=document.getElementById('filterTerritory').value;
   var period=document.getElementById('filterDate').value;
   var priority=document.getElementById('filterPriority').value;
-  var periodLabels={thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};
+  var periodLabels={today:'Today',yesterday:'Yesterday',thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};
   var parts=[];
   if(rep)parts.push('Rep: '+rep);
   if(terr)parts.push('Territory: '+terr);
@@ -966,4 +976,4 @@ if (role !== 'Manager') {
 document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
 </body>
-</html>          
+</html>
