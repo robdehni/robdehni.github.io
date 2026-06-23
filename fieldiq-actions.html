@@ -96,7 +96,13 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   .account-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .account-block{margin-bottom:0}
 }
+[data-lucide]{display:inline-block;vertical-align:middle;stroke-width:1.8}
+.access-denied-icon [data-lucide]{width:54px;height:54px;color:#d98a1c}
+.ab-expand-btn [data-lucide]{width:14px;height:14px}
+.ai-toggle [data-lucide]{width:12px;height:12px}
+.action-bullet [data-lucide]{width:14px;height:14px}
 </style>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -107,7 +113,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 <a class="home-btn" href="./index.html" id="topHomeBtn">← Home</a>
 
 <div id="accessDenied" class="access-denied" style="display:none">
-  <div class="access-denied-icon">🔒</div>
+  <div class="access-denied-icon"><i data-lucide="lock"></i></div>
   <h2>Manager Access Required</h2>
   <p>Open Actions shows outstanding action items across all reps and accounts. This page is restricted to Manager accounts.</p>
   <a href="./index.html" id="accessDeniedHomeBtn">Return Home</a>
@@ -237,7 +243,7 @@ function toggleAccountCard(cardId,btn){
   if(!body)return;
   var open=window.getComputedStyle(body).display!=='none';
   body.style.display=open?'none':'block';
-  btn.textContent=open?'▸ Expand':'▴ Collapse';
+  btn.innerHTML=open?'<i data-lucide="chevron-right"></i> Expand':'<i data-lucide="chevron-up"></i> Collapse';lucide.createIcons({el:btn});
 }
 
 // Toggle expand/collapse for a single long action item
@@ -248,7 +254,7 @@ function toggleAI(id,btn){
   var open=window.getComputedStyle(full).display!=='none';
   full.style.display=open?'none':'block';
   if(hl)hl.style.display=open?'':'none';
-  btn.textContent=open?'▸ More':'▴ Less';
+  btn.innerHTML=open?'<i data-lucide="chevron-right"></i> More':'<i data-lucide="chevron-up"></i> Less';lucide.createIcons({el:btn});
 }
 
 function buildActionsView(records){
@@ -314,7 +320,7 @@ function buildActionsView(records){
           var aiId=cardId+'-ai-'+ai;
           var headline=a.substring(0,120)+'…';
           return'<div class="action-item">'+
-            '<span class="action-bullet">→</span>'+
+            '<span class="action-bullet"><i data-lucide=\"arrow-right\"></i></span>'+
             '<span>'+
               '<span class="ai-headline" id="'+aiId+'-h">'+headline+'</span>'+
               '<span class="ai-full" id="'+aiId+'">'+a+'</span>'+
@@ -322,7 +328,7 @@ function buildActionsView(records){
             '</span>'+
           '</div>';
         }
-        return'<div class="action-item"><span class="action-bullet">→</span>'+a+'</div>';
+        return'<div class="action-item"><span class="action-bullet"><i data-lucide="arrow-right"></i></span>'+a+'</div>';
       }).join('');
 
       return'<div class="account-block '+pc+'" id="'+cardId+'">'+
@@ -358,7 +364,7 @@ function buildActionsView(records){
   if(low.length>0)html+='<div class="section-title">Low Priority Actions</div>'+renderAccounts(low);
   if(html==='')html='<div class="empty">No open actions found.</div>';
 
-  document.getElementById('actionContent').innerHTML=html;
+  document.getElementById('actionContent').innerHTML=html;lucide.createIcons();
   document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
 }
 
@@ -407,6 +413,7 @@ async function loadActions(){
 }
 
 loadActions();
+document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
 </body>
 </html>
