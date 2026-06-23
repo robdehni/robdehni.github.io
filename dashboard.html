@@ -71,6 +71,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .open-actions-toggle:hover .open-actions-label{color:#2f8fff}
 .open-actions-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;transition:color 0.15s}
 .oa-arrow{color:#aab8cc;font-size:14px;font-weight:700;transition:transform 0.2s;flex-shrink:0}
+.oa-arrow [data-lucide]{width:14px;height:14px}
 .oa-arrow.rotated{transform:rotate(180deg)}
 .oa-body{display:none}
 .oa-body.open{display:block}
@@ -238,7 +239,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div id="newAccountsList"></div>
   <div class="open-actions-toggle" id="openActionsToggle" onclick="toggleOpenActions()">
     <span class="open-actions-label">Priority Review (<span id="openActionsCount">0</span>)</span>
-    <span class="oa-arrow" id="oaArrow">▾</span>
+    <span class="oa-arrow" id="oaArrow"><i data-lucide="chevron-down"></i></span>
   </div>
   <div class="oa-body" id="openActionsBody">
     <div id="priorityHigh" class="priority-section"></div>
