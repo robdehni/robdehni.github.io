@@ -14,14 +14,20 @@
 html,body{height:100%;width:100%;overflow:hidden}
 body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:flex;flex-direction:column}
 
+/* ── Topbar: ☁️ cloud + Field/IQ treatment, white pill home button ── */
 .topbar{background:#fff;border-bottom:1px solid #e3ebf5;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(11,31,58,0.04)}
+.topbar-left{display:flex;align-items:center;gap:8px}
+.topbar-cloud{font-size:20px;line-height:1}
 .topbar h1{font-size:17px;color:#0b1f3a;font-weight:800;letter-spacing:-0.3px}
 .topbar h1 span{color:#2f8fff}
+
+/* ── Home button — white pill matching fieldiq.html ── */
 .home-btn{
   display:inline-flex;align-items:center;gap:6px;color:#2f8fff;font-size:12px;font-weight:700;text-decoration:none;
-  padding:7px 14px;border-radius:30px;background:#eaf3ff;white-space:nowrap;
+  padding:7px 14px;border-radius:30px;background:#fff;border:1px solid #e3ebf5;
+  box-shadow:0 2px 8px rgba(11,31,58,0.05);white-space:nowrap;
 }
-.home-btn:hover{background:#dceeff}
+.home-btn:hover{border-color:#2f8fff}
 
 .filters{background:#fff;border-bottom:1px solid #e3ebf5;padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;align-items:center}
 .filters select{
@@ -41,8 +47,9 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
 #map{flex:1;min-height:0;width:100%}
 
+/* ── Legend — radius 16px matching reference standard ── */
 .legend{
-  position:absolute;bottom:16px;right:14px;background:#fff;border:1px solid #e3ebf5;border-radius:14px;
+  position:absolute;bottom:16px;right:14px;background:#fff;border:1px solid #e3ebf5;border-radius:16px;
   padding:14px;z-index:1000;font-size:12px;box-shadow:0 6px 18px rgba(11,31,58,0.12);
 }
 .li{display:flex;align-items:center;gap:7px;margin:5px 0;color:#3a4a63;font-weight:600}
@@ -82,7 +89,10 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 </head>
 <body>
 <div class="topbar">
-  <h1>Field<span>IQ</span> — Territory Map</h1>
+  <div class="topbar-left">
+    <span class="topbar-cloud">☁️</span>
+    <h1>Field<span>IQ</span> — Territory Map</h1>
+  </div>
   <div style="display:flex;align-items:center;gap:10px;">
     <span id="updated" style="color:#aab8cc;font-size:11.5px;font-weight:600">Loading...</span>
     <a href="./index.html" id="topHomeBtn" class="home-btn">← Home</a>
@@ -133,7 +143,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 </div>
 
 <script>
-// ── MANAGER ACCESS CONTROL ───────────────────────────────────
 var role = localStorage.getItem('fieldiq_user_role');
 var isManager = (role === 'Manager');
 
@@ -164,8 +173,6 @@ function formatDate(d){
   return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 }
 
-// Visit time from Airtable createdTime (record submission timestamp).
-// This is the most accurate proxy for visit time since Visit Date is date-only.
 function formatTime(t){
   if(!t)return'—';
   return new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
@@ -207,9 +214,6 @@ function trunc(t,n){
   return t.length>n?t.substring(0,n)+'...':t;
 }
 
-// ── PERIOD FILTER ─────────────────────────────────────────────────────────────
-// Returns {start, end} Date objects for the selected period.
-// Visit Date is compared against these cutoffs.
 function getDateCutoffs(period){
   var now=new Date();
   var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -239,7 +243,7 @@ function getDateCutoffs(period){
     var cutoff90=new Date(today);cutoff90.setDate(today.getDate()-90);
     return {start:cutoff90,end:null};
   }
-  return {start:null,end:null}; // All Time
+  return {start:null,end:null};
 }
 
 function renderMarkers(visits){
@@ -296,15 +300,12 @@ function applyFilters(){
   var t=document.getElementById('fTerr').value;
   var r=document.getElementById('fRep').value;
   var s=document.getElementById('fSent').value;
-
   var cutoffs=getDateCutoffs(period);
-
   var filtered=allVisits.filter(function(v){
     var f=v.fields;
     if(t&&f.Territory!==t)return false;
     if(r&&f['Rep Name']!==r)return false;
     if(s&&getSent(f['AI Summary']||'')!==s)return false;
-    // Period filter — match against Visit Date field
     if(cutoffs.start||cutoffs.end){
       if(!f['Visit Date'])return false;
       var vDate=new Date(f['Visit Date']);
@@ -339,7 +340,6 @@ async function loadVisits(){
       return;
     }
     populateFilters(allVisits);
-    // Default to Last 30 Days — morning review view for manager
     document.getElementById('fPeriod').value='30';
     applyFilters();
     document.getElementById('updated').textContent='Updated '+new Date().toLocaleTimeString();
