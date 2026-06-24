@@ -8,13 +8,24 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:18px;padding-bottom:40px}
 .container{max-width:900px;margin:0 auto}
-.topbar{text-align:center;margin-bottom:14px}
-.topbar h1{font-size:23px;color:#0b1f3a;font-weight:800;letter-spacing:-0.4px}
-.topbar p{color:#7a8aa3;font-size:12.5px;margin-top:4px;font-weight:600}
+
+/* ── Brand block — matches fieldiq.html reference ── */
+.topbar{margin-bottom:14px}
+.topbar-brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.brand-cloud{font-size:26px;line-height:1}
+.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
+.brand-text h1 span{color:#2f8fff}
+.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+.topbar-sub{color:#7a8aa3;font-size:12.5px;margin-top:2px;font-weight:600}
+
+/* ── Manager badge — 20px pill matching fieldiq.html ── */
 .manager-badge{
-  display:inline-block;background:#fff3e0;color:#d98a1c;border:1px solid #ffe5b3;border-radius:8px;
-  font-size:10.5px;font-weight:800;padding:3px 10px;margin-left:8px;text-transform:uppercase;letter-spacing:0.5px;
+  display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#d98a1c;
+  border:1px solid #ffe5b3;border-radius:20px;font-size:10.5px;font-weight:800;
+  padding:4px 12px;margin-left:10px;text-transform:uppercase;letter-spacing:0.4px;
+  box-shadow:0 2px 8px rgba(217,138,28,0.1);vertical-align:middle;
 }
+
 .home-btn{
   display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
   text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;
@@ -51,11 +62,9 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .badge-medium{background:#fff3e0;color:#d98a1c}
 .badge-low{background:#e3f8ea;color:#1fa861}
 
-/* Expand/collapse button for account card */
 .ab-expand-btn{display:block;width:100%;padding:8px 14px;background:#f4f8fc;color:#2f8fff;border:1px solid #e3ebf5;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:background 0.15s;touch-action:manipulation}
 .ab-expand-btn:hover{background:#eaf3ff;border-color:#2f8fff}
 
-/* Action body — hidden by default */
 .action-list-body{display:none;margin-top:10px;border-top:1px solid #eef3f9;padding-top:10px}
 
 .action-list{margin-top:0}
@@ -67,7 +76,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .af-rep{background:#eaf3ff;color:#2f8fff}
 .af-terr{background:#eef3f9;color:#5b6b85}
 
-/* Per-item expand/collapse for long action text */
 .ai-headline{font-size:12.5px;color:#3a4a63;line-height:1.6;font-weight:500}
 .ai-full{font-size:12.5px;color:#3a4a63;line-height:1.6;font-weight:500;white-space:pre-wrap;display:none}
 .ai-toggle{font-size:11px;color:#2f8fff;font-weight:700;cursor:pointer;user-select:none;margin-left:4px;flex-shrink:0}
@@ -106,10 +114,18 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 </head>
 <body>
 <div class="container">
+
 <div class="topbar">
-  <h1>Open Actions <span class="manager-badge">Manager</span></h1>
-  <p id="lastUpdated">Loading...</p>
+  <div class="topbar-brand">
+    <span class="brand-cloud">☁️</span>
+    <div class="brand-text">
+      <h1>Field<span>IQ</span><span id="managerBadge" style="display:none" class="manager-badge">⭐ Manager</span></h1>
+      <p>Territory Intelligence Platform</p>
+    </div>
+  </div>
+  <p class="topbar-sub" id="lastUpdated">Loading...</p>
 </div>
+
 <a class="home-btn" href="./index.html" id="topHomeBtn">← Home</a>
 
 <div id="accessDenied" class="access-denied" style="display:none">
@@ -163,12 +179,15 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 </div>
 
 <script>
-// ── MANAGER ACCESS CONTROL ───────────────────────────────────
 var role = localStorage.getItem('fieldiq_user_role');
 var isManager = (role === 'Manager');
 
 document.getElementById('topHomeBtn').href = isManager ? './fieldiq.html' : './index.html';
 document.getElementById('accessDeniedHomeBtn').href = isManager ? './fieldiq.html' : './index.html';
+
+if(isManager){
+  document.getElementById('managerBadge').style.display='inline-flex';
+}
 
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 var allRecords=[];
@@ -237,7 +256,6 @@ function getFilteredRecords(){
   });
 }
 
-// Toggle expand/collapse for an entire account card
 function toggleAccountCard(cardId,btn){
   var body=document.getElementById(cardId+'-body');
   if(!body)return;
@@ -246,7 +264,6 @@ function toggleAccountCard(cardId,btn){
   btn.innerHTML=open?'<i data-lucide="chevron-right"></i> Expand':'<i data-lucide="chevron-up"></i> Collapse';lucide.createIcons({el:btn});
 }
 
-// Toggle expand/collapse for a single long action item
 function toggleAI(id,btn){
   var full=document.getElementById(id);
   var hl=document.getElementById(id+'-h');
@@ -303,7 +320,6 @@ function buildActionsView(records){
   document.getElementById('statTotal').textContent=totalActions;
   document.getElementById('statAccounts').textContent=accounts.length;
 
-  // Counter reset per render — IDs are unique within the freshly-rendered DOM
   var _cid=0;
 
   function renderAccounts(list){
@@ -313,14 +329,13 @@ function buildActionsView(records){
       var bc=getBadgeClass(acc.priority);
       var cardId='ab-'+(++_cid);
 
-      // Build action items — long items get expand/collapse treatment
       var actionItemsHtml=acc.actions.map(function(a,ai){
         var needsExpand=a.length>160;
         if(needsExpand){
           var aiId=cardId+'-ai-'+ai;
           var headline=a.substring(0,120)+'…';
           return'<div class="action-item">'+
-            '<span class="action-bullet"><i data-lucide=\"arrow-right\"></i></span>'+
+            '<span class="action-bullet"><i data-lucide="arrow-right"></i></span>'+
             '<span>'+
               '<span class="ai-headline" id="'+aiId+'-h">'+headline+'</span>'+
               '<span class="ai-full" id="'+aiId+'">'+a+'</span>'+
@@ -332,7 +347,6 @@ function buildActionsView(records){
       }).join('');
 
       return'<div class="account-block '+pc+'" id="'+cardId+'">'+
-        // Always-visible header: name, action count, last visit, priority badge
         '<div class="account-header">'+
           '<div>'+
             '<div class="account-name">'+acc.name+'</div>'+
@@ -344,9 +358,7 @@ function buildActionsView(records){
           '</div>'+
           '<span class="priority-badge '+bc+'">'+acc.priority+'</span>'+
         '</div>'+
-        // Expand button — visible when collapsed
         '<button class="ab-expand-btn" onclick="toggleAccountCard(\''+cardId+'\',this)">▸ Expand</button>'+
-        // Hidden body — action list + footer
         '<div class="action-list-body" id="'+cardId+'-body">'+
           '<div class="action-list">'+actionItemsHtml+'</div>'+
           '<div class="action-footer">'+
@@ -395,7 +407,7 @@ function resetFilters(){
 async function loadActions(){
   if(!isManager){
     document.getElementById('loadingEl').style.display='none';
-    document.getElementById('accessDenied').style.display='block';
+    document.getElementById('accessDenied').style.display='flex';
     return;
   }
   try{
