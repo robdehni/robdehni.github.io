@@ -5,35 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FieldIQ</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 24px 40px}
-.logo{text-align:center;margin-bottom:32px}
-.logo h1{font-size:32px;font-weight:800;color:#0b1f3a;letter-spacing:-0.5px}
-.logo h1 span{color:#2f8fff}
-.logo p{color:#8a9bb3;font-size:11px;margin-top:6px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 20px 50px}
+
+/* ── Brand block — matches fieldiq.html reference ── */
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.brand-cloud{font-size:26px;line-height:1}
+.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
+.brand-text h1 span{color:#2f8fff}
+.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+.logo{text-align:left;margin-bottom:28px}
 
 .modules{width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}
+
+/* ── Module cards — standardised to fieldiq.html spec ── */
 .module{
-  display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #e3ebf5;border-radius:16px;
+  display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #e3ebf5;border-radius:18px;
   padding:18px 20px;text-decoration:none;color:#0b1f3a;box-shadow:0 4px 14px rgba(11,31,58,0.05);transition:transform 0.15s;
 }
 .module:active{transform:scale(0.98)}
-.module-icon{font-size:26px;width:44px;text-align:center;flex-shrink:0}
+.module-icon-wrap{
+  width:50px;height:50px;border-radius:14px;background:#eaf3ff;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;
+}
+.module-icon-wrap [data-lucide]{width:26px;height:26px;stroke-width:1.8;color:#2f8fff}
 .module-text{flex:1}
-.module-title{font-size:15px;font-weight:700;color:#0b1f3a;margin-bottom:2px}
-.module-desc{font-size:11.5px;color:#7a8aa3}
-.module.primary{border-color:transparent;background:linear-gradient(135deg,#3d9bff,#1f6fe0);box-shadow:0 10px 24px rgba(47,143,255,0.32)}
+.module-title{font-size:15.5px;font-weight:800;color:#0b1f3a;margin-bottom:2px}
+.module-desc{font-size:12px;color:#7a8aa3;font-weight:500}
+.module-arrow{color:#aab8cc;font-size:18px;font-weight:700}
+
+.module.primary{border-color:transparent;background:linear-gradient(135deg,#3d9bff,#1f6fe0);box-shadow:0 10px 26px rgba(47,143,255,0.32)}
 .module.primary .module-title{color:#fff}
 .module.primary .module-desc{color:#dbecff}
+.module.primary .module-icon-wrap{background:#fff}
+.module.primary .module-icon-wrap [data-lucide]{color:#2f8fff}
+.module.primary .module-arrow{color:#fff}
 
-.divider{width:100%;max-width:380px;display:flex;align-items:center;gap:12px;margin:6px 0}
-.divider-line{flex:1;height:1px;background:#e3ebf5}
-.divider-text{font-size:10px;color:#aab8cc;text-transform:uppercase;letter-spacing:1px;font-weight:800}
+/* ── Section labels — matches fieldiq.html ── */
+.section-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:22px 0 10px;width:100%;max-width:380px}
 
 .footer{margin-top:32px;text-align:center;color:#aab8cc;font-size:11px;font-weight:600}
-.version{color:#cdd9eb;font-size:10px;margin-top:4px}
 
+/* ── Identity / PIN components — unchanged ── */
 .user-locked{
   width:100%;max-width:380px;display:flex;align-items:center;justify-content:space-between;
   background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px 18px;margin-bottom:18px;
@@ -75,18 +90,22 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 </style>
 </head>
 <body>
+
 <div class="logo">
-  <h1>Field<span>IQ</span></h1>
-  <p>Territory Intelligence Platform</p>
+  <div class="brand">
+    <span class="brand-cloud">☁️</span>
+    <div class="brand-text">
+      <h1>Field<span>IQ</span></h1>
+      <p>Territory Intelligence Platform</p>
+    </div>
+  </div>
 </div>
 
 <div id="identitySection" style="width:100%;max-width:380px"></div>
 
 <div id="modulesSection"></div>
 
-<div class="footer">
-  FieldIQ v2.1 — 2026
-</div>
+<div class="footer">FieldIQ v2.1 · 2026</div>
 
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
@@ -222,81 +241,74 @@ function renderModules(){
   var html='<div class="modules">';
 
   if(isManager){
-    html+=
-      '<div class="divider">'+
-        '<div class="divider-line"></div>'+
-        '<div class="divider-text">Management</div>'+
-        '<div class="divider-line"></div>'+
-      '</div>';
-  }
-
-  if(isManager){
+    html+='<div class="section-label">Management</div>';
     html+=
       '<a class="module primary" href="./dashboard.html">'+
-        '<div class="module-icon">📊</div>'+
+        '<div class="module-icon-wrap"><i data-lucide="layout-dashboard"></i></div>'+
         '<div class="module-text">'+
           '<div class="module-title">Dashboard</div>'+
           '<div class="module-desc">KPIs, rep performance, territory coverage, filters</div>'+
         '</div>'+
+        '<div class="module-arrow">›</div>'+
       '</a>'+
       '<a class="module" href="./fieldiq-actions.html">'+
-        '<div class="module-icon">✅</div>'+
+        '<div class="module-icon-wrap"><i data-lucide="check-square"></i></div>'+
         '<div class="module-text">'+
           '<div class="module-title">Open Actions</div>'+
           '<div class="module-desc">Outstanding action items by account and rep</div>'+
         '</div>'+
+        '<div class="module-arrow">›</div>'+
       '</a>'+
       '<a class="module" href="./fieldiq-visits-map.html">'+
-        '<div class="module-icon">📍</div>'+
+        '<div class="module-icon-wrap"><i data-lucide="map-pin"></i></div>'+
         '<div class="module-text">'+
           '<div class="module-title">Visit Map</div>'+
           '<div class="module-desc">Live GPS map of all field activity across GCC</div>'+
         '</div>'+
+        '<div class="module-arrow">›</div>'+
       '</a>'+
       '<a class="module" href="./fieldiq-insights.html">'+
-        '<div class="module-icon">🧠</div>'+
+        '<div class="module-icon-wrap"><i data-lucide="brain-circuit"></i></div>'+
         '<div class="module-text">'+
           '<div class="module-title">AI Insights</div>'+
           '<div class="module-desc">Account intelligence, territory trends, institutional memory</div>'+
         '</div>'+
-      '</a>'+
-      '<div class="divider">'+
-        '<div class="divider-line"></div>'+
-        '<div class="divider-text">Field Operations</div>'+
-        '<div class="divider-line"></div>'+
-      '</div>';
+        '<div class="module-arrow">›</div>'+
+      '</a>';
+    html+='<div class="section-label">Field Operations</div>';
   }
 
   html+=
     '<a class="module'+(isManager?'':' primary')+'" href="./fieldiq-log-visit.html">'+
-      '<div class="module-icon">🎙️</div>'+
+      '<div class="module-icon-wrap"><i data-lucide="mic"></i></div>'+
       '<div class="module-text">'+
         '<div class="module-title">Log Visit</div>'+
         '<div class="module-desc">Record a field visit — voice to intelligence</div>'+
       '</div>'+
+      '<div class="module-arrow">›</div>'+
     '</a>'+
     '<a class="module" href="./fieldiq-visit-history.html">'+
-      '<div class="module-icon">📋</div>'+
+      '<div class="module-icon-wrap"><i data-lucide="clock"></i></div>'+
       '<div class="module-text">'+
         '<div class="module-title">Visit History</div>'+
         '<div class="module-desc">Your logged visits — dates, accounts, summaries</div>'+
       '</div>'+
-    '</a>'+
-    '<div class="divider">'+
-      '<div class="divider-line"></div>'+
-      '<div class="divider-text">Help</div>'+
-      '<div class="divider-line"></div>'+
-    '</div>'+
+      '<div class="module-arrow">›</div>'+
+    '</a>';
+
+  html+='<div class="section-label">Help</div>'+
     '<a class="module" href="./fieldiq-guide.html">'+
-      '<div class="module-icon">📖</div>'+
+      '<div class="module-icon-wrap"><i data-lucide="book-open"></i></div>'+
       '<div class="module-text">'+
         '<div class="module-title">Quick Start Guide</div>'+
         '<div class="module-desc">How to use FieldIQ</div>'+
       '</div>'+
+      '<div class="module-arrow">›</div>'+
     '</a>';
 
   html+='</div>';
   section.innerHTML=html;
+  lucide.createIcons();
 }
 
 if (localStorage.getItem('fieldiq_user_role') === 'Manager') {
@@ -306,4 +318,5 @@ if (localStorage.getItem('fieldiq_user_role') === 'Manager') {
 renderIdentity();
 renderModules();
 </script>
-</body></html>
+</body>
+</html>
