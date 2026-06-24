@@ -4,14 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FieldIQ — Visit History</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px 18px 40px;overflow-x:hidden}
 .container{max-width:780px;margin:0 auto;width:100%}
 
-.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:10px}
-.topbar h1{font-size:24px;color:#0b1f3a;font-weight:800;letter-spacing:-0.4px}
-.topbar p{color:#7a8aa3;font-size:12.5px;margin-top:2px;font-weight:600}
+/* ── Brand block — matches fieldiq.html reference ── */
+.topbar{margin-bottom:8px}
+.topbar-brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.brand-cloud{font-size:26px;line-height:1}
+.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
+.brand-text h1 span{color:#2f8fff}
+.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+.topbar-sub{color:#7a8aa3;font-size:12.5px;margin-top:2px;font-weight:600}
 
 .home-btn{
   display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
@@ -35,7 +41,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
 .stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px}
 .stat-pill{
-  background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:16px 14px;font-size:11.5px;
+  background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px 14px;font-size:11.5px;
   color:#7a8aa3;text-align:center;font-weight:700;box-shadow:0 4px 14px rgba(11,31,58,0.05);
 }
 .stat-pill span{display:block;font-size:26px;font-weight:800;color:#2f8fff;margin-bottom:4px}
@@ -75,6 +81,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;color:#aab8cc;font-size:13.5px;padding:40px 20px;font-weight:600}
 
+.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:24px}
+
 @media(min-width:768px){
   .container{max-width:900px}
   .visit-card{padding:22px 24px}
@@ -92,16 +100,21 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 [data-lucide]{display:inline-block;vertical-align:middle;stroke-width:1.8}
 .visit-toggle [data-lucide]{width:12px;height:12px}
 </style>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 <div class="container">
+
 <div class="topbar">
-  <div>
-    <h1>Visit History</h1>
-    <p id="lastUpdated">Loading...</p>
+  <div class="topbar-brand">
+    <span class="brand-cloud">☁️</span>
+    <div class="brand-text">
+      <h1>Field<span>IQ</span></h1>
+      <p>Territory Intelligence Platform</p>
+    </div>
   </div>
+  <p class="topbar-sub" id="lastUpdated">Loading...</p>
 </div>
+
 <a href="./index.html" id="homeBtn" class="home-btn">← Home</a>
 
 <div id="filterBar" class="filter-bar" style="display:none">
@@ -146,15 +159,13 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
 <div id="countLabel" class="count-label"></div>
 <div id="visitList"><div class="loading"><div class="spinner"></div>Loading visits...</div></div>
+
+<div class="footer">FieldIQ v2.1 · 2026</div>
 </div>
 
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 
-// ── HOME BUTTON ROUTING ─────────────────────────────────────────
-// Managers arriving from Dashboard (via Management Radar or New Accounts)
-// are mid-investigation, not leaving the app — label reflects that instead
-// of reading "Home" when the destination is actually back to Dashboard.
 (function(){
   var role = localStorage.getItem('fieldiq_user_role');
   var homeBtn=document.getElementById('homeBtn');
@@ -186,17 +197,12 @@ function truncateSummary(text,n){
   if(raw.length<=n)return raw;
   var cut=raw.substring(0,n);
   var lastPeriod=cut.lastIndexOf('. ');
-  if(lastPeriod>n*0.5){
-    return cut.substring(0,lastPeriod+1).trim();
-  }
+  if(lastPeriod>n*0.5){return cut.substring(0,lastPeriod+1).trim();}
   var lastSpace=cut.lastIndexOf(' ');
-  if(lastSpace>-1){
-    return cut.substring(0,lastSpace).trim()+'...';
-  }
+  if(lastSpace>-1){return cut.substring(0,lastSpace).trim()+'...';}
   return cut.trim()+'...';
 }
 
-// ── FULL REPORT PARSING (same section structure as Log Visit) ──
 function parseFullReport(text){
   var sections={summary:'',contacts:'',outcomes:'',nextSteps:'',signals:'',sentiment:''};
   var lines=(text||'').split('\n'),current='';
@@ -234,39 +240,27 @@ function renderVisits(records){
   var today=new Date();today.setHours(0,0,0,0);
   var weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
   var thisWeek=0,newAccounts=0;
-
-  // Sort newest first
   var sorted=records.slice().sort(function(a,b){
     var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);
     var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);
     return db-da;
   });
   sortedRecords=sorted;
-
   sorted.forEach(function(r){
-    var f=r.fields;
-    var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
+    var f=r.fields;var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
     if(vDate&&vDate>=weekAgo)thisWeek++;
     if(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1')newAccounts++;
   });
-
   document.getElementById('statTotal').textContent=records.length;
   document.getElementById('statThisWeek').textContent=thisWeek;
   document.getElementById('statNewAccounts').textContent=newAccounts;
   document.getElementById('countLabel').textContent='Showing '+sorted.length+' visit'+(sorted.length!==1?'s':'')+', most recent first';
-
-  if(sorted.length===0){
-    document.getElementById('visitList').innerHTML='<div class="empty">No visits logged yet.</div>';
-    return;
-  }
-
+  if(sorted.length===0){document.getElementById('visitList').innerHTML='<div class="empty">No visits logged yet.</div>';return;}
   var html='';
   sorted.forEach(function(r,idx){
-    var f=r.fields;
-    var priority=f['Priority']||'Medium';
+    var f=r.fields;var priority=f['Priority']||'Medium';
     var isNew=(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1');
     var summary=truncateSummary(f['AI Summary']||f['Meeting Notes']||'',180);
-
     html+=
       '<div class="visit-card'+(isNew?' new-account':'')+'" data-idx="'+idx+'" data-id="'+r.id+'">'+
         '<div class="visit-header">'+
@@ -281,144 +275,73 @@ function renderVisits(records){
           (isNew?'<span class="badge badge-new">New Account</span>':'')+
         '</div>'+
         (summary?'<div class="visit-summary">'+summary+'</div>':'')+
-        '<div class="visit-toggle"><i data-lucide=\"chevron-down\"></i> Tap to view full report</div>'+
+        '<div class="visit-toggle"><i data-lucide="chevron-down"></i> Tap to view full report</div>'+
         '<div class="visit-detail" id="detail-'+idx+'"></div>'+
       '</div>';
   });
-
   document.getElementById('visitList').innerHTML=html;lucide.createIcons();
   document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
 }
 
-// ── EXPAND / COLLAPSE (delegated — survives re-renders, scales to 50+ cards) ──
 document.getElementById('visitList').addEventListener('click',function(e){
-  var card=e.target.closest('.visit-card');
-  if(!card)return;
-  var idx=card.getAttribute('data-idx');
-  var detail=document.getElementById('detail-'+idx);
-  var toggle=card.querySelector('.visit-toggle');
+  var card=e.target.closest('.visit-card');if(!card)return;
+  var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');
   if(!detail)return;
-
   var isOpen=detail.classList.contains('open');
   if(isOpen){
-    detail.classList.remove('open');
-    card.classList.remove('expanded');
+    detail.classList.remove('open');card.classList.remove('expanded');
     toggle.innerHTML='<i data-lucide="chevron-down"></i> Tap to view full report';lucide.createIcons({el:toggle});
   }else{
-    if(!detail.getAttribute('data-rendered')){
-      var f=sortedRecords[idx].fields;
-      detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'');
-      detail.setAttribute('data-rendered','1');
-    }
-    detail.classList.add('open');
-    card.classList.add('expanded');
+    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'');detail.setAttribute('data-rendered','1');}
+    detail.classList.add('open');card.classList.add('expanded');
     toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});
   }
 });
 
-// ── MANAGER FILTERS ──────────────────────────────────────────
 function populateRepFilter(records){
-  var reps={};
-  records.forEach(function(r){
-    var rep=r.fields['Rep Name']||'';
-    if(rep){rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();reps[rep]=1;}
-  });
-  var sel=document.getElementById('filterRep');
-  while(sel.options.length>1)sel.remove(1);
-  Object.keys(reps).sort().forEach(function(r){
-    var o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);
-  });
+  var reps={};records.forEach(function(r){var rep=r.fields['Rep Name']||'';if(rep){rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();reps[rep]=1;}});
+  var sel=document.getElementById('filterRep');while(sel.options.length>1)sel.remove(1);
+  Object.keys(reps).sort().forEach(function(r){var o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});
 }
 
 function getPeriodRange(period){
-  var now=new Date();
-  var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-  var dayOfWeek=today.getDay();
-  var diffToMonday=(dayOfWeek===0?6:dayOfWeek-1);
-  var thisMonday=new Date(today);thisMonday.setDate(today.getDate()-diffToMonday);
-  if(period==='thisWeek'){
-    return {start:thisMonday,end:null};
-  }
-  if(period==='lastWeek'){
-    var lastMonday=new Date(thisMonday);lastMonday.setDate(thisMonday.getDate()-7);
-    var lastSunday=new Date(thisMonday);lastSunday.setDate(thisMonday.getDate()-1);
-    lastSunday.setHours(23,59,59,999);
-    return {start:lastMonday,end:lastSunday};
-  }
-  if(period==='thisMonth'){
-    return {start:new Date(now.getFullYear(),now.getMonth(),1),end:null};
-  }
-  if(period==='lastMonth'){
-    var lm=new Date(now.getFullYear(),now.getMonth()-1,1);
-    var lmEnd=new Date(now.getFullYear(),now.getMonth(),0);
-    lmEnd.setHours(23,59,59,999);
-    return {start:lm,end:lmEnd};
-  }
+  var now=new Date();var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());var dayOfWeek=today.getDay();var diffToMonday=(dayOfWeek===0?6:dayOfWeek-1);var thisMonday=new Date(today);thisMonday.setDate(today.getDate()-diffToMonday);
+  if(period==='thisWeek'){return {start:thisMonday,end:null};}
+  if(period==='lastWeek'){var lastMonday=new Date(thisMonday);lastMonday.setDate(thisMonday.getDate()-7);var lastSunday=new Date(thisMonday);lastSunday.setDate(thisMonday.getDate()-1);lastSunday.setHours(23,59,59,999);return {start:lastMonday,end:lastSunday};}
+  if(period==='thisMonth'){return {start:new Date(now.getFullYear(),now.getMonth(),1),end:null};}
+  if(period==='lastMonth'){var lm=new Date(now.getFullYear(),now.getMonth()-1,1);var lmEnd=new Date(now.getFullYear(),now.getMonth(),0);lmEnd.setHours(23,59,59,999);return {start:lm,end:lmEnd};}
   return {start:null,end:null};
 }
 
 function getFilteredRecords(){
-  var rep=document.getElementById('filterRep').value;
-  var terr=document.getElementById('filterTerritory').value;
-  var priority=document.getElementById('filterPriority').value;
-  var period=document.getElementById('filterPeriod').value;
-  var cutoff=null;
-  var range={start:null,end:null};
-  if(period==='30'||period==='90'){
-    cutoff=new Date(Date.now()-parseInt(period)*24*60*60*1000);
-  }else if(period){
-    range=getPeriodRange(period);
-  }
+  var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var priority=document.getElementById('filterPriority').value;var period=document.getElementById('filterPeriod').value;
+  var cutoff=null;var range={start:null,end:null};
+  if(period==='30'||period==='90'){cutoff=new Date(Date.now()-parseInt(period)*24*60*60*1000);}else if(period){range=getPeriodRange(period);}
   return allRecordsRaw.filter(function(r){
-    var f=r.fields;
-    var repName=(f['Rep Name']||'').trim();
-    repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();
-    if(rep&&repName!==rep)return false;
-    if(terr&&f['Territory']!==terr)return false;
-    if(priority&&f['Priority']!==priority)return false;
+    var f=r.fields;var repName=(f['Rep Name']||'').trim();repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();
+    if(rep&&repName!==rep)return false;if(terr&&f['Territory']!==terr)return false;if(priority&&f['Priority']!==priority)return false;
     if(cutoff&&f['Visit Date']&&new Date(f['Visit Date'])<cutoff)return false;
-    if(range.start||range.end){
-      if(!f['Visit Date'])return false;
-      var vDate=new Date(f['Visit Date']);
-      if(range.start&&vDate<range.start)return false;
-      if(range.end&&vDate>range.end)return false;
-    }
+    if(range.start||range.end){if(!f['Visit Date'])return false;var vDate=new Date(f['Visit Date']);if(range.start&&vDate<range.start)return false;if(range.end&&vDate>range.end)return false;}
     return true;
   });
 }
 
 function applyFilters(){
-  var filtered=getFilteredRecords();
-  var rep=document.getElementById('filterRep').value;
-  var terr=document.getElementById('filterTerritory').value;
-  var priority=document.getElementById('filterPriority').value;
-  var period=document.getElementById('filterPeriod').value;
+  var filtered=getFilteredRecords();var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var priority=document.getElementById('filterPriority').value;var period=document.getElementById('filterPeriod').value;
   var periodLabels={thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};
-  var parts=[];
-  if(rep)parts.push('Rep: '+rep);
-  if(terr)parts.push('Territory: '+terr);
-  if(priority)parts.push('Priority: '+priority);
-  if(period)parts.push(periodLabels[period]||period);
+  var parts=[];if(rep)parts.push('Rep: '+rep);if(terr)parts.push('Territory: '+terr);if(priority)parts.push('Priority: '+priority);if(period)parts.push(periodLabels[period]||period);
   document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+filtered.length+' visits)':'';
   renderVisits(filtered);
 }
 
 function resetFilters(){
-  document.getElementById('filterRep').value='';
-  document.getElementById('filterTerritory').value='';
-  document.getElementById('filterPriority').value='';
-  document.getElementById('filterPeriod').value='';
-  document.getElementById('filterStatus').textContent='';
+  document.getElementById('filterRep').value='';document.getElementById('filterTerritory').value='';document.getElementById('filterPriority').value='';document.getElementById('filterPeriod').value='';document.getElementById('filterStatus').textContent='';
   renderVisits(allRecordsRaw);
 }
 
 function applyUrlParams(){
   var params=new URLSearchParams(window.location.search);
-  var rep=params.get('rep');
-  var terr=params.get('territory');
-  var priority=params.get('priority');
-  var period=params.get('period');
-  targetVisitId=params.get('visitId');
+  var rep=params.get('rep');var terr=params.get('territory');var priority=params.get('priority');var period=params.get('period');targetVisitId=params.get('visitId');
   if(rep)document.getElementById('filterRep').value=rep;
   if(terr)document.getElementById('filterTerritory').value=terr;
   if(priority)document.getElementById('filterPriority').value=priority;
@@ -427,19 +350,11 @@ function applyUrlParams(){
 
 function expandAndScrollToVisit(recordId){
   if(!recordId)return;
-  var card=document.querySelector('.visit-card[data-id="'+recordId+'"]');
-  if(!card)return;
-  var idx=card.getAttribute('data-idx');
-  var detail=document.getElementById('detail-'+idx);
-  var toggle=card.querySelector('.visit-toggle');
+  var card=document.querySelector('.visit-card[data-id="'+recordId+'"]');if(!card)return;
+  var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');
   if(detail&&!detail.classList.contains('open')){
-    if(!detail.getAttribute('data-rendered')){
-      var f=sortedRecords[idx].fields;
-      detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'');
-      detail.setAttribute('data-rendered','1');
-    }
-    detail.classList.add('open');
-    card.classList.add('expanded');
+    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'');detail.setAttribute('data-rendered','1');}
+    detail.classList.add('open');card.classList.add('expanded');
     if(toggle)toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});
   }
   card.scrollIntoView({behavior:'smooth',block:'center'});
@@ -448,48 +363,26 @@ function expandAndScrollToVisit(recordId){
 var currentUser=null;
 
 async function loadCurrentUser(){
-  // Read from localStorage — set when rep selects name on Log Visit
-  var userId=localStorage.getItem('fieldiq_user_id');
-  var userName=localStorage.getItem('fieldiq_user_name');
-  var userRole=localStorage.getItem('fieldiq_user_role');
-  if(userId&&userName&&userRole){
-    currentUser={
-      userId:userId,
-      name:userName,
-      role:userRole
-    };
-  }
+  var userId=localStorage.getItem('fieldiq_user_id');var userName=localStorage.getItem('fieldiq_user_name');var userRole=localStorage.getItem('fieldiq_user_role');
+  if(userId&&userName&&userRole){currentUser={userId:userId,name:userName,role:userRole};}
 }
 
 async function loadHistory(){
   try{
     if(!currentUser){
       document.getElementById('visitList').innerHTML='<div class="empty">Please select your name on the Home screen before viewing Visit History.<br><br><a href="./index.html" style="display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:12px;box-shadow:0 6px 16px rgba(47,143,255,0.3)">Return Home</a></div>';
-      document.getElementById('countLabel').textContent='';
-      return;
+      document.getElementById('countLabel').textContent='';return;
     }
     var endpoint=WORKER+'/get-visits';
-    // Reps get only their own visits via server-side filter
-    if(currentUser.role!=='Manager'){
-      endpoint=WORKER+'/get-visits?filterByUser='+encodeURIComponent(currentUser.userId);
-    }
-    var res=await fetch(endpoint);
-    var data=await res.json();
+    if(currentUser.role!=='Manager'){endpoint=WORKER+'/get-visits?filterByUser='+encodeURIComponent(currentUser.userId);}
+    var res=await fetch(endpoint);var data=await res.json();
     if(!res.ok)throw new Error(JSON.stringify(data));
     allRecordsRaw=data.records||[];
-
     if(currentUser.role==='Manager'){
-      populateRepFilter(allRecordsRaw);
-      document.getElementById('filterBar').style.display='block';
-      applyUrlParams();
-      applyFilters();
-      expandAndScrollToVisit(targetVisitId);
-    }else{
-      renderVisits(allRecordsRaw);
-    }
-  }catch(err){
-    document.getElementById('visitList').innerHTML='<div class="empty">Failed to load: '+err.message+'</div>';
-  }
+      populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';
+      applyUrlParams();applyFilters();expandAndScrollToVisit(targetVisitId);
+    }else{renderVisits(allRecordsRaw);}
+  }catch(err){document.getElementById('visitList').innerHTML='<div class="empty">Failed to load: '+err.message+'</div>';}
 }
 
 loadCurrentUser().then(function(){loadHistory();});
