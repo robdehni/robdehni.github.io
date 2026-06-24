@@ -13,9 +13,24 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px}
 .container{max-width:600px;margin:0 auto}
-.header{text-align:center;margin-bottom:24px;padding-top:16px}
-.header h1{font-size:28px;color:#2f8fff;font-weight:800}
-.header p{color:#7a8aa3;font-size:13px;margin-top:4px}
+
+/* ── Brand block — matches fieldiq.html reference ── */
+.header{margin-bottom:20px;padding-top:12px}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.brand-cloud{font-size:26px;line-height:1}
+.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
+.brand-text h1 span{color:#2f8fff}
+.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600}
+
+/* ── Home button — white pill matching fieldiq.html ── */
+.home-btn{
+  display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
+  text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;
+  box-shadow:0 2px 8px rgba(11,31,58,0.05);
+}
+.home-btn:hover{border-color:#2f8fff}
+
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
 .field{display:flex;flex-direction:column}
 .field label{font-size:11px;color:#8a9bb3;margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
@@ -57,11 +72,11 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
 .btn-primary:hover{background:#1f6fe0}
 .btn-secondary{background:#fff;color:#7a8aa3;border:1.5px solid #dde8f5}
 .btn:disabled{opacity:0.4;cursor:not-allowed}
-.success-card{background:#eafaf0;border:1px solid #b6e8c8;border-radius:12px;padding:20px;margin:14px 0;display:none}
+.success-card{background:#eafaf0;border:1px solid #b6e8c8;border-radius:16px;padding:20px;margin:14px 0;display:none}
 .success-card .tick{font-size:32px;text-align:center;margin-bottom:10px}
 .success-card h3{color:#1faa6b;font-size:16px;text-align:center;margin-bottom:16px}
 .report-section{margin:12px 0}
-.report-section h4{color:#2f8fff;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e3ebf5}
+.report-section h4{color:#2f8fff;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e3ebf5;font-weight:800}
 .report-section p{color:#3d4f6b;font-size:13px;line-height:1.7}
 .priority-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-top:4px}
 .priority-high{background:#ffe1e5;color:#c43048;border:1px solid #ffc4cc}
@@ -74,13 +89,25 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
 .edit-notice{background:#fff8e1;border:1px solid #ffe066;border-radius:8px;padding:10px 14px;font-size:13px;color:#7a6000;margin-bottom:4px;display:none}
 .edit-notice.visible{display:block}
 .mic-btn.recording [data-lucide]{width:36px;height:36px;color:#e0445b}
+
+.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:32px;padding-bottom:8px}
 </style>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 <div class="container">
-<div class="header"><h1>FieldIQ</h1><p>Log Visit</p></div>
-<a href="./index.html" id="homeBtn" style="display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-size:13px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;margin-bottom:16px;box-shadow:0 4px 12px rgba(47,143,255,0.25)">← Home</a>
+
+<div class="header">
+  <div class="brand">
+    <span class="brand-cloud">☁️</span>
+    <div class="brand-text">
+      <h1>Field<span>IQ</span></h1>
+      <p>Territory Intelligence Platform</p>
+    </div>
+  </div>
+  <p class="page-subtitle">Log Visit</p>
+</div>
+
+<a href="./index.html" id="homeBtn" class="home-btn">← Home</a>
 <script>
 (function(){
   var role=localStorage.getItem('fieldiq_user_role');
@@ -88,6 +115,7 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
   if(btn){btn.href=(role==='Manager')?'./fieldiq.html':'./index.html';}
 })();
 </script>
+
 <div class="fields">
   <div class="field field-full">
     <label>Territory</label>
@@ -113,6 +141,7 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
   <div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
   <div class="field"><label>Visit Type</label><select id="visitType"><option value="">Select type</option><option>In-person</option><option>Virtual</option><option>Phone</option></select></div>
 </div>
+
 <div id="identityBar" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#7a8aa3;box-shadow:0 4px 14px rgba(11,31,58,0.05)"></div>
 <div class="validation-message" id="validationMessage"></div>
 <div class="mic-section">
@@ -130,7 +159,10 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
 <button class="btn btn-secondary" id="clearBtn">Clear</button>
 <div class="processing-overlay" id="processingOverlay"><div class="spinner"></div><p id="processingText">Analysing your visit...</p></div>
 <div class="success-card" id="successCard"><div class="tick"><i data-lucide="check-circle"></i></div><h3>Visit Logged Successfully</h3><div id="reportContent"></div><button class="btn btn-primary" style="margin-top:16px" onclick="location.reload()">Log Another Visit</button></div>
+
+<div class="footer">FieldIQ v2.1 · 2026</div>
 </div>
+
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 window.onerror=function(msg){document.getElementById('status').textContent='Error: '+msg;};
@@ -146,103 +178,45 @@ var notListedCheck=document.getElementById('notListedCheck');var newAccountField
 notListedCheck.addEventListener('change',function(){if(this.checked){newAccountFields.classList.add('visible');hospitalInput.value='';selectedAccountId=null;hospitalList.classList.remove('open');hospitalInput.style.display='none';}else{newAccountFields.classList.remove('visible');hospitalInput.style.display='';}updateMicAvailability();});
 
 territorySelect.addEventListener('change',function(){
-  selectedAccountId=null;
-  hospitalInput.value='';
-  notListedCheck.checked=false;
-  newAccountFields.classList.remove('visible');
-  hospitalInput.style.display='';
-  hospitalList.classList.remove('open');
-  if(this.value){
-    accountBlock.style.opacity='1';
-    accountBlock.style.pointerEvents='auto';
-    hospitalInput.disabled=false;
-    notListedCheck.disabled=false;
-    hospitalInput.placeholder='Search '+this.value+' accounts...';
-  }else{
-    accountBlock.style.opacity='0.5';
-    accountBlock.style.pointerEvents='none';
-    hospitalInput.disabled=true;
-    notListedCheck.disabled=true;
-    hospitalInput.placeholder='Select a territory first';
-  }
+  selectedAccountId=null;hospitalInput.value='';notListedCheck.checked=false;newAccountFields.classList.remove('visible');hospitalInput.style.display='';hospitalList.classList.remove('open');
+  if(this.value){accountBlock.style.opacity='1';accountBlock.style.pointerEvents='auto';hospitalInput.disabled=false;notListedCheck.disabled=false;hospitalInput.placeholder='Search '+this.value+' accounts...';}
+  else{accountBlock.style.opacity='0.5';accountBlock.style.pointerEvents='none';hospitalInput.disabled=true;notListedCheck.disabled=true;hospitalInput.placeholder='Select a territory first';}
   updateMicAvailability();
 });
 
-var ACCOUNTS=[];
-var accountsLoaded=false;
-var selectedAccountId=null;
+var ACCOUNTS=[];var accountsLoaded=false;var selectedAccountId=null;
 
 function loadAccounts(){
-  hospitalList.innerHTML='<div class="hospital-option" style="color:#7a8aa3">Loading accounts...</div>';
-  hospitalList.classList.add('open');
-  var controller=new AbortController();
-  var timeoutId=setTimeout(function(){controller.abort();},8000);
-  fetch(WORKER+'/get-accounts',{signal:controller.signal})
-    .then(function(r){return r.json();})
-    .then(function(data){
-      clearTimeout(timeoutId);
-      var records=data.records||[];
-      ACCOUNTS=records.map(function(r){
-        return {id:r.id,name:(r.fields&&r.fields['Account Name'])||'',territory:(r.fields&&r.fields['Territory'])||''};
-      }).filter(function(a){return a.name;});
-      accountsLoaded=true;
-      if(document.activeElement===hospitalInput){showList(hospitalInput.value);}else{hospitalList.classList.remove('open');}
-    })
-    .catch(function(){
-      clearTimeout(timeoutId);
-      accountsLoaded=false;
-      hospitalList.innerHTML='<div class="hospital-option" style="color:#e0445b">Couldn\'t load accounts — tap to retry</div>';
-      hospitalList.querySelector('.hospital-option').addEventListener('click',function(){loadAccounts();});
-    });
+  hospitalList.innerHTML='<div class="hospital-option" style="color:#7a8aa3">Loading accounts...</div>';hospitalList.classList.add('open');
+  var controller=new AbortController();var timeoutId=setTimeout(function(){controller.abort();},8000);
+  fetch(WORKER+'/get-accounts',{signal:controller.signal}).then(function(r){return r.json();}).then(function(data){
+    clearTimeout(timeoutId);var records=data.records||[];
+    ACCOUNTS=records.map(function(r){return {id:r.id,name:(r.fields&&r.fields['Account Name'])||'',territory:(r.fields&&r.fields['Territory'])||''};}).filter(function(a){return a.name;});
+    accountsLoaded=true;if(document.activeElement===hospitalInput){showList(hospitalInput.value);}else{hospitalList.classList.remove('open');}
+  }).catch(function(){
+    clearTimeout(timeoutId);accountsLoaded=false;
+    hospitalList.innerHTML='<div class="hospital-option" style="color:#e0445b">Couldn\'t load accounts — tap to retry</div>';
+    hospitalList.querySelector('.hospital-option').addEventListener('click',function(){loadAccounts();});
+  });
 }
 loadAccounts();
 
-function findPossibleDuplicates(name){
-  var q=name.trim().toLowerCase();
-  if(q.length<3)return[];
-  return ACCOUNTS.filter(function(a){
-    var n=a.name.trim().toLowerCase();
-    return n.indexOf(q)>-1||q.indexOf(n)>-1;
-  });
-}
+function findPossibleDuplicates(name){var q=name.trim().toLowerCase();if(q.length<3)return[];return ACCOUNTS.filter(function(a){var n=a.name.trim().toLowerCase();return n.indexOf(q)>-1||q.indexOf(n)>-1;});}
 
-var newAccountNameInput=document.getElementById('newAccountName');
-var duplicateWarningEl=document.getElementById('duplicateWarning');
+var newAccountNameInput=document.getElementById('newAccountName');var duplicateWarningEl=document.getElementById('duplicateWarning');
 newAccountNameInput.addEventListener('input',function(){
   var matches=findPossibleDuplicates(this.value);
-  if(matches.length>0){
-    var names=matches.slice(0,3).map(function(m){return m.name;}).join(', ');
-    duplicateWarningEl.innerHTML='<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"vertical-align:middle;margin-right:3px\"><path d=\"M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z\"/><line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"13\"/><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"/></svg> This may already exist: <strong>'+names+'</strong>. Please check Account search before adding as new.';
-    duplicateWarningEl.style.display='block';
-  }else{
-    duplicateWarningEl.style.display='none';
-  }
+  if(matches.length>0){var names=matches.slice(0,3).map(function(m){return m.name;}).join(', ');duplicateWarningEl.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> This may already exist: <strong>'+names+'</strong>. Please check Account search before adding as new.';duplicateWarningEl.style.display='block';}
+  else{duplicateWarningEl.style.display='none';}
   updateMicAvailability();
 });
 
 function showList(query){
   if(!accountsLoaded){hospitalList.classList.add('open');return;}
-  hospitalList.innerHTML='';
-  var q=query.toLowerCase().trim();
-  var selTerr=territorySelect.value.trim().toUpperCase();
-  var inTerritory=ACCOUNTS.filter(function(a){
-    var at=a.territory.trim().toUpperCase();
-    if(selTerr==='KSA')return at.indexOf('SAUDI ARABIA')===0;
-    return at===selTerr;
-  });
+  hospitalList.innerHTML='';var q=query.toLowerCase().trim();var selTerr=territorySelect.value.trim().toUpperCase();
+  var inTerritory=ACCOUNTS.filter(function(a){var at=a.territory.trim().toUpperCase();if(selTerr==='KSA')return at.indexOf('SAUDI ARABIA')===0;return at===selTerr;});
   var filtered=(q.length===0?inTerritory.slice(0,50):inTerritory.filter(function(a){return a.name.toLowerCase().indexOf(q)>-1;})).slice(0,50);
-  filtered.forEach(function(a){
-    var div=document.createElement('div');
-    div.className='hospital-option';
-    div.textContent=a.name+(a.territory?' — '+a.territory:'');
-    div.addEventListener('click',function(){
-      hospitalInput.value=a.name;
-      selectedAccountId=a.id;
-      hospitalList.classList.remove('open');
-      updateMicAvailability();
-    });
-    hospitalList.appendChild(div);
-  });
+  filtered.forEach(function(a){var div=document.createElement('div');div.className='hospital-option';div.textContent=a.name+(a.territory?' — '+a.territory:'');div.addEventListener('click',function(){hospitalInput.value=a.name;selectedAccountId=a.id;hospitalList.classList.remove('open');updateMicAvailability();});hospitalList.appendChild(div);});
   hospitalList.classList.add('open');
 }
 hospitalInput.addEventListener('input',function(){selectedAccountId=null;showList(this.value);updateMicAvailability();});
@@ -254,31 +228,8 @@ document.getElementById('visitType').addEventListener('change',function(){update
 var mediaRecorder=null,chunks=[],seconds=0,timerInterval=null,streamRef=null,isRecording=false;
 var micBtn=document.getElementById('micBtn');var statusEl=document.getElementById('status');var transcriptText=document.getElementById('transcriptText');var audioPlayer=document.getElementById('audioPlayer');var submitBtn=document.getElementById('submitBtn');var successCard=document.getElementById('successCard');var processingOverlay=document.getElementById('processingOverlay');
 var validationMessageEl=document.getElementById('validationMessage');
-function getMissingFields(){
-  var missing=[];
-  if(!territorySelect.value)missing.push('Territory');
-  var accountOk=!!selectedAccountId||(notListedCheck.checked&&document.getElementById('newAccountName').value.trim().length>0);
-  if(!accountOk)missing.push('Account');
-  if(!document.getElementById('visitDate').value)missing.push('Visit Date');
-  if(!document.getElementById('visitType').value)missing.push('Visit Type');
-  if(!currentUserId||!currentUserName)missing.push('Rep Identity');
-  return missing;
-}
-function updateMicAvailability(){
-  var missing=getMissingFields();
-  if(missing.length>0){
-    micBtn.disabled=true;
-    if(validationMessageEl){
-      validationMessageEl.textContent='Complete required fields to start recording: '+missing.join(', ');
-      validationMessageEl.style.display='block';
-    }
-  }else{
-    micBtn.disabled=false;
-    if(validationMessageEl){
-      validationMessageEl.style.display='none';
-    }
-  }
-}
+function getMissingFields(){var missing=[];if(!territorySelect.value)missing.push('Territory');var accountOk=!!selectedAccountId||(notListedCheck.checked&&document.getElementById('newAccountName').value.trim().length>0);if(!accountOk)missing.push('Account');if(!document.getElementById('visitDate').value)missing.push('Visit Date');if(!document.getElementById('visitType').value)missing.push('Visit Type');if(!currentUserId||!currentUserName)missing.push('Rep Identity');return missing;}
+function updateMicAvailability(){var missing=getMissingFields();if(missing.length>0){micBtn.disabled=true;if(validationMessageEl){validationMessageEl.textContent='Complete required fields to start recording: '+missing.join(', ');validationMessageEl.style.display='block';}}else{micBtn.disabled=false;if(validationMessageEl){validationMessageEl.style.display='none';}}}
 updateMicAvailability();
 micBtn.addEventListener('click',function(){if(!isRecording)startRecording();else stopRecording();});
 async function startRecording(){
@@ -303,26 +254,13 @@ submitBtn.addEventListener('click',async function(){
   var transcript=transcriptText.value.trim();if(!transcript||transcript.length<3){alert('Please record a visit first.');return;}
   if(!territorySelect.value){alert('Please select a territory first.');return;}
   var repName=currentUserName;var userRole=currentUserRole||'Sales Rep';var userId=currentUserId;
-  var isNewAccount=notListedCheck.checked;var hospitalName='';var newAccountCity='';
-  var newContactName='',newContactPhone='',newContactEmail='';
+  var isNewAccount=notListedCheck.checked;var hospitalName='';var newAccountCity='';var newContactName='',newContactPhone='',newContactEmail='';
   if(isNewAccount){
-    var newName=document.getElementById('newAccountName').value.trim();
-    if(!newName){alert('Please enter the account name.');return;}
+    var newName=document.getElementById('newAccountName').value.trim();if(!newName){alert('Please enter the account name.');return;}
     var dupMatches=findPossibleDuplicates(newName);
-    if(dupMatches.length>0){
-      var matchNames=dupMatches.slice(0,3).map(function(m){return m.name;}).join(', ');
-      if(!confirm('This may already exist as: '+matchNames+'.\n\nAre you sure "'+newName+'" is a different, genuinely new account?')){
-        return;
-      }
-    }
-    hospitalName=newName;
-    newAccountCity=document.getElementById('newAccountCity').value.trim();
-    newContactName=document.getElementById('newContactName').value.trim();
-    newContactPhone=document.getElementById('newContactPhone').value.trim();
-    newContactEmail=document.getElementById('newContactEmail').value.trim();
-    if(!newAccountCity){alert('Please enter the city.');return;}
-    if(!newContactName){alert('Please enter the primary contact\'s name.');return;}
-    if(!newContactPhone){alert('Please enter the primary contact\'s telephone number.');return;}
+    if(dupMatches.length>0){var matchNames=dupMatches.slice(0,3).map(function(m){return m.name;}).join(', ');if(!confirm('This may already exist as: '+matchNames+'.\n\nAre you sure "'+newName+'" is a different, genuinely new account?')){return;}}
+    hospitalName=newName;newAccountCity=document.getElementById('newAccountCity').value.trim();newContactName=document.getElementById('newContactName').value.trim();newContactPhone=document.getElementById('newContactPhone').value.trim();newContactEmail=document.getElementById('newContactEmail').value.trim();
+    if(!newAccountCity){alert('Please enter the city.');return;}if(!newContactName){alert('Please enter the primary contact\'s name.');return;}if(!newContactPhone){alert('Please enter the primary contact\'s telephone number.');return;}
   }else{hospitalName=hospitalInput.value.trim();if(!hospitalName){alert('Please select an account from the list, or check "Account not listed" to add a new one.');return;}if(!selectedAccountId){alert('Please select the account from the dropdown list so it links correctly.');return;}}
   submitBtn.disabled=true;submitBtn.textContent='Processing...';processingOverlay.style.display='block';successCard.style.display='none';
   var latitude=null,longitude=null,accuracy=null;
@@ -330,56 +268,32 @@ submitBtn.addEventListener('click',async function(){
   try{
     var aiRes=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,messages:[{role:'user',content:'You are a MedTech sales intelligence assistant operating in the GCC region. The transcript below may be in English, Arabic, mixed Arabic-English, or Gulf/Levantine/Egyptian Arabic dialect. Understand the full meaning regardless of language or dialect used. Structure the intelligence into a concise English report with these exact sections:\n\nVISIT SUMMARY\nKEY CONTACTS MET\nOUTCOMES & DECISIONS\nNEXT STEPS\nOPPORTUNITY SIGNALS\nSENTIMENT\nPRIORITY LEVEL (respond with exactly one word: High, Medium, or Low)\n\nFor PRIORITY LEVEL, classify based on:\n- High: quotation requested, procurement engaged, decision maker committed, strong buying signal, evaluation planned\n- Medium: follow-up needed, positive interest, return visit requested, relationship developing\n- Low: informational visit, no current opportunity, no buying signal, long-term monitoring\n\nOutput the report in professional English only.\n\nTranscript:\n'+transcript}]})});
     var aiData=await aiRes.json();
-    if(!aiRes.ok||!aiData.content||!aiData.content[0]||!aiData.content[0].text){
-      processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';
-      alert('AI processing failed, so nothing was saved — no account, no contact, no visit.\n\nPlease try again.\n\n'+JSON.stringify(aiData));
-      return;
-    }
+    if(!aiRes.ok||!aiData.content||!aiData.content[0]||!aiData.content[0].text){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';alert('AI processing failed, so nothing was saved — no account, no contact, no visit.\n\nPlease try again.\n\n'+JSON.stringify(aiData));return;}
     var result=aiData.content[0].text;var parsed=parseReport(result);var priority=extractPriority(parsed.priority);
     var visitDate=document.getElementById('visitDate').value;var territory=document.getElementById('territory').value;var visitType=document.getElementById('visitType').value;
-
     var newAccountId=null;
     if(isNewAccount){
       document.getElementById('processingText').textContent='Creating account...';
       var accPayload={'Account Name':hospitalName,'Territory':territory,'City':newAccountCity,'Created By':userId};
       var accRes=await fetch(WORKER+'/save-account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(accPayload)});
       var accData=await accRes.json();
-      if(!accRes.ok){
-        processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';
-        alert('Failed to create the new account. Nothing was saved — please try again.\n\n'+JSON.stringify(accData));
-        return;
-      }
-      newAccountId=accData.id;
-      ACCOUNTS.push({id:newAccountId,name:hospitalName,territory:territory});
-
+      if(!accRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';alert('Failed to create the new account. Nothing was saved — please try again.\n\n'+JSON.stringify(accData));return;}
+      newAccountId=accData.id;ACCOUNTS.push({id:newAccountId,name:hospitalName,territory:territory});
       if(newContactName){
         document.getElementById('processingText').textContent='Saving contact...';
         var contactPayload={'Contact Name':newContactName,'Mobile':newContactPhone,'Email':newContactEmail,'Status':'Current','Accounts':[newAccountId],'Added By':userId};
         var contactRes=await fetch(WORKER+'/save-contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(contactPayload)});
         var contactData=await contactRes.json();
-        if(!contactRes.ok){
-          processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';
-          alert('The account "'+hospitalName+'" was created successfully, but saving the contact failed. The visit has NOT been saved yet.\n\nSubmit again — this time search for "'+hospitalName+'" instead of using "Account not listed," since it already exists now.\n\n'+JSON.stringify(contactData));
-          return;
-        }
+        if(!contactRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';alert('The account "'+hospitalName+'" was created successfully, but saving the contact failed. The visit has NOT been saved yet.\n\nSubmit again — this time search for "'+hospitalName+'" instead of using "Account not listed," since it already exists now.\n\n'+JSON.stringify(contactData));return;}
       }
       document.getElementById('processingText').textContent='Saving visit...';
     }
-
     var savePayload={'Hospital Name':hospitalName,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Rep Name':repName,'User ID':userId,'User Role':userRole,'Display Name':repName,'Raw Transcript':transcript,'AI Summary':result,'Outcome':getOutcome(parsed.sentiment),'Meeting Notes':parsed.summary,'Action Items':parsed.nextSteps,'Priority':priority,'Latitude':latitude,'Longitude':longitude,'Accuracy':accuracy,'New Account':isNewAccount,'Pending Review':isNewAccount};
     if(!isNewAccount&&selectedAccountId){savePayload['Account']=[selectedAccountId];}
     if(isNewAccount&&newAccountId){savePayload['Account']=[newAccountId];}
     var saveRes=await fetch(WORKER+'/save-visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(savePayload)});
     var saveData=await saveRes.json();
-    if(!saveRes.ok){
-      processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';
-      if(isNewAccount){
-        alert('The account'+(newContactName?' and contact were':' was')+' created successfully, but the visit itself failed to save.\n\nSubmit again — this time search for "'+hospitalName+'" instead of using "Account not listed," since it already exists now.\n\nSave error '+saveRes.status+': '+JSON.stringify(saveData));
-      }else{
-        alert('Save error '+saveRes.status+': '+JSON.stringify(saveData));
-      }
-      return;
-    }
+    if(!saveRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';if(isNewAccount){alert('The account'+(newContactName?' and contact were':' was')+' created successfully, but the visit itself failed to save.\n\nSubmit again — this time search for "'+hospitalName+'" instead of using "Account not listed," since it already exists now.\n\nSave error '+saveRes.status+': '+JSON.stringify(saveData));}else{alert('Save error '+saveRes.status+': '+JSON.stringify(saveData));}return;}
     processingOverlay.style.display='none';successCard.style.display='block';document.getElementById('reportContent').innerHTML=renderReport(result);
   }catch(err){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';alert('Error: '+err.message);}
 });
