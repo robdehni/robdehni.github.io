@@ -46,4 +46,612 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .action-list{display:none;margin-top:12px;border-top:1px solid #e3ebf5;padding-top:10px}
 .account-card.expanded .action-list{display:block}
 .action-row{padding:12px;background:#f8fbff;border:1px solid #e3ebf5;border-radius:14px;margin-bottom:10px}
-.action-row:last-child{margi
+.action-row:last-child{margin-bottom:0}
+.action-text{font-size:14px;color:#263b59;line-height:1.55;font-weight:750;white-space:pre-wrap}
+.meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.meta{font-size:10.5px;font-weight:900;padding:5px 9px;border-radius:8px;background:#fff;color:#7a8aa3;border:1px solid #e3ebf5}
+.row-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.reminder-btn,.visit-btn{width:100%;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.reminder-btn{background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;box-shadow:0 6px 16px rgba(47,143,255,0.25)}
+.reminder-btn:disabled{opacity:.55;cursor:not-allowed;background:#8a9bb3;box-shadow:none}
+.visit-btn{background:#fff;color:#2f8fff;border:1.5px solid #2f8fff}
+.loading{text-align:center;padding:46px 20px;color:#8a9bb3;font-weight:700}
+.spinner{width:34px;height:34px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty,.error-box{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:28px 20px;text-align:center;color:#8a9bb3;font-weight:800;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.error-box{background:#fff3e0;border-color:#ffe5b3;color:#7a6000}
+.retry-btn{margin-top:10px;border:none;background:#2f8fff;color:#fff;padding:10px 18px;border-radius:10px;font-weight:900}
+.toast{position:fixed;left:20px;right:20px;bottom:22px;background:#0b1f3a;color:#fff;border-radius:14px;padding:14px;text-align:center;font-weight:900;font-size:13px;display:none;box-shadow:0 10px 26px rgba(11,31,58,0.25);z-index:999}
+.toast.visible{display:block}
+.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:30px}
+@media(max-width:720px){
+  .summary-grid{grid-template-columns:repeat(2,1fr)}
+  .mini-stats{grid-template-columns:repeat(2,1fr)}
+  .filter-row{grid-template-columns:1fr}
+  .row-actions{grid-template-columns:1fr}
+  .container{max-width:620px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="brand">
+      <span class="brand-cloud">☁️</span>
+      <div class="brand-text">
+        <h1>Field<span>IQ</span></h1>
+        <p>Territory Intelligence Platform</p>
+      </div>
+    </div>
+    <p class="page-subtitle">Manager Open Actions</p>
+  </div>
+
+  <a href="./fieldiq.html" class="home-btn">← Manager Home</a>
+
+  <div class="summary-grid">
+    <div class="summary-card"><div class="summary-num" id="openCount">0</div><div class="summary-label">Open</div></div>
+    <div class="summary-card"><div class="summary-num" id="overdueCount">0</div><div class="summary-label">Overdue</div></div>
+    <div class="summary-card"><div class="summary-num" id="todayCount">0</div><div class="summary-label">Due Today</div></div>
+    <div class="summary-card"><div class="summary-num" id="completedCount">0</div><div class="summary-label">Completed</div></div>
+  </div>
+
+  <div class="control-panel">
+    <div class="filter-row">
+      <div class="filter-field">
+        <label>Show rep</label>
+        <select id="repFilter"><option value="">All reps with actions</option></select>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="open">Open</button>
+      <button class="tab-btn" data-tab="overdue">Overdue</button>
+      <button class="tab-btn" data-tab="today">Due Today</button>
+      <button class="tab-btn" data-tab="upcoming">Upcoming</button>
+      <button class="tab-btn" data-tab="completed">Completed</button>
+      <button class="tab-btn" data-tab="all">All</button>
+    </div>
+  </div>
+
+  <div id="content"><div class="loading"><div class="spinner"></div>Loading manager actions...</div></div>
+  <div class="footer">FieldIQ v3.1 · 2026</div>
+</div>
+
+<div class="toast" id="toast">Reminder sent.</div>
+
+<script>
+var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+var SESSION_KEY='fieldiq_actions_return_state';
+
+var currentUserId=localStorage.getItem('fieldiq_user_id');
+var currentUserName=localStorage.getItem('fieldiq_user_name');
+var currentUserRole=localStorage.getItem('fieldiq_user_role')||'';
+
+var openActions=[];
+var completedActions=[];
+var allActions=[];
+var usersByRecordId={};
+var activeTab='open';
+var expanded={};
+var keyMap={};
+var selectedRep='';
+
+if(!currentUserId||!currentUserName){
+  window.location.href='./index.html';
+  throw new Error('No identity locked');
+}
+if(currentUserRole!=='Manager'){
+  window.location.href='./index.html';
+  throw new Error('Managers only');
+}
+
+function escapeHtml(str){
+  return String(str||'').replace(/[&<>"']/g,function(m){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
+  });
+}
+function todayISO(){
+  var d=new Date();
+  return new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString().slice(0,10);
+}
+function formatDate(v){
+  if(!v)return '';
+  try{return new Date(v+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+  catch(e){return v;}
+}
+function formatDateTime(v){
+  if(!v)return '';
+  try{return new Date(v).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
+  catch(e){return v;}
+}
+function timeoutPromise(ms,msg){
+  return new Promise(function(_,reject){
+    setTimeout(function(){reject(new Error(msg||'Timeout'));},ms);
+  });
+}
+function readableError(x){
+  if(x===undefined||x===null)return '';
+  if(typeof x==='string')return x;
+  try{return JSON.stringify(x);}catch(e){return String(x);}
+}
+function fetchJson(url,ms){
+  return Promise.race([
+    fetch(url,{cache:'no-store'}).then(function(r){
+      return r.text().then(function(t){
+        var d={};
+        try{d=t?JSON.parse(t):{};}catch(e){throw new Error('Worker returned invalid JSON: '+t.slice(0,200));}
+        if(!r.ok){throw new Error(readableError(d.error)||readableError(d)||('HTTP '+r.status));}
+        return d;
+      });
+    }),
+    timeoutPromise(ms||8000,'Worker timed out')
+  ]);
+}
+function getField(f,names,fallback){
+  for(var i=0;i<names.length;i++){
+    if(f[names[i]]!==undefined&&f[names[i]]!==null&&f[names[i]]!=='')return f[names[i]];
+  }
+  return fallback||'';
+}
+function firstLinkedId(v){
+  if(Array.isArray(v)&&v.length)return v[0];
+  if(typeof v==='string')return v;
+  return '';
+}
+function getVisitId(f){
+  return firstLinkedId(getField(f,['Visit','Field Visit','Visit Record','Visit ID','Visit Record ID','Source Visit','Source Visit ID'],''));
+}
+function getAccountName(f){
+  return getField(f,['Account Name','Hospital Name','Hospital','Account','Facility Name','Clinic Name','Customer Name'],'Unknown Account');
+}
+function getActionText(f){
+  return getField(f,['Action Text','Action','Action Item','Action Items','Task','Next Step','Next Steps','Follow Up','Follow-up','Follow Up Action'],'No action text');
+}
+function getDueDate(f){
+  return getField(f,['Due Date','Action Due Date'],'');
+}
+function getCompletedAt(f){
+  return getField(f,['Completed At','Completed Date'],'');
+}
+function getStatus(f){
+  return getField(f,['Status','Action Status'],'Open');
+}
+function isCompleted(f){
+  return String(getStatus(f)).toLowerCase()==='completed'||!!getCompletedAt(f);
+}
+function getDueState(f){
+  var due=getDueDate(f);
+  if(isCompleted(f))return 'completed';
+  if(!due)return 'open';
+  if(due<todayISO())return 'overdue';
+  if(due===todayISO())return 'today';
+  return 'upcoming';
+}
+function prettyState(state){
+  if(state==='overdue')return 'Overdue';
+  if(state==='today')return 'Due Today';
+  if(state==='upcoming')return 'Upcoming';
+  if(state==='completed')return 'Completed';
+  return 'Open';
+}
+function getAssignedRepName(f){
+  var a=f['Assigned Rep']||[];
+  if(Array.isArray(a)&&a.length&&usersByRecordId[a[0]])return usersByRecordId[a[0]].name;
+  return getField(f,['Rep Name','Assigned Rep Name','Owner','User Name'],(Array.isArray(a)&&a.length?a[0]:'Unassigned'));
+}
+function getAssignedRepKey(f){
+  var a=f['Assigned Rep']||[];
+  if(Array.isArray(a)&&a.length){
+    if(usersByRecordId[a[0]])return usersByRecordId[a[0]].userId||a[0];
+    return a[0];
+  }
+  return getAssignedRepName(f);
+}
+function reminderLockText(action){
+  var f=action.fields||{};
+  var latest=getField(f,['Last Reminder Sent At','Reminder Sent At'],'');
+  if(!latest)return '';
+  var h=(Date.now()-new Date(latest).getTime())/36e5;
+  if(h<24)return 'Locked '+Math.ceil(24-h)+'h';
+  return '';
+}
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg||'Done.';
+  t.className='toast visible';
+  setTimeout(function(){t.className='toast';},1800);
+}
+
+// ─── STATE PERSISTENCE ──────────────────────────────────────────────────────
+// FIX: saveManagerActionState now sets returning:true so restoreManagerActionState
+// knows this is a genuine return from View Visit, not a fresh page load.
+// restoreManagerActionState returns the saved scrollY (or null) so loadActions
+// can apply scroll AFTER render() has built the DOM — not 250ms into nothing.
+
+function saveManagerActionState(){
+  try{
+    sessionStorage.setItem(SESSION_KEY,JSON.stringify({
+      selectedRep:selectedRep,
+      activeTab:activeTab,
+      expanded:expanded,
+      scrollY:window.scrollY||0,
+      returning:true
+    }));
+  }catch(e){}
+}
+
+// Returns scrollY to restore (number) or null if this is a fresh load.
+function restoreManagerActionState(){
+  try{
+    var raw=sessionStorage.getItem(SESSION_KEY);
+    if(!raw)return null;
+    var s=JSON.parse(raw);
+    // Only restore if we're genuinely returning from View Visit.
+    if(!s.returning)return null;
+    if(s.selectedRep!==undefined)selectedRep=s.selectedRep||'';
+    if(s.activeTab)activeTab=s.activeTab;
+    if(s.expanded)expanded=s.expanded||{};
+    return typeof s.scrollY==='number'?s.scrollY:0;
+  }catch(e){return null;}
+}
+
+// Called after render() completes so the DOM exists before we scroll.
+// Clears the returning flag so it doesn't replay on the next fresh load.
+function applyScrollAndClearFlag(scrollY){
+  if(scrollY===null||scrollY===undefined)return;
+  window.scrollTo(0,scrollY);
+  try{
+    var raw=sessionStorage.getItem(SESSION_KEY);
+    if(raw){
+      var s=JSON.parse(raw);
+      s.returning=false;
+      sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));
+    }
+  }catch(e){}
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function loadUsersBestEffort(){
+  try{
+    var d=await fetchJson(WORKER+'/get-users',4000);
+    (d.records||[]).forEach(function(x){
+      var f=x.fields||{};
+      usersByRecordId[x.id]={
+        name:f['Display Name']||f['User ID']||x.id,
+        userId:f['User ID']||''
+      };
+    });
+  }catch(e){}
+}
+
+// FIX: loadActions now accepts an optional pendingScroll argument.
+// After render() builds the DOM, we apply scroll — guaranteed correct timing.
+async function loadActions(pendingScroll){
+  document.getElementById('content').innerHTML='<div class="loading"><div class="spinner"></div>Loading manager actions...</div>';
+  try{
+    var openData=await fetchJson(WORKER+'/get-actions?role=Manager&status=Open',8000);
+    openActions=openData.records||[];
+
+    completedActions=[];
+    try{
+      var compData=await fetchJson(WORKER+'/get-actions?role=Manager&status=Completed',5000);
+      completedActions=(compData.records||[]).filter(function(r){
+        var c=getCompletedAt(r.fields||{});
+        if(!c)return true;
+        return((Date.now()-new Date(c).getTime())/86400000)<=7;
+      });
+    }catch(e){completedActions=[];}
+
+    await loadUsersBestEffort();
+    allActions=openActions.concat(completedActions);
+    buildRepFilter();
+    applyCurrentRepToSelect();
+    syncTabButtons();
+    render();
+
+    // Apply scroll NOW — DOM is populated.
+    applyScrollAndClearFlag(pendingScroll!=null?pendingScroll:null);
+
+  }catch(err){
+    document.getElementById('content').innerHTML=
+      '<div class="error-box">Could not load manager actions.<br>'+
+      escapeHtml(err.message)+
+      '<br><button class="retry-btn" onclick="loadActions()">Retry</button></div>';
+  }
+}
+
+function buildRepFilter(){
+  var sel=document.getElementById('repFilter');
+  var keep=selectedRep||sel.value;
+  var reps={};
+
+  allActions.forEach(function(r){
+    var f=r.fields||{};
+    var k=getAssignedRepKey(f);
+    if(k)reps[k]=getAssignedRepName(f);
+  });
+
+  sel.innerHTML='<option value="">All reps with actions</option>';
+  Object.keys(reps).sort(function(a,b){return reps[a].localeCompare(reps[b]);}).forEach(function(k){
+    var o=document.createElement('option');
+    o.value=k;
+    o.textContent=reps[k];
+    sel.appendChild(o);
+  });
+
+  if(keep&&reps[keep]){sel.value=keep;}
+  else{sel.value='';selectedRep='';}
+}
+
+function applyCurrentRepToSelect(){
+  var sel=document.getElementById('repFilter');
+  if(sel)sel.value=selectedRep;
+}
+
+function syncTabButtons(){
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    b.classList.toggle('active',b.getAttribute('data-tab')===activeTab);
+  });
+}
+
+function applyRepFilter(list){
+  return list.filter(function(r){
+    var f=r.fields||{};
+    if(selectedRep&&getAssignedRepKey(f)!==selectedRep)return false;
+    return true;
+  });
+}
+function listForTab(){
+  var l;
+  if(activeTab==='open')l=openActions;
+  else if(activeTab==='completed')l=completedActions;
+  else if(activeTab==='all')l=allActions;
+  else l=openActions.filter(function(r){return getDueState(r.fields||{})===activeTab;});
+  return applyRepFilter(l);
+}
+function groupActions(list){
+  var g={};
+  list.forEach(function(r){
+    var f=r.fields||{};
+    var account=getAccountName(f);
+    var rep=getAssignedRepName(f);
+    var key=account+'||'+rep;
+    if(!g[key])g[key]=[];
+    g[key].push(r);
+  });
+  return g;
+}
+function updateCounts(){
+  var visibleOpen=applyRepFilter(openActions);
+  var visibleCompleted=applyRepFilter(completedActions);
+  document.getElementById('openCount').textContent=visibleOpen.length;
+  document.getElementById('overdueCount').textContent=visibleOpen.filter(function(r){return getDueState(r.fields||{})==='overdue';}).length;
+  document.getElementById('todayCount').textContent=visibleOpen.filter(function(r){return getDueState(r.fields||{})==='today';}).length;
+  document.getElementById('completedCount').textContent=visibleCompleted.length;
+}
+function safeKeyFor(key){
+  return btoa(unescape(encodeURIComponent(key))).replace(/=/g,'');
+}
+function countState(group,state){
+  return group.filter(function(r){return getDueState(r.fields||{})===state;}).length;
+}
+function nextDue(group){
+  var dates=group.map(function(r){return getDueDate(r.fields||{});}).filter(Boolean).sort();
+  return dates[0]||'';
+}
+
+function visitHref(action){
+  var f=action.fields||{};
+  var visitId=getVisitId(f);
+  var account=getAccountName(f);
+  var url='./fieldiq-visit-history.html';
+  var q=[];
+  if(visitId)q.push('visitId='+encodeURIComponent(visitId));
+  if(action.id)q.push('actionId='+encodeURIComponent(action.id));
+  if(account)q.push('account='+encodeURIComponent(account));
+  // FIX: explicit returnTo so Visit History sends the manager back here, not Dashboard.
+  q.push('returnTo='+encodeURIComponent('./fieldiq-actions.html'));
+  q.push('source='+encodeURIComponent('manager-actions'));
+  return url+(q.length?'?'+q.join('&'):'');
+}
+
+function render(){
+  updateCounts();
+  var list=listForTab();
+  var content=document.getElementById('content');
+
+  if(!list.length){
+    content.innerHTML='<div class="empty">No actions in this view.</div>';
+    return;
+  }
+
+  var groups=groupActions(list);
+  var html='';
+  keyMap={};
+
+  Object.keys(groups).sort().forEach(function(key){
+    var group=groups[key];
+    var f=group[0].fields||{};
+    var rep=getAssignedRepName(f);
+    var account=getAccountName(f);
+
+    var overdue=countState(group,'overdue');
+    var today=countState(group,'today');
+    var completed=countState(group,'completed');
+    var openCount=group.length-completed;
+
+    var allDone=openCount===0;
+    var pillClass=allDone?'status-completed':(overdue?'status-overdue':(today?'status-today':'status-open'));
+    var pillText=allDone?'Completed':(overdue?'Overdue':(today?'Due Today':'Open'));
+
+    var due=nextDue(group);
+    var sk=safeKeyFor(key);
+    keyMap[sk]=key;
+    var isExp=!!expanded[key];
+
+    html+='<div class="account-card '+(isExp?'expanded':'')+'">';
+    html+='<div class="account-top">';
+    html+='<div><div class="account-name">'+escapeHtml(account)+'</div>';
+    html+='<div class="account-meta">Rep: '+escapeHtml(rep)+(due?' · Next due '+escapeHtml(formatDate(due)):'')+'</div></div>';
+    html+='<div class="status-pill '+pillClass+'">'+pillText+'</div>';
+    html+='</div>';
+
+    html+='<div class="mini-stats">';
+    html+='<div class="mini-stat"><div class="mini-num">'+openCount+'</div><div class="mini-label">Open</div></div>';
+    html+='<div class="mini-stat"><div class="mini-num">'+overdue+'</div><div class="mini-label">Overdue</div></div>';
+    html+='<div class="mini-stat"><div class="mini-num">'+today+'</div><div class="mini-label">Today</div></div>';
+    html+='<div class="mini-stat"><div class="mini-num">'+completed+'</div><div class="mini-label">Done</div></div>';
+    html+='</div>';
+
+    html+='<div class="card-actions">';
+    html+='<button class="view-btn" data-expand-key="'+sk+'">'+(isExp?'Hide Tasks':'View Tasks')+'</button>';
+    html+='</div>';
+
+    html+='<div class="action-list">';
+
+    group.forEach(function(r){
+      var x=r.fields||{};
+      var state=getDueState(x);
+      var lock=reminderLockText(r);
+      var complete=isCompleted(x);
+
+      html+='<div class="action-row">';
+      html+='<div class="action-text">'+escapeHtml(getActionText(x))+'</div>';
+      html+='<div class="meta-row">';
+      html+='<span class="meta">Rep: '+escapeHtml(getAssignedRepName(x))+'</span>';
+      html+='<span class="meta">Status: '+escapeHtml(prettyState(state))+'</span>';
+      if(getDueDate(x))html+='<span class="meta">Due: '+escapeHtml(formatDate(getDueDate(x)))+'</span>';
+      if(x['Due Time'])html+='<span class="meta">Time: '+escapeHtml(x['Due Time'])+'</span>';
+      html+='<span class="meta">Reminders: '+escapeHtml(x['Reminder Count']||0)+'</span>';
+      if(getCompletedAt(x))html+='<span class="meta">Completed: '+escapeHtml(formatDateTime(getCompletedAt(x)))+'</span>';
+      html+='</div>';
+
+      html+='<div class="row-actions">';
+      html+='<a class="visit-btn" data-visit-link="1" href="'+escapeHtml(visitHref(r))+'"><i data-lucide="file-text"></i> View Visit</a>';
+      if(!complete){
+        html+='<button class="reminder-btn" data-reminder-id="'+escapeHtml(r.id)+'" '+(lock?'disabled':'')+'>';
+        html+='<i data-lucide="send"></i> '+(lock?'Reminder sent · '+lock:'Send Reminder')+'</button>';
+      }else{
+        html+='<button class="reminder-btn" disabled><i data-lucide="check-circle"></i> Completed</button>';
+      }
+      html+='</div>';
+
+      html+='</div>';
+    });
+
+    html+='</div></div>';
+  });
+
+  content.innerHTML=html;
+  if(window.lucide)lucide.createIcons();
+}
+
+function toggleExpandKey(sk){
+  var key=keyMap[sk];
+  if(!key)return;
+  expanded[key]=!expanded[key];
+  render();
+}
+
+async function sendReminder(actionId){
+  if(!actionId)return;
+
+  var btn=document.querySelector('[data-reminder-id="'+CSS.escape(actionId)+'"]');
+  if(btn){btn.disabled=true;btn.textContent='Sending reminder...';}
+
+  try{
+    var actionRecord=allActions.find(function(r){return r.id===actionId;})||{};
+    var actionFields=actionRecord.fields||{};
+    var payload={
+      actionId:actionId,
+      actionRecordId:actionId,
+      recordId:actionId,
+      assignedRep:getAssignedRepKey(actionFields),
+      assignedRepName:getAssignedRepName(actionFields),
+      accountName:getAccountName(actionFields),
+      actionText:getActionText(actionFields),
+      managerUserId:currentUserId,
+      managerName:currentUserName
+    };
+
+    var res=await fetch(WORKER+'/send-reminder',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+
+    var text=await res.text();
+    var data={};
+    try{data=text?JSON.parse(text):{};}catch(e){data={raw:text};}
+
+    if(!res.ok||data.ok===false||data.success===false){
+      if(data.locked){
+        throw new Error('Reminder already sent. Available again in '+(data.hoursRemaining||24)+'h.');
+      }
+      throw new Error(readableError(data.error)||readableError(data.message)||readableError(data)||('Reminder failed. HTTP '+res.status));
+    }
+
+    showToast('Reminder sent to '+getAssignedRepName(actionFields)+'.');
+    // Reload but do NOT restore scroll — manager stays where they are after a reminder.
+    await loadActions(null);
+
+  }catch(err){
+    alert('Reminder failed: '+readableError(err.message||err));
+    await loadActions(null);
+  }
+}
+
+document.addEventListener('click',function(e){
+  // FIX: save full state before leaving to View Visit so we can restore on return.
+  var visit=e.target.closest('[data-visit-link]');
+  if(visit){
+    saveManagerActionState();
+    return; // let the <a> navigate naturally
+  }
+
+  var exp=e.target.closest('[data-expand-key]');
+  if(exp){
+    toggleExpandKey(exp.getAttribute('data-expand-key'));
+    return;
+  }
+
+  var rem=e.target.closest('[data-reminder-id]');
+  if(rem){
+    sendReminder(rem.getAttribute('data-reminder-id'));
+    return;
+  }
+});
+
+function bindStaticEvents(){
+  document.querySelectorAll('.tab-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      activeTab=btn.getAttribute('data-tab');
+      expanded={};
+      syncTabButtons();
+      render();
+    });
+  });
+
+  var rep=document.getElementById('repFilter');
+  if(rep){
+    rep.addEventListener('change',function(){
+      selectedRep=rep.value;
+      expanded={};
+      render();
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  // FIX: capture pendingScroll BEFORE bindStaticEvents or loadActions.
+  // restoreManagerActionState sets selectedRep/activeTab/expanded in memory.
+  // loadActions then renders with that state, and only after render() applies scroll.
+  var pendingScroll=restoreManagerActionState();
+
+  bindStaticEvents();
+  if(window.lucide)lucide.createIcons();
+  loadActions(pendingScroll);
+});
+</script>
+</body>
+</html>
