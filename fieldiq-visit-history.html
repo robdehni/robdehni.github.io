@@ -3,389 +3,655 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FieldIQ — Visit History</title>
+<title>FieldIQ — Manager Open Actions</title>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px 18px 40px;overflow-x:hidden}
-.container{max-width:780px;margin:0 auto;width:100%}
-
-/* ── Brand block — matches fieldiq.html reference ── */
-.topbar{margin-bottom:8px}
-.topbar-brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:24px 20px 50px}
+.container{max-width:980px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 .brand-cloud{font-size:26px;line-height:1}
 .brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
 .brand-text h1 span{color:#2f8fff}
 .brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
-.topbar-sub{color:#7a8aa3;font-size:12.5px;margin-top:2px;font-weight:600}
-
-.home-btn{
-  display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
-  text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:18px;border:1px solid #e3ebf5;
-  box-shadow:0 2px 8px rgba(11,31,58,0.05);
-}
-.home-btn:hover{border-color:#2f8fff}
-
-.filter-bar{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:16px;margin-bottom:18px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
-.filter-bar h3{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:12px}
-.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.filter-select{
-  width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;
-  font-size:12.5px;outline:none;font-weight:600;
-}
-.filter-select:focus{border-color:#2f8fff}
-.filter-btns{display:flex;gap:8px}
-.fbtn-apply{flex:1;padding:11px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:10px;font-size:12.5px;font-weight:800;cursor:pointer;box-shadow:0 6px 16px rgba(47,143,255,0.3)}
-.fbtn-reset{flex:1;padding:11px;background:#fff;color:#7a8aa3;border:1.5px solid #e3ebf5;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer}
-.filter-active{font-size:10.5px;color:#2f8fff;margin-top:8px;text-align:center;min-height:14px;font-weight:700}
-
-.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px}
-.stat-pill{
-  background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px 14px;font-size:11.5px;
-  color:#7a8aa3;text-align:center;font-weight:700;box-shadow:0 4px 14px rgba(11,31,58,0.05);
-}
-.stat-pill span{display:block;font-size:26px;font-weight:800;color:#2f8fff;margin-bottom:4px}
-
-.count-label{font-size:12px;color:#aab8cc;margin-bottom:14px;text-align:center;font-weight:600}
-
-.visit-card{
-  background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:18px;margin-bottom:12px;
-  box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color 0.15s;
-}
-.visit-card.new-account{border-color:#bfe0ff;background:#f3f9ff}
-.visit-card.expanded{border-color:#2f8fff}
-.visit-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:10px}
-.visit-account{font-size:15px;font-weight:800;color:#0b1f3a;flex:1}
-.visit-date{font-size:11.5px;color:#aab8cc;white-space:nowrap;font-weight:700}
-.visit-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
-.badge{font-size:10.5px;padding:4px 11px;border-radius:8px;font-weight:700}
-.badge-territory{background:#eef3f9;color:#5b6b85}
-.badge-type{background:#eef3f9;color:#5b6b85}
-.badge-high{background:#ffe5e8;color:#e0344a}
-.badge-medium{background:#fff3e0;color:#d98a1c}
-.badge-low{background:#e3f8ea;color:#1fa861}
-.badge-new{background:#eaf3ff;color:#2f8fff}
-.visit-summary{font-size:12.5px;color:#7a8aa3;line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid #eef3f9}
-.visit-card.expanded .visit-summary{display:none}
-
-.visit-toggle{font-size:11px;color:#2f8fff;font-weight:700;margin-top:10px;text-align:center;user-select:none}
-.visit-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid #eef3f9}
-.visit-detail.open{display:block}
-.visit-detail .report-section{margin:10px 0}
-.visit-detail .report-section:first-child{margin-top:0}
-.visit-detail .report-section h4{color:#2f8fff;font-size:10.5px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;font-weight:800}
-.visit-detail .report-section p{color:#3d4f6b;font-size:13px;line-height:1.65}
-
-.loading{text-align:center;padding:60px 20px;color:#aab8cc;font-weight:600}
-.spinner{width:36px;height:36px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
+.header{margin-bottom:18px}
+.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600}
+.home-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;box-shadow:0 2px 8px rgba(11,31,58,0.05)}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.summary-card{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.summary-num{font-size:24px;font-weight:900;color:#0b1f3a}
+.summary-label{font-size:11px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-top:3px}
+.control-panel{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:12px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.filter-row{display:grid;grid-template-columns:1fr;gap:8px;align-items:end}
+.filter-field label{display:block;font-size:10px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.filter-field select{width:100%;padding:12px;border:1.5px solid #dde8f5;border-radius:12px;background:#f8fbff;color:#0b1f3a;font-weight:800;outline:none}
+.tabs{display:flex;gap:8px;margin-top:12px;overflow-x:auto;padding-bottom:2px}
+.tab-btn{border:1px solid #e3ebf5;background:#fff;color:#7a8aa3;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:900;white-space:nowrap;cursor:pointer;box-shadow:0 2px 8px rgba(11,31,58,0.04)}
+.tab-btn.active{background:#2f8fff;color:#fff;border-color:#2f8fff}
+.account-card{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.account-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px}
+.account-name{font-size:17px;font-weight:900;color:#0b1f3a;line-height:1.35}
+.account-meta{font-size:12px;color:#8a9bb3;font-weight:800;margin-top:4px;line-height:1.45}
+.status-pill{border-radius:999px;padding:5px 10px;font-size:10.5px;font-weight:900;white-space:nowrap}
+.status-open{background:#eaf3ff;color:#2f8fff}
+.status-overdue{background:#ffe1e5;color:#c43048}
+.status-today{background:#fff4d6;color:#a36a00}
+.status-completed{background:#e1f5ea;color:#1f8a52}
+.mini-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}
+.mini-stat{background:#f8fbff;border:1px solid #e3ebf5;border-radius:12px;padding:8px;text-align:center}
+.mini-num{font-size:16px;font-weight:900;color:#0b1f3a}
+.mini-label{font-size:9px;font-weight:900;color:#8a9bb3;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.card-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
+.view-btn{width:100%;border:1.5px solid #2f8fff;background:#eaf3ff;color:#2f8fff;border-radius:12px;padding:12px;font-size:14px;font-weight:900;cursor:pointer}
+.action-list{display:none;margin-top:12px;border-top:1px solid #e3ebf5;padding-top:10px}
+.account-card.expanded .action-list{display:block}
+.action-row{padding:12px;background:#f8fbff;border:1px solid #e3ebf5;border-radius:14px;margin-bottom:10px}
+.action-row:last-child{margin-bottom:0}
+.action-text{font-size:14px;color:#263b59;line-height:1.55;font-weight:750;white-space:pre-wrap}
+.meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.meta{font-size:10.5px;font-weight:900;padding:5px 9px;border-radius:8px;background:#fff;color:#7a8aa3;border:1px solid #e3ebf5}
+.row-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.reminder-btn,.visit-btn{width:100%;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.reminder-btn{background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;box-shadow:0 6px 16px rgba(47,143,255,0.25)}
+.reminder-btn:disabled{opacity:.55;cursor:not-allowed;background:#8a9bb3;box-shadow:none}
+.visit-btn{background:#fff;color:#2f8fff;border:1.5px solid #2f8fff}
+.loading{text-align:center;padding:46px 20px;color:#8a9bb3;font-weight:700}
+.spinner{width:34px;height:34px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;color:#aab8cc;font-size:13.5px;padding:40px 20px;font-weight:600}
-
-.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:24px}
-
-@media(min-width:768px){
-  .container{max-width:900px}
-  .visit-card{padding:22px 24px}
-  .visit-account{font-size:16.5px}
-  .stat-pill{padding:22px}
-  .stat-pill span{font-size:32px}
+.empty,.error-box{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:28px 20px;text-align:center;color:#8a9bb3;font-weight:800;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.error-box{background:#fff3e0;border-color:#ffe5b3;color:#7a6000}
+.retry-btn{margin-top:10px;border:none;background:#2f8fff;color:#fff;padding:10px 18px;border-radius:10px;font-weight:900}
+.toast{position:fixed;left:20px;right:20px;bottom:22px;background:#0b1f3a;color:#fff;border-radius:14px;padding:14px;text-align:center;font-weight:900;font-size:13px;display:none;box-shadow:0 10px 26px rgba(11,31,58,0.25);z-index:999}
+.toast.visible{display:block}
+.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:30px}
+@media(max-width:720px){
+  .summary-grid{grid-template-columns:repeat(2,1fr)}
+  .mini-stats{grid-template-columns:repeat(2,1fr)}
+  .filter-row{grid-template-columns:1fr}
+  .row-actions{grid-template-columns:1fr}
+  .container{max-width:620px}
 }
-@media(min-width:1100px){
-  .container{max-width:1100px}
-  body{padding:32px 40px 60px}
-}
-.visit-card{width:100%;overflow-wrap:break-word;word-break:break-word}
-.visit-summary{white-space:normal;overflow-wrap:break-word;word-break:break-word}
-.visit-account{overflow-wrap:break-word;word-break:break-word}
-[data-lucide]{display:inline-block;vertical-align:middle;stroke-width:1.8}
-.visit-toggle [data-lucide]{width:12px;height:12px}
 </style>
 </head>
 <body>
 <div class="container">
+  <div class="header">
+    <div class="brand">
+      <span class="brand-cloud">☁️</span>
+      <div class="brand-text">
+        <h1>Field<span>IQ</span></h1>
+        <p>Territory Intelligence Platform</p>
+      </div>
+    </div>
+    <p class="page-subtitle">Manager Open Actions</p>
+  </div>
 
-<div class="topbar">
-  <div class="topbar-brand">
-    <span class="brand-cloud">☁️</span>
-    <div class="brand-text">
-      <h1>Field<span>IQ</span></h1>
-      <p>Territory Intelligence Platform</p>
+  <a href="./fieldiq.html" class="home-btn">← Manager Home</a>
+
+  <div class="summary-grid">
+    <div class="summary-card"><div class="summary-num" id="openCount">0</div><div class="summary-label">Open</div></div>
+    <div class="summary-card"><div class="summary-num" id="overdueCount">0</div><div class="summary-label">Overdue</div></div>
+    <div class="summary-card"><div class="summary-num" id="todayCount">0</div><div class="summary-label">Due Today</div></div>
+    <div class="summary-card"><div class="summary-num" id="completedCount">0</div><div class="summary-label">Completed</div></div>
+  </div>
+
+  <div class="control-panel">
+    <div class="filter-row">
+      <div class="filter-field">
+        <label>Show rep</label>
+        <select id="repFilter"><option value="">All reps with actions</option></select>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="open">Open</button>
+      <button class="tab-btn" data-tab="overdue">Overdue</button>
+      <button class="tab-btn" data-tab="today">Due Today</button>
+      <button class="tab-btn" data-tab="upcoming">Upcoming</button>
+      <button class="tab-btn" data-tab="completed">Completed</button>
+      <button class="tab-btn" data-tab="all">All</button>
     </div>
   </div>
-  <p class="topbar-sub" id="lastUpdated">Loading...</p>
+
+  <div id="content"><div class="loading"><div class="spinner"></div>Loading manager actions...</div></div>
+  <div class="footer">FieldIQ v3.1 · 2026</div>
 </div>
 
-<a href="./index.html" id="homeBtn" class="home-btn">← Home</a>
-
-<div id="filterBar" class="filter-bar" style="display:none">
-  <h3>Manager Filters</h3>
-  <div class="filter-row">
-    <select class="filter-select" id="filterRep">
-      <option value="">All Reps</option>
-    </select>
-    <select class="filter-select" id="filterTerritory">
-      <option value="">All Territories</option>
-      <option>UAE</option><option>KSA</option><option>Qatar</option>
-      <option>Kuwait</option><option>Bahrain</option><option>Oman</option>
-    </select>
-  </div>
-  <div class="filter-row">
-    <select class="filter-select" id="filterPriority">
-      <option value="">All Priorities</option>
-      <option>High</option><option>Medium</option><option>Low</option>
-    </select>
-    <select class="filter-select" id="filterPeriod">
-      <option value="">All Time</option>
-      <option value="thisWeek">This Week</option>
-      <option value="lastWeek">Last Week</option>
-      <option value="thisMonth">This Month</option>
-      <option value="lastMonth">Last Month</option>
-      <option value="30">Last 30 Days</option>
-      <option value="90">Last 90 Days</option>
-    </select>
-  </div>
-  <div class="filter-btns">
-    <button class="fbtn-apply" onclick="applyFilters()">Apply Filters</button>
-    <button class="fbtn-reset" onclick="resetFilters()">Reset</button>
-  </div>
-  <div class="filter-active" id="filterStatus"></div>
-</div>
-
-<div class="stats-row">
-  <div class="stat-pill"><span id="statTotal">—</span>My Visits</div>
-  <div class="stat-pill"><span id="statThisWeek">—</span>This Week</div>
-  <div class="stat-pill"><span id="statNewAccounts">—</span>New Accounts</div>
-</div>
-
-<div id="countLabel" class="count-label"></div>
-<div id="visitList"><div class="loading"><div class="spinner"></div>Loading visits...</div></div>
-
-<div class="footer">FieldIQ v2.1 · 2026</div>
-</div>
+<div class="toast" id="toast">Reminder sent.</div>
 
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+var SESSION_KEY='fieldiq_actions_return_state';
 
-(function(){
-  var role = localStorage.getItem('fieldiq_user_role');
-  var homeBtn=document.getElementById('homeBtn');
-  if(role === 'Manager'){
-    homeBtn.href='./dashboard.html';
-    homeBtn.textContent='← Back to Dashboard';
-  }else{
-    homeBtn.href='./index.html';
-  }
-})();
+var currentUserId=localStorage.getItem('fieldiq_user_id');
+var currentUserName=localStorage.getItem('fieldiq_user_name');
+var currentUserRole=localStorage.getItem('fieldiq_user_role')||'';
 
-function formatDate(d){
-  if(!d)return'—';
-  return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+var openActions=[];
+var completedActions=[];
+var allActions=[];
+var usersByRecordId={};
+var activeTab='open';
+var expanded={};
+var keyMap={};
+var selectedRep='';
+
+if(!currentUserId||!currentUserName){
+  window.location.href='./index.html';
+  throw new Error('No identity locked');
+}
+if(currentUserRole!=='Manager'){
+  window.location.href='./index.html';
+  throw new Error('Managers only');
 }
 
-function getPriorityClass(p){
-  if(!p)return'badge-medium';
-  p=p.toLowerCase();
-  if(p==='high')return'badge-high';
-  if(p==='low')return'badge-low';
-  return'badge-medium';
-}
-
-function truncateSummary(text,n){
-  if(!text)return'';
-  var i=text.indexOf('VISIT SUMMARY');
-  var raw=(i>-1?text.substring(i+13):text).trim();
-  if(raw.length<=n)return raw;
-  var cut=raw.substring(0,n);
-  var lastPeriod=cut.lastIndexOf('. ');
-  if(lastPeriod>n*0.5){return cut.substring(0,lastPeriod+1).trim();}
-  var lastSpace=cut.lastIndexOf(' ');
-  if(lastSpace>-1){return cut.substring(0,lastSpace).trim()+'...';}
-  return cut.trim()+'...';
-}
-
-function parseFullReport(text){
-  var sections={summary:'',contacts:'',outcomes:'',nextSteps:'',signals:'',sentiment:''};
-  var lines=(text||'').split('\n'),current='';
-  for(var i=0;i<lines.length;i++){
-    var l=lines[i].trim();
-    if(l.match(/VISIT SUMMARY/i))current='summary';
-    else if(l.match(/KEY CONTACTS/i))current='contacts';
-    else if(l.match(/OUTCOMES/i))current='outcomes';
-    else if(l.match(/NEXT STEPS/i))current='nextSteps';
-    else if(l.match(/OPPORTUNITY/i))current='signals';
-    else if(l.match(/SENTIMENT/i))current='sentiment';
-    else if(l.match(/PRIORITY/i))current='';
-    else if(l&&current)sections[current]+=(sections[current]?'\n':'')+l;
-  }
-  return sections;
-}
-
-function renderFullReport(text){
-  if(!text)return'<div class="report-section"><p>No additional details available.</p></div>';
-  var s=parseFullReport(text),html='';
-  if(s.summary)html+='<div class="report-section"><h4>Visit Summary</h4><p>'+s.summary.replace(/\n/g,'<br>')+'</p></div>';
-  if(s.contacts)html+='<div class="report-section"><h4>Key Contacts</h4><p>'+s.contacts.replace(/\n/g,'<br>')+'</p></div>';
-  if(s.outcomes)html+='<div class="report-section"><h4>Outcomes & Decisions</h4><p>'+s.outcomes.replace(/\n/g,'<br>')+'</p></div>';
-  if(s.nextSteps)html+='<div class="report-section"><h4>Next Steps</h4><p>'+s.nextSteps.replace(/\n/g,'<br>')+'</p></div>';
-  if(s.signals)html+='<div class="report-section"><h4>Opportunity Signals</h4><p>'+s.signals.replace(/\n/g,'<br>')+'</p></div>';
-  if(s.sentiment)html+='<div class="report-section"><h4>Sentiment</h4><p>'+s.sentiment.replace(/\n/g,'<br>')+'</p></div>';
-  return html||'<div class="report-section"><p>'+text+'</p></div>';
-}
-
-var sortedRecords=[];
-var allRecordsRaw=[];
-var targetVisitId=null;
-
-function renderVisits(records){
-  var today=new Date();today.setHours(0,0,0,0);
-  var weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
-  var thisWeek=0,newAccounts=0;
-  var sorted=records.slice().sort(function(a,b){
-    var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);
-    var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);
-    return db-da;
+function escapeHtml(str){
+  return String(str||'').replace(/[&<>"']/g,function(m){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
   });
-  sortedRecords=sorted;
-  sorted.forEach(function(r){
-    var f=r.fields;var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
-    if(vDate&&vDate>=weekAgo)thisWeek++;
-    if(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1')newAccounts++;
-  });
-  document.getElementById('statTotal').textContent=records.length;
-  document.getElementById('statThisWeek').textContent=thisWeek;
-  document.getElementById('statNewAccounts').textContent=newAccounts;
-  document.getElementById('countLabel').textContent='Showing '+sorted.length+' visit'+(sorted.length!==1?'s':'')+', most recent first';
-  if(sorted.length===0){document.getElementById('visitList').innerHTML='<div class="empty">No visits logged yet.</div>';return;}
-  var html='';
-  sorted.forEach(function(r,idx){
-    var f=r.fields;var priority=f['Priority']||'Medium';
-    var isNew=(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1');
-    var summary=truncateSummary(f['AI Summary']||f['Meeting Notes']||'',180);
-    html+=
-      '<div class="visit-card'+(isNew?' new-account':'')+'" data-idx="'+idx+'" data-id="'+r.id+'">'+
-        '<div class="visit-header">'+
-          '<div class="visit-account">'+(f['Hospital Name']||'Unknown Account')+'</div>'+
-          '<div class="visit-date">'+formatDate(f['Visit Date'])+'</div>'+
-        '</div>'+
-        '<div class="visit-meta">'+
-          (f['Territory']?'<span class="badge badge-territory">'+f['Territory']+'</span>':'')+
-          (f['Visit Type']?'<span class="badge badge-type">'+f['Visit Type']+'</span>':'')+
-          '<span class="badge '+getPriorityClass(priority)+'">'+priority+'</span>'+
-          (f['Rep Name']?'<span class="badge badge-territory">'+f['Rep Name']+'</span>':'')+
-          (isNew?'<span class="badge badge-new">New Account</span>':'')+
-        '</div>'+
-        (summary?'<div class="visit-summary">'+summary+'</div>':'')+
-        '<div class="visit-toggle"><i data-lucide="chevron-down"></i> Tap to view full report</div>'+
-        '<div class="visit-detail" id="detail-'+idx+'"></div>'+
-      '</div>';
-  });
-  document.getElementById('visitList').innerHTML=html;lucide.createIcons();
-  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
 }
-
-document.getElementById('visitList').addEventListener('click',function(e){
-  var card=e.target.closest('.visit-card');if(!card)return;
-  var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');
-  if(!detail)return;
-  var isOpen=detail.classList.contains('open');
-  if(isOpen){
-    detail.classList.remove('open');card.classList.remove('expanded');
-    toggle.innerHTML='<i data-lucide="chevron-down"></i> Tap to view full report';lucide.createIcons({el:toggle});
-  }else{
-    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'');detail.setAttribute('data-rendered','1');}
-    detail.classList.add('open');card.classList.add('expanded');
-    toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});
+function todayISO(){
+  var d=new Date();
+  return new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString().slice(0,10);
+}
+function formatDate(v){
+  if(!v)return '';
+  try{return new Date(v+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+  catch(e){return v;}
+}
+function formatDateTime(v){
+  if(!v)return '';
+  try{return new Date(v).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
+  catch(e){return v;}
+}
+function timeoutPromise(ms,msg){
+  return new Promise(function(_,reject){
+    setTimeout(function(){reject(new Error(msg||'Timeout'));},ms);
+  });
+}
+function readableError(x){
+  if(x===undefined||x===null)return '';
+  if(typeof x==='string')return x;
+  try{return JSON.stringify(x);}catch(e){return String(x);}
+}
+function fetchJson(url,ms){
+  return Promise.race([
+    fetch(url,{cache:'no-store'}).then(function(r){
+      return r.text().then(function(t){
+        var d={};
+        try{d=t?JSON.parse(t):{};}catch(e){throw new Error('Worker returned invalid JSON: '+t.slice(0,200));}
+        if(!r.ok){throw new Error(readableError(d.error)||readableError(d)||('HTTP '+r.status));}
+        return d;
+      });
+    }),
+    timeoutPromise(ms||8000,'Worker timed out')
+  ]);
+}
+function getField(f,names,fallback){
+  for(var i=0;i<names.length;i++){
+    if(f[names[i]]!==undefined&&f[names[i]]!==null&&f[names[i]]!=='')return f[names[i]];
   }
-});
-
-function populateRepFilter(records){
-  var reps={};records.forEach(function(r){var rep=r.fields['Rep Name']||'';if(rep){rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();reps[rep]=1;}});
-  var sel=document.getElementById('filterRep');while(sel.options.length>1)sel.remove(1);
-  Object.keys(reps).sort().forEach(function(r){var o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});
+  return fallback||'';
+}
+function firstLinkedId(v){
+  if(Array.isArray(v)&&v.length)return v[0];
+  if(typeof v==='string')return v;
+  return '';
+}
+function getVisitId(f){
+  return firstLinkedId(getField(f,['Visit','Field Visit','Visit Record','Visit ID','Visit Record ID','Source Visit','Source Visit ID'],''));
+}
+function getAccountName(f){
+  return getField(f,['Account Name','Hospital Name','Hospital','Account','Facility Name','Clinic Name','Customer Name'],'Unknown Account');
+}
+function getActionText(f){
+  return getField(f,['Action Text','Action','Action Item','Action Items','Task','Next Step','Next Steps','Follow Up','Follow-up','Follow Up Action'],'No action text');
+}
+function getDueDate(f){
+  return getField(f,['Due Date','Action Due Date'],'');
+}
+function getCompletedAt(f){
+  return getField(f,['Completed At','Completed Date'],'');
+}
+function getStatus(f){
+  return getField(f,['Status','Action Status'],'Open');
+}
+function isCompleted(f){
+  return String(getStatus(f)).toLowerCase()==='completed'||!!getCompletedAt(f);
+}
+function getDueState(f){
+  var due=getDueDate(f);
+  if(isCompleted(f))return 'completed';
+  if(!due)return 'open';
+  if(due<todayISO())return 'overdue';
+  if(due===todayISO())return 'today';
+  return 'upcoming';
+}
+function prettyState(state){
+  if(state==='overdue')return 'Overdue';
+  if(state==='today')return 'Due Today';
+  if(state==='upcoming')return 'Upcoming';
+  if(state==='completed')return 'Completed';
+  return 'Open';
+}
+function getAssignedRepName(f){
+  var a=f['Assigned Rep']||[];
+  if(Array.isArray(a)&&a.length&&usersByRecordId[a[0]])return usersByRecordId[a[0]].name;
+  return getField(f,['Rep Name','Assigned Rep Name','Owner','User Name'],(Array.isArray(a)&&a.length?a[0]:'Unassigned'));
+}
+function getAssignedRepKey(f){
+  var a=f['Assigned Rep']||[];
+  if(Array.isArray(a)&&a.length){
+    if(usersByRecordId[a[0]])return usersByRecordId[a[0]].userId||a[0];
+    return a[0];
+  }
+  return getAssignedRepName(f);
+}
+function reminderLockText(action){
+  var f=action.fields||{};
+  var latest=getField(f,['Last Reminder Sent At','Reminder Sent At'],'');
+  if(!latest)return '';
+  var h=(Date.now()-new Date(latest).getTime())/36e5;
+  if(h<24)return 'Locked '+Math.ceil(24-h)+'h';
+  return '';
+}
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg||'Done.';
+  t.className='toast visible';
+  setTimeout(function(){t.className='toast';},1800);
 }
 
-function getPeriodRange(period){
-  var now=new Date();var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());var dayOfWeek=today.getDay();var diffToMonday=(dayOfWeek===0?6:dayOfWeek-1);var thisMonday=new Date(today);thisMonday.setDate(today.getDate()-diffToMonday);
-  if(period==='thisWeek'){return {start:thisMonday,end:null};}
-  if(period==='lastWeek'){var lastMonday=new Date(thisMonday);lastMonday.setDate(thisMonday.getDate()-7);var lastSunday=new Date(thisMonday);lastSunday.setDate(thisMonday.getDate()-1);lastSunday.setHours(23,59,59,999);return {start:lastMonday,end:lastSunday};}
-  if(period==='thisMonth'){return {start:new Date(now.getFullYear(),now.getMonth(),1),end:null};}
-  if(period==='lastMonth'){var lm=new Date(now.getFullYear(),now.getMonth()-1,1);var lmEnd=new Date(now.getFullYear(),now.getMonth(),0);lmEnd.setHours(23,59,59,999);return {start:lm,end:lmEnd};}
-  return {start:null,end:null};
+// ─── STATE PERSISTENCE ──────────────────────────────────────────────────────
+// FIX: saveManagerActionState now sets returning:true so restoreManagerActionState
+// knows this is a genuine return from View Visit, not a fresh page load.
+// restoreManagerActionState returns the saved scrollY (or null) so loadActions
+// can apply scroll AFTER render() has built the DOM — not 250ms into nothing.
+
+function saveManagerActionState(){
+  try{
+    sessionStorage.setItem(SESSION_KEY,JSON.stringify({
+      selectedRep:selectedRep,
+      activeTab:activeTab,
+      expanded:expanded,
+      scrollY:window.scrollY||0,
+      returning:true
+    }));
+  }catch(e){}
 }
 
-function getFilteredRecords(){
-  var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var priority=document.getElementById('filterPriority').value;var period=document.getElementById('filterPeriod').value;
-  var cutoff=null;var range={start:null,end:null};
-  if(period==='30'||period==='90'){cutoff=new Date(Date.now()-parseInt(period)*24*60*60*1000);}else if(period){range=getPeriodRange(period);}
-  return allRecordsRaw.filter(function(r){
-    var f=r.fields;var repName=(f['Rep Name']||'').trim();repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();
-    if(rep&&repName!==rep)return false;if(terr&&f['Territory']!==terr)return false;if(priority&&f['Priority']!==priority)return false;
-    if(cutoff&&f['Visit Date']&&new Date(f['Visit Date'])<cutoff)return false;
-    if(range.start||range.end){if(!f['Visit Date'])return false;var vDate=new Date(f['Visit Date']);if(range.start&&vDate<range.start)return false;if(range.end&&vDate>range.end)return false;}
+// Returns scrollY to restore (number) or null if this is a fresh load.
+function restoreManagerActionState(){
+  try{
+    var raw=sessionStorage.getItem(SESSION_KEY);
+    if(!raw)return null;
+    var s=JSON.parse(raw);
+    // Only restore if we're genuinely returning from View Visit.
+    if(!s.returning)return null;
+    if(s.selectedRep!==undefined)selectedRep=s.selectedRep||'';
+    if(s.activeTab)activeTab=s.activeTab;
+    if(s.expanded)expanded=s.expanded||{};
+    return typeof s.scrollY==='number'?s.scrollY:0;
+  }catch(e){return null;}
+}
+
+// Called after render() completes so the DOM exists before we scroll.
+// Clears the returning flag so it doesn't replay on the next fresh load.
+function applyScrollAndClearFlag(scrollY){
+  if(scrollY===null||scrollY===undefined)return;
+  window.scrollTo(0,scrollY);
+  try{
+    var raw=sessionStorage.getItem(SESSION_KEY);
+    if(raw){
+      var s=JSON.parse(raw);
+      s.returning=false;
+      sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));
+    }
+  }catch(e){}
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function loadUsersBestEffort(){
+  try{
+    var d=await fetchJson(WORKER+'/get-users',4000);
+    (d.records||[]).forEach(function(x){
+      var f=x.fields||{};
+      usersByRecordId[x.id]={
+        name:f['Display Name']||f['User ID']||x.id,
+        userId:f['User ID']||''
+      };
+    });
+  }catch(e){}
+}
+
+// FIX: loadActions now accepts an optional pendingScroll argument.
+// After render() builds the DOM, we apply scroll — guaranteed correct timing.
+async function loadActions(pendingScroll){
+  document.getElementById('content').innerHTML='<div class="loading"><div class="spinner"></div>Loading manager actions...</div>';
+  try{
+    var openData=await fetchJson(WORKER+'/get-actions?role=Manager&status=Open',8000);
+    openActions=openData.records||[];
+
+    completedActions=[];
+    try{
+      var compData=await fetchJson(WORKER+'/get-actions?role=Manager&status=Completed',5000);
+      completedActions=(compData.records||[]).filter(function(r){
+        var c=getCompletedAt(r.fields||{});
+        if(!c)return true;
+        return((Date.now()-new Date(c).getTime())/86400000)<=7;
+      });
+    }catch(e){completedActions=[];}
+
+    await loadUsersBestEffort();
+    allActions=openActions.concat(completedActions);
+    buildRepFilter();
+    applyCurrentRepToSelect();
+    syncTabButtons();
+    render();
+
+    // Apply scroll NOW — DOM is populated.
+    applyScrollAndClearFlag(pendingScroll!=null?pendingScroll:null);
+
+  }catch(err){
+    document.getElementById('content').innerHTML=
+      '<div class="error-box">Could not load manager actions.<br>'+
+      escapeHtml(err.message)+
+      '<br><button class="retry-btn" onclick="loadActions()">Retry</button></div>';
+  }
+}
+
+function buildRepFilter(){
+  var sel=document.getElementById('repFilter');
+  var keep=selectedRep||sel.value;
+  var reps={};
+
+  allActions.forEach(function(r){
+    var f=r.fields||{};
+    var k=getAssignedRepKey(f);
+    if(k)reps[k]=getAssignedRepName(f);
+  });
+
+  sel.innerHTML='<option value="">All reps with actions</option>';
+  Object.keys(reps).sort(function(a,b){return reps[a].localeCompare(reps[b]);}).forEach(function(k){
+    var o=document.createElement('option');
+    o.value=k;
+    o.textContent=reps[k];
+    sel.appendChild(o);
+  });
+
+  if(keep&&reps[keep]){sel.value=keep;}
+  else{sel.value='';selectedRep='';}
+}
+
+function applyCurrentRepToSelect(){
+  var sel=document.getElementById('repFilter');
+  if(sel)sel.value=selectedRep;
+}
+
+function syncTabButtons(){
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    b.classList.toggle('active',b.getAttribute('data-tab')===activeTab);
+  });
+}
+
+function applyRepFilter(list){
+  return list.filter(function(r){
+    var f=r.fields||{};
+    if(selectedRep&&getAssignedRepKey(f)!==selectedRep)return false;
     return true;
   });
 }
-
-function applyFilters(){
-  var filtered=getFilteredRecords();var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var priority=document.getElementById('filterPriority').value;var period=document.getElementById('filterPeriod').value;
-  var periodLabels={thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};
-  var parts=[];if(rep)parts.push('Rep: '+rep);if(terr)parts.push('Territory: '+terr);if(priority)parts.push('Priority: '+priority);if(period)parts.push(periodLabels[period]||period);
-  document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+filtered.length+' visits)':'';
-  renderVisits(filtered);
+function listForTab(){
+  var l;
+  if(activeTab==='open')l=openActions;
+  else if(activeTab==='completed')l=completedActions;
+  else if(activeTab==='all')l=allActions;
+  else l=openActions.filter(function(r){return getDueState(r.fields||{})===activeTab;});
+  return applyRepFilter(l);
+}
+function groupActions(list){
+  var g={};
+  list.forEach(function(r){
+    var f=r.fields||{};
+    var account=getAccountName(f);
+    var rep=getAssignedRepName(f);
+    var key=account+'||'+rep;
+    if(!g[key])g[key]=[];
+    g[key].push(r);
+  });
+  return g;
+}
+function updateCounts(){
+  var visibleOpen=applyRepFilter(openActions);
+  var visibleCompleted=applyRepFilter(completedActions);
+  document.getElementById('openCount').textContent=visibleOpen.length;
+  document.getElementById('overdueCount').textContent=visibleOpen.filter(function(r){return getDueState(r.fields||{})==='overdue';}).length;
+  document.getElementById('todayCount').textContent=visibleOpen.filter(function(r){return getDueState(r.fields||{})==='today';}).length;
+  document.getElementById('completedCount').textContent=visibleCompleted.length;
+}
+function safeKeyFor(key){
+  return btoa(unescape(encodeURIComponent(key))).replace(/=/g,'');
+}
+function countState(group,state){
+  return group.filter(function(r){return getDueState(r.fields||{})===state;}).length;
+}
+function nextDue(group){
+  var dates=group.map(function(r){return getDueDate(r.fields||{});}).filter(Boolean).sort();
+  return dates[0]||'';
 }
 
-function resetFilters(){
-  document.getElementById('filterRep').value='';document.getElementById('filterTerritory').value='';document.getElementById('filterPriority').value='';document.getElementById('filterPeriod').value='';document.getElementById('filterStatus').textContent='';
-  renderVisits(allRecordsRaw);
+function visitHref(action){
+  var f=action.fields||{};
+  var visitId=getVisitId(f);
+  var account=getAccountName(f);
+  var url='./fieldiq-visit-history.html';
+  var q=[];
+  if(visitId)q.push('visitId='+encodeURIComponent(visitId));
+  if(action.id)q.push('actionId='+encodeURIComponent(action.id));
+  if(account)q.push('account='+encodeURIComponent(account));
+  // FIX: explicit returnTo so Visit History sends the manager back here, not Dashboard.
+  q.push('returnTo='+encodeURIComponent('./fieldiq-actions.html'));
+  q.push('source='+encodeURIComponent('manager-actions'));
+  return url+(q.length?'?'+q.join('&'):'');
 }
 
-function applyUrlParams(){
-  var params=new URLSearchParams(window.location.search);
-  var rep=params.get('rep');var terr=params.get('territory');var priority=params.get('priority');var period=params.get('period');targetVisitId=params.get('visitId');
-  if(rep)document.getElementById('filterRep').value=rep;
-  if(terr)document.getElementById('filterTerritory').value=terr;
-  if(priority)document.getElementById('filterPriority').value=priority;
-  if(period)document.getElementById('filterPeriod').value=period;
-}
+function render(){
+  updateCounts();
+  var list=listForTab();
+  var content=document.getElementById('content');
 
-function expandAndScrollToVisit(recordId){
-  if(!recordId)return;
-  var card=document.querySelector('.visit-card[data-id="'+recordId+'"]');if(!card)return;
-  var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');
-  if(detail&&!detail.classList.contains('open')){
-    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'');detail.setAttribute('data-rendered','1');}
-    detail.classList.add('open');card.classList.add('expanded');
-    if(toggle)toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});
+  if(!list.length){
+    content.innerHTML='<div class="empty">No actions in this view.</div>';
+    return;
   }
-  card.scrollIntoView({behavior:'smooth',block:'center'});
+
+  var groups=groupActions(list);
+  var html='';
+  keyMap={};
+
+  Object.keys(groups).sort().forEach(function(key){
+    var group=groups[key];
+    var f=group[0].fields||{};
+    var rep=getAssignedRepName(f);
+    var account=getAccountName(f);
+
+    var overdue=countState(group,'overdue');
+    var today=countState(group,'today');
+    var completed=countState(group,'completed');
+    var openCount=group.length-completed;
+
+    var allDone=openCount===0;
+    var pillClass=allDone?'status-completed':(overdue?'status-overdue':(today?'status-today':'status-open'));
+    var pillText=allDone?'Completed':(overdue?'Overdue':(today?'Due Today':'Open'));
+
+    var due=nextDue(group);
+    var sk=safeKeyFor(key);
+    keyMap[sk]=key;
+    var isExp=!!expanded[key];
+
+    html+='<div class="account-card '+(isExp?'expanded':'')+'">';
+    html+='<div class="account-top">';
+    html+='<div><div class="account-name">'+escapeHtml(account)+'</div>';
+    html+='<div class="account-meta">Rep: '+escapeHtml(rep)+(due?' · Next due '+escapeHtml(formatDate(due)):'')+'</div></div>';
+    html+='<div class="status-pill '+pillClass+'">'+pillText+'</div>';
+    html+='</div>';
+
+    html+='<div class="mini-stats">';
+    html+='<div class="mini-stat"><div class="mini-num">'+openCount+'</div><div class="mini-label">Open</div></div>';
+    html+='<div class="mini-stat"><div class="mini-num">'+overdue+'</div><div class="mini-label">Overdue</div></div>';
+    html+='<div class="mini-stat"><div class="mini-num">'+today+'</div><div class="mini-label">Today</div></div>';
+    html+='<div class="mini-stat"><div class="mini-num">'+completed+'</div><div class="mini-label">Done</div></div>';
+    html+='</div>';
+
+    html+='<div class="card-actions">';
+    html+='<button class="view-btn" data-expand-key="'+sk+'">'+(isExp?'Hide Tasks':'View Tasks')+'</button>';
+    html+='</div>';
+
+    html+='<div class="action-list">';
+
+    group.forEach(function(r){
+      var x=r.fields||{};
+      var state=getDueState(x);
+      var lock=reminderLockText(r);
+      var complete=isCompleted(x);
+
+      html+='<div class="action-row">';
+      html+='<div class="action-text">'+escapeHtml(getActionText(x))+'</div>';
+      html+='<div class="meta-row">';
+      html+='<span class="meta">Rep: '+escapeHtml(getAssignedRepName(x))+'</span>';
+      html+='<span class="meta">Status: '+escapeHtml(prettyState(state))+'</span>';
+      if(getDueDate(x))html+='<span class="meta">Due: '+escapeHtml(formatDate(getDueDate(x)))+'</span>';
+      if(x['Due Time'])html+='<span class="meta">Time: '+escapeHtml(x['Due Time'])+'</span>';
+      html+='<span class="meta">Reminders: '+escapeHtml(x['Reminder Count']||0)+'</span>';
+      if(getCompletedAt(x))html+='<span class="meta">Completed: '+escapeHtml(formatDateTime(getCompletedAt(x)))+'</span>';
+      html+='</div>';
+
+      html+='<div class="row-actions">';
+      html+='<a class="visit-btn" data-visit-link="1" href="'+escapeHtml(visitHref(r))+'"><i data-lucide="file-text"></i> View Visit</a>';
+      if(!complete){
+        html+='<button class="reminder-btn" data-reminder-id="'+escapeHtml(r.id)+'" '+(lock?'disabled':'')+'>';
+        html+='<i data-lucide="send"></i> '+(lock?'Reminder sent · '+lock:'Send Reminder')+'</button>';
+      }else{
+        html+='<button class="reminder-btn" disabled><i data-lucide="check-circle"></i> Completed</button>';
+      }
+      html+='</div>';
+
+      html+='</div>';
+    });
+
+    html+='</div></div>';
+  });
+
+  content.innerHTML=html;
+  if(window.lucide)lucide.createIcons();
 }
 
-var currentUser=null;
-
-async function loadCurrentUser(){
-  var userId=localStorage.getItem('fieldiq_user_id');var userName=localStorage.getItem('fieldiq_user_name');var userRole=localStorage.getItem('fieldiq_user_role');
-  if(userId&&userName&&userRole){currentUser={userId:userId,name:userName,role:userRole};}
+function toggleExpandKey(sk){
+  var key=keyMap[sk];
+  if(!key)return;
+  expanded[key]=!expanded[key];
+  render();
 }
 
-async function loadHistory(){
+async function sendReminder(actionId){
+  if(!actionId)return;
+
+  var btn=document.querySelector('[data-reminder-id="'+CSS.escape(actionId)+'"]');
+  if(btn){btn.disabled=true;btn.textContent='Sending reminder...';}
+
   try{
-    if(!currentUser){
-      document.getElementById('visitList').innerHTML='<div class="empty">Please select your name on the Home screen before viewing Visit History.<br><br><a href="./index.html" style="display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:12px;box-shadow:0 6px 16px rgba(47,143,255,0.3)">Return Home</a></div>';
-      document.getElementById('countLabel').textContent='';return;
+    var actionRecord=allActions.find(function(r){return r.id===actionId;})||{};
+    var actionFields=actionRecord.fields||{};
+    var payload={
+      actionId:actionId,
+      actionRecordId:actionId,
+      recordId:actionId,
+      assignedRep:getAssignedRepKey(actionFields),
+      assignedRepName:getAssignedRepName(actionFields),
+      accountName:getAccountName(actionFields),
+      actionText:getActionText(actionFields),
+      managerUserId:currentUserId,
+      managerName:currentUserName
+    };
+
+    var res=await fetch(WORKER+'/send-reminder',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+
+    var text=await res.text();
+    var data={};
+    try{data=text?JSON.parse(text):{};}catch(e){data={raw:text};}
+
+    if(!res.ok||data.ok===false||data.success===false){
+      if(data.locked){
+        throw new Error('Reminder already sent. Available again in '+(data.hoursRemaining||24)+'h.');
+      }
+      throw new Error(readableError(data.error)||readableError(data.message)||readableError(data)||('Reminder failed. HTTP '+res.status));
     }
-    var endpoint=WORKER+'/get-visits';
-    if(currentUser.role!=='Manager'){endpoint=WORKER+'/get-visits?filterByUser='+encodeURIComponent(currentUser.userId);}
-    var res=await fetch(endpoint);var data=await res.json();
-    if(!res.ok)throw new Error(JSON.stringify(data));
-    allRecordsRaw=data.records||[];
-    if(currentUser.role==='Manager'){
-      populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';
-      applyUrlParams();applyFilters();expandAndScrollToVisit(targetVisitId);
-    }else{renderVisits(allRecordsRaw);}
-  }catch(err){document.getElementById('visitList').innerHTML='<div class="empty">Failed to load: '+err.message+'</div>';}
+
+    showToast('Reminder sent to '+getAssignedRepName(actionFields)+'.');
+    // Reload but do NOT restore scroll — manager stays where they are after a reminder.
+    await loadActions(null);
+
+  }catch(err){
+    alert('Reminder failed: '+readableError(err.message||err));
+    await loadActions(null);
+  }
 }
 
-loadCurrentUser().then(function(){loadHistory();});
+document.addEventListener('click',function(e){
+  // FIX: save full state before leaving to View Visit so we can restore on return.
+  var visit=e.target.closest('[data-visit-link]');
+  if(visit){
+    saveManagerActionState();
+    return; // let the <a> navigate naturally
+  }
+
+  var exp=e.target.closest('[data-expand-key]');
+  if(exp){
+    toggleExpandKey(exp.getAttribute('data-expand-key'));
+    return;
+  }
+
+  var rem=e.target.closest('[data-reminder-id]');
+  if(rem){
+    sendReminder(rem.getAttribute('data-reminder-id'));
+    return;
+  }
+});
+
+function bindStaticEvents(){
+  document.querySelectorAll('.tab-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      activeTab=btn.getAttribute('data-tab');
+      expanded={};
+      syncTabButtons();
+      render();
+    });
+  });
+
+  var rep=document.getElementById('repFilter');
+  if(rep){
+    rep.addEventListener('change',function(){
+      selectedRep=rep.value;
+      expanded={};
+      render();
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  // FIX: capture pendingScroll BEFORE bindStaticEvents or loadActions.
+  // restoreManagerActionState sets selectedRep/activeTab/expanded in memory.
+  // loadActions then renders with that state, and only after render() applies scroll.
+  var pendingScroll=restoreManagerActionState();
+
+  bindStaticEvents();
+  if(window.lucide)lucide.createIcons();
+  loadActions(pendingScroll);
+});
 </script>
 </body>
 </html>
