@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldIQ — Calendar</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:24px 20px 50px}
+.container{max-width:620px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.brand-cloud{font-size:26px;line-height:1}
+.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
+.brand-text h1 span{color:#2f8fff}
+.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+.header{margin-bottom:18px}
+.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600}
+.home-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;box-shadow:0 2px 8px rgba(11,31,58,0.05)}
+.summary{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.summary-left{display:flex;align-items:center;gap:10px}
+.summary-icon{width:40px;height:40px;border-radius:12px;background:#eaf3ff;display:flex;align-items:center;justify-content:center}
+.summary-icon [data-lucide]{width:22px;height:22px;color:#2f8fff}
+.summary-title{font-size:14px;font-weight:800;color:#0b1f3a}
+.summary-sub{font-size:11.5px;color:#8a9bb3;margin-top:2px;font-weight:600}
+.count-pill{background:#2f8fff;color:#fff;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800}
+.section-title{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:18px 0 10px}
+.event-card{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.event-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:8px}
+.account-name{font-size:14.5px;font-weight:800;color:#0b1f3a;line-height:1.35}
+.time-pill{background:#eaf3ff;color:#2f8fff;border-radius:999px;padding:4px 10px;font-size:10.5px;font-weight:800;white-space:nowrap}
+.action-text{font-size:13.5px;color:#3d4f6b;line-height:1.55;margin-bottom:10px;font-weight:500}
+.meta-row{display:flex;flex-wrap:wrap;gap:6px}
+.meta{font-size:10.5px;font-weight:800;padding:5px 9px;border-radius:8px;background:#f4f8fc;color:#7a8aa3;border:1px solid #e3ebf5}
+.loading{text-align:center;padding:46px 20px;color:#8a9bb3;font-weight:700}
+.spinner{width:34px;height:34px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:34px 20px;text-align:center;color:#8a9bb3;font-weight:700;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.empty [data-lucide]{width:42px;height:42px;color:#2f8fff;margin-bottom:10px}
+.error-box{background:#fff3e0;border:1px solid #ffe5b3;border-radius:14px;padding:16px;color:#7a6000;font-size:13px;font-weight:700;text-align:center;margin-bottom:12px}
+.retry-btn{margin-top:10px;border:none;background:#2f8fff;color:#fff;padding:10px 18px;border-radius:10px;font-weight:800}
+.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:30px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="brand"><span class="brand-cloud">☁️</span><div class="brand-text"><h1>Field<span>IQ</span></h1><p>Territory Intelligence Platform</p></div></div>
+    <p class="page-subtitle">Calendar</p>
+  </div>
+
+  <a href="./index.html" class="home-btn">← Home</a>
+
+  <div class="summary">
+    <div class="summary-left"><div class="summary-icon"><i data-lucide="calendar-days"></i></div><div><div class="summary-title">Upcoming Follow-ups</div><div class="summary-sub" id="repName">Loading rep...</div></div></div>
+    <div class="count-pill" id="countPill">0</div>
+  </div>
+
+  <div id="content"><div class="loading"><div class="spinner"></div>Loading calendar...</div></div>
+  <div class="footer">FieldIQ v2.1 · 2026</div>
+</div>
+
+<script>
+var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+var currentUserId=localStorage.getItem('fieldiq_user_id');
+var currentUserName=localStorage.getItem('fieldiq_user_name');
+var currentUserRole=localStorage.getItem('fieldiq_user_role')||'Sales Rep';
+var events=[];
+
+if(!currentUserId||!currentUserName){window.location.href='./index.html';throw new Error('No identity locked');}
+if(currentUserRole==='Manager'){window.location.href='./fieldiq.html';throw new Error('Managers use manager portal');}
+document.getElementById('repName').textContent=currentUserName+' · '+currentUserRole;
+
+function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,function(m){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);});}
+function todayISO(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString().slice(0,10);}
+function addDaysISO(n){var d=new Date();d.setDate(d.getDate()+n);return new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString().slice(0,10);}
+function dateLabel(iso){
+  if(!iso)return 'No date';
+  if(iso===todayISO())return 'Today';
+  if(iso===addDaysISO(1))return 'Tomorrow';
+  try{return new Date(iso+'T00:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});}
+  catch(e){return iso;}
+}
+function inferTime(text){
+  var m=String(text||'').match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|AM|PM)\b/);
+  return m ? m[0].toUpperCase() : '';
+}
+function bucketName(iso){
+  if(!iso)return 'Scheduled';
+  if(iso<todayISO())return 'Overdue';
+  if(iso===todayISO())return 'Today';
+  if(iso===addDaysISO(1))return 'Tomorrow';
+  return 'Upcoming';
+}
+
+async function loadCalendar(){
+  var content=document.getElementById('content');
+  content.innerHTML='<div class="loading"><div class="spinner"></div>Loading calendar...</div>';
+  try{
+    var url=WORKER+'/get-calendar?userId='+encodeURIComponent(currentUserId)+'&role='+encodeURIComponent(currentUserRole);
+    var res=await fetch(url);
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Could not load calendar');
+    events=data.records||[];
+    render();
+  }catch(err){
+    content.innerHTML='<div class="error-box">Could not load calendar.<br>'+escapeHtml(err.message)+'<br><button class="retry-btn" onclick="loadCalendar()">Retry</button></div>';
+  }
+}
+
+function render(){
+  document.getElementById('countPill').textContent=events.length;
+  var content=document.getElementById('content');
+  if(events.length===0){
+    content.innerHTML='<div class="empty"><i data-lucide="calendar-check"></i><div>No scheduled follow-ups.</div></div>';
+    lucide.createIcons();return;
+  }
+
+  var buckets={Overdue:[],Today:[],Tomorrow:[],Upcoming:[]};
+  events.forEach(function(r){var f=r.fields||{};var b=bucketName(f['Due Date']);if(!buckets[b])buckets[b]=[];buckets[b].push(r);});
+
+  var html='';
+  ['Overdue','Today','Tomorrow','Upcoming'].forEach(function(bucket){
+    if(!buckets[bucket]||buckets[bucket].length===0)return;
+    html+='<div class="section-title">'+bucket+'</div>';
+    buckets[bucket].forEach(function(r){
+      var f=r.fields||{};
+      var due=f['Due Date']||'';
+      var action=f['Action Text']||'';
+      var time=f['Due Time']||inferTime(action)||'Time not set';
+      html+='<div class="event-card" onclick="window.location.href=\'./fieldiq-open-actions.html\'">'+
+        '<div class="event-top"><div class="account-name">'+escapeHtml(f['Account Name']||'Unknown Account')+'</div><div class="time-pill">'+escapeHtml(time)+'</div></div>'+
+        '<div class="action-text">'+escapeHtml(action)+'</div>'+
+        '<div class="meta-row"><span class="meta">'+escapeHtml(dateLabel(due))+'</span><span class="meta">Open Action</span></div>'+
+      '</div>';
+    });
+  });
+  content.innerHTML=html;
+  lucide.createIcons();
+}
+document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();loadCalendar();});
+</script>
+</body>
+</html>
