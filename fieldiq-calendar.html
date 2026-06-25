@@ -92,16 +92,121 @@ function bucketName(iso){
   if(iso===addDaysISO(1))return 'Tomorrow';
   return 'Upcoming';
 }
+function getField(f,names,fallback){
+  for(var i=0;i<names.length;i++){
+    if(f[names[i]]!==undefined&&f[names[i]]!==null&&f[names[i]]!=='')return f[names[i]];
+  }
+  return fallback||'';
+}
+function getDueDate(f){return getField(f,['Due Date','Action Due Date','Calendar Date','Follow Up Date','Follow-up Date'],'');}
+function getActionText(f){return getField(f,['Action Text','Action','Action Item','Action Items','Task','Next Step','Next Steps','Follow Up','Follow-up','Follow Up Action'],'');}
+function getAccountName(f){return getField(f,['Account Name','Hospital Name','Hospital','Account','Facility Name','Clinic Name','Customer Name'],'Unknown Account');}
+function getStatus(f){return getField(f,['Status','Action Status'],'Open');}
+function isCompleted(f){return String(getStatus(f)).toLowerCase()==='completed'||!!getField(f,['Completed At','Completed Date'],'');}
+function getAssignedRepValue(f){
+  var a=f['Assigned Rep']||f['Assigned Rep ID']||[];
+  if(Array.isArray(a)&&a.length)return a[0];
+  if(typeof a==='string')return a;
+  return getField(f,['User ID','Rep ID','Rep Name','Assigned Rep Name','Owner','User Name'],'');
+}
+function belongsToCurrentRep(f){
+  var vals=[];
+  var assigned=f['Assigned Rep']||[];
+  if(Array.isArray(assigned))vals=vals.concat(assigned);
+  else if(assigned)vals.push(assigned);
+  ['Assigned Rep ID','User ID','Rep ID','Rep Name','Assigned Rep Name','Owner','User Name'].forEach(function(k){
+    if(f[k])vals.push(f[k]);
+  });
+  vals=vals.map(function(v){return String(v||'').trim().toLowerCase();});
+  return vals.indexOf(String(currentUserId||'').trim().toLowerCase())>-1 ||
+         vals.indexOf(String(currentUserName||'').trim().toLowerCase())>-1;
+}
+function normalizeActionRecord(r){
+  var f=r.fields||{};
+  var due=getDueDate(f);
+  return {
+    id:r.id,
+    fields:{
+      'Account Name':getAccountName(f),
+      'Action Text':getActionText(f),
+      'Due Date':due,
+      'Due Time':getField(f,['Due Time','Action Due Time','Time'],''),
+      'Priority':getField(f,['Priority','Action Priority'],''),
+      'Status':getStatus(f),
+      'Reminder Count':getField(f,['Reminder Count'],0)
+    },
+    raw:r
+  };
+}
+function timeoutPromise(ms,msg){
+  return new Promise(function(_,reject){setTimeout(function(){reject(new Error(msg||'Timeout'));},ms);});
+}
+function fetchJson(url,ms){
+  return Promise.race([
+    fetch(url,{cache:'no-store'}).then(function(res){
+      return res.text().then(function(text){
+        var data={};
+        try{data=text?JSON.parse(text):{};}catch(e){throw new Error('Invalid JSON from '+url+': '+text.slice(0,200));}
+        if(!res.ok)throw new Error(data.error||data.message||('HTTP '+res.status));
+        return data;
+      });
+    }),
+    timeoutPromise(ms||8000,'Worker timed out')
+  ]);
+}
 
 async function loadCalendar(){
   var content=document.getElementById('content');
   content.innerHTML='<div class="loading"><div class="spinner"></div>Loading calendar...</div>';
   try{
-    var url=WORKER+'/get-calendar?userId='+encodeURIComponent(currentUserId)+'&role='+encodeURIComponent(currentUserRole);
-    var res=await fetch(url);
-    var data=await res.json();
-    if(!res.ok)throw new Error(data.error||'Could not load calendar');
-    events=data.records||[];
+    var loaded=[];
+    var calendarError=null;
+
+    /* First try the dedicated calendar endpoint, if the Worker supports it. */
+    try{
+      var url=WORKER+'/get-calendar?userId='+encodeURIComponent(currentUserId)+'&role='+encodeURIComponent(currentUserRole);
+      var data=await fetchJson(url,6000);
+      loaded=(data.records||[]).map(normalizeActionRecord);
+    }catch(e){
+      calendarError=e;
+      loaded=[];
+    }
+
+    /*
+      Fallback: read the same Actions table used by Rep Open Actions / Manager Open Actions.
+      This is the important fix. Calendar must not depend only on /get-calendar.
+      Any open action assigned to this rep with a Due Date should appear here.
+    */
+    if(!loaded.length){
+      var openData=await fetchJson(WORKER+'/get-actions?role=Rep&status=Open&userId='+encodeURIComponent(currentUserId),8000);
+      loaded=(openData.records||[])
+        .filter(function(r){
+          var f=r.fields||{};
+          return !isCompleted(f) && getDueDate(f) && belongsToCurrentRep(f);
+        })
+        .map(normalizeActionRecord);
+
+      /*
+        If the Worker already filtered by userId but the Assigned Rep field is a linked record that
+        the browser cannot match, do a second relaxed pass so valid dated actions still appear.
+      */
+      if(!loaded.length){
+        loaded=(openData.records||[])
+          .filter(function(r){
+            var f=r.fields||{};
+            return !isCompleted(f) && getDueDate(f);
+          })
+          .map(normalizeActionRecord);
+      }
+    }
+
+    events=loaded
+      .filter(function(r){return getDueDate(r.fields||{});})
+      .sort(function(a,b){
+        var fa=a.fields||{},fb=b.fields||{};
+        return String(getDueDate(fa)).localeCompare(String(getDueDate(fb)));
+      });
+
     render();
   }catch(err){
     content.innerHTML='<div class="error-box">Could not load calendar.<br>'+escapeHtml(err.message)+'<br><button class="retry-btn" onclick="loadCalendar()">Retry</button></div>';
@@ -112,12 +217,17 @@ function render(){
   document.getElementById('countPill').textContent=events.length;
   var content=document.getElementById('content');
   if(events.length===0){
-    content.innerHTML='<div class="empty"><i data-lucide="calendar-check"></i><div>No scheduled follow-ups.</div></div>';
+    content.innerHTML='<div class="empty"><i data-lucide="calendar-check"></i><div>No scheduled follow-ups.</div><div style="font-size:11px;margin-top:8px;color:#aab8cc">Open actions only appear here when they have a Due Date.</div></div>';
     lucide.createIcons();return;
   }
 
   var buckets={Overdue:[],Today:[],Tomorrow:[],Upcoming:[]};
-  events.forEach(function(r){var f=r.fields||{};var b=bucketName(f['Due Date']);if(!buckets[b])buckets[b]=[];buckets[b].push(r);});
+  events.forEach(function(r){
+    var f=r.fields||{};
+    var b=bucketName(getDueDate(f));
+    if(!buckets[b])buckets[b]=[];
+    buckets[b].push(r);
+  });
 
   var html='';
   ['Overdue','Today','Tomorrow','Upcoming'].forEach(function(bucket){
@@ -125,12 +235,12 @@ function render(){
     html+='<div class="section-title">'+bucket+'</div>';
     buckets[bucket].forEach(function(r){
       var f=r.fields||{};
-      var due=f['Due Date']||'';
-      var action=f['Action Text']||'';
-      var time=f['Due Time']||inferTime(action)||'Time not set';
+      var due=getDueDate(f);
+      var action=getActionText(f);
+      var time=getField(f,['Due Time'],'')||inferTime(action)||'Time not set';
       html+='<div class="event-card" onclick="window.location.href=\'./fieldiq-open-actions.html\'">'+
-        '<div class="event-top"><div class="account-name">'+escapeHtml(f['Account Name']||'Unknown Account')+'</div><div class="time-pill">'+escapeHtml(time)+'</div></div>'+
-        '<div class="action-text">'+escapeHtml(action)+'</div>'+
+        '<div class="event-top"><div class="account-name">'+escapeHtml(getAccountName(f))+'</div><div class="time-pill">'+escapeHtml(time)+'</div></div>'+
+        '<div class="action-text">'+escapeHtml(action||'Open action')+'</div>'+
         '<div class="meta-row"><span class="meta">'+escapeHtml(dateLabel(due))+'</span><span class="meta">Open Action</span></div>'+
       '</div>';
     });
