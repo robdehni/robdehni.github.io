@@ -21,28 +21,37 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .summary-card{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .summary-num{font-size:24px;font-weight:900;color:#0b1f3a}
 .summary-label{font-size:11px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-top:3px}
-.filters{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:12px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05);display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.control-panel{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:12px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.filter-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
 .filter-field label{display:block;font-size:10px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
-.filter-field select,.filter-field input{width:100%;padding:11px;border:1.5px solid #dde8f5;border-radius:10px;background:#f8fbff;color:#0b1f3a;font-weight:700;outline:none}
-.tabs{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px}
+.filter-field select{width:100%;padding:12px;border:1.5px solid #dde8f5;border-radius:12px;background:#f8fbff;color:#0b1f3a;font-weight:800;outline:none}
+.apply-btn{border:none;background:#2f8fff;color:#fff;border-radius:12px;padding:13px 16px;font-size:12px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px rgba(47,143,255,0.22)}
+.tabs{display:flex;gap:8px;margin-top:12px;overflow-x:auto;padding-bottom:2px}
 .tab-btn{border:1px solid #e3ebf5;background:#fff;color:#7a8aa3;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:900;white-space:nowrap;cursor:pointer;box-shadow:0 2px 8px rgba(11,31,58,0.04)}
 .tab-btn.active{background:#2f8fff;color:#fff;border-color:#2f8fff}
+.help-strip{background:#eaf3ff;border:1px solid #cfe4ff;color:#2f6fbf;border-radius:14px;padding:11px 13px;font-size:12px;font-weight:800;margin-bottom:14px;line-height:1.45}
 .account-card{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .account-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px}
-.account-name{font-size:16px;font-weight:900;color:#0b1f3a;line-height:1.35}
-.account-meta{font-size:12px;color:#8a9bb3;font-weight:800;margin-top:3px}
+.account-name{font-size:17px;font-weight:900;color:#0b1f3a;line-height:1.35}
+.account-meta{font-size:12px;color:#8a9bb3;font-weight:800;margin-top:4px;line-height:1.45}
 .status-pill{border-radius:999px;padding:5px 10px;font-size:10.5px;font-weight:900;white-space:nowrap}
 .status-open{background:#eaf3ff;color:#2f8fff}
 .status-overdue{background:#ffe1e5;color:#c43048}
+.status-today{background:#fff4d6;color:#a36a00}
 .status-completed{background:#e1f5ea;color:#1f8a52}
-.expand-btn{width:100%;border:1.5px solid #2f8fff;background:#eaf3ff;color:#2f8fff;border-radius:12px;padding:11px;font-size:14px;font-weight:900;cursor:pointer;margin:8px 0}
-.action-list{display:none;margin-top:10px;border-top:1px solid #e3ebf5;padding-top:8px}
+.mini-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}
+.mini-stat{background:#f8fbff;border:1px solid #e3ebf5;border-radius:12px;padding:8px;text-align:center}
+.mini-num{font-size:16px;font-weight:900;color:#0b1f3a}
+.mini-label{font-size:9px;font-weight:900;color:#8a9bb3;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.card-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
+.view-btn{width:100%;border:1.5px solid #2f8fff;background:#eaf3ff;color:#2f8fff;border-radius:12px;padding:12px;font-size:14px;font-weight:900;cursor:pointer}
+.action-list{display:none;margin-top:12px;border-top:1px solid #e3ebf5;padding-top:10px}
 .account-card.expanded .action-list{display:block}
-.action-row{padding:11px 0;border-bottom:1px solid #eef3fa}
-.action-row:last-child{border-bottom:none}
-.action-text{font-size:13.5px;color:#3d4f6b;line-height:1.55;font-weight:650;white-space:pre-wrap}
-.meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.meta{font-size:10.5px;font-weight:900;padding:5px 9px;border-radius:8px;background:#f4f8fc;color:#7a8aa3;border:1px solid #e3ebf5}
+.action-row{padding:12px;background:#f8fbff;border:1px solid #e3ebf5;border-radius:14px;margin-bottom:10px}
+.action-row:last-child{margin-bottom:0}
+.action-text{font-size:14px;color:#263b59;line-height:1.55;font-weight:750;white-space:pre-wrap}
+.meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.meta{font-size:10.5px;font-weight:900;padding:5px 9px;border-radius:8px;background:#fff;color:#7a8aa3;border:1px solid #e3ebf5}
 .reminder-btn{width:100%;border:none;border-radius:12px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;padding:13px;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 6px 16px rgba(47,143,255,0.25);display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px}
 .reminder-btn:disabled{opacity:.55;cursor:not-allowed;background:#8a9bb3;box-shadow:none}
 .loading{text-align:center;padding:46px 20px;color:#8a9bb3;font-weight:700}
@@ -54,7 +63,12 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .toast{position:fixed;left:20px;right:20px;bottom:22px;background:#0b1f3a;color:#fff;border-radius:14px;padding:14px;text-align:center;font-weight:900;font-size:13px;display:none;box-shadow:0 10px 26px rgba(11,31,58,0.25);z-index:999}
 .toast.visible{display:block}
 .footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:30px}
-@media(max-width:720px){.summary-grid{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr}.container{max-width:620px}}
+@media(max-width:720px){
+  .summary-grid{grid-template-columns:repeat(2,1fr)}
+  .mini-stats{grid-template-columns:repeat(2,1fr)}
+  .filter-row{grid-template-columns:1fr}
+  .container{max-width:620px}
+}
 </style>
 </head>
 <body>
@@ -79,28 +93,27 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
     <div class="summary-card"><div class="summary-num" id="completedCount">0</div><div class="summary-label">Completed</div></div>
   </div>
 
-  <div class="filters">
-    <div class="filter-field">
-      <label>Rep</label>
-      <select id="repFilter"><option value="">All reps</option></select>
+  <div class="control-panel">
+    <div class="filter-row">
+      <div class="filter-field">
+        <label>Show rep</label>
+        <select id="repFilter"><option value="">All reps with actions</option></select>
+      </div>
+      <button class="apply-btn" id="applyRepBtn">Apply</button>
     </div>
-    <div class="filter-field">
-      <label>Account</label>
-      <input id="accountFilter" placeholder="Search account...">
-    </div>
-    <div class="filter-field">
-      <label>Action</label>
-      <input id="textFilter" placeholder="Search action...">
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="open">Open</button>
+      <button class="tab-btn" data-tab="overdue">Overdue</button>
+      <button class="tab-btn" data-tab="today">Due Today</button>
+      <button class="tab-btn" data-tab="upcoming">Upcoming</button>
+      <button class="tab-btn" data-tab="completed">Completed</button>
+      <button class="tab-btn" data-tab="all">All</button>
     </div>
   </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="open">Open</button>
-    <button class="tab-btn" data-tab="overdue">Overdue</button>
-    <button class="tab-btn" data-tab="today">Due Today</button>
-    <button class="tab-btn" data-tab="upcoming">Upcoming</button>
-    <button class="tab-btn" data-tab="completed">Completed</button>
-    <button class="tab-btn" data-tab="all">All</button>
+  <div class="help-strip">
+    Manager view: choose a rep, press Apply, pick a status, open the hospital card, review pending tasks, then send a reminder. Manager does not edit or close tasks.
   </div>
 
   <div id="content"><div class="loading"><div class="spinner"></div>Loading manager actions...</div></div>
@@ -123,6 +136,7 @@ var usersByRecordId={};
 var activeTab='open';
 var expanded={};
 var keyMap={};
+var selectedRep='';
 
 if(!currentUserId||!currentUserName){
   window.location.href='./index.html';
@@ -170,43 +184,69 @@ function fetchJson(url,ms){
     timeoutPromise(ms||8000,'Worker timed out')
   ]);
 }
+function getField(f,names,fallback){
+  for(var i=0;i<names.length;i++){
+    if(f[names[i]]!==undefined && f[names[i]]!==null && f[names[i]]!=='')return f[names[i]];
+  }
+  return fallback||'';
+}
+function getAccountName(f){
+  return getField(f,['Account Name','Hospital Name','Hospital','Account','Facility Name','Clinic Name','Customer Name'],'Unknown Account');
+}
+function getActionText(f){
+  return getField(f,['Action Text','Action','Action Item','Action Items','Task','Next Step','Next Steps','Follow Up','Follow-up','Follow Up Action'],'No action text');
+}
+function getDueDate(f){
+  return getField(f,['Due Date','Action Due Date'],'');
+}
+function getCompletedAt(f){
+  return getField(f,['Completed At','Completed Date'],'');
+}
+function getStatus(f){
+  return getField(f,['Status','Action Status'],'Open');
+}
+function isCompleted(f){
+  return String(getStatus(f)).toLowerCase()==='completed' || !!getCompletedAt(f);
+}
 function getDueState(f){
-  var due=f['Due Date']||'';
-  if((f['Status']||'Open')==='Completed')return 'completed';
+  var due=getDueDate(f);
+  if(isCompleted(f))return 'completed';
   if(!due)return 'open';
   if(due<todayISO())return 'overdue';
   if(due===todayISO())return 'today';
   return 'upcoming';
 }
+function prettyState(state){
+  if(state==='overdue')return 'Overdue';
+  if(state==='today')return 'Due Today';
+  if(state==='upcoming')return 'Upcoming';
+  if(state==='completed')return 'Completed';
+  return 'Open';
+}
 function getAssignedRepName(f){
   var a=f['Assigned Rep']||[];
-  if(a.length&&usersByRecordId[a[0]])return usersByRecordId[a[0]].name;
-  return f['Rep Name']||a[0]||'Unassigned';
+  if(Array.isArray(a)&&a.length&&usersByRecordId[a[0]])return usersByRecordId[a[0]].name;
+  return getField(f,['Rep Name','Assigned Rep Name','Owner','User Name'],(Array.isArray(a)&&a.length?a[0]:'Unassigned'));
 }
 function getAssignedRepKey(f){
   var a=f['Assigned Rep']||[];
-  if(a.length&&usersByRecordId[a[0]])return usersByRecordId[a[0]].userId||a[0];
-  return f['Rep Name']||a[0]||'';
+  if(Array.isArray(a)&&a.length){
+    if(usersByRecordId[a[0]])return usersByRecordId[a[0]].userId||a[0];
+    return a[0];
+  }
+  return getAssignedRepName(f);
 }
-function reminderLockText(group){
-  var latest='';
-  group.forEach(function(r){
-    var v=(r.fields||{})['Last Reminder Sent At'];
-    if(v&&(!latest||new Date(v)>new Date(latest)))latest=v;
-  });
+function reminderLockText(action){
+  var f=action.fields||{};
+  var latest=getField(f,['Last Reminder Sent At','Reminder Sent At'],'');
   if(!latest)return '';
   var h=(Date.now()-new Date(latest).getTime())/36e5;
   if(h<24)return 'Locked '+Math.ceil(24-h)+'h';
   return '';
 }
-function canSendReminder(group){
-  return !reminderLockText(group)&&group.some(function(r){
-    return (r.fields||{})['Status']!=='Completed';
-  });
-}
 function showToast(msg){
   var t=document.getElementById('toast');
-  t.textContent=msg||'Reminder sent.';
+  t.textContent=msg||'Done.';
   t.className='toast visible';
   setTimeout(function(){t.className='toast';},1800);
 }
@@ -234,7 +274,7 @@ async function loadActions(){
     try{
       var compData=await fetchJson(WORKER+'/get-actions?role=Manager&status=Completed',5000);
       completedActions=(compData.records||[]).filter(function(r){
-        var c=(r.fields||{})['Completed At'];
+        var c=getCompletedAt(r.fields||{});
         if(!c)return true;
         return ((Date.now()-new Date(c).getTime())/86400000)<=7;
       });
@@ -245,6 +285,7 @@ async function loadActions(){
     await loadUsersBestEffort();
     allActions=openActions.concat(completedActions);
     buildRepFilter();
+    applyCurrentRepToSelect();
     render();
   }catch(err){
     document.getElementById('content').innerHTML=
@@ -256,7 +297,7 @@ async function loadActions(){
 
 function buildRepFilter(){
   var sel=document.getElementById('repFilter');
-  var keep=sel.value;
+  var keep=selectedRep || sel.value;
   var reps={};
 
   allActions.forEach(function(r){
@@ -265,26 +306,38 @@ function buildRepFilter(){
     if(k)reps[k]=getAssignedRepName(f);
   });
 
-  sel.innerHTML='<option value="">All reps</option>';
+  sel.innerHTML='<option value="">All reps with actions</option>';
   Object.keys(reps).sort(function(a,b){return reps[a].localeCompare(reps[b]);}).forEach(function(k){
     var o=document.createElement('option');
     o.value=k;
     o.textContent=reps[k];
     sel.appendChild(o);
   });
-  sel.value=keep;
+
+  if(keep && reps[keep]){
+    sel.value=keep;
+  }else{
+    sel.value='';
+    selectedRep='';
+  }
 }
 
-function applyFilters(list){
-  var rep=document.getElementById('repFilter').value;
-  var acc=document.getElementById('accountFilter').value.trim().toLowerCase();
-  var txt=document.getElementById('textFilter').value.trim().toLowerCase();
+function applyCurrentRepToSelect(){
+  var sel=document.getElementById('repFilter');
+  if(sel)sel.value=selectedRep;
+}
 
+function applyRepFromSelect(){
+  var sel=document.getElementById('repFilter');
+  selectedRep=sel ? sel.value : '';
+  expanded={};
+  render();
+}
+
+function applyRepFilter(list){
   return list.filter(function(r){
     var f=r.fields||{};
-    if(rep&&getAssignedRepKey(f)!==rep)return false;
-    if(acc&&String(f['Account Name']||'').toLowerCase().indexOf(acc)===-1)return false;
-    if(txt&&String(f['Action Text']||'').toLowerCase().indexOf(txt)===-1)return false;
+    if(selectedRep&&getAssignedRepKey(f)!==selectedRep)return false;
     return true;
   });
 }
@@ -297,15 +350,16 @@ function listForTab(){
   else l=openActions.filter(function(r){
     return getDueState(r.fields||{})===activeTab;
   });
-  return applyFilters(l);
+  return applyRepFilter(l);
 }
 
 function groupActions(list){
   var g={};
   list.forEach(function(r){
     var f=r.fields||{};
+    var account=getAccountName(f);
     var rep=getAssignedRepName(f);
-    var key=(f['Account Name']||'Unknown Account')+'||'+rep;
+    var key=account+'||'+rep;
     if(!g[key])g[key]=[];
     g[key].push(r);
   });
@@ -313,14 +367,24 @@ function groupActions(list){
 }
 
 function updateCounts(){
-  document.getElementById('openCount').textContent=openActions.length;
-  document.getElementById('overdueCount').textContent=openActions.filter(function(r){return getDueState(r.fields||{})==='overdue';}).length;
-  document.getElementById('todayCount').textContent=openActions.filter(function(r){return getDueState(r.fields||{})==='today';}).length;
-  document.getElementById('completedCount').textContent=completedActions.length;
+  var visibleOpen=applyRepFilter(openActions);
+  var visibleCompleted=applyRepFilter(completedActions);
+
+  document.getElementById('openCount').textContent=visibleOpen.length;
+  document.getElementById('overdueCount').textContent=visibleOpen.filter(function(r){return getDueState(r.fields||{})==='overdue';}).length;
+  document.getElementById('todayCount').textContent=visibleOpen.filter(function(r){return getDueState(r.fields||{})==='today';}).length;
+  document.getElementById('completedCount').textContent=visibleCompleted.length;
 }
 
 function safeKeyFor(key){
   return btoa(unescape(encodeURIComponent(key))).replace(/=/g,'');
+}
+function countState(group,state){
+  return group.filter(function(r){return getDueState(r.fields||{})===state;}).length;
+}
+function nextDue(group){
+  var dates=group.map(function(r){return getDueDate(r.fields||{});}).filter(Boolean).sort();
+  return dates[0]||'';
 }
 
 function render(){
@@ -342,17 +406,19 @@ function render(){
     var group=groups[key];
     var f=group[0].fields||{};
     var rep=getAssignedRepName(f);
-    var account=f['Account Name']||'Unknown Account';
+    var account=getAccountName(f);
 
-    var anyOver=group.some(function(r){return getDueState(r.fields||{})==='overdue';});
-    var allDone=group.every(function(r){return (r.fields||{})['Status']==='Completed';});
+    var overdue=countState(group,'overdue');
+    var today=countState(group,'today');
+    var upcoming=countState(group,'upcoming');
+    var completed=countState(group,'completed');
+    var openCount=group.length-completed;
 
-    var pillClass=allDone?'status-completed':(anyOver?'status-overdue':'status-open');
-    var pillText=allDone?'Completed':(anyOver?'Overdue':'Open');
-    var lock=reminderLockText(group);
-    var disabled=!canSendReminder(group);
-    var dueDates=group.map(function(r){return (r.fields||{})['Due Date'];}).filter(Boolean).sort();
-    var due=dueDates[0]||'';
+    var allDone=openCount===0;
+    var pillClass=allDone?'status-completed':(overdue?'status-overdue':(today?'status-today':'status-open'));
+    var pillText=allDone?'Completed':(overdue?'Overdue':(today?'Due Today':'Open'));
+
+    var due=nextDue(group);
     var sk=safeKeyFor(key);
     keyMap[sk]=key;
     var isExp=!!expanded[key];
@@ -360,34 +426,49 @@ function render(){
     html+='<div class="account-card '+(isExp?'expanded':'')+'">';
     html+='<div class="account-top">';
     html+='<div><div class="account-name">'+escapeHtml(account)+'</div>';
-    html+='<div class="account-meta">'+group.length+' action'+(group.length>1?'s':'')+' · '+escapeHtml(rep)+(due?' · Due '+escapeHtml(formatDate(due)):'')+'</div></div>';
+    html+='<div class="account-meta">Rep: '+escapeHtml(rep)+(due?' · Next due '+escapeHtml(formatDate(due)):'')+'</div></div>';
     html+='<div class="status-pill '+pillClass+'">'+pillText+'</div>';
     html+='</div>';
 
-    html+='<button class="expand-btn" data-expand-key="'+sk+'">'+(isExp?'⌃ Collapse':'▸ Expand')+'</button>';
+    html+='<div class="mini-stats">';
+    html+='<div class="mini-stat"><div class="mini-num">'+openCount+'</div><div class="mini-label">Open</div></div>';
+    html+='<div class="mini-stat"><div class="mini-num">'+overdue+'</div><div class="mini-label">Overdue</div></div>';
+    html+='<div class="mini-stat"><div class="mini-num">'+today+'</div><div class="mini-label">Today</div></div>';
+    html+='<div class="mini-stat"><div class="mini-num">'+completed+'</div><div class="mini-label">Done</div></div>';
+    html+='</div>';
+
+    html+='<div class="card-actions">';
+    html+='<button class="view-btn" data-expand-key="'+sk+'">'+(isExp?'Hide Tasks':'View Tasks')+'</button>';
+    html+='</div>';
+
     html+='<div class="action-list">';
 
     group.forEach(function(r){
       var x=r.fields||{};
+      var state=getDueState(x);
+      var lock=reminderLockText(r);
+      var complete=isCompleted(x);
+
       html+='<div class="action-row">';
-      html+='<div class="action-text">→ '+escapeHtml(x['Action Text']||'')+'</div>';
+      html+='<div class="action-text">'+escapeHtml(getActionText(x))+'</div>';
       html+='<div class="meta-row">';
       html+='<span class="meta">Rep: '+escapeHtml(getAssignedRepName(x))+'</span>';
-      if(x['Due Date'])html+='<span class="meta">Due: '+escapeHtml(formatDate(x['Due Date']))+'</span>';
+      html+='<span class="meta">Status: '+escapeHtml(prettyState(state))+'</span>';
+      if(getDueDate(x))html+='<span class="meta">Due: '+escapeHtml(formatDate(getDueDate(x)))+'</span>';
       if(x['Due Time'])html+='<span class="meta">Time: '+escapeHtml(x['Due Time'])+'</span>';
       html+='<span class="meta">Reminders: '+escapeHtml(x['Reminder Count']||0)+'</span>';
-      if(x['Completed At'])html+='<span class="meta">Completed: '+escapeHtml(formatDateTime(x['Completed At']))+'</span>';
-      html+='</div></div>';
+      if(getCompletedAt(x))html+='<span class="meta">Completed: '+escapeHtml(formatDateTime(getCompletedAt(x)))+'</span>';
+      html+='</div>';
+
+      if(!complete){
+        html+='<button class="reminder-btn" data-reminder-id="'+escapeHtml(r.id)+'" '+(lock?'disabled':'')+'>';
+        html+='<i data-lucide="send"></i> '+(lock?'Reminder sent · '+lock:'Send Reminder')+'</button>';
+      }
+
+      html+='</div>';
     });
 
-    html+='</div>';
-
-    if(!allDone){
-      html+='<button class="reminder-btn" data-reminder-key="'+sk+'" '+(disabled?'disabled':'')+'>';
-      html+='<i data-lucide="send"></i> '+(lock?'Reminder sent · '+lock:'Send Reminder')+'</button>';
-    }
-
-    html+='</div>';
+    html+='</div></div>';
   });
 
   content.innerHTML=html;
@@ -401,26 +482,25 @@ function toggleExpandKey(sk){
   render();
 }
 
-async function sendGroupReminderKey(sk){
-  var key=keyMap[sk];
-  if(!key)return;
-
-  var groups=groupActions(listForTab());
-  var group=groups[key]||[];
-  var first=group.find(function(r){return (r.fields||{})['Status']!=='Completed';});
-  if(!first)return;
+async function sendReminder(actionId){
+  if(!actionId)return;
 
   try{
     var res=await fetch(WORKER+'/send-reminder',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({actionId:first.id})
+      body:JSON.stringify({actionId:actionId})
     });
-    var data=await res.json();
+
+    var text=await res.text();
+    var data={};
+    try{data=JSON.parse(text);}catch(e){}
+
     if(!res.ok){
       if(data.locked)throw new Error('Reminder already sent. Available again in '+(data.hoursRemaining||24)+'h.');
-      throw new Error(data.error||'Could not send reminder');
+      throw new Error(data.error||text.slice(0,200)||'Could not send reminder');
     }
+
     showToast('Reminder sent.');
     await loadActions();
   }catch(err){
@@ -436,27 +516,47 @@ document.addEventListener('click',function(e){
     return;
   }
 
-  var rem=e.target.closest('[data-reminder-key]');
+  var rem=e.target.closest('[data-reminder-id]');
   if(rem){
-    sendGroupReminderKey(rem.getAttribute('data-reminder-key'));
+    sendReminder(rem.getAttribute('data-reminder-id'));
     return;
   }
 });
 
-document.querySelectorAll('.tab-btn').forEach(function(btn){
-  btn.addEventListener('click',function(){
-    document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
-    btn.classList.add('active');
-    activeTab=btn.getAttribute('data-tab');
-    render();
+function bindStaticEvents(){
+  document.querySelectorAll('.tab-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      activeTab=btn.getAttribute('data-tab');
+      expanded={};
+      render();
+    });
   });
-});
 
-document.getElementById('repFilter').addEventListener('change',render);
-document.getElementById('accountFilter').addEventListener('input',render);
-document.getElementById('textFilter').addEventListener('input',render);
+  var rep=document.getElementById('repFilter');
+  var apply=document.getElementById('applyRepBtn');
+
+  if(rep){
+    rep.addEventListener('change',function(){
+      selectedRep=rep.value;
+      expanded={};
+      render();
+    });
+    rep.addEventListener('input',function(){
+      selectedRep=rep.value;
+      expanded={};
+      render();
+    });
+  }
+
+  if(apply){
+    apply.addEventListener('click',applyRepFromSelect);
+  }
+}
 
 document.addEventListener('DOMContentLoaded',function(){
+  bindStaticEvents();
   if(window.lucide)lucide.createIcons();
   loadActions();
 });
