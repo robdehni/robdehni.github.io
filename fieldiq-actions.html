@@ -52,8 +52,11 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .action-text{font-size:14px;color:#263b59;line-height:1.55;font-weight:750;white-space:pre-wrap}
 .meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .meta{font-size:10.5px;font-weight:900;padding:5px 9px;border-radius:8px;background:#fff;color:#7a8aa3;border:1px solid #e3ebf5}
-.reminder-btn{width:100%;border:none;border-radius:12px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;padding:13px;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 6px 16px rgba(47,143,255,0.25);display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px}
+.row-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.reminder-btn,.visit-btn{width:100%;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.reminder-btn{background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;box-shadow:0 6px 16px rgba(47,143,255,0.25)}
 .reminder-btn:disabled{opacity:.55;cursor:not-allowed;background:#8a9bb3;box-shadow:none}
+.visit-btn{background:#fff;color:#2f8fff;border:1.5px solid #2f8fff}
 .loading{text-align:center;padding:46px 20px;color:#8a9bb3;font-weight:700}
 .spinner{width:34px;height:34px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -67,6 +70,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   .summary-grid{grid-template-columns:repeat(2,1fr)}
   .mini-stats{grid-template-columns:repeat(2,1fr)}
   .filter-row{grid-template-columns:1fr}
+  .row-actions{grid-template-columns:1fr}
   .container{max-width:620px}
 }
 </style>
@@ -113,7 +117,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   </div>
 
   <div class="help-strip">
-    Manager view: choose a rep, press Apply, pick a status, open the hospital card, review pending tasks, then send a reminder. Manager does not edit or close tasks.
+    Manager workflow: choose rep → choose status → View Tasks → View Visit if needed → Send Reminder. Rep closes tasks. Manager only monitors and nudges.
   </div>
 
   <div id="content"><div class="loading"><div class="spinner"></div>Loading manager actions...</div></div>
@@ -171,13 +175,18 @@ function timeoutPromise(ms,msg){
     setTimeout(function(){reject(new Error(msg||'Timeout'));},ms);
   });
 }
+function readableError(x){
+  if(x===undefined || x===null)return '';
+  if(typeof x==='string')return x;
+  try{return JSON.stringify(x);}catch(e){return String(x);}
+}
 function fetchJson(url,ms){
   return Promise.race([
     fetch(url,{cache:'no-store'}).then(function(r){
       return r.text().then(function(t){
         var d={};
-        try{d=t?JSON.parse(t):{};}catch(e){throw new Error('Worker returned invalid JSON');}
-        if(!r.ok){throw new Error(d.error||('HTTP '+r.status));}
+        try{d=t?JSON.parse(t):{};}catch(e){throw new Error('Worker returned invalid JSON: '+t.slice(0,200));}
+        if(!r.ok){throw new Error(readableError(d.error)||readableError(d)||('HTTP '+r.status));}
         return d;
       });
     }),
@@ -189,6 +198,14 @@ function getField(f,names,fallback){
     if(f[names[i]]!==undefined && f[names[i]]!==null && f[names[i]]!=='')return f[names[i]];
   }
   return fallback||'';
+}
+function firstLinkedId(v){
+  if(Array.isArray(v)&&v.length)return v[0];
+  if(typeof v==='string')return v;
+  return '';
+}
+function getVisitId(f){
+  return firstLinkedId(getField(f,['Visit','Field Visit','Visit Record','Visit ID','Visit Record ID','Source Visit','Source Visit ID'],''));
 }
 function getAccountName(f){
   return getField(f,['Account Name','Hospital Name','Hospital','Account','Facility Name','Clinic Name','Customer Name'],'Unknown Account');
@@ -326,14 +343,12 @@ function applyCurrentRepToSelect(){
   var sel=document.getElementById('repFilter');
   if(sel)sel.value=selectedRep;
 }
-
 function applyRepFromSelect(){
   var sel=document.getElementById('repFilter');
   selectedRep=sel ? sel.value : '';
   expanded={};
   render();
 }
-
 function applyRepFilter(list){
   return list.filter(function(r){
     var f=r.fields||{};
@@ -341,7 +356,6 @@ function applyRepFilter(list){
     return true;
   });
 }
-
 function listForTab(){
   var l=allActions;
   if(activeTab==='open')l=openActions;
@@ -352,7 +366,6 @@ function listForTab(){
   });
   return applyRepFilter(l);
 }
-
 function groupActions(list){
   var g={};
   list.forEach(function(r){
@@ -365,7 +378,6 @@ function groupActions(list){
   });
   return g;
 }
-
 function updateCounts(){
   var visibleOpen=applyRepFilter(openActions);
   var visibleCompleted=applyRepFilter(completedActions);
@@ -375,7 +387,6 @@ function updateCounts(){
   document.getElementById('todayCount').textContent=visibleOpen.filter(function(r){return getDueState(r.fields||{})==='today';}).length;
   document.getElementById('completedCount').textContent=visibleCompleted.length;
 }
-
 function safeKeyFor(key){
   return btoa(unescape(encodeURIComponent(key))).replace(/=/g,'');
 }
@@ -385,6 +396,17 @@ function countState(group,state){
 function nextDue(group){
   var dates=group.map(function(r){return getDueDate(r.fields||{});}).filter(Boolean).sort();
   return dates[0]||'';
+}
+function visitHref(action){
+  var f=action.fields||{};
+  var visitId=getVisitId(f);
+  var account=getAccountName(f);
+  var url='./fieldiq-visit-history.html';
+  var q=[];
+  if(visitId)q.push('visitId='+encodeURIComponent(visitId));
+  if(action.id)q.push('actionId='+encodeURIComponent(action.id));
+  if(account)q.push('account='+encodeURIComponent(account));
+  return url+(q.length?'?'+q.join('&'):'');
 }
 
 function render(){
@@ -410,7 +432,6 @@ function render(){
 
     var overdue=countState(group,'overdue');
     var today=countState(group,'today');
-    var upcoming=countState(group,'upcoming');
     var completed=countState(group,'completed');
     var openCount=group.length-completed;
 
@@ -460,10 +481,15 @@ function render(){
       if(getCompletedAt(x))html+='<span class="meta">Completed: '+escapeHtml(formatDateTime(getCompletedAt(x)))+'</span>';
       html+='</div>';
 
+      html+='<div class="row-actions">';
+      html+='<a class="visit-btn" href="'+escapeHtml(visitHref(r))+'"><i data-lucide="file-text"></i> View Visit</a>';
       if(!complete){
         html+='<button class="reminder-btn" data-reminder-id="'+escapeHtml(r.id)+'" '+(lock?'disabled':'')+'>';
         html+='<i data-lucide="send"></i> '+(lock?'Reminder sent · '+lock:'Send Reminder')+'</button>';
+      }else{
+        html+='<button class="reminder-btn" disabled><i data-lucide="check-circle"></i> Completed</button>';
       }
+      html+='</div>';
 
       html+='</div>';
     });
@@ -485,26 +511,43 @@ function toggleExpandKey(sk){
 async function sendReminder(actionId){
   if(!actionId)return;
 
+  var btn=document.querySelector('[data-reminder-id="'+CSS.escape(actionId)+'"]');
+  if(btn){
+    btn.disabled=true;
+    btn.textContent='Sending reminder...';
+  }
+
   try{
+    var payload={
+      actionId:actionId,
+      actionRecordId:actionId,
+      recordId:actionId,
+      managerUserId:currentUserId,
+      managerName:currentUserName
+    };
+
     var res=await fetch(WORKER+'/send-reminder',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({actionId:actionId})
+      body:JSON.stringify(payload)
     });
 
     var text=await res.text();
     var data={};
-    try{data=JSON.parse(text);}catch(e){}
+    try{data=text?JSON.parse(text):{};}catch(e){data={raw:text};}
 
-    if(!res.ok){
-      if(data.locked)throw new Error('Reminder already sent. Available again in '+(data.hoursRemaining||24)+'h.');
-      throw new Error(data.error||text.slice(0,200)||'Could not send reminder');
+    if(!res.ok || data.ok===false || data.success===false){
+      if(data.locked){
+        throw new Error('Reminder already sent. Available again in '+(data.hoursRemaining||24)+'h.');
+      }
+      throw new Error(readableError(data.error)||readableError(data.message)||readableError(data)||('Reminder failed. HTTP '+res.status));
     }
 
-    showToast('Reminder sent.');
+    showToast('Reminder sent to rep.');
     await loadActions();
+
   }catch(err){
-    alert(err.message);
+    alert('Reminder failed: '+readableError(err.message||err));
     await loadActions();
   }
 }
