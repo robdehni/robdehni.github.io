@@ -23,7 +23,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 /* ── Module cards — standardised to fieldiq.html spec ── */
 .module{
   display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #e3ebf5;border-radius:18px;
-  padding:18px 20px;text-decoration:none;color:#0b1f3a;box-shadow:0 4px 14px rgba(11,31,58,0.05);transition:transform 0.15s;
+  padding:18px 20px;text-decoration:none;color:#0b1f3a;box-shadow:0 4px 14px rgba(11,31,58,0.05);transition:transform 0.15s;position:relative;
 }
 .module:active{transform:scale(0.98)}
 .module-icon-wrap{
@@ -35,6 +35,13 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .module-title{font-size:15.5px;font-weight:800;color:#0b1f3a;margin-bottom:2px}
 .module-desc{font-size:12px;color:#7a8aa3;font-weight:500}
 .module-arrow{color:#aab8cc;font-size:18px;font-weight:700}
+
+.module-badge{
+  position:absolute;right:40px;top:16px;min-width:22px;height:22px;border-radius:999px;background:#e0344a;color:#fff;
+  display:none;align-items:center;justify-content:center;font-size:11px;font-weight:800;padding:0 7px;
+  box-shadow:0 4px 10px rgba(224,52,74,0.25);
+}
+.module-badge.visible{display:inline-flex}
 
 .module.primary{border-color:transparent;background:linear-gradient(135deg,#3d9bff,#1f6fe0);box-shadow:0 10px 26px rgba(47,143,255,0.32)}
 .module.primary .module-title{color:#fff}
@@ -233,6 +240,30 @@ async function loadUsers(){
   }
 }
 
+async function updateOpenActionsBadge(){
+  var badge=document.getElementById('openActionsBadge');
+  if(!badge)return;
+
+  var userId=localStorage.getItem('fieldiq_user_id');
+  var role=localStorage.getItem('fieldiq_user_role')||'Sales Rep';
+  if(!userId)return;
+
+  try{
+    var res=await fetch(WORKER+'/get-actions?userId='+encodeURIComponent(userId)+'&role='+encodeURIComponent(role)+'&status=Open');
+    var data=await res.json();
+    if(!res.ok)throw new Error('Failed');
+    var count=(data.records||[]).length;
+    if(count>0){
+      badge.textContent=count>99?'99+':count;
+      badge.className='module-badge visible';
+    }else{
+      badge.className='module-badge';
+    }
+  }catch(e){
+    badge.className='module-badge';
+  }
+}
+
 function renderModules(){
   var role=localStorage.getItem('fieldiq_user_role');
   var section=document.getElementById('modulesSection');
@@ -296,6 +327,19 @@ function renderModules(){
       '<div class="module-arrow">›</div>'+
     '</a>';
 
+  if(!isManager){
+    html+=
+      '<a class="module" href="./fieldiq-open-actions.html">'+
+        '<div class="module-icon-wrap"><i data-lucide="check-square"></i></div>'+
+        '<div class="module-text">'+
+          '<div class="module-title">Open Actions</div>'+
+          '<div class="module-desc">Complete follow-up tasks assigned to you</div>'+
+        '</div>'+
+        '<span class="module-badge" id="openActionsBadge"></span>'+
+        '<div class="module-arrow">›</div>'+
+      '</a>';
+  }
+
   html+='<div class="section-label">Help</div>'+
     '<a class="module" href="./fieldiq-guide.html">'+
       '<div class="module-icon-wrap"><i data-lucide="book-open"></i></div>'+
@@ -309,6 +353,7 @@ function renderModules(){
   html+='</div>';
   section.innerHTML=html;
   lucide.createIcons();
+  if(!isManager){updateOpenActionsBadge();}
 }
 
 if (localStorage.getItem('fieldiq_user_role') === 'Manager') {
