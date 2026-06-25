@@ -3,429 +3,140 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FieldIQ — Open Actions</title>
+<title>FieldIQ — Manager Open Actions</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:18px;padding-bottom:40px}
-.container{max-width:900px;margin:0 auto}
-
-/* ── Brand block — matches fieldiq.html reference ── */
-.topbar{margin-bottom:14px}
-.topbar-brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:24px 20px 50px}
+.container{max-width:980px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 .brand-cloud{font-size:26px;line-height:1}
 .brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
 .brand-text h1 span{color:#2f8fff}
 .brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
-.topbar-sub{color:#7a8aa3;font-size:12.5px;margin-top:2px;font-weight:600}
-
-/* ── Manager badge — 20px pill matching fieldiq.html ── */
-.manager-badge{
-  display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#d98a1c;
-  border:1px solid #ffe5b3;border-radius:20px;font-size:10.5px;font-weight:800;
-  padding:4px 12px;margin-left:10px;text-transform:uppercase;letter-spacing:0.4px;
-  box-shadow:0 2px 8px rgba(217,138,28,0.1);vertical-align:middle;
-}
-
-.home-btn{
-  display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
-  text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;
-  box-shadow:0 2px 8px rgba(11,31,58,0.05);
-}
-.home-btn:hover{border-color:#2f8fff}
-
-.filter-bar{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:16px;margin-bottom:18px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
-.filter-bar h3{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:12px}
-.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.filter-select{width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;font-size:12.5px;outline:none;font-weight:600}
-.filter-select:focus{border-color:#2f8fff}
-.filter-btns{display:flex;gap:8px}
-.fbtn-apply{flex:1;padding:11px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:10px;font-size:12.5px;font-weight:800;cursor:pointer;box-shadow:0 6px 16px rgba(47,143,255,0.3)}
-.fbtn-reset{flex:1;padding:11px;background:#fff;color:#7a8aa3;border:1.5px solid #e3ebf5;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer}
-.filter-status{font-size:10.5px;color:#2f8fff;margin-top:8px;text-align:center;min-height:14px;font-weight:700}
-
-.stats-row{display:flex;gap:10px;margin-bottom:18px}
-.stat-pill{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px 12px;font-size:11.5px;color:#7a8aa3;flex:1;text-align:center;font-weight:700;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
-.stat-pill span{display:block;font-size:24px;font-weight:800;color:#2f8fff;margin-bottom:4px}
-.stat-pill.high span{color:#e0344a}
-
-.section-title{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #e3ebf5;display:flex;align-items:center;gap:8px}
-
-.account-block{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
-.account-block.high{border-left:4px solid #e0344a}
-.account-block.medium{border-left:4px solid #d98a1c}
-.account-block.low{border-left:4px solid #1fa861}
-.account-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
-.account-name{font-size:14.5px;font-weight:800;color:#0b1f3a}
-.account-meta{font-size:11.5px;color:#aab8cc;margin-top:3px;font-weight:600}
-.priority-badge{font-size:10.5px;padding:4px 11px;border-radius:8px;font-weight:800;white-space:nowrap}
-.badge-high{background:#ffe5e8;color:#e0344a}
-.badge-medium{background:#fff3e0;color:#d98a1c}
-.badge-low{background:#e3f8ea;color:#1fa861}
-
-.ab-expand-btn{display:block;width:100%;padding:8px 14px;background:#f4f8fc;color:#2f8fff;border:1px solid #e3ebf5;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:background 0.15s;touch-action:manipulation}
-.ab-expand-btn:hover{background:#eaf3ff;border-color:#2f8fff}
-
-.action-list-body{display:none;margin-top:10px;border-top:1px solid #eef3f9;padding-top:10px}
-
-.action-list{margin-top:0}
-.action-item{font-size:12.5px;color:#3a4a63;padding:6px 0;border-bottom:1px solid #f4f8fc;display:flex;align-items:flex-start;gap:8px;line-height:1.6;font-weight:500}
-.action-item:last-child{border-bottom:none;padding-bottom:0}
-.action-bullet{color:#2f8fff;flex-shrink:0;margin-top:1px;font-weight:800}
-.action-footer{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.af-badge{font-size:10.5px;padding:4px 11px;border-radius:8px;font-weight:700}
-.af-rep{background:#eaf3ff;color:#2f8fff}
-.af-terr{background:#eef3f9;color:#5b6b85}
-
-.ai-headline{font-size:12.5px;color:#3a4a63;line-height:1.6;font-weight:500}
-.ai-full{font-size:12.5px;color:#3a4a63;line-height:1.6;font-weight:500;white-space:pre-wrap;display:none}
-.ai-toggle{font-size:11px;color:#2f8fff;font-weight:700;cursor:pointer;user-select:none;margin-left:4px;flex-shrink:0}
-
-.loading{text-align:center;padding:60px 20px;color:#aab8cc;font-weight:600}
-.spinner{width:36px;height:36px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
+.header{margin-bottom:18px}
+.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600}
+.home-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;box-shadow:0 2px 8px rgba(11,31,58,0.05)}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.summary-card{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.summary-num{font-size:24px;font-weight:900;color:#0b1f3a}
+.summary-label{font-size:11px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-top:3px}
+.filters{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:12px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05);display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.filter-field label{display:block;font-size:10px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.filter-field select,.filter-field input{width:100%;padding:11px;border:1.5px solid #dde8f5;border-radius:10px;background:#f8fbff;color:#0b1f3a;font-weight:700;outline:none}
+.tabs{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px}
+.tab-btn{border:1px solid #e3ebf5;background:#fff;color:#7a8aa3;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:900;white-space:nowrap;cursor:pointer;box-shadow:0 2px 8px rgba(11,31,58,0.04)}
+.tab-btn.active{background:#2f8fff;color:#fff;border-color:#2f8fff}
+.loading{text-align:center;padding:46px 20px;color:#8a9bb3;font-weight:700}
+.spinner{width:34px;height:34px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;color:#aab8cc;font-size:13px;padding:30px;font-weight:600}
-
-.access-denied{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
-  padding:80px 24px;
-}
-.access-denied-icon{font-size:54px;margin-bottom:16px}
-.access-denied h2{font-size:20px;color:#0b1f3a;font-weight:800;margin-bottom:8px}
-.access-denied p{font-size:13.5px;color:#7a8aa3;font-weight:600;max-width:320px;line-height:1.6;margin-bottom:20px}
-.access-denied a{
-  display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;
-  text-decoration:none;padding:13px 28px;border-radius:14px;box-shadow:0 8px 20px rgba(47,143,255,0.32);font-size:14px;
-}
-
-@media(min-width:1100px){
-  .container{max-width:1300px}
-  body{padding:32px 40px 60px}
-  .stats-row{max-width:600px}
-  .account-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .account-block{margin-bottom:0}
-}
-[data-lucide]{display:inline-block;vertical-align:middle;stroke-width:1.8}
-.access-denied-icon [data-lucide]{width:54px;height:54px;color:#d98a1c}
-.ab-expand-btn [data-lucide]{width:14px;height:14px}
-.ai-toggle [data-lucide]{width:12px;height:12px}
-.action-bullet [data-lucide]{width:14px;height:14px}
+.action-card{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.action-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;align-items:flex-start}
+.account-name{font-size:15px;font-weight:900;color:#0b1f3a;line-height:1.35}
+.rep-line{font-size:12px;color:#7a8aa3;font-weight:800;margin-top:3px}
+.status-pill{border-radius:999px;padding:5px 10px;font-size:10.5px;font-weight:900;white-space:nowrap}
+.status-open{background:#eaf3ff;color:#2f8fff}
+.status-overdue{background:#ffe1e5;color:#c43048}
+.status-completed{background:#e1f5ea;color:#1f8a52}
+.action-text{font-size:13.5px;color:#3d4f6b;line-height:1.55;margin-bottom:12px;font-weight:600;white-space:pre-wrap}
+.meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.meta{font-size:10.5px;font-weight:900;padding:5px 9px;border-radius:8px;background:#f4f8fc;color:#7a8aa3;border:1px solid #e3ebf5}
+.reminder-btn{width:100%;border:none;border-radius:12px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;padding:13px;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 6px 16px rgba(47,143,255,0.25);display:flex;align-items:center;justify-content:center;gap:8px}
+.reminder-btn:disabled{opacity:.55;cursor:not-allowed;background:#8a9bb3;box-shadow:none}
+.reminder-btn [data-lucide]{width:18px;height:18px}
+.empty{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:34px 20px;text-align:center;color:#8a9bb3;font-weight:800;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.empty [data-lucide]{width:42px;height:42px;color:#2f8fff;margin-bottom:10px}
+.error-box{background:#fff3e0;border:1px solid #ffe5b3;border-radius:14px;padding:16px;color:#7a6000;font-size:13px;font-weight:800;text-align:center;margin-bottom:12px}
+.retry-btn{margin-top:10px;border:none;background:#2f8fff;color:#fff;padding:10px 18px;border-radius:10px;font-weight:900}
+.toast{position:fixed;left:20px;right:20px;bottom:22px;background:#0b1f3a;color:#fff;border-radius:14px;padding:14px;text-align:center;font-weight:900;font-size:13px;display:none;box-shadow:0 10px 26px rgba(11,31,58,0.25);z-index:999}
+.toast.visible{display:block}
+.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:30px}
+@media(max-width:720px){.summary-grid{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr}.container{max-width:620px}}
 </style>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 <div class="container">
-
-<div class="topbar">
-  <div class="topbar-brand">
-    <span class="brand-cloud">☁️</span>
-    <div class="brand-text">
-      <h1>Field<span>IQ</span><span id="managerBadge" style="display:none" class="manager-badge">⭐ Manager</span></h1>
-      <p>Territory Intelligence Platform</p>
-    </div>
-  </div>
-  <p class="topbar-sub" id="lastUpdated">Loading...</p>
+<div class="header"><div class="brand"><span class="brand-cloud">☁️</span><div class="brand-text"><h1>Field<span>IQ</span></h1><p>Territory Intelligence Platform</p></div></div><p class="page-subtitle">Manager Open Actions</p></div>
+<a href="./fieldiq.html" class="home-btn">← Manager Home</a>
+<div class="summary-grid">
+<div class="summary-card"><div class="summary-num" id="openCount">0</div><div class="summary-label">Open</div></div>
+<div class="summary-card"><div class="summary-num" id="overdueCount">0</div><div class="summary-label">Overdue</div></div>
+<div class="summary-card"><div class="summary-num" id="todayCount">0</div><div class="summary-label">Due Today</div></div>
+<div class="summary-card"><div class="summary-num" id="completedCount">0</div><div class="summary-label">Completed</div></div>
 </div>
-
-<a class="home-btn" href="./index.html" id="topHomeBtn">← Home</a>
-
-<div id="accessDenied" class="access-denied" style="display:none">
-  <div class="access-denied-icon"><i data-lucide="lock"></i></div>
-  <h2>Manager Access Required</h2>
-  <p>Open Actions shows outstanding action items across all reps and accounts. This page is restricted to Manager accounts.</p>
-  <a href="./index.html" id="accessDeniedHomeBtn">Return Home</a>
+<div class="filters">
+<div class="filter-field"><label>Rep</label><select id="repFilter"><option value="">All reps</option></select></div>
+<div class="filter-field"><label>Account</label><input id="accountFilter" placeholder="Search account..."></div>
+<div class="filter-field"><label>Action</label><input id="textFilter" placeholder="Search action..."></div>
 </div>
-
-<div id="mainContent" style="display:none">
-  <div class="filter-bar">
-    <h3>Filters</h3>
-    <div class="filter-row">
-      <select class="filter-select" id="filterRep"><option value="">All Reps</option></select>
-      <select class="filter-select" id="filterTerritory">
-        <option value="">All Territories</option>
-        <option>UAE</option><option>KSA</option><option>Qatar</option>
-        <option>Kuwait</option><option>Bahrain</option><option>Oman</option>
-      </select>
-    </div>
-    <div class="filter-row">
-      <select class="filter-select" id="filterPriority">
-        <option value="">All Priorities</option>
-        <option>High</option><option>Medium</option><option>Low</option>
-      </select>
-      <select class="filter-select" id="filterDate">
-        <option value="">All Time</option>
-        <option value="7">This Week</option>
-        <option value="month">This Month</option>
-        <option value="30">Last 30 Days</option>
-        <option value="90">Last 90 Days</option>
-      </select>
-    </div>
-    <div class="filter-btns">
-      <button class="fbtn-apply" onclick="applyFilters()">Apply</button>
-      <button class="fbtn-reset" onclick="resetFilters()">Reset</button>
-    </div>
-    <div class="filter-status" id="filterStatus"></div>
-  </div>
-
-  <div class="stats-row">
-    <div class="stat-pill high"><span id="statHigh">0</span>High</div>
-    <div class="stat-pill"><span id="statTotal">0</span>Total Actions</div>
-    <div class="stat-pill"><span id="statAccounts">0</span>Accounts</div>
-  </div>
-
-  <div id="actionContent"></div>
+<div class="tabs">
+<button class="tab-btn active" data-tab="open">Open</button>
+<button class="tab-btn" data-tab="overdue">Overdue</button>
+<button class="tab-btn" data-tab="today">Due Today</button>
+<button class="tab-btn" data-tab="upcoming">Upcoming</button>
+<button class="tab-btn" data-tab="completed">Completed</button>
+<button class="tab-btn" data-tab="all">All</button>
 </div>
-
-<div class="loading" id="loadingEl"><div class="spinner"></div>Loading actions...</div>
+<div id="content"><div class="loading"><div class="spinner"></div>Loading manager actions...</div></div>
+<div class="footer">FieldIQ v2.1 · 2026</div>
 </div>
-
+<div class="toast" id="toast">Reminder sent.</div>
 <script>
-var role = localStorage.getItem('fieldiq_user_role');
-var isManager = (role === 'Manager');
-
-document.getElementById('topHomeBtn').href = isManager ? './fieldiq.html' : './index.html';
-document.getElementById('accessDeniedHomeBtn').href = isManager ? './fieldiq.html' : './index.html';
-
-if(isManager){
-  document.getElementById('managerBadge').style.display='inline-flex';
-}
-
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
-var allRecords=[];
-
-function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
-
-function parseActions(text){
-  if(!text)return[];
-  var lines=text.split('\n');
-  var actions=[];
-  lines.forEach(function(line){
-    line=line.trim();
-    line=line.replace(/^\d+\.\s*/,'').replace(/^[-•*]\s*/,'').trim();
-    if(line.length>5&&line.length<300)actions.push(line);
-  });
-  return actions;
-}
-
-function getPriorityClass(p){
-  if(!p)return'medium';
-  p=p.toLowerCase();
-  if(p==='high')return'high';
-  if(p==='low')return'low';
-  return'medium';
-}
-
-function getBadgeClass(p){
-  if(!p)return'badge-medium';
-  p=p.toLowerCase();
-  if(p==='high')return'badge-high';
-  if(p==='low')return'badge-low';
-  return'badge-medium';
-}
-
-function populateRepFilter(records){
-  var reps={};
-  records.forEach(function(r){
-    var rep=r.fields['Rep Name']||'';
-    if(rep){rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();reps[rep]=1;}
-  });
-  var sel=document.getElementById('filterRep');
-  while(sel.options.length>1)sel.remove(1);
-  Object.keys(reps).sort().forEach(function(r){
-    var o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);
-  });
-}
-
-function getFilteredRecords(){
-  var rep=document.getElementById('filterRep').value;
-  var terr=document.getElementById('filterTerritory').value;
-  var priority=document.getElementById('filterPriority').value;
-  var days=document.getElementById('filterDate').value;
-  var cutoff=null;
-  if(days==='month'){var now=new Date();cutoff=new Date(now.getFullYear(),now.getMonth(),1);}
-  else if(days){cutoff=new Date(Date.now()-parseInt(days)*24*60*60*1000);}
-  return allRecords.filter(function(r){
-    var f=r.fields;
-    if(!f['Action Items']&&!f['Next Steps'])return false;
-    var repName=(f['Rep Name']||'').trim();
-    repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();
-    if(rep&&repName!==rep)return false;
-    if(terr&&f['Territory']!==terr)return false;
-    if(priority&&f['Priority']!==priority)return false;
-    if(cutoff&&f['Visit Date']&&new Date(f['Visit Date'])<cutoff)return false;
-    return true;
-  });
-}
-
-function toggleAccountCard(cardId,btn){
-  var body=document.getElementById(cardId+'-body');
-  if(!body)return;
-  var open=window.getComputedStyle(body).display!=='none';
-  body.style.display=open?'none':'block';
-  btn.innerHTML=open?'<i data-lucide="chevron-right"></i> Expand':'<i data-lucide="chevron-up"></i> Collapse';lucide.createIcons({el:btn});
-}
-
-function toggleAI(id,btn){
-  var full=document.getElementById(id);
-  var hl=document.getElementById(id+'-h');
-  if(!full)return;
-  var open=window.getComputedStyle(full).display!=='none';
-  full.style.display=open?'none':'block';
-  if(hl)hl.style.display=open?'':'none';
-  btn.innerHTML=open?'<i data-lucide="chevron-right"></i> More':'<i data-lucide="chevron-up"></i> Less';lucide.createIcons({el:btn});
-}
-
-function buildActionsView(records){
-  var accountMap={};
-  records.forEach(function(r){
-    var f=r.fields;
-    var hospital=f['Hospital Name']||'Unknown Account';
-    var actions=parseActions(f['Action Items']||f['Next Steps']||'');
-    if(actions.length===0)return;
-    if(!accountMap[hospital]){
-      accountMap[hospital]={
-        name:hospital,
-        territory:f['Territory']||'',
-        priority:f['Priority']||'Medium',
-        rep:(f['Rep Name']||'').trim(),
-        lastVisit:f['Visit Date']||'',
-        actions:[]
-      };
-    }
-    actions.forEach(function(a){
-      var exists=accountMap[hospital].actions.some(function(existing){
-        return existing.toLowerCase().substring(0,40)===a.toLowerCase().substring(0,40);
-      });
-      if(!exists)accountMap[hospital].actions.push(a);
-    });
-    var p=f['Priority']||'Medium';
-    if(p==='High')accountMap[hospital].priority='High';
-    else if(p==='Medium'&&accountMap[hospital].priority==='Low')accountMap[hospital].priority='Medium';
-    if(f['Visit Date']&&(!accountMap[hospital].lastVisit||f['Visit Date']>accountMap[hospital].lastVisit)){
-      accountMap[hospital].lastVisit=f['Visit Date'];
-      accountMap[hospital].rep=(f['Rep Name']||'').trim();
-      accountMap[hospital].rep=accountMap[hospital].rep.charAt(0).toUpperCase()+accountMap[hospital].rep.slice(1).toLowerCase();
-    }
-  });
-
-  var accounts=Object.values(accountMap);
-  var order={High:0,Medium:1,Low:2};
-  accounts.sort(function(a,b){return(order[a.priority]||1)-(order[b.priority]||1);});
-
-  var high=accounts.filter(function(a){return a.priority==='High';});
-  var medium=accounts.filter(function(a){return a.priority==='Medium';});
-  var low=accounts.filter(function(a){return a.priority==='Low';});
-
-  var totalActions=accounts.reduce(function(sum,a){return sum+a.actions.length;},0);
-  document.getElementById('statHigh').textContent=high.length;
-  document.getElementById('statTotal').textContent=totalActions;
-  document.getElementById('statAccounts').textContent=accounts.length;
-
-  var _cid=0;
-
-  function renderAccounts(list){
-    if(list.length===0)return'<div class="empty">None</div>';
-    return list.map(function(acc){
-      var pc=getPriorityClass(acc.priority);
-      var bc=getBadgeClass(acc.priority);
-      var cardId='ab-'+(++_cid);
-
-      var actionItemsHtml=acc.actions.map(function(a,ai){
-        var needsExpand=a.length>160;
-        if(needsExpand){
-          var aiId=cardId+'-ai-'+ai;
-          var headline=a.substring(0,120)+'…';
-          return'<div class="action-item">'+
-            '<span class="action-bullet"><i data-lucide="arrow-right"></i></span>'+
-            '<span>'+
-              '<span class="ai-headline" id="'+aiId+'-h">'+headline+'</span>'+
-              '<span class="ai-full" id="'+aiId+'">'+a+'</span>'+
-              '<span class="ai-toggle" onclick="toggleAI(\''+aiId+'\',this)">▸ More</span>'+
-            '</span>'+
-          '</div>';
-        }
-        return'<div class="action-item"><span class="action-bullet"><i data-lucide="arrow-right"></i></span>'+a+'</div>';
-      }).join('');
-
-      return'<div class="account-block '+pc+'" id="'+cardId+'">'+
-        '<div class="account-header">'+
-          '<div>'+
-            '<div class="account-name">'+acc.name+'</div>'+
-            '<div class="account-meta">'+
-              acc.actions.length+' action'+(acc.actions.length!==1?'s':'')+
-              (acc.territory?' · '+acc.territory:'')+
-              (acc.lastVisit?' · Last visit: '+formatDate(acc.lastVisit):'')+
-            '</div>'+
-          '</div>'+
-          '<span class="priority-badge '+bc+'">'+acc.priority+'</span>'+
-        '</div>'+
-        '<button class="ab-expand-btn" onclick="toggleAccountCard(\''+cardId+'\',this)">▸ Expand</button>'+
-        '<div class="action-list-body" id="'+cardId+'-body">'+
-          '<div class="action-list">'+actionItemsHtml+'</div>'+
-          '<div class="action-footer">'+
-            (acc.rep?'<span class="af-badge af-rep">'+acc.rep+'</span>':'')+
-            (acc.territory?'<span class="af-badge af-terr">'+acc.territory+'</span>':'')+
-          '</div>'+
-        '</div>'+
-      '</div>';
-    }).join('');
-  }
-
-  var html='';
-  if(high.length>0)html+='<div class="section-title">High Priority Actions</div>'+renderAccounts(high);
-  if(medium.length>0)html+='<div class="section-title">Medium Priority Actions</div>'+renderAccounts(medium);
-  if(low.length>0)html+='<div class="section-title">Low Priority Actions</div>'+renderAccounts(low);
-  if(html==='')html='<div class="empty">No open actions found.</div>';
-
-  document.getElementById('actionContent').innerHTML=html;lucide.createIcons();
-  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
-}
-
-function applyFilters(){
-  var filtered=getFilteredRecords();
-  var rep=document.getElementById('filterRep').value;
-  var terr=document.getElementById('filterTerritory').value;
-  var priority=document.getElementById('filterPriority').value;
-  var days=document.getElementById('filterDate').value;
-  var parts=[];
-  if(rep)parts.push('Rep: '+rep);
-  if(terr)parts.push(terr);
-  if(priority)parts.push(priority+' Priority');
-  if(days)parts.push(days==='month'?'This Month':'Last '+days+' days');
-  document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · '):'';
-  buildActionsView(filtered);
-}
-
-function resetFilters(){
-  document.getElementById('filterRep').value='';
-  document.getElementById('filterTerritory').value='';
-  document.getElementById('filterPriority').value='';
-  document.getElementById('filterDate').value='';
-  document.getElementById('filterStatus').textContent='';
-  buildActionsView(allRecords);
-}
-
+var currentUserId=localStorage.getItem('fieldiq_user_id');
+var currentUserName=localStorage.getItem('fieldiq_user_name');
+var currentUserRole=localStorage.getItem('fieldiq_user_role')||'';
+var openActions=[],completedActions=[],allActions=[],usersByRecordId={},activeTab='open';
+if(!currentUserId||!currentUserName){window.location.href='./index.html';throw new Error('No identity locked');}
+if(currentUserRole!=='Manager'){window.location.href='./index.html';throw new Error('Managers only');}
+function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,function(m){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);});}
+function todayISO(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString().slice(0,10);}
+function formatDate(value){if(!value)return '';try{return new Date(value+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch(e){return value;}}
+function formatDateTime(value){if(!value)return '';try{return new Date(value).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}catch(e){return value;}}
+function getDueState(f){var due=f['Due Date']||'';if((f['Status']||'Open')==='Completed')return 'completed';if(!due)return 'open';if(due<todayISO())return 'overdue';if(due===todayISO())return 'today';return 'upcoming';}
+function getAssignedRepName(f){var assigned=f['Assigned Rep']||[];if(assigned.length&&usersByRecordId[assigned[0]])return usersByRecordId[assigned[0]].name;return assigned[0]||'Unassigned';}
+function getAssignedRepKey(f){var assigned=f['Assigned Rep']||[];if(assigned.length&&usersByRecordId[assigned[0]])return usersByRecordId[assigned[0]].userId||assigned[0];return assigned[0]||'';}
+function reminderLockText(f){var last=f['Last Reminder Sent At'];if(!last)return '';var hours=(Date.now()-new Date(last).getTime())/36e5;if(hours<24){return 'Locked '+Math.ceil(24-hours)+'h';}return '';}
+function canSendReminder(f){if((f['Status']||'Open')!=='Open')return false;return !reminderLockText(f);}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg||'Reminder sent.';t.className='toast visible';setTimeout(function(){t.className='toast';},1800);}
+async function loadUsers(){try{var res=await fetch(WORKER+'/get-users');var data=await res.json();if(!res.ok)return;(data.records||[]).forEach(function(r){var f=r.fields||{};usersByRecordId[r.id]={name:f['Display Name']||f['User ID']||r.id,userId:f['User ID']||'',role:f['Role']||''};});}catch(e){}}
 async function loadActions(){
-  if(!isManager){
-    document.getElementById('loadingEl').style.display='none';
-    document.getElementById('accessDenied').style.display='flex';
-    return;
-  }
-  try{
-    var res=await fetch(WORKER+'/get-visits');
-    var data=await res.json();
-    if(!res.ok)throw new Error(JSON.stringify(data));
-    allRecords=data.records||[];
-    populateRepFilter(allRecords);
-    buildActionsView(allRecords);
-    document.getElementById('loadingEl').style.display='none';
-    document.getElementById('mainContent').style.display='block';
-  }catch(err){
-    document.getElementById('loadingEl').textContent='Failed to load: '+err.message;
-  }
+document.getElementById('content').innerHTML='<div class="loading"><div class="spinner"></div>Loading manager actions...</div>';
+try{
+await loadUsers();
+var openRes=await fetch(WORKER+'/get-actions?role=Manager&status=Open');var openData=await openRes.json();if(!openRes.ok)throw new Error(openData.error||'Could not load open actions');
+var completedRes=await fetch(WORKER+'/get-actions?role=Manager&status=Completed');var completedData=await completedRes.json();if(!completedRes.ok)completedData={records:[]};
+openActions=openData.records||[];
+completedActions=(completedData.records||[]).filter(function(r){var completedAt=(r.fields||{})['Completed At'];if(!completedAt)return true;var ageDays=(Date.now()-new Date(completedAt).getTime())/86400000;return ageDays<=7;});
+allActions=openActions.concat(completedActions);
+buildRepFilter();render();
+}catch(err){document.getElementById('content').innerHTML='<div class="error-box">Could not load manager actions.<br>'+escapeHtml(err.message)+'<br><button class="retry-btn" onclick="loadActions()">Retry</button></div>';}
 }
-
-loadActions();
-document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
+function buildRepFilter(){var sel=document.getElementById('repFilter');var existing=sel.value;var reps={};allActions.forEach(function(r){var f=r.fields||{};var key=getAssignedRepKey(f);if(key)reps[key]=getAssignedRepName(f);});sel.innerHTML='<option value="">All reps</option>';Object.keys(reps).sort(function(a,b){return reps[a].localeCompare(reps[b]);}).forEach(function(k){var opt=document.createElement('option');opt.value=k;opt.textContent=reps[k];sel.appendChild(opt);});sel.value=existing;}
+function applyFilters(list){var rep=document.getElementById('repFilter').value;var account=document.getElementById('accountFilter').value.trim().toLowerCase();var text=document.getElementById('textFilter').value.trim().toLowerCase();return list.filter(function(r){var f=r.fields||{};if(rep&&getAssignedRepKey(f)!==rep)return false;if(account&&String(f['Account Name']||'').toLowerCase().indexOf(account)===-1)return false;if(text&&String(f['Action Text']||'').toLowerCase().indexOf(text)===-1)return false;return true;});}
+function listForTab(){var list=allActions;if(activeTab==='open')list=openActions;else if(activeTab==='completed')list=completedActions;else if(activeTab==='all')list=allActions;else list=openActions.filter(function(r){return getDueState(r.fields||{})===activeTab;});return applyFilters(list);}
+function updateCounts(){document.getElementById('openCount').textContent=openActions.length;document.getElementById('overdueCount').textContent=openActions.filter(function(r){return getDueState(r.fields||{})==='overdue';}).length;document.getElementById('todayCount').textContent=openActions.filter(function(r){return getDueState(r.fields||{})==='today';}).length;document.getElementById('completedCount').textContent=completedActions.length;}
+function render(){
+updateCounts();var list=listForTab();var content=document.getElementById('content');
+if(list.length===0){content.innerHTML='<div class="empty"><i data-lucide="check-circle"></i><div>No actions in this view.</div></div>';lucide.createIcons();return;}
+content.innerHTML=list.map(function(r){
+var f=r.fields||{};var state=getDueState(f);var status=f['Status']||'Open';var pillClass=state==='overdue'?'status-overdue':(status==='Completed'?'status-completed':'status-open');var pillText=status==='Completed'?'Completed':(state==='overdue'?'Overdue':'Open');var repName=getAssignedRepName(f);var due=f['Due Date']||'';var dueTime=f['Due Time']||'';var reminders=f['Reminder Count'];var lastReminder=f['Last Reminder Sent At']||'';var completedAt=f['Completed At']||'';var lock=reminderLockText(f);var disabled=!canSendReminder(f);var btnText=status==='Completed'?'Completed':(lock?('Reminder sent • '+lock):'Send Reminder');
+var meta='';meta+='<span class="meta">Rep: '+escapeHtml(repName)+'</span>';if(due)meta+='<span class="meta">Due: '+escapeHtml(formatDate(due))+'</span>';if(dueTime)meta+='<span class="meta">Time: '+escapeHtml(dueTime)+'</span>';meta+='<span class="meta">Reminders: '+escapeHtml(reminders===undefined?'0':reminders)+'</span>';if(lastReminder)meta+='<span class="meta">Last reminder: '+escapeHtml(formatDateTime(lastReminder))+'</span>';if(completedAt)meta+='<span class="meta">Completed: '+escapeHtml(formatDateTime(completedAt))+'</span>';
+var button='';if(status!=='Completed'){button='<button class="reminder-btn" onclick="sendReminder(\''+r.id+'\')" id="btn-'+r.id+'" '+(disabled?'disabled':'')+'><i data-lucide="send"></i> '+escapeHtml(btnText)+'</button>';}
+return '<div class="action-card"><div class="action-top"><div><div class="account-name">'+escapeHtml(f['Account Name']||'Unknown Account')+'</div><div class="rep-line">'+escapeHtml(repName)+'</div></div><div class="status-pill '+pillClass+'">'+escapeHtml(pillText)+'</div></div><div class="action-text">'+escapeHtml(f['Action Text']||'')+'</div><div class="meta-row">'+meta+'</div>'+button+'</div>';
+}).join('');
+lucide.createIcons();
+}
+async function sendReminder(actionId){
+var btn=document.getElementById('btn-'+actionId);if(btn){btn.disabled=true;btn.innerHTML='Sending reminder...';}
+try{var res=await fetch(WORKER+'/send-reminder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actionId:actionId})});var data=await res.json();if(!res.ok){if(data.locked){throw new Error('Reminder already sent. Available again in '+(data.hoursRemaining||24)+'h.');}throw new Error(data.error||'Could not send reminder');}showToast('Reminder sent.');await loadActions();}
+catch(err){alert(err.message);await loadActions();}
+}
+document.querySelectorAll('.tab-btn').forEach(function(btn){btn.addEventListener('click',function(){document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');activeTab=btn.getAttribute('data-tab');render();});});
+document.getElementById('repFilter').addEventListener('change',render);
+document.getElementById('accountFilter').addEventListener('input',render);
+document.getElementById('textFilter').addEventListener('input',render);
+document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();loadActions();});
 </script>
 </body>
 </html>
