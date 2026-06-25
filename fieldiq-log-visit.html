@@ -294,6 +294,21 @@ submitBtn.addEventListener('click',async function(){
     var saveRes=await fetch(WORKER+'/save-visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(savePayload)});
     var saveData=await saveRes.json();
     if(!saveRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';if(isNewAccount){alert('The account'+(newContactName?' and contact were':' was')+' created successfully, but the visit itself failed to save.\n\nSubmit again — this time search for "'+hospitalName+'" instead of using "Account not listed," since it already exists now.\n\nSave error '+saveRes.status+': '+JSON.stringify(saveData));}else{alert('Save error '+saveRes.status+': '+JSON.stringify(saveData));}return;}
+    try{
+      await fetch(WORKER+'/save-actions',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          visitRecordId:saveData.id,
+          accountId:isNewAccount?newAccountId:selectedAccountId,
+          accountName:hospitalName,
+          userId:userId,
+          actionText:parsed.nextSteps
+        })
+      });
+    }catch(e){
+      console.warn('Open Actions save failed:',e);
+    }
     processingOverlay.style.display='none';successCard.style.display='block';document.getElementById('reportContent').innerHTML=renderReport(result);
   }catch(err){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';alert('Error: '+err.message);}
 });
