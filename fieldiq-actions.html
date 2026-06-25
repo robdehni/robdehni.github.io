@@ -22,7 +22,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .summary-num{font-size:24px;font-weight:900;color:#0b1f3a}
 .summary-label{font-size:11px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-top:3px}
 .control-panel{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:12px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
-.filter-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
+.filter-row{display:grid;grid-template-columns:1fr;gap:8px;align-items:end}
 .filter-field label{display:block;font-size:10px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
 .filter-field select{width:100%;padding:12px;border:1.5px solid #dde8f5;border-radius:12px;background:#f8fbff;color:#0b1f3a;font-weight:800;outline:none}
 .apply-btn{border:none;background:#2f8fff;color:#fff;border-radius:12px;padding:13px 16px;font-size:12px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px rgba(47,143,255,0.22)}
@@ -103,7 +103,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
         <label>Show rep</label>
         <select id="repFilter"><option value="">All reps with actions</option></select>
       </div>
-      <button class="apply-btn" id="applyRepBtn">Apply</button>
     </div>
 
     <div class="tabs">
@@ -114,10 +113,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
       <button class="tab-btn" data-tab="completed">Completed</button>
       <button class="tab-btn" data-tab="all">All</button>
     </div>
-  </div>
-
-  <div class="help-strip">
-    Manager workflow: choose rep → choose status → View Tasks → View Visit if needed → Send Reminder. Rep closes tasks. Manager only monitors and nudges.
   </div>
 
   <div id="content"><div class="loading"><div class="spinner"></div>Loading manager actions...</div></div>
@@ -397,6 +392,31 @@ function nextDue(group){
   var dates=group.map(function(r){return getDueDate(r.fields||{});}).filter(Boolean).sort();
   return dates[0]||'';
 }
+
+function saveManagerActionState(){
+  try{
+    sessionStorage.setItem('fieldiq_actions_return_state',JSON.stringify({
+      selectedRep:selectedRep,
+      activeTab:activeTab,
+      expanded:expanded,
+      scrollY:window.scrollY||0
+    }));
+  }catch(e){}
+}
+function restoreManagerActionState(){
+  try{
+    var raw=sessionStorage.getItem('fieldiq_actions_return_state');
+    if(!raw)return;
+    var s=JSON.parse(raw);
+    if(s.selectedRep!==undefined)selectedRep=s.selectedRep||'';
+    if(s.activeTab)activeTab=s.activeTab;
+    if(s.expanded)expanded=s.expanded||{};
+    setTimeout(function(){
+      if(s.scrollY!==undefined)window.scrollTo(0,s.scrollY||0);
+    },250);
+  }catch(e){}
+}
+
 function visitHref(action){
   var f=action.fields||{};
   var visitId=getVisitId(f);
@@ -406,6 +426,8 @@ function visitHref(action){
   if(visitId)q.push('visitId='+encodeURIComponent(visitId));
   if(action.id)q.push('actionId='+encodeURIComponent(action.id));
   if(account)q.push('account='+encodeURIComponent(account));
+  q.push('returnTo='+encodeURIComponent('./fieldiq-actions.html'));
+  q.push('source='+encodeURIComponent('manager-actions'));
   return url+(q.length?'?'+q.join('&'):'');
 }
 
@@ -482,7 +504,7 @@ function render(){
       html+='</div>';
 
       html+='<div class="row-actions">';
-      html+='<a class="visit-btn" href="'+escapeHtml(visitHref(r))+'"><i data-lucide="file-text"></i> View Visit</a>';
+      html+='<a class="visit-btn" data-visit-link="1" href="'+escapeHtml(visitHref(r))+'"><i data-lucide="file-text"></i> View Visit</a>';
       if(!complete){
         html+='<button class="reminder-btn" data-reminder-id="'+escapeHtml(r.id)+'" '+(lock?'disabled':'')+'>';
         html+='<i data-lucide="send"></i> '+(lock?'Reminder sent · '+lock:'Send Reminder')+'</button>';
@@ -518,10 +540,16 @@ async function sendReminder(actionId){
   }
 
   try{
+    var actionRecord=allActions.find(function(r){return r.id===actionId;})||{};
+    var actionFields=actionRecord.fields||{};
     var payload={
       actionId:actionId,
       actionRecordId:actionId,
       recordId:actionId,
+      assignedRep:getAssignedRepKey(actionFields),
+      assignedRepName:getAssignedRepName(actionFields),
+      accountName:getAccountName(actionFields),
+      actionText:getActionText(actionFields),
       managerUserId:currentUserId,
       managerName:currentUserName
     };
@@ -553,6 +581,12 @@ async function sendReminder(actionId){
 }
 
 document.addEventListener('click',function(e){
+  var visit=e.target.closest('[data-visit-link]');
+  if(visit){
+    saveManagerActionState();
+    return;
+  }
+
   var exp=e.target.closest('[data-expand-key]');
   if(exp){
     toggleExpandKey(exp.getAttribute('data-expand-key'));
@@ -578,7 +612,6 @@ function bindStaticEvents(){
   });
 
   var rep=document.getElementById('repFilter');
-  var apply=document.getElementById('applyRepBtn');
 
   if(rep){
     rep.addEventListener('change',function(){
@@ -592,14 +625,14 @@ function bindStaticEvents(){
       render();
     });
   }
-
-  if(apply){
-    apply.addEventListener('click',applyRepFromSelect);
-  }
 }
 
 document.addEventListener('DOMContentLoaded',function(){
+  restoreManagerActionState();
   bindStaticEvents();
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    b.classList.toggle('active',b.getAttribute('data-tab')===activeTab);
+  });
   if(window.lucide)lucide.createIcons();
   loadActions();
 });
