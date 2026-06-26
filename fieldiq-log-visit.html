@@ -465,8 +465,10 @@ submitBtn.addEventListener('click',async function(){
     var savePayload={'Hospital Name':hospitalName,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Rep Name':repName,'User ID':userId,'User Role':userRole,'Display Name':repName,'Raw Transcript':transcript,'AI Summary':result,'Outcome':getOutcome(parsed.sentiment),'Meeting Notes':parsed.summary,'Action Items':parsed.nextSteps,'Priority':priority,'Latitude':latitude,'Longitude':longitude,'Accuracy':accuracy,'New Account':isNewAccount,'Pending Review':isNewAccount};
     if(!isNewAccount&&selectedAccountId){savePayload['Account']=[selectedAccountId];}
     if(isNewAccount&&newAccountId){savePayload['Account']=[newAccountId];}
-    // Include photo evidence URLs if any were uploaded successfully
-    if (photoUrls.length > 0) { savePayload['Photo URLs'] = photoUrls.join('\n'); }
+    // Include photo evidence URLs in the visit payload before /save-visit.
+    if (photoUrls.length > 0) {
+      savePayload['Photo URLs'] = photoUrls.join('\n');
+    }
     console.log('[FieldIQ Photo] savePayload["Photo URLs"]:', savePayload['Photo URLs'] || '(not set)');
 
     var saveRes=await fetch(WORKER+'/save-visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(savePayload)});
