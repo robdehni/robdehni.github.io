@@ -254,7 +254,19 @@ async function completeAction(actionId){
     // Reload the page after a short delay so the UI always reflects the true
     // server state — avoids stale "Completing..." when switching between accounts.
     showToast('Action completed.');
-    setTimeout(function(){window.location.reload();},400);
+    var _rp=new URLSearchParams(window.location.search);
+    if(_rp.get('returnTo')==='calendar'){
+      var _cy=_rp.get('calYear')||'',_cm=_rp.get('calMonth')||'',_cd=_rp.get('calDay')||'';
+      var _cu='./fieldiq-calendar.html';
+      var _cq=[];
+      if(_cy)_cq.push('calYear='+encodeURIComponent(_cy));
+      if(_cm!=='')_cq.push('calMonth='+encodeURIComponent(_cm));
+      if(_cd)_cq.push('calDay='+encodeURIComponent(_cd));
+      if(_cq.length)_cu+='?'+_cq.join('&');
+      setTimeout(function(){window.location.href=_cu;},400);
+    }else{
+      setTimeout(function(){window.location.reload();},400);
+    }
   }catch(err){
     if(btn){
       btn.disabled=false;
@@ -267,7 +279,20 @@ async function completeAction(actionId){
 
 document.addEventListener('DOMContentLoaded',function(){
   lucide.createIcons();
-  var targetActionId=new URLSearchParams(window.location.search).get('actionId');
+  var _params=new URLSearchParams(window.location.search);
+  var targetActionId=_params.get('actionId');
+  // If opened from Calendar, point the back button to Calendar with context restored.
+  if(_params.get('returnTo')==='calendar'){
+    var _cy=_params.get('calYear')||'',_cm=_params.get('calMonth')||'',_cd=_params.get('calDay')||'';
+    var _cu='./fieldiq-calendar.html';
+    var _cq=[];
+    if(_cy)_cq.push('calYear='+encodeURIComponent(_cy));
+    if(_cm!=='')_cq.push('calMonth='+encodeURIComponent(_cm));
+    if(_cd)_cq.push('calDay='+encodeURIComponent(_cd));
+    if(_cq.length)_cu+='?'+_cq.join('&');
+    var _hb=document.querySelector('.home-btn');
+    if(_hb){_hb.href=_cu;_hb.textContent='← Calendar';}
+  }
   loadActions().then(function(){
     if(!targetActionId)return;
     var card=document.getElementById('card-'+targetActionId);
