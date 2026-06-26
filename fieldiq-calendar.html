@@ -1,37 +1,39 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-<meta charset="UTF-8">  
-<meta name="viewport" content="width=device-width, initial-scale=1.0">  
-<title>FieldIQ — Calendar</title>  
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>  
-<style>  
-*{margin:0;padding:0;box-sizing:border-box}  
-body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:24px 20px 50px}  
-.container{max-width:620px;margin:0 auto}  
-.brand{display:flex;align-items:center;gap:10px;margin-bottom:6px}  
-.brand-cloud{font-size:26px;line-height:1}  
-.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}  
-.brand-text h1 span{color:#2f8fff}  
-.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}  
-.header{margin-bottom:18px}  
-.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600}  
-.home-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;box-shadow:0 2px 8px rgba(11,31,58,0.05)}  
-.summary{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}  
-.summary-left{display:flex;align-items:center;gap:10px}  
-.summary-icon{width:40px;height:40px;border-radius:12px;background:#eaf3ff;display:flex;align-items:center;justify-content:center}  
-.summary-icon [data-lucide]{width:22px;height:22px;color:#2f8fff}  
-.summary-title{font-size:14px;font-weight:800;color:#0b1f3a}  
-.summary-sub{font-size:11.5px;color:#8a9bb3;margin-top:2px;font-weight:600}  
-.count-pill{background:#2f8fff;color:#fff;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800}  
-.loading{text-align:center;padding:46px 20px;color:#8a9bb3;font-weight:700}  
-.spinner{width:34px;height:34px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}  
-@keyframes spin{to{transform:rotate(360deg)}}  
-.empty{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:34px 20px;text-align:center;color:#8a9bb3;font-weight:700;box-shadow:0 4px 14px rgba(11,31,58,0.05)}  
-.empty [data-lucide]{width:42px;height:42px;color:#2f8fff;margin-bottom:10px}  
-.error-box{background:#fff3e0;border:1px solid #ffe5b3;border-radius:14px;padding:16px;color:#7a6000;font-size:13px;font-weight:700;text-align:center;margin-bottom:12px}  
-.retry-btn{margin-top:10px;border:none;background:#2f8fff;color:#fff;padding:10px 18px;border-radius:10px;font-weight:800}  
-.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:30px}  /* ── Monthly calendar grid ── /
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldIQ — Calendar</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:24px 20px 50px}
+.container{max-width:620px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.brand-cloud{font-size:26px;line-height:1}
+.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
+.brand-text h1 span{color:#2f8fff}
+.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+.header{margin-bottom:18px}
+.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600}
+.home-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;box-shadow:0 2px 8px rgba(11,31,58,0.05)}
+.summary{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.summary-left{display:flex;align-items:center;gap:10px}
+.summary-icon{width:40px;height:40px;border-radius:12px;background:#eaf3ff;display:flex;align-items:center;justify-content:center}
+.summary-icon [data-lucide]{width:22px;height:22px;color:#2f8fff}
+.summary-title{font-size:14px;font-weight:800;color:#0b1f3a}
+.summary-sub{font-size:11.5px;color:#8a9bb3;margin-top:2px;font-weight:600}
+.count-pill{background:#2f8fff;color:#fff;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800}
+.loading{text-align:center;padding:46px 20px;color:#8a9bb3;font-weight:700}
+.spinner{width:34px;height:34px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:34px 20px;text-align:center;color:#8a9bb3;font-weight:700;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.empty [data-lucide]{width:42px;height:42px;color:#2f8fff;margin-bottom:10px}
+.error-box{background:#fff3e0;border:1px solid #ffe5b3;border-radius:14px;padding:16px;color:#7a6000;font-size:13px;font-weight:700;text-align:center;margin-bottom:12px}
+.retry-btn{margin-top:10px;border:none;background:#2f8fff;color:#fff;padding:10px 18px;border-radius:10px;font-weight:800}
+.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:30px}
+
+/* ── Monthly calendar grid ── */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:12px 16px;margin-bottom:10px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .cal-month-label{font-size:15px;font-weight:800;color:#0b1f3a}
 .cal-nav-btn{background:#eaf3ff;border:none;color:#2f8fff;border-radius:10px;width:34px;height:34px;font-size:20px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
@@ -51,7 +53,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .cal-day-selected .cal-badge{background:#fff;color:#2f8fff}
 .cal-day-selected:hover{background:#1f7fe0 !important}
 .cal-badge{background:#2f8fff;color:#fff;border-radius:999px;font-size:9px;font-weight:900;padding:2px 5px;min-width:16px;text-align:center;line-height:1.4}
-/ Day action panel */
+/* Day action panel */
 .cal-day-panel{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05);margin-bottom:10px}
 .cal-panel-header{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:.8px;font-weight:800;margin-bottom:10px}
 .cal-action-item{padding:12px;background:#f8fbff;border:1px solid #e3ebf5;border-radius:12px;margin-bottom:8px;cursor:pointer;transition:border-color .12s}
@@ -62,299 +64,296 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .cal-action-link{font-size:11px;color:#2f8fff;font-weight:800}
 .time-pill{background:#eaf3ff;color:#2f8fff;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:800;white-space:nowrap}
 </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="brand"><span class="brand-cloud">☁️</span><div class="brand-text"><h1>Field<span>IQ</span></h1><p>Territory Intelligence Platform</p></div></div>
+    <p class="page-subtitle">Calendar</p>
+  </div>
 
-</head>  
-<body>  
-<div class="container">  
-  <div class="header">  
-    <div class="brand"><span class="brand-cloud">☁️</span><div class="brand-text"><h1>Field<span>IQ</span></h1><p>Territory Intelligence Platform</p></div></div>  
-    <p class="page-subtitle">Calendar</p>  
-  </div>  <a href="./index.html" class="home-btn">← Home</a>
+  <a href="./index.html" class="home-btn">← Home</a>
 
-  <div class="summary">  
-    <div class="summary-left"><div class="summary-icon"><i data-lucide="calendar-days"></i></div><div><div class="summary-title">Upcoming Follow-ups</div><div class="summary-sub" id="repName">Loading rep...</div></div></div>  
-    <div class="count-pill" id="countPill">0</div>  
-  </div>    <div id="content"><div class="loading"><div class="spinner"></div>Loading calendar...</div></div>  
-  <div class="footer">FieldIQ v2.1 · 2026</div>  
-</div>  <script>  
-var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';  
-var currentUserId=localStorage.getItem('fieldiq_user_id');  
-var currentUserName=localStorage.getItem('fieldiq_user_name');  
-var currentUserRole=localStorage.getItem('fieldiq_user_role')||'Sales Rep';  
-var events=[];  
-  
-// Monthly calendar state  
-var viewYear=new Date().getFullYear();  
-var viewMonth=new Date().getMonth(); // 0-indexed  
-var selectedDayISO=null;  
-  
-if(!currentUserId||!currentUserName){window.location.href='./index.html';throw new Error('No identity locked');}  
-if(currentUserRole==='Manager'){window.location.href='./fieldiq.html';throw new Error('Managers use manager portal');}  
-document.getElementById('repName').textContent=currentUserName+' · '+currentUserRole;  
-  
-function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,function(m){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);});}  
-function todayISO(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString().slice(0,10);}  
-function addDaysISO(n){var d=new Date();d.setDate(d.getDate()+n);return new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString().slice(0,10);}  
-function inferTime(text){  
-  var m=String(text||'').match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|AM|PM)\b/);  
-  return m ? m[0].toUpperCase() : '';  
-}  
-function getField(f,names,fallback){  
-  for(var i=0;i<names.length;i++){  
-    if(f[names[i]]!==undefined&&f[names[i]]!==null&&f[names[i]]!=='')return f[names[i]];  
-  }  
-  return fallback||'';  
-}  
-function getDueDate(f){return getField(f,['Due Date','Action Due Date','Calendar Date','Follow Up Date','Follow-up Date'],'');}  
-function getActionText(f){return getField(f,['Action Text','Action','Action Item','Action Items','Task','Next Step','Next Steps','Follow Up','Follow-up','Follow Up Action'],'');}  
-function getAccountName(f){return getField(f,['Account Name','Hospital Name','Hospital','Account','Facility Name','Clinic Name','Customer Name'],'Unknown Account');}  
-function getStatus(f){return getField(f,['Status','Action Status'],'Open');}  
-function isCompleted(f){return String(getStatus(f)).toLowerCase()==='completed'||!!getField(f,['Completed At','Completed Date'],'');}  
-function getAssignedRepValue(f){  
-  var a=f['Assigned Rep']||f['Assigned Rep ID']||[];  
-  if(Array.isArray(a)&&a.length)return a[0];  
-  if(typeof a==='string')return a;  
-  return getField(f,['User ID','Rep ID','Rep Name','Assigned Rep Name','Owner','User Name'],'');  
-}  
-function belongsToCurrentRep(f){  
-  var vals=[];  
-  var assigned=f['Assigned Rep']||[];  
-  if(Array.isArray(assigned))vals=vals.concat(assigned);  
-  else if(assigned)vals.push(assigned);  
-  ['Assigned Rep ID','User ID','Rep ID','Rep Name','Assigned Rep Name','Owner','User Name'].forEach(function(k){  
-    if(f[k])vals.push(f[k]);  
-  });  
-  vals=vals.map(function(v){return String(v||'').trim().toLowerCase();});  
-  return vals.indexOf(String(currentUserId||'').trim().toLowerCase())>-1 ||  
-         vals.indexOf(String(currentUserName||'').trim().toLowerCase())>-1;  
-}  
-function normalizeActionRecord(r){  
-  var f=r.fields||{};  
-  var due=getDueDate(f);  
-  return {  
-    id:r.id,  
-    fields:{  
-      'Account Name':getAccountName(f),  
-      'Action Text':getActionText(f),  
-      'Due Date':due,  
-      'Due Time':getField(f,['Due Time','Action Due Time','Time'],''),  
-      'Priority':getField(f,['Priority','Action Priority'],''),  
-      'Status':getStatus(f),  
-      'Reminder Count':getField(f,['Reminder Count'],0)  
-    },  
-    raw:r  
-  };  
-}  
-function timeoutPromise(ms,msg){  
-  return new Promise(function(_,reject){setTimeout(function(){reject(new Error(msg||'Timeout'));},ms);});  
-}  
-function fetchJson(url,ms){  
-  return Promise.race([  
-    fetch(url,{cache:'no-store'}).then(function(res){  
-      return res.text().then(function(text){  
-        var data={};  
-        try{data=text?JSON.parse(text):{};}catch(e){throw new Error('Invalid JSON from '+url+': '+text.slice(0,200));}  
-        if(!res.ok)throw new Error(data.error||data.message||('HTTP '+res.status));  
-        return data;  
-      });  
-    }),  
-    timeoutPromise(ms||8000,'Worker timed out')  
-  ]);  
-}  
-  
-async function loadCalendar(){  
-  var content=document.getElementById('content');  
-  content.innerHTML='<div class="loading"><div class="spinner"></div>Loading calendar...</div>';  
-  try{  
-    var loaded=[];  
-  
-    try{  
-      var url=WORKER+'/get-calendar?userId='+encodeURIComponent(currentUserId)+'&role='+encodeURIComponent(currentUserRole);  
-      var data=await fetchJson(url,6000);  
-      loaded=(data.records||[]).map(normalizeActionRecord);  
-    }catch(e){  
-      loaded=[];  
-    }  
-  
-    if(!loaded.length){  
-      var openData=await fetchJson(WORKER+'/get-actions?role=Rep&status=Open&userId='+encodeURIComponent(currentUserId),8000);  
-      loaded=(openData.records||[])  
-        .filter(function(r){  
-          var f=r.fields||{};  
-          return !isCompleted(f)&&getDueDate(f)&&belongsToCurrentRep(f);  
-        })  
-        .map(normalizeActionRecord);  
-  
-      if(!loaded.length){  
-        loaded=(openData.records||[])  
-          .filter(function(r){  
-            var f=r.fields||{};  
-            return !isCompleted(f)&&getDueDate(f);  
-          })  
-          .map(normalizeActionRecord);  
-      }  
-    }  
-  
-    events=loaded  
-      .filter(function(r){return getDueDate(r.fields||{});})  
-      .sort(function(a,b){  
-        var fa=a.fields||{},fb=b.fields||{};  
-        return String(getDueDate(fa)).localeCompare(String(getDueDate(fb)));  
-      });  
-  
-    render();  
-  }catch(err){  
-    content.innerHTML='<div class="error-box">Could not load calendar.<br>'+escapeHtml(err.message)+'<br><button class="retry-btn" onclick="loadCalendar()">Retry</button></div>';  
-  }  
-}  
-  
-// ── Monthly calendar render ──────────────────────────────────────────────────  
-  
-function render(){  
-  document.getElementById('countPill').textContent=events.length;  
-  var content=document.getElementById('content');  
-  
-  if(events.length===0){  
-    content.innerHTML='<div class="empty"><i data-lucide="calendar-check"></i><div>No scheduled follow-ups.</div><div style="font-size:11px;margin-top:8px;color:#aab8cc">Open actions only appear here when they have a Due Date.</div></div>';  
-    lucide.createIcons();  
-    return;  
-  }  
-  
-  // Build date → actions map  
-  var byDate={};  
-  events.forEach(function(r){  
-    var due=getDueDate(r.fields||{});  
-    if(!due)return;  
-    if(!byDate[due])byDate[due]=[];  
-    byDate[due].push(r);  
-  });  
-  
-  var MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];  
-  var DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];  
-  
-  var firstDayOfWeek=new Date(viewYear,viewMonth,1).getDay(); // 0=Sun  
-  var daysInMonth=new Date(viewYear,viewMonth+1,0).getDate();  
-  var today=todayISO();  
-  
-  var html='';  
-  
-  // Navigation bar  
-  html+='<div class="cal-nav">';  
-  html+='<button class="cal-nav-btn" id="calPrev">&#8249;</button>';  
-  html+='<div class="cal-month-label">'+MONTH_NAMES[viewMonth]+' '+viewYear+'</div>';  
-  html+='<button class="cal-nav-btn" id="calNext">&#8250;</button>';  
-  html+='</div>';  
-  
-  // Grid  
-  html+='<div class="cal-grid">';  
-  
-  // Day-name headers  
-  DAY_NAMES.forEach(function(d){  
-    html+='<div class="cal-header-cell">'+d+'</div>';  
-  });  
-  
-  // Leading empty cells  
-  for(var i=0;i<firstDayOfWeek;i++){  
-    html+='<div class="cal-day cal-day-empty"></div>';  
-  }  
-  
-  // Day cells  
-  for(var d=1;d<=daysInMonth;d++){  
-    var mm=String(viewMonth+1).padStart(2,'0');  
-    var dd=String(d).padStart(2,'0');  
-    var isoDate=viewYear+'-'+mm+'-'+dd;  
-    var count=byDate[isoDate]?byDate[isoDate].length:0;  
-    var isToday=isoDate===today;  
-    var isPast=isoDate<today;  
-    var isSelected=isoDate===selectedDayISO;  
-  
-    var cls='cal-day';  
-    if(isToday)cls+=' cal-day-today';  
-    if(isPast&&!isToday)cls+=' cal-day-past';  
-    if(count>0)cls+=' cal-day-has-actions';  
-    if(isSelected)cls+=' cal-day-selected';  
-  
-    html+='<div class="'+cls+'" data-iso="'+isoDate+'">';  
-    html+='<div class="cal-day-num">'+d+'</div>';  
-    if(count>0)html+='<div class="cal-badge">'+count+'</div>';  
-    html+='</div>';  
-  }  
-  
-  html+='</div>'; // end cal-grid  
-  
-  // Day panel — shown when a day with actions is selected  
-  if(selectedDayISO&&byDate[selectedDayISO]){  
-    html+=renderDayPanel(selectedDayISO,byDate[selectedDayISO]);  
-  }  
-  
-  content.innerHTML=html;  
-  lucide.createIcons();  
-  
-  // Nav buttons  
-  document.getElementById('calPrev').addEventListener('click',function(){  
-    viewMonth--;  
-    if(viewMonth<0){viewMonth=11;viewYear--;}  
-    selectedDayISO=null;  
-    render();  
-  });  
-  document.getElementById('calNext').addEventListener('click',function(){  
-    viewMonth++;  
-    if(viewMonth>11){viewMonth=0;viewYear++;}  
-    selectedDayISO=null;  
-    render();  
-  });  
-  
-  // Day cell clicks  
-  content.querySelectorAll('.cal-day[data-iso]').forEach(function(cell){  
-    cell.addEventListener('click',function(){  
-      var iso=cell.getAttribute('data-iso');  
-      if(!byDate[iso])return; // no actions on this day, ignore tap  
-      selectedDayISO=(selectedDayISO===iso)?null:iso; // toggle  
-      render();  
-    });  
-  });  
-}  
-  
-function renderDayPanel(isoDate,dayActions){  
-  var label=formatDayLabel(isoDate);  
-  var html='<div class="cal-day-panel">';  
-  html+='<div class="cal-panel-header">'+escapeHtml(label)+' &mdash; '+dayActions.length+' action'+(dayActions.length!==1?'s':'')+'</div>';  
-  
-  dayActions.forEach(function(r){  
-    var f=r.fields||{};  
-    var account=getAccountName(f);  
-    var action=getActionText(f);  
-    var time=getField(f,['Due Time'],'')||inferTime(action)||'';  
-    // Tap → Open Actions with actionId so rep lands on the correct card  
-    html+='<div class="cal-action-item" onclick="window.location.href=\'./fieldiq-open-actions.html?actionId='+escapeHtml(r.id)+'&returnTo=calendar&calYear='+viewYear+'&calMonth='+viewMonth+'&calDay='+escapeHtml(isoDate)+'\'">';  
-    html+='<div class="cal-action-account">'+escapeHtml(account)+(time?'<span class="time-pill">'+escapeHtml(time)+'</span>':'')+'</div>';  
-    html+='<div class="cal-action-text">'+escapeHtml(action||'Open action')+'</div>';  
-    html+='<div class="cal-action-link">→ Open in My Actions</div>';  
-    html+='</div>';  
-  });  
-  
-  html+='</div>';  
-  return html;  
-}  
-  
-function formatDayLabel(iso){  
-  var today=todayISO();  
-  var tomorrow=addDaysISO(1);  
-  if(iso===today)return 'Today';  
-  if(iso===tomorrow)return 'Tomorrow';  
-  try{return new Date(iso+'T00:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});}  
-  catch(e){return iso;}  
-}  
-  
-document.addEventListener('DOMContentLoaded',function(){  
-  lucide.createIcons();  
-  // Restore month/day context if returning from Open Actions via Calendar link.  
-  var rp=new URLSearchParams(window.location.search);  
-  var ry=rp.get('calYear'),rm=rp.get('calMonth'),rd=rp.get('calDay');  
-  if(ry)viewYear=parseInt(ry,10);  
-  if(rm!==null&&rm!=='')viewMonth=parseInt(rm,10);  
-  if(rd)selectedDayISO=rd;  
-  loadCalendar();  
-});  
-</script>  </body>  
-</html>
+  <div class="summary">
+    <div class="summary-left"><div class="summary-icon"><i data-lucide="calendar-days"></i></div><div><div class="summary-title">Upcoming Follow-ups</div><div class="summary-sub" id="repName">Loading rep...</div></div></div>
+    <div class="count-pill" id="countPill">0</div>
+  </div>
+
+  <div id="content"><div class="loading"><div class="spinner"></div>Loading calendar...</div></div>
+  <div class="footer">FieldIQ v2.1 · 2026</div>
+</div>
+
+<script>
+var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+var currentUserId=localStorage.getItem('fieldiq_user_id');
+var currentUserName=localStorage.getItem('fieldiq_user_name');
+var currentUserRole=localStorage.getItem('fieldiq_user_role')||'Sales Rep';
+var events=[];
+
+// Monthly calendar state
+var viewYear=new Date().getFullYear();
+var viewMonth=new Date().getMonth(); // 0-indexed
+var selectedDayISO=null;
+
+if(!currentUserId||!currentUserName){window.location.href='./index.html';throw new Error('No identity locked');}
+if(currentUserRole==='Manager'){window.location.href='./fieldiq.html';throw new Error('Managers use manager portal');}
+document.getElementById('repName').textContent=currentUserName+' · '+currentUserRole;
+
+function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,function(m){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);});}
+function todayISO(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString().slice(0,10);}
+function addDaysISO(n){var d=new Date();d.setDate(d.getDate()+n);return new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString().slice(0,10);}
+function inferTime(text){
+  var m=String(text||'').match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|AM|PM)\b/);
+  return m ? m[0].toUpperCase() : '';
+}
+function getField(f,names,fallback){
+  for(var i=0;i<names.length;i++){
+    if(f[names[i]]!==undefined&&f[names[i]]!==null&&f[names[i]]!=='')return f[names[i]];
+  }
+  return fallback||'';
+}
+function getDueDate(f){return getField(f,['Due Date','Action Due Date','Calendar Date','Follow Up Date','Follow-up Date'],'');}
+function getActionText(f){return getField(f,['Action Text','Action','Action Item','Action Items','Task','Next Step','Next Steps','Follow Up','Follow-up','Follow Up Action'],'');}
+function getAccountName(f){return getField(f,['Account Name','Hospital Name','Hospital','Account','Facility Name','Clinic Name','Customer Name'],'Unknown Account');}
+function getStatus(f){return getField(f,['Status','Action Status'],'Open');}
+function isCompleted(f){return String(getStatus(f)).toLowerCase()==='completed'||!!getField(f,['Completed At','Completed Date'],'');}
+function getAssignedRepValue(f){
+  var a=f['Assigned Rep']||f['Assigned Rep ID']||[];
+  if(Array.isArray(a)&&a.length)return a[0];
+  if(typeof a==='string')return a;
+  return getField(f,['User ID','Rep ID','Rep Name','Assigned Rep Name','Owner','User Name'],'');
+}
+function belongsToCurrentRep(f){
+  var vals=[];
+  var assigned=f['Assigned Rep']||[];
+  if(Array.isArray(assigned))vals=vals.concat(assigned);
+  else if(assigned)vals.push(assigned);
+  ['Assigned Rep ID','User ID','Rep ID','Rep Name','Assigned Rep Name','Owner','User Name'].forEach(function(k){
+    if(f[k])vals.push(f[k]);
+  });
+  vals=vals.map(function(v){return String(v||'').trim().toLowerCase();});
+  return vals.indexOf(String(currentUserId||'').trim().toLowerCase())>-1 ||
+         vals.indexOf(String(currentUserName||'').trim().toLowerCase())>-1;
+}
+function normalizeActionRecord(r){
+  var f=r.fields||{};
+  var due=getDueDate(f);
+  return {
+    id:r.id,
+    fields:{
+      'Account Name':getAccountName(f),
+      'Action Text':getActionText(f),
+      'Due Date':due,
+      'Due Time':getField(f,['Due Time','Action Due Time','Time'],''),
+      'Priority':getField(f,['Priority','Action Priority'],''),
+      'Status':getStatus(f),
+      'Reminder Count':getField(f,['Reminder Count'],0)
+    },
+    raw:r
+  };
+}
+function timeoutPromise(ms,msg){
+  return new Promise(function(_,reject){setTimeout(function(){reject(new Error(msg||'Timeout'));},ms);});
+}
+function fetchJson(url,ms){
+  return Promise.race([
+    fetch(url,{cache:'no-store'}).then(function(res){
+      return res.text().then(function(text){
+        var data={};
+        try{data=text?JSON.parse(text):{};}catch(e){throw new Error('Invalid JSON from '+url+': '+text.slice(0,200));}
+        if(!res.ok)throw new Error(data.error||data.message||('HTTP '+res.status));
+        return data;
+      });
+    }),
+    timeoutPromise(ms||8000,'Worker timed out')
+  ]);
+}
+
+async function loadCalendar(){
+  var content=document.getElementById('content');
+  content.innerHTML='<div class="loading"><div class="spinner"></div>Loading calendar...</div>';
+  try{
+    var loaded=[];
+
+    try{
+      var url=WORKER+'/get-calendar?userId='+encodeURIComponent(currentUserId)+'&role='+encodeURIComponent(currentUserRole);
+      var data=await fetchJson(url,6000);
+      loaded=(data.records||[]).map(normalizeActionRecord);
+    }catch(e){
+      loaded=[];
+    }
+
+    if(!loaded.length){
+      var openData=await fetchJson(WORKER+'/get-actions?role=Rep&status=Open&userId='+encodeURIComponent(currentUserId),8000);
+      loaded=(openData.records||[])
+        .filter(function(r){
+          var f=r.fields||{};
+          return !isCompleted(f)&&getDueDate(f)&&belongsToCurrentRep(f);
+        })
+        .map(normalizeActionRecord);
+
+      if(!loaded.length){
+        loaded=(openData.records||[])
+          .filter(function(r){
+            var f=r.fields||{};
+            return !isCompleted(f)&&getDueDate(f);
+          })
+          .map(normalizeActionRecord);
+      }
+    }
+
+    events=loaded
+      .filter(function(r){return getDueDate(r.fields||{});})
+      .sort(function(a,b){
+        var fa=a.fields||{},fb=b.fields||{};
+        return String(getDueDate(fa)).localeCompare(String(getDueDate(fb)));
+      });
+
+    render();
+  }catch(err){
+    content.innerHTML='<div class="error-box">Could not load calendar.<br>'+escapeHtml(err.message)+'<br><button class="retry-btn" onclick="loadCalendar()">Retry</button></div>';
+  }
+}
+
+// ── Monthly calendar render ──────────────────────────────────────────────────
+
+function render(){
+  document.getElementById('countPill').textContent=events.length;
+  var content=document.getElementById('content');
+
+  if(events.length===0){
+    content.innerHTML='<div class="empty"><i data-lucide="calendar-check"></i><div>No scheduled follow-ups.</div><div style="font-size:11px;margin-top:8px;color:#aab8cc">Open actions only appear here when they have a Due Date.</div></div>';
+    lucide.createIcons();
+    return;
+  }
+
+  // Build date → actions map
+  var byDate={};
+  events.forEach(function(r){
+    var due=getDueDate(r.fields||{});
+    if(!due)return;
+    if(!byDate[due])byDate[due]=[];
+    byDate[due].push(r);
+  });
+
+  var MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  var firstDayOfWeek=new Date(viewYear,viewMonth,1).getDay(); // 0=Sun
+  var daysInMonth=new Date(viewYear,viewMonth+1,0).getDate();
+  var today=todayISO();
+
+  var html='';
+
+  // Navigation bar
+  html+='<div class="cal-nav">';
+  html+='<button class="cal-nav-btn" id="calPrev">&#8249;</button>';
+  html+='<div class="cal-month-label">'+MONTH_NAMES[viewMonth]+' '+viewYear+'</div>';
+  html+='<button class="cal-nav-btn" id="calNext">&#8250;</button>';
+  html+='</div>';
+
+  // Grid
+  html+='<div class="cal-grid">';
+
+  // Day-name headers
+  DAY_NAMES.forEach(function(d){
+    html+='<div class="cal-header-cell">'+d+'</div>';
+  });
+
+  // Leading empty cells
+  for(var i=0;i<firstDayOfWeek;i++){
+    html+='<div class="cal-day cal-day-empty"></div>';
+  }
+
+  // Day cells
+  for(var d=1;d<=daysInMonth;d++){
+    var mm=String(viewMonth+1).padStart(2,'0');
+    var dd=String(d).padStart(2,'0');
+    var isoDate=viewYear+'-'+mm+'-'+dd;
+    var count=byDate[isoDate]?byDate[isoDate].length:0;
+    var isToday=isoDate===today;
+    var isPast=isoDate<today;
+    var isSelected=isoDate===selectedDayISO;
+
+    var cls='cal-day';
+    if(isToday)cls+=' cal-day-today';
+    if(isPast&&!isToday)cls+=' cal-day-past';
+    if(count>0)cls+=' cal-day-has-actions';
+    if(isSelected)cls+=' cal-day-selected';
+
+    html+='<div class="'+cls+'" data-iso="'+isoDate+'">';
+    html+='<div class="cal-day-num">'+d+'</div>';
+    if(count>0)html+='<div class="cal-badge">'+count+'</div>';
+    html+='</div>';
+  }
+
+  html+='</div>'; // end cal-grid
+
+  // Day panel — shown when a day with actions is selected
+  if(selectedDayISO&&byDate[selectedDayISO]){
+    html+=renderDayPanel(selectedDayISO,byDate[selectedDayISO]);
+  }
+
+  content.innerHTML=html;
+  lucide.createIcons();
+
+  // Nav buttons
+  document.getElementById('calPrev').addEventListener('click',function(){
+    viewMonth--;
+    if(viewMonth<0){viewMonth=11;viewYear--;}
+    selectedDayISO=null;
+    render();
+  });
+  document.getElementById('calNext').addEventListener('click',function(){
+    viewMonth++;
+    if(viewMonth>11){viewMonth=0;viewYear++;}
+    selectedDayISO=null;
+    render();
+  });
+
+  // Day cell clicks
+  content.querySelectorAll('.cal-day[data-iso]').forEach(function(cell){
+    cell.addEventListener('click',function(){
+      var iso=cell.getAttribute('data-iso');
+      if(!byDate[iso])return; // no actions on this day, ignore tap
+      selectedDayISO=(selectedDayISO===iso)?null:iso; // toggle
+      render();
+    });
+  });
+}
+
+function renderDayPanel(isoDate,dayActions){
+  var label=formatDayLabel(isoDate);
+  var html='<div class="cal-day-panel">';
+  html+='<div class="cal-panel-header">'+escapeHtml(label)+' &mdash; '+dayActions.length+' action'+(dayActions.length!==1?'s':'')+'</div>';
+
+  dayActions.forEach(function(r){
+    var f=r.fields||{};
+    var account=getAccountName(f);
+    var action=getActionText(f);
+    var time=getField(f,['Due Time'],'')||inferTime(action)||'';
+    // Tap → Open Actions with actionId so rep lands on the correct card
+    html+='<div class="cal-action-item" onclick="window.location.href=\'./fieldiq-open-actions.html?actionId='+escapeHtml(r.id)+'\'">';
+    html+='<div class="cal-action-account">'+escapeHtml(account)+(time?'<span class="time-pill">'+escapeHtml(time)+'</span>':'')+'</div>';
+    html+='<div class="cal-action-text">'+escapeHtml(action||'Open action')+'</div>';
+    html+='<div class="cal-action-link">→ Open in My Actions</div>';
+    html+='</div>';
+  });
+
+  html+='</div>';
+  return html;
+}
+
+function formatDayLabel(iso){
+  var today=todayISO();
+  var tomorrow=addDaysISO(1);
+  if(iso===today)return 'Today';
+  if(iso===tomorrow)return 'Tomorrow';
+  try{return new Date(iso+'T00:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});}
+  catch(e){return iso;}
+}
+
+document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();loadCalendar();});
+</script>
+</body>
+</html>       
