@@ -333,7 +333,7 @@ function renderDayPanel(isoDate,dayActions){
     var action=getActionText(f);
     var time=getField(f,['Due Time'],'')||inferTime(action)||'';
     // Tap → Open Actions with actionId so rep lands on the correct card
-    html+='<div class="cal-action-item" onclick="window.location.href=\'./fieldiq-open-actions.html?actionId='+escapeHtml(r.id)+'\'">';
+    html+='<div class="cal-action-item" onclick="window.location.href=\'./fieldiq-open-actions.html?actionId='+escapeHtml(r.id)+'&returnTo=calendar&calYear='+viewYear+'&calMonth='+viewMonth+'&calDay='+escapeHtml(isoDate)+'\'">';
     html+='<div class="cal-action-account">'+escapeHtml(account)+(time?'<span class="time-pill">'+escapeHtml(time)+'</span>':'')+'</div>';
     html+='<div class="cal-action-text">'+escapeHtml(action||'Open action')+'</div>';
     html+='<div class="cal-action-link">→ Open in My Actions</div>';
@@ -353,7 +353,16 @@ function formatDayLabel(iso){
   catch(e){return iso;}
 }
 
-document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();loadCalendar();});
+document.addEventListener('DOMContentLoaded',function(){
+  lucide.createIcons();
+  // Restore month/day context if returning from Open Actions via Calendar link.
+  var rp=new URLSearchParams(window.location.search);
+  var ry=rp.get('calYear'),rm=rp.get('calMonth'),rd=rp.get('calDay');
+  if(ry)viewYear=parseInt(ry,10);
+  if(rm!==null&&rm!=='')viewMonth=parseInt(rm,10);
+  if(rd)selectedDayISO=rd;
+  loadCalendar();
+});
 </script>
 </body>
-</html>       
+</html>
