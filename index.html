@@ -94,6 +94,15 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .pin-error{color:#e0344a;font-size:12px;margin-top:10px;text-align:center;display:none;font-weight:600}
 .pin-error.visible{display:block}
 .pin-cancel{font-size:12px;color:#8a9bb3;text-align:center;margin-top:12px;display:block;cursor:pointer;text-decoration:underline;font-weight:600}
+
+/* ── Manager reminder notifications ── */
+.notif-banner{background:#ffe1e5;border:1px solid #f5c2c8;border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.notif-banner-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.notif-bell{font-size:15px;line-height:1}
+.notif-title{font-size:12.5px;font-weight:900;color:#c43048;text-transform:uppercase;letter-spacing:.5px}
+.notif-message{font-size:13px;color:#3d4f6b;line-height:1.5;margin-bottom:10px;font-weight:500}
+.notif-action-btn{display:inline-flex;align-items:center;gap:6px;background:#c43048;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-size:12.5px;font-weight:800;cursor:pointer}
+.notif-action-btn:hover{background:#a82840}
 </style>
 </head>
 <body>
@@ -110,6 +119,9 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
 <div id="identitySection" style="width:100%;max-width:380px"></div>
 
+<!-- Notification banners injected here for rep users only -->
+<div id="notificationsSection" style="width:100%;max-width:380px"></div>
+
 <div id="modulesSection"></div>
 
 <div class="footer">FieldIQ v2.1 · 2026</div>
@@ -117,6 +129,12 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 var pendingUser=null;
+
+function escapeHtml(str){
+  return String(str||'').replace(/[&<>"']/g,function(m){
+    return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
+  });
+}
 
 function switchUser(){
   localStorage.removeItem('fieldiq_user_id');
@@ -264,6 +282,61 @@ async function updateOpenActionsBadge(){
   }
 }
 
+// ── Notifications ────────────────────────────────────────────────────────────
+
+async function loadNotifications(){
+  var section=document.getElementById('notificationsSection');
+  if(!section)return;
+  section.innerHTML='';
+
+  var userId=localStorage.getItem('fieldiq_user_id');
+  if(!userId)return;
+
+  try{
+    var res=await fetch(WORKER+'/get-notifications?userId='+encodeURIComponent(userId));
+    var data=await res.json();
+    var records=(data.records||[]).filter(function(r){return !r.fields['Is Read'];});
+    if(!records.length)return;
+
+    var html='';
+    records.forEach(function(r){
+      var f=r.fields||{};
+      var message=f['Message']||f['Action Text']||'Manager reminder';
+      var actionId=f['Related Action ID']||'';
+      html+=
+        '<div class="notif-banner">'+
+          '<div class="notif-banner-header">'+
+            '<span class="notif-bell">🔔</span>'+
+            '<span class="notif-title">Manager Reminder</span>'+
+          '</div>'+
+          '<div class="notif-message">'+escapeHtml(message)+'</div>'+
+          (actionId
+            ? '<button class="notif-action-btn" onclick="viewAction(\''+escapeHtml(r.id)+'\',\''+escapeHtml(actionId)+'\')">View Action →</button>'
+            : '')+
+        '</div>';
+    });
+    section.innerHTML=html;
+  }catch(e){
+    // Silent fail — notifications are non-critical
+  }
+}
+
+// Mark notification read then navigate to the action card.
+async function viewAction(notifId,actionId){
+  var userId=localStorage.getItem('fieldiq_user_id')||'';
+  // Fire mark-as-read without waiting — navigation is the priority.
+  try{
+    fetch(WORKER+'/mark-notification-read',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({notificationId:notifId,userId:userId})
+    });
+  }catch(e){}
+  window.location.href='./fieldiq-open-actions.html?actionId='+encodeURIComponent(actionId);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function renderModules(){
   var role=localStorage.getItem('fieldiq_user_role');
   var section=document.getElementById('modulesSection');
@@ -361,7 +434,11 @@ function renderModules(){
   html+='</div>';
   section.innerHTML=html;
   lucide.createIcons();
-  if(!isManager){updateOpenActionsBadge();}
+
+  if(!isManager){
+    updateOpenActionsBadge();
+    loadNotifications();
+  }
 }
 
 if (localStorage.getItem('fieldiq_user_role') === 'Manager') {
