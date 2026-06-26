@@ -234,7 +234,10 @@ async function loadActions(){
 
 async function completeAction(actionId){
   var btn=document.getElementById('btn-'+actionId);
-  if(btn){btn.disabled=true;btn.innerHTML='Completing...';}
+  if(btn){
+    btn.disabled=true;
+    btn.innerHTML='Completing...';
+  }
   try{
     var res=await fetch(WORKER+'/complete-action',{
       method:'POST',
@@ -243,11 +246,16 @@ async function completeAction(actionId){
     });
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not complete action');
-    actions=actions.filter(function(a){return a.id!==actionId;});
-    render();
+    // Reload the page after a short delay so the UI always reflects the true
+    // server state — avoids stale "Completing..." when switching between accounts.
     showToast('Action completed.');
+    setTimeout(function(){window.location.reload();},400);
   }catch(err){
-    if(btn){btn.disabled=false;btn.innerHTML='<i data-lucide="check"></i> Complete';lucide.createIcons({el:btn});}
+    if(btn){
+      btn.disabled=false;
+      btn.innerHTML='<i data-lucide="check"></i> Complete';
+      lucide.createIcons({el:btn});
+    }
     alert('Could not complete action: '+err.message);
   }
 }
