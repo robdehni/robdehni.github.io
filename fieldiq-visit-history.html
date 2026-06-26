@@ -375,7 +375,7 @@ async function loadHistory(){
     if(currentUser.role==='Manager'){  
       populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';  
       applyUrlParams();applyFilters();expandAndScrollToVisit(targetVisitId);  
-    }else{renderVisits(allRecordsRaaw);}  
+    }else{renderVisits(allRecordsRaw);}  
   }catch(err){document.getElementById('visitList').innerHTML='<div class="empty">Failed to load: '+err.message+'</div>';}  
 }  
   
