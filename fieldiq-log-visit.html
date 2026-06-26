@@ -356,11 +356,9 @@ async function uploadPendingPhotos(tempId) {
       var fd = new FormData();
       fd.append('photo', blob, 'photo.jpg');
       fd.append('visitId', String(tempId));
-      // 20-second timeout — if Worker doesn't respond, abort and continue
-      var controller = new AbortController();
-      var timeoutId = setTimeout(function() { controller.abort(); }, 20000);
-      var res = await fetch(WORKER + '/upload-photo', { method: 'POST', body: fd, signal: controller.signal });
-      clearTimeout(timeoutId);
+      // No AbortController — let the browser manage the connection timeout.
+      // Forcing an abort on mobile caused "signal is aborted without reason" errors.
+      var res = await fetch(WORKER + '/upload-photo', { method: 'POST', body: fd });
       var data = await res.json();
       if (res.ok && data.url) {
         console.log('[FieldIQ Photo] Uploaded OK:', data.url);
