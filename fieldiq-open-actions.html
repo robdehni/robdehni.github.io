@@ -55,7 +55,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .reminder-strip{font-size:11px;font-weight:800;padding:7px 10px;border-radius:8px;margin-bottom:10px}
 .reminder-strip-red{background:#ffe1e5;color:#c43048;border:1px solid #f5c2c8}
 .reminder-strip-orange{background:#fff4d6;color:#a36a00;border:1px solid #f5dfa0}
-.reminder-strip-blue{background:#eaf3ff;color:#2f8fff;border:1px solid #cfe4ff}
+.reminder-strip-blue{background:#fff4e0;color:#b86e00;border:1px solid #f5d08a}
 .empty{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:34px 20px;text-align:center;color:#8a9bb3;font-weight:700;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .empty [data-lucide]{width:42px;height:42px;color:#2f8fff;margin-bottom:10px}
 .error-box{background:#fff3e0;border:1px solid #ffe5b3;border-radius:14px;padding:16px;color:#7a6000;font-size:13px;font-weight:700;text-align:center;margin-bottom:12px}
@@ -165,11 +165,16 @@ function render(){
     groups[account].push(r);
   });
 
-  // Sort each group by Due Date (undated actions go last)
+  // Sort each group: reminded actions (Reminder Count > 0) first, then normal.
+  // Within each tier, sort by Due Date ascending (undated actions go last).
   Object.keys(groups).forEach(function(account){
     groups[account].sort(function(a,b){
-      var da=(a.fields||{})['Due Date']||'9999-99-99';
-      var db=(b.fields||{})['Due Date']||'9999-99-99';
+      var fa=a.fields||{},fb=b.fields||{};
+      var aReminded=Number(fa['Reminder Count']||0)>0;
+      var bReminded=Number(fb['Reminder Count']||0)>0;
+      if(aReminded!==bReminded)return aReminded?-1:1;
+      var da=(fa['Due Date'])||'9999-99-99';
+      var db=(fb['Due Date'])||'9999-99-99';
       return da.localeCompare(db);
     });
   });
