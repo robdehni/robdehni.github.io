@@ -96,12 +96,14 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .pin-cancel{font-size:12px;color:#8a9bb3;text-align:center;margin-top:12px;display:block;cursor:pointer;text-decoration:underline;font-weight:600}
 
 /* ── Manager reminder notifications ── */
-.notif-banner{background:#ffe1e5;border:1px solid #f5c2c8;border-radius:16px;padding:14px 16px;margin-bottom:10px}
-.notif-banner-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.notif-panel{background:#ffe1e5;border:1px solid #f5c2c8;border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.notif-panel-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .notif-bell{font-size:15px;line-height:1}
 .notif-title{font-size:12.5px;font-weight:900;color:#c43048;text-transform:uppercase;letter-spacing:.5px}
-.notif-message{font-size:13px;color:#3d4f6b;line-height:1.5;margin-bottom:10px;font-weight:500}
-.notif-action-btn{display:inline-flex;align-items:center;gap:6px;background:#c43048;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-size:12.5px;font-weight:800;cursor:pointer}
+.notif-row{padding:10px 0;border-top:1px solid #f5c2c8;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.notif-row:first-child{border-top:none;padding-top:0}
+.notif-message{font-size:13px;color:#3d4f6b;line-height:1.5;font-weight:500;flex:1}
+.notif-action-btn{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;background:#c43048;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
 .notif-action-btn:hover{background:#a82840}
 </style>
 </head>
@@ -298,24 +300,28 @@ async function loadNotifications(){
     var records=(data.records||[]).filter(function(r){return !r.fields['Is Read'];});
     if(!records.length)return;
 
-    var html='';
+    var count=records.length;
+    var rows='';
     records.forEach(function(r){
       var f=r.fields||{};
       var message=f['Message']||f['Action Text']||'Manager reminder';
       var actionId=f['Related Action ID']||'';
-      html+=
-        '<div class="notif-banner">'+
-          '<div class="notif-banner-header">'+
-            '<span class="notif-bell">🔔</span>'+
-            '<span class="notif-title">Manager Reminder</span>'+
-          '</div>'+
+      rows+=
+        '<div class="notif-row">'+
           '<div class="notif-message">'+escapeHtml(message)+'</div>'+
           (actionId
             ? '<button class="notif-action-btn" onclick="viewAction(\''+escapeHtml(r.id)+'\',\''+escapeHtml(actionId)+'\')">View Action →</button>'
             : '')+
         '</div>';
     });
-    section.innerHTML=html;
+    section.innerHTML=
+      '<div class="notif-panel">'+
+        '<div class="notif-panel-header">'+
+          '<span class="notif-bell">🔔</span>'+
+          '<span class="notif-title">Manager Reminder'+(count>1?'s':'')+' ('+count+')</span>'+
+        '</div>'+
+        rows+
+      '</div>';
   }catch(e){
     // Silent fail — notifications are non-critical
   }
