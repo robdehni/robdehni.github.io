@@ -34,7 +34,10 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .loading{text-align:center;padding:46px 20px;color:#8a9bb3;font-weight:700}
 .spinner{width:34px;height:34px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.action-card{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+/* Account group label — one new rule */
+.account-group{margin-bottom:20px}
+.account-group-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:8px;padding-left:2px}
+.action-card{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .action-card.highlighted{border-color:#2f8fff;box-shadow:0 0 0 3px rgba(47,143,255,0.15)}
 .action-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;align-items:flex-start}
 .account-name{font-size:14.5px;font-weight:800;color:#0b1f3a;line-height:1.35}
@@ -108,7 +111,6 @@ if(!currentUserId||!currentUserName){
   window.location.href='./index.html';
   throw new Error('No identity locked');
 }
-
 if(currentUserRole==='Manager'){
   window.location.href='./fieldiq.html';
   throw new Error('Managers use manager portal');
@@ -118,25 +120,20 @@ document.getElementById('repName').textContent=currentUserName+' · '+currentUse
 
 function escapeHtml(str){
   return String(str||'').replace(/[&<>"']/g,function(m){
-    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
+    return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
   });
 }
-
 function formatDate(value){
   if(!value)return '';
   try{return new Date(value+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
   catch(e){return value;}
 }
-
 function showToast(msg){
   var t=document.getElementById('toast');
   t.textContent=msg||'Action completed.';
   t.className='toast visible';
   setTimeout(function(){t.className='toast';},1800);
 }
-
-// Returns a reminder indicator strip if the manager has sent a reminder.
-// Urgency: red = overdue, orange = due today, blue = future/no date.
 function reminderStrip(f){
   var count=Number(f['Reminder Count']||0);
   if(count===0)return '';
@@ -159,38 +156,70 @@ function render(){
     return;
   }
 
-  content.innerHTML=actions.map(function(r){
+  // Group by Account Name
+  var groups={};
+  actions.forEach(function(r){
     var f=r.fields||{};
     var account=f['Account Name']||'Unknown Account';
-    var action=f['Action Text']||'';
-    var source=f['Source']||'AI';
-    var due=f['Due Date']||'';
-    var reminderCount=f['Reminder Count'];
-    var meta='';
-    meta+='<span class="meta">Source: '+escapeHtml(source)+'</span>';
-    if(due)meta+='<span class="meta">Due: '+escapeHtml(formatDate(due))+'</span>';
-    if(reminderCount!==undefined)meta+='<span class="meta">Reminders: '+escapeHtml(reminderCount)+'</span>';
+    if(!groups[account])groups[account]=[];
+    groups[account].push(r);
+  });
 
-    return '<div class="action-card" id="card-'+r.id+'">'+
-      '<div class="action-top">'+
-        '<div class="account-name">'+escapeHtml(account)+'</div>'+
-        '<div class="status-pill">Open</div>'+
-      '</div>'+
-      reminderStrip(f)+
-      '<div class="action-text">'+escapeHtml(action)+'</div>'+
-      '<div class="meta-row">'+meta+'</div>'+
-      '<button class="complete-btn" onclick="completeAction(\''+r.id+'\')" id="btn-'+r.id+'">'+
-        '<i data-lucide="check"></i> Complete'+
-      '</button>'+
-    '</div>';
-  }).join('');
+  // Sort each group by Due Date (undated actions go last)
+  Object.keys(groups).forEach(function(account){
+    groups[account].sort(function(a,b){
+      var da=(a.fields||{})['Due Date']||'9999-99-99';
+      var db=(b.fields||{})['Due Date']||'9999-99-99';
+      return da.localeCompare(db);
+    });
+  });
+
+  // Render groups alphabetically
+  var sortedAccounts=Object.keys(groups).sort(function(a,b){
+    return a.toLowerCase().localeCompare(b.toLowerCase());
+  });
+
+  var html='';
+  sortedAccounts.forEach(function(account){
+    html+='<div class="account-group">';
+    html+='<div class="account-group-label">'+escapeHtml(account)+'</div>';
+
+    groups[account].forEach(function(r){
+      var f=r.fields||{};
+      var action=f['Action Text']||'';
+      var source=f['Source']||'AI';
+      var due=f['Due Date']||'';
+      var reminderCount=f['Reminder Count'];
+      var meta='';
+      meta+='<span class="meta">Source: '+escapeHtml(source)+'</span>';
+      if(due)meta+='<span class="meta">Due: '+escapeHtml(formatDate(due))+'</span>';
+      if(reminderCount!==undefined)meta+='<span class="meta">Reminders: '+escapeHtml(reminderCount)+'</span>';
+
+      html+=
+        '<div class="action-card" id="card-'+r.id+'">'+
+          '<div class="action-top">'+
+            '<div class="account-name">'+escapeHtml(account)+'</div>'+
+            '<div class="status-pill">Open</div>'+
+          '</div>'+
+          reminderStrip(f)+
+          '<div class="action-text">'+escapeHtml(action)+'</div>'+
+          '<div class="meta-row">'+meta+'</div>'+
+          '<button class="complete-btn" onclick="completeAction(\''+r.id+'\')" id="btn-'+r.id+'">'+
+            '<i data-lucide="check"></i> Complete'+
+          '</button>'+
+        '</div>';
+    });
+
+    html+='</div>'; // end account-group
+  });
+
+  content.innerHTML=html;
   lucide.createIcons();
 }
 
 async function loadActions(){
   var content=document.getElementById('content');
   content.innerHTML='<div class="loading"><div class="spinner"></div>Loading actions...</div>';
-
   try{
     var url=WORKER+'/get-actions?userId='+encodeURIComponent(currentUserId)+'&role='+encodeURIComponent(currentUserRole)+'&status=Open';
     var res=await fetch(url);
@@ -206,7 +235,6 @@ async function loadActions(){
 async function completeAction(actionId){
   var btn=document.getElementById('btn-'+actionId);
   if(btn){btn.disabled=true;btn.innerHTML='Completing...';}
-
   try{
     var res=await fetch(WORKER+'/complete-action',{
       method:'POST',
@@ -215,7 +243,6 @@ async function completeAction(actionId){
     });
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not complete action');
-
     actions=actions.filter(function(a){return a.id!==actionId;});
     render();
     showToast('Action completed.');
@@ -227,7 +254,6 @@ async function completeAction(actionId){
 
 document.addEventListener('DOMContentLoaded',function(){
   lucide.createIcons();
-  // Read actionId from URL — set by Calendar when rep taps a scheduled action.
   var targetActionId=new URLSearchParams(window.location.search).get('actionId');
   loadActions().then(function(){
     if(!targetActionId)return;
