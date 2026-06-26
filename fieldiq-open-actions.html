@@ -1,295 +1,281 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-<meta charset="UTF-8">  
-<meta name="viewport" content="width=device-width, initial-scale=1.0">  
-<title>FieldIQ — My Open Actions</title>  
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>  
-<style>  
-*{margin:0;padding:0;box-sizing:border-box}  
-body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:24px 20px 50px}  
-.container{max-width:620px;margin:0 auto}  
-.brand{display:flex;align-items:center;gap:10px;margin-bottom:6px}  
-.brand-cloud{font-size:26px;line-height:1}  
-.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}  
-.brand-text h1 span{color:#2f8fff}  
-.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}  
-.header{margin-bottom:18px}  
-.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600}  
-.home-btn{  
-  display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;  
-  text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;  
-  box-shadow:0 2px 8px rgba(11,31,58,0.05);  
-}  
-.summary{  
-  display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:16px;  
-  padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)  
-}  
-.summary-left{display:flex;align-items:center;gap:10px}  
-.summary-icon{width:40px;height:40px;border-radius:12px;background:#eaf3ff;display:flex;align-items:center;justify-content:center}  
-.summary-icon [data-lucide]{width:22px;height:22px;color:#2f8fff}  
-.summary-title{font-size:14px;font-weight:800;color:#0b1f3a}  
-.summary-sub{font-size:11.5px;color:#8a9bb3;margin-top:2px;font-weight:600}  
-.count-pill{background:#2f8fff;color:#fff;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800}  
-.loading{text-align:center;padding:46px 20px;color:#8a9bb3;font-weight:700}  
-.spinner{width:34px;height:34px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}  
-@keyframes spin{to{transform:rotate(360deg)}}  
-/* Account group label — one new rule */  
-.account-group{margin-bottom:20px}  
-.account-group-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:8px;padding-left:2px}  
-.action-card{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}  
-.action-card.highlighted{border-color:#2f8fff;box-shadow:0 0 0 3px rgba(47,143,255,0.15)}  
-.action-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;align-items:flex-start}  
-.account-name{font-size:14.5px;font-weight:800;color:#0b1f3a;line-height:1.35}  
-.status-pill{background:#eaf3ff;color:#2f8fff;border-radius:999px;padding:4px 10px;font-size:10.5px;font-weight:800;white-space:nowrap}  
-.action-text{font-size:13.5px;color:#3d4f6b;line-height:1.55;margin-bottom:12px;font-weight:500;white-space:pre-wrap}  
-.meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}  
-.meta{font-size:10.5px;font-weight:800;padding:5px 9px;border-radius:8px;background:#f4f8fc;color:#7a8aa3;border:1px solid #e3ebf5}  
-.complete-btn{  
-  width:100%;border:none;border-radius:12px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;  
-  padding:13px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 6px 16px rgba(47,143,255,0.25);  
-  display:flex;align-items:center;justify-content:center;gap:8px;  
-}  
-.complete-btn:disabled{opacity:.55;cursor:not-allowed}  
-.complete-btn [data-lucide]{width:18px;height:18px}  
-.reminder-strip{font-size:11px;font-weight:800;padding:7px 10px;border-radius:8px;margin-bottom:10px}  
-.reminder-strip-red{background:#ffe1e5;color:#c43048;border:1px solid #f5c2c8}  
-.reminder-strip-orange{background:#fff4d6;color:#a36a00;border:1px solid #f5dfa0}  
-.reminder-strip-blue{background:#fff4e0;color:#b86e00;border:1px solid #f5d08a}  
-.empty{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:34px 20px;text-align:center;color:#8a9bb3;font-weight:700;box-shadow:0 4px 14px rgba(11,31,58,0.05)}  
-.empty [data-lucide]{width:42px;height:42px;color:#2f8fff;margin-bottom:10px}  
-.error-box{background:#fff3e0;border:1px solid #ffe5b3;border-radius:14px;padding:16px;color:#7a6000;font-size:13px;font-weight:700;text-align:center;margin-bottom:12px}  
-.retry-btn{margin-top:10px;border:none;background:#2f8fff;color:#fff;padding:10px 18px;border-radius:10px;font-weight:800}  
-.toast{position:fixed;left:20px;right:20px;bottom:22px;background:#0b1f3a;color:#fff;border-radius:14px;padding:14px;text-align:center;font-weight:800;font-size:13px;display:none;box-shadow:0 10px 26px rgba(11,31,58,0.25)}  
-.toast.visible{display:block}  
-.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:30px}  
-</style>  
-</head>  
-<body>  
-<div class="container">  
-  <div class="header">  
-    <div class="brand">  
-      <span class="brand-cloud">☁️</span>  
-      <div class="brand-text">  
-        <h1>Field<span>IQ</span></h1>  
-        <p>Territory Intelligence Platform</p>  
-      </div>  
-    </div>  
-    <p class="page-subtitle">My Open Actions</p>  
-  </div>  <a href="./index.html" class="home-btn">← Home</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldIQ — My Open Actions</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:24px 20px 50px}
+.container{max-width:620px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.brand-cloud{font-size:26px;line-height:1}
+.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
+.brand-text h1 span{color:#2f8fff}
+.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+.header{margin-bottom:18px}
+.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600}
+.home-btn{
+  display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
+  text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;
+  box-shadow:0 2px 8px rgba(11,31,58,0.05);
+}
+.summary{
+  display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:16px;
+  padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)
+}
+.summary-left{display:flex;align-items:center;gap:10px}
+.summary-icon{width:40px;height:40px;border-radius:12px;background:#eaf3ff;display:flex;align-items:center;justify-content:center}
+.summary-icon [data-lucide]{width:22px;height:22px;color:#2f8fff}
+.summary-title{font-size:14px;font-weight:800;color:#0b1f3a}
+.summary-sub{font-size:11.5px;color:#8a9bb3;margin-top:2px;font-weight:600}
+.count-pill{background:#2f8fff;color:#fff;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800}
+.loading{text-align:center;padding:46px 20px;color:#8a9bb3;font-weight:700}
+.spinner{width:34px;height:34px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Account group label — one new rule */
+.account-group{margin-bottom:20px}
+.account-group-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:8px;padding-left:2px}
+.action-card{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.action-card.highlighted{border-color:#2f8fff;box-shadow:0 0 0 3px rgba(47,143,255,0.15)}
+.action-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;align-items:flex-start}
+.account-name{font-size:14.5px;font-weight:800;color:#0b1f3a;line-height:1.35}
+.status-pill{background:#eaf3ff;color:#2f8fff;border-radius:999px;padding:4px 10px;font-size:10.5px;font-weight:800;white-space:nowrap}
+.action-text{font-size:13.5px;color:#3d4f6b;line-height:1.55;margin-bottom:12px;font-weight:500;white-space:pre-wrap}
+.meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.meta{font-size:10.5px;font-weight:800;padding:5px 9px;border-radius:8px;background:#f4f8fc;color:#7a8aa3;border:1px solid #e3ebf5}
+.complete-btn{
+  width:100%;border:none;border-radius:12px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;
+  padding:13px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 6px 16px rgba(47,143,255,0.25);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.complete-btn:disabled{opacity:.55;cursor:not-allowed}
+.complete-btn [data-lucide]{width:18px;height:18px}
+.reminder-strip{font-size:11px;font-weight:800;padding:7px 10px;border-radius:8px;margin-bottom:10px}
+.reminder-strip-red{background:#ffe1e5;color:#c43048;border:1px solid #f5c2c8}
+.reminder-strip-orange{background:#fff4d6;color:#a36a00;border:1px solid #f5dfa0}
+.reminder-strip-blue{background:#fff4e0;color:#b86e00;border:1px solid #f5d08a}
+.empty{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:34px 20px;text-align:center;color:#8a9bb3;font-weight:700;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.empty [data-lucide]{width:42px;height:42px;color:#2f8fff;margin-bottom:10px}
+.error-box{background:#fff3e0;border:1px solid #ffe5b3;border-radius:14px;padding:16px;color:#7a6000;font-size:13px;font-weight:700;text-align:center;margin-bottom:12px}
+.retry-btn{margin-top:10px;border:none;background:#2f8fff;color:#fff;padding:10px 18px;border-radius:10px;font-weight:800}
+.toast{position:fixed;left:20px;right:20px;bottom:22px;background:#0b1f3a;color:#fff;border-radius:14px;padding:14px;text-align:center;font-weight:800;font-size:13px;display:none;box-shadow:0 10px 26px rgba(11,31,58,0.25)}
+.toast.visible{display:block}
+.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:30px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="brand">
+      <span class="brand-cloud">☁️</span>
+      <div class="brand-text">
+        <h1>Field<span>IQ</span></h1>
+        <p>Territory Intelligence Platform</p>
+      </div>
+    </div>
+    <p class="page-subtitle">My Open Actions</p>
+  </div>
 
-  <div class="summary">  
-    <div class="summary-left">  
-      <div class="summary-icon"><i data-lucide="check-square"></i></div>  
-      <div>  
-        <div class="summary-title">Open Actions</div>  
-        <div class="summary-sub" id="repName">Loading rep...</div>  
-      </div>  
-    </div>  
-    <div class="count-pill" id="countPill">0</div>  
-  </div>    <div id="content">  
-    <div class="loading"><div class="spinner"></div>Loading actions...</div>  
-  </div>    <div class="footer">FieldIQ v2.1 · 2026</div>  
-</div>  <div class="toast" id="toast">Action completed.</div>  <script>  
-var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';  
-var currentUserId=localStorage.getItem('fieldiq_user_id');  
-var currentUserName=localStorage.getItem('fieldiq_user_name');  
-var currentUserRole=localStorage.getItem('fieldiq_user_role')||'Sales Rep';  
-var actions=[];  
-  
-if(!currentUserId||!currentUserName){  
-  window.location.href='./index.html';  
-  throw new Error('No identity locked');  
-}  
-if(currentUserRole==='Manager'){  
-  window.location.href='./fieldiq.html';  
-  throw new Error('Managers use manager portal');  
-}  
-  
-document.getElementById('repName').textContent=currentUserName+' · '+currentUserRole;  
-  
-function escapeHtml(str){  
-  return String(str||'').replace(/[&<>"']/g,function(m){  
-    return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);  
-  });  
-}  
-function formatDate(value){  
-  if(!value)return '';  
-  try{return new Date(value+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}  
-  catch(e){return value;}  
-}  
-function showToast(msg){  
-  var t=document.getElementById('toast');  
-  t.textContent=msg||'Action completed.';  
-  t.className='toast visible';  
-  setTimeout(function(){t.className='toast';},1800);  
-}  
-function reminderStrip(f){  
-  var count=Number(f['Reminder Count']||0);  
-  if(count===0)return '';  
-  var due=f['Due Date']||'';  
-  var today=new Date().toISOString().slice(0,10);  
-  var cls='reminder-strip-blue';  
-  var label='Manager reminder sent ('+count+')';  
-  if(due&&due<today){cls='reminder-strip-red';label='Overdue · Manager reminder sent ('+count+')';}  
-  else if(due&&due===today){cls='reminder-strip-orange';label='Due today · Manager reminder sent ('+count+')';}  
-  return '<div class="reminder-strip '+cls+'">'+label+'</div>';  
-}  
-  
-function render(){  
-  var content=document.getElementById('content');  
-  document.getElementById('countPill').textContent=actions.length;  
-  
-  if(actions.length===0){  
-    content.innerHTML='<div class="empty"><i data-lucide="check-circle"></i><div>No open actions.</div></div>';  
-    lucide.createIcons();  
-    return;  
-  }  
-  
-  // Group by Account Name  
-  var groups={};  
-  actions.forEach(function(r){  
-    var f=r.fields||{};  
-    var account=f['Account Name']||'Unknown Account';  
-    if(!groups[account])groups[account]=[];  
-    groups[account].push(r);  
-  });  
-  
-  // Sort each group: reminded actions (Reminder Count > 0) first, then normal.  
-  // Within each tier, sort by Due Date ascending (undated actions go last).  
-  Object.keys(groups).forEach(function(account){  
-    groups[account].sort(function(a,b){  
-      var fa=a.fields||{},fb=b.fields||{};  
-      var aReminded=Number(fa['Reminder Count']||0)>0;  
-      var bReminded=Number(fb['Reminder Count']||0)>0;  
-      if(aReminded!==bReminded)return aReminded?-1:1;  
-      var da=(fa['Due Date'])||'9999-99-99';  
-      var db=(fb['Due Date'])||'9999-99-99';  
-      return da.localeCompare(db);  
-    });  
-  });  
-  
-  // Render groups alphabetically  
-  var sortedAccounts=Object.keys(groups).sort(function(a,b){  
-    return a.toLowerCase().localeCompare(b.toLowerCase());  
-  });  
-  
-  var html='';  
-  sortedAccounts.forEach(function(account){  
-    html+='<div class="account-group">';  
-    html+='<div class="account-group-label">'+escapeHtml(account)+'</div>';  
-  
-    groups[account].forEach(function(r){  
-      var f=r.fields||{};  
-      var action=f['Action Text']||'';  
-      var source=f['Source']||'AI';  
-      var due=f['Due Date']||'';  
-      var reminderCount=f['Reminder Count'];  
-      var meta='';  
-      meta+='<span class="meta">Source: '+escapeHtml(source)+'</span>';  
-      if(due)meta+='<span class="meta">Due: '+escapeHtml(formatDate(due))+'</span>';  
-      if(reminderCount!==undefined)meta+='<span class="meta">Reminders: '+escapeHtml(reminderCount)+'</span>';  
-  
-      html+=  
-        '<div class="action-card" id="card-'+r.id+'">'+  
-          '<div class="action-top">'+  
-            '<div class="account-name">'+escapeHtml(account)+'</div>'+  
-            '<div class="status-pill">Open</div>'+  
-          '</div>'+  
-          reminderStrip(f)+  
-          '<div class="action-text">'+escapeHtml(action)+'</div>'+  
-          '<div class="meta-row">'+meta+'</div>'+  
-          '<button class="complete-btn" onclick="completeAction(\''+r.id+'\')" id="btn-'+r.id+'">'+  
-            '<i data-lucide="check"></i> Complete'+  
-          '</button>'+  
-        '</div>';  
-    });  
-  
-    html+='</div>'; // end account-group  
-  });  
-  
-  content.innerHTML=html;  
-  lucide.createIcons();  
-}  
-  
-async function loadActions(){  
-  var content=document.getElementById('content');  
-  content.innerHTML='<div class="loading"><div class="spinner"></div>Loading actions...</div>';  
-  try{  
-    var url=WORKER+'/get-actions?userId='+encodeURIComponent(currentUserId)+'&role='+encodeURIComponent(currentUserRole)+'&status=Open';  
-    var res=await fetch(url);  
-    var data=await res.json();  
-    if(!res.ok)throw new Error(data.error||'Could not load actions');  
-    actions=data.records||[];  
-    render();  
-  }catch(err){  
-    content.innerHTML='<div class="error-box">Could not load open actions.<br>'+escapeHtml(err.message)+'<br><button class="retry-btn" onclick="loadActions()">Retry</button></div>';  
-  }  
-}  
-  
-async function completeAction(actionId){  
-  var btn=document.getElementById('btn-'+actionId);  
-  if(btn){  
-    btn.disabled=true;  
-    btn.innerHTML='Completing...';  
-  }  
-  try{  
-    var res=await fetch(WORKER+'/complete-action',{  
-      method:'POST',  
-      headers:{'Content-Type':'application/json'},  
-      body:JSON.stringify({actionId:actionId,userId:currentUserId})  
-    });  
-    var data=await res.json();  
-    if(!res.ok)throw new Error(data.error||'Could not complete action');  
-    // Reload the page after a short delay so the UI always reflects the true  
-    // server state — avoids stale "Completing..." when switching between accounts.  
-    showToast('Action completed.');  
-    var _rp=new URLSearchParams(window.location.search);  
-    if(_rp.get('returnTo')==='calendar'){  
-      var _cy=_rp.get('calYear')||'',_cm=_rp.get('calMonth')||'',_cd=_rp.get('calDay')||'';  
-      var _cu='./fieldiq-calendar.html';  
-      var _cq=[];  
-      if(_cy)_cq.push('calYear='+encodeURIComponent(_cy));  
-      if(_cm!=='')_cq.push('calMonth='+encodeURIComponent(_cm));  
-      if(_cd)_cq.push('calDay='+encodeURIComponent(_cd));  
-      if(_cq.length)_cu+='?'+_cq.join('&');  
-      setTimeout(function(){window.location.href=_cu;},400);  
-    }else{  
-      setTimeout(function(){window.location.reload();},400);  
-    }  
-  }catch(err){  
-    if(btn){  
-      btn.disabled=false;  
-      btn.innerHTML='<i data-lucide="check"></i> Complete';  
-      lucide.createIcons({el:btn});  
-    }  
-    alert('Could not complete action: '+err.message);  
-  }  
-}  
-  
-document.addEventListener('DOMContentLoaded',function(){  
-  lucide.createIcons();  
-  var _params=new URLSearchParams(window.location.search);  
-  var targetActionId=_params.get('actionId');  
-  // If opened from Calendar, point the back button to Calendar with context restored.  
-  if(_params.get('returnTo')==='calendar'){  
-    var _cy=_params.get('calYear')||'',_cm=_params.get('calMonth')||'',_cd=_params.get('calDay')||'';  
-    var _cu='./fieldiq-calendar.html';  
-    var _cq=[];  
-    if(_cy)_cq.push('calYear='+encodeURIComponent(_cy));  
-    if(_cm!=='')_cq.push('calMonth='+encodeURIComponent(_cm));  
-    if(_cd)_cq.push('calDay='+encodeURIComponent(_cd));  
-    if(_cq.length)_cu+='?'+_cq.join('&');  
-    var _hb=document.querySelector('.home-btn');  
-    if(_hb){_hb.href=_cu;_hb.textContent='← Calendar';}  
-  }  
-  loadActions().then(function(){  
-    if(!targetActionId)return;  
-    var card=document.getElementById('card-'+targetActionId);  
-    if(!card)return;  
-    card.classList.add('highlighted');  
-    setTimeout(function(){card.scrollIntoView({behavior:'smooth',block:'center'});},100);  
-  });  
-});  
-</script>  </body>  
-</html>  
+  <a href="./index.html" class="home-btn">← Home</a>
+
+  <div class="summary">
+    <div class="summary-left">
+      <div class="summary-icon"><i data-lucide="check-square"></i></div>
+      <div>
+        <div class="summary-title">Open Actions</div>
+        <div class="summary-sub" id="repName">Loading rep...</div>
+      </div>
+    </div>
+    <div class="count-pill" id="countPill">0</div>
+  </div>
+
+  <div id="content">
+    <div class="loading"><div class="spinner"></div>Loading actions...</div>
+  </div>
+
+  <div class="footer">FieldIQ v2.1 · 2026</div>
+</div>
+
+<div class="toast" id="toast">Action completed.</div>
+
+<script>
+var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+var currentUserId=localStorage.getItem('fieldiq_user_id');
+var currentUserName=localStorage.getItem('fieldiq_user_name');
+var currentUserRole=localStorage.getItem('fieldiq_user_role')||'Sales Rep';
+var actions=[];
+
+if(!currentUserId||!currentUserName){
+  window.location.href='./index.html';
+  throw new Error('No identity locked');
+}
+if(currentUserRole==='Manager'){
+  window.location.href='./fieldiq.html';
+  throw new Error('Managers use manager portal');
+}
+
+document.getElementById('repName').textContent=currentUserName+' · '+currentUserRole;
+
+function escapeHtml(str){
+  return String(str||'').replace(/[&<>"']/g,function(m){
+    return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
+  });
+}
+function formatDate(value){
+  if(!value)return '';
+  try{return new Date(value+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+  catch(e){return value;}
+}
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg||'Action completed.';
+  t.className='toast visible';
+  setTimeout(function(){t.className='toast';},1800);
+}
+function reminderStrip(f){
+  var count=Number(f['Reminder Count']||0);
+  if(count===0)return '';
+  var due=f['Due Date']||'';
+  var today=new Date().toISOString().slice(0,10);
+  var cls='reminder-strip-blue';
+  var label='Manager reminder sent ('+count+')';
+  if(due&&due<today){cls='reminder-strip-red';label='Overdue · Manager reminder sent ('+count+')';}
+  else if(due&&due===today){cls='reminder-strip-orange';label='Due today · Manager reminder sent ('+count+')';}
+  return '<div class="reminder-strip '+cls+'">'+label+'</div>';
+}
+
+function render(){
+  var content=document.getElementById('content');
+  document.getElementById('countPill').textContent=actions.length;
+
+  if(actions.length===0){
+    content.innerHTML='<div class="empty"><i data-lucide="check-circle"></i><div>No open actions.</div></div>';
+    lucide.createIcons();
+    return;
+  }
+
+  // Group by Account Name
+  var groups={};
+  actions.forEach(function(r){
+    var f=r.fields||{};
+    var account=f['Account Name']||'Unknown Account';
+    if(!groups[account])groups[account]=[];
+    groups[account].push(r);
+  });
+
+  // Sort each group: reminded actions (Reminder Count > 0) first, then normal.
+  // Within each tier, sort by Due Date ascending (undated actions go last).
+  Object.keys(groups).forEach(function(account){
+    groups[account].sort(function(a,b){
+      var fa=a.fields||{},fb=b.fields||{};
+      var aReminded=Number(fa['Reminder Count']||0)>0;
+      var bReminded=Number(fb['Reminder Count']||0)>0;
+      if(aReminded!==bReminded)return aReminded?-1:1;
+      var da=(fa['Due Date'])||'9999-99-99';
+      var db=(fb['Due Date'])||'9999-99-99';
+      return da.localeCompare(db);
+    });
+  });
+
+  // Render groups alphabetically
+  var sortedAccounts=Object.keys(groups).sort(function(a,b){
+    return a.toLowerCase().localeCompare(b.toLowerCase());
+  });
+
+  var html='';
+  sortedAccounts.forEach(function(account){
+    html+='<div class="account-group">';
+    html+='<div class="account-group-label">'+escapeHtml(account)+'</div>';
+
+    groups[account].forEach(function(r){
+      var f=r.fields||{};
+      var action=f['Action Text']||'';
+      var source=f['Source']||'AI';
+      var due=f['Due Date']||'';
+      var reminderCount=f['Reminder Count'];
+      var meta='';
+      meta+='<span class="meta">Source: '+escapeHtml(source)+'</span>';
+      if(due)meta+='<span class="meta">Due: '+escapeHtml(formatDate(due))+'</span>';
+      if(reminderCount!==undefined)meta+='<span class="meta">Reminders: '+escapeHtml(reminderCount)+'</span>';
+
+      html+=
+        '<div class="action-card" id="card-'+r.id+'">'+
+          '<div class="action-top">'+
+            '<div class="account-name">'+escapeHtml(account)+'</div>'+
+            '<div class="status-pill">Open</div>'+
+          '</div>'+
+          reminderStrip(f)+
+          '<div class="action-text">'+escapeHtml(action)+'</div>'+
+          '<div class="meta-row">'+meta+'</div>'+
+          '<button class="complete-btn" onclick="completeAction(\''+r.id+'\')" id="btn-'+r.id+'">'+
+            '<i data-lucide="check"></i> Complete'+
+          '</button>'+
+        '</div>';
+    });
+
+    html+='</div>'; // end account-group
+  });
+
+  content.innerHTML=html;
+  lucide.createIcons();
+}
+
+async function loadActions(){
+  var content=document.getElementById('content');
+  content.innerHTML='<div class="loading"><div class="spinner"></div>Loading actions...</div>';
+  try{
+    var url=WORKER+'/get-actions?userId='+encodeURIComponent(currentUserId)+'&role='+encodeURIComponent(currentUserRole)+'&status=Open';
+    var res=await fetch(url);
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Could not load actions');
+    actions=data.records||[];
+    render();
+  }catch(err){
+    content.innerHTML='<div class="error-box">Could not load open actions.<br>'+escapeHtml(err.message)+'<br><button class="retry-btn" onclick="loadActions()">Retry</button></div>';
+  }
+}
+
+async function completeAction(actionId){
+  var btn=document.getElementById('btn-'+actionId);
+  if(btn){
+    btn.disabled=true;
+    btn.innerHTML='Completing...';
+  }
+  try{
+    var res=await fetch(WORKER+'/complete-action',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({actionId:actionId,userId:currentUserId})
+    });
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Could not complete action');
+    // Reload the page after a short delay so the UI always reflects the true
+    // server state — avoids stale "Completing..." when switching between accounts.
+    showToast('Action completed.');
+    setTimeout(function(){window.location.reload();},400);
+  }catch(err){
+    if(btn){
+      btn.disabled=false;
+      btn.innerHTML='<i data-lucide="check"></i> Complete';
+      lucide.createIcons({el:btn});
+    }
+    alert('Could not complete action: '+err.message);
+  }
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  lucide.createIcons();
+  var targetActionId=new URLSearchParams(window.location.search).get('actionId');
+  loadActions().then(function(){
+    if(!targetActionId)return;
+    var card=document.getElementById('card-'+targetActionId);
+    if(!card)return;
+    card.classList.add('highlighted');
+    setTimeout(function(){card.scrollIntoView({behavior:'smooth',block:'center'});},100);
+  });
+});
+</script>
+</body>
+</html>
