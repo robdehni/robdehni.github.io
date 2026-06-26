@@ -96,6 +96,14 @@ body{padding:32px 40px 60px}
 .visit-account{overflow-wrap:break-word;word-break:break-word}
 [data-lucide]{display:inline-block;vertical-align:middle;stroke-width:1.8}
 .visit-toggle [data-lucide]{width:12px;height:12px}
+
+.photo-evidence{margin:10px 0;padding-top:10px;border-top:1px solid #eef3f9}
+.photo-evidence h4{color:#2f8fff;font-size:10.5px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;font-weight:800}
+.photo-evidence-grid{display:flex;gap:8px;flex-wrap:wrap}
+.photo-evidence-thumb{display:block;width:88px;height:88px;object-fit:cover;border-radius:8px;border:1px solid #dde8f5;cursor:pointer;transition:opacity 0.15s}
+.photo-evidence-thumb:hover{opacity:0.82}
+.photo-evidence-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#2f8fff;font-weight:700;text-decoration:none;padding:7px 11px;background:#eaf3ff;border-radius:8px;border:1px solid #cfe4ff}
+.photo-evidence-link:hover{background:#d5eaff}
 </style>
 
 </head>  
@@ -214,6 +222,19 @@ function parseFullReport(text){
   return sections;  
 }  
   
+function renderPhotoEvidence(urlsField){
+  if(!urlsField||!String(urlsField).trim())return'';
+  var urls=String(urlsField).split('\n').map(function(u){return u.trim();}).filter(function(u){return u.length>4;}).slice(0,2);
+  if(!urls.length)return'';
+  var html='<div class="photo-evidence"><h4>Visit Evidence</h4><div class="photo-evidence-grid">';
+  urls.forEach(function(url){
+    html+='<a href="'+url+'" target="_blank" rel="noopener noreferrer">';
+    html+='<img class="photo-evidence-thumb" src="'+url+'" alt="Visit photo" loading="lazy">';
+    html+='</a>';
+  });
+  html+='</div></div>';
+  return html;
+}  
 function renderFullReport(text){  
   if(!text)return'<div class="report-section"><p>No additional details available.</p></div>';  
   var s=parseFullReport(text),html='';  
@@ -286,7 +307,7 @@ document.getElementById('visitList').addEventListener('click',function(e){
     detail.classList.remove('open');card.classList.remove('expanded');  
     toggle.innerHTML='<i data-lucide="chevron-down"></i> Tap to view full report';lucide.createIcons({el:toggle});  
   }else{  
-    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'');detail.setAttribute('data-rendered','1');}  
+    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'');detail.setAttribute('data-rendered','1');}  
     detail.classList.add('open');card.classList.add('expanded');  
     toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
   }  
@@ -347,7 +368,7 @@ function expandAndScrollToVisit(recordId){
   var card=document.querySelector('.visit-card[data-id="'+recordId+'"]');if(!card)return;  
   var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');  
   if(detail&&!detail.classList.contains('open')){  
-    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'');detail.setAttribute('data-rendered','1');}  
+    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'');detail.setAttribute('data-rendered','1');}  
     detail.classList.add('open');card.classList.add('expanded');  
     if(toggle)toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
   }  
