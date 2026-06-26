@@ -24,14 +24,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .summary-title{font-size:14px;font-weight:800;color:#0b1f3a}
 .summary-sub{font-size:11.5px;color:#8a9bb3;margin-top:2px;font-weight:600}
 .count-pill{background:#2f8fff;color:#fff;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800}
-.section-title{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:18px 0 10px}
-.event-card{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
-.event-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:8px}
-.account-name{font-size:14.5px;font-weight:800;color:#0b1f3a;line-height:1.35}
-.time-pill{background:#eaf3ff;color:#2f8fff;border-radius:999px;padding:4px 10px;font-size:10.5px;font-weight:800;white-space:nowrap}
-.action-text{font-size:13.5px;color:#3d4f6b;line-height:1.55;margin-bottom:10px;font-weight:500}
-.meta-row{display:flex;flex-wrap:wrap;gap:6px}
-.meta{font-size:10.5px;font-weight:800;padding:5px 9px;border-radius:8px;background:#f4f8fc;color:#7a8aa3;border:1px solid #e3ebf5}
 .loading{text-align:center;padding:46px 20px;color:#8a9bb3;font-weight:700}
 .spinner{width:34px;height:34px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -40,6 +32,37 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .error-box{background:#fff3e0;border:1px solid #ffe5b3;border-radius:14px;padding:16px;color:#7a6000;font-size:13px;font-weight:700;text-align:center;margin-bottom:12px}
 .retry-btn{margin-top:10px;border:none;background:#2f8fff;color:#fff;padding:10px 18px;border-radius:10px;font-weight:800}
 .footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:30px}
+
+/* ── Monthly calendar grid ── */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:12px 16px;margin-bottom:10px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.cal-month-label{font-size:15px;font-weight:800;color:#0b1f3a}
+.cal-nav-btn{background:#eaf3ff;border:none;color:#2f8fff;border-radius:10px;width:34px;height:34px;font-size:20px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.cal-nav-btn:hover{background:#d5eaff}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:10px;margin-bottom:10px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.cal-header-cell{text-align:center;font-size:9.5px;font-weight:800;color:#8a9bb3;text-transform:uppercase;padding:4px 0 8px;letter-spacing:.5px}
+.cal-day{min-height:46px;border-radius:10px;padding:5px 4px;display:flex;flex-direction:column;align-items:center;cursor:default;position:relative}
+.cal-day-empty{background:transparent}
+.cal-day-num{font-size:12.5px;font-weight:700;color:#0b1f3a;margin-bottom:3px}
+.cal-day-past .cal-day-num{color:#c8d4e3}
+.cal-day-today{background:#eaf3ff}
+.cal-day-today .cal-day-num{color:#2f8fff;font-weight:900}
+.cal-day-has-actions{cursor:pointer}
+.cal-day-has-actions:hover{background:#f0f6ff}
+.cal-day-selected{background:#2f8fff !important}
+.cal-day-selected .cal-day-num{color:#fff !important;font-weight:900}
+.cal-day-selected .cal-badge{background:#fff;color:#2f8fff}
+.cal-day-selected:hover{background:#1f7fe0 !important}
+.cal-badge{background:#2f8fff;color:#fff;border-radius:999px;font-size:9px;font-weight:900;padding:2px 5px;min-width:16px;text-align:center;line-height:1.4}
+/* Day action panel */
+.cal-day-panel{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05);margin-bottom:10px}
+.cal-panel-header{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:.8px;font-weight:800;margin-bottom:10px}
+.cal-action-item{padding:12px;background:#f8fbff;border:1px solid #e3ebf5;border-radius:12px;margin-bottom:8px;cursor:pointer;transition:border-color .12s}
+.cal-action-item:last-child{margin-bottom:0}
+.cal-action-item:hover{border-color:#2f8fff}
+.cal-action-account{font-size:13px;font-weight:800;color:#0b1f3a;margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cal-action-text{font-size:12.5px;color:#3d4f6b;line-height:1.5;margin-bottom:6px}
+.cal-action-link{font-size:11px;color:#2f8fff;font-weight:800}
+.time-pill{background:#eaf3ff;color:#2f8fff;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:800;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -67,6 +90,11 @@ var currentUserName=localStorage.getItem('fieldiq_user_name');
 var currentUserRole=localStorage.getItem('fieldiq_user_role')||'Sales Rep';
 var events=[];
 
+// Monthly calendar state
+var viewYear=new Date().getFullYear();
+var viewMonth=new Date().getMonth(); // 0-indexed
+var selectedDayISO=null;
+
 if(!currentUserId||!currentUserName){window.location.href='./index.html';throw new Error('No identity locked');}
 if(currentUserRole==='Manager'){window.location.href='./fieldiq.html';throw new Error('Managers use manager portal');}
 document.getElementById('repName').textContent=currentUserName+' · '+currentUserRole;
@@ -74,23 +102,9 @@ document.getElementById('repName').textContent=currentUserName+' · '+currentUse
 function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,function(m){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);});}
 function todayISO(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString().slice(0,10);}
 function addDaysISO(n){var d=new Date();d.setDate(d.getDate()+n);return new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString().slice(0,10);}
-function dateLabel(iso){
-  if(!iso)return 'No date';
-  if(iso===todayISO())return 'Today';
-  if(iso===addDaysISO(1))return 'Tomorrow';
-  try{return new Date(iso+'T00:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});}
-  catch(e){return iso;}
-}
 function inferTime(text){
   var m=String(text||'').match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|AM|PM)\b/);
   return m ? m[0].toUpperCase() : '';
-}
-function bucketName(iso){
-  if(!iso)return 'Scheduled';
-  if(iso<todayISO())return 'Overdue';
-  if(iso===todayISO())return 'Today';
-  if(iso===addDaysISO(1))return 'Tomorrow';
-  return 'Upcoming';
 }
 function getField(f,names,fallback){
   for(var i=0;i<names.length;i++){
@@ -160,41 +174,29 @@ async function loadCalendar(){
   content.innerHTML='<div class="loading"><div class="spinner"></div>Loading calendar...</div>';
   try{
     var loaded=[];
-    var calendarError=null;
 
-    /* First try the dedicated calendar endpoint, if the Worker supports it. */
     try{
       var url=WORKER+'/get-calendar?userId='+encodeURIComponent(currentUserId)+'&role='+encodeURIComponent(currentUserRole);
       var data=await fetchJson(url,6000);
       loaded=(data.records||[]).map(normalizeActionRecord);
     }catch(e){
-      calendarError=e;
       loaded=[];
     }
 
-    /*
-      Fallback: read the same Actions table used by Rep Open Actions / Manager Open Actions.
-      This is the important fix. Calendar must not depend only on /get-calendar.
-      Any open action assigned to this rep with a Due Date should appear here.
-    */
     if(!loaded.length){
       var openData=await fetchJson(WORKER+'/get-actions?role=Rep&status=Open&userId='+encodeURIComponent(currentUserId),8000);
       loaded=(openData.records||[])
         .filter(function(r){
           var f=r.fields||{};
-          return !isCompleted(f) && getDueDate(f) && belongsToCurrentRep(f);
+          return !isCompleted(f)&&getDueDate(f)&&belongsToCurrentRep(f);
         })
         .map(normalizeActionRecord);
 
-      /*
-        If the Worker already filtered by userId but the Assigned Rep field is a linked record that
-        the browser cannot match, do a second relaxed pass so valid dated actions still appear.
-      */
       if(!loaded.length){
         loaded=(openData.records||[])
           .filter(function(r){
             var f=r.fields||{};
-            return !isCompleted(f) && getDueDate(f);
+            return !isCompleted(f)&&getDueDate(f);
           })
           .map(normalizeActionRecord);
       }
@@ -213,42 +215,145 @@ async function loadCalendar(){
   }
 }
 
+// ── Monthly calendar render ──────────────────────────────────────────────────
+
 function render(){
   document.getElementById('countPill').textContent=events.length;
   var content=document.getElementById('content');
+
   if(events.length===0){
     content.innerHTML='<div class="empty"><i data-lucide="calendar-check"></i><div>No scheduled follow-ups.</div><div style="font-size:11px;margin-top:8px;color:#aab8cc">Open actions only appear here when they have a Due Date.</div></div>';
-    lucide.createIcons();return;
+    lucide.createIcons();
+    return;
   }
 
-  var buckets={Overdue:[],Today:[],Tomorrow:[],Upcoming:[]};
+  // Build date → actions map
+  var byDate={};
   events.forEach(function(r){
-    var f=r.fields||{};
-    var b=bucketName(getDueDate(f));
-    if(!buckets[b])buckets[b]=[];
-    buckets[b].push(r);
+    var due=getDueDate(r.fields||{});
+    if(!due)return;
+    if(!byDate[due])byDate[due]=[];
+    byDate[due].push(r);
   });
 
+  var MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  var firstDayOfWeek=new Date(viewYear,viewMonth,1).getDay(); // 0=Sun
+  var daysInMonth=new Date(viewYear,viewMonth+1,0).getDate();
+  var today=todayISO();
+
   var html='';
-  ['Overdue','Today','Tomorrow','Upcoming'].forEach(function(bucket){
-    if(!buckets[bucket]||buckets[bucket].length===0)return;
-    html+='<div class="section-title">'+bucket+'</div>';
-    buckets[bucket].forEach(function(r){
-      var f=r.fields||{};
-      var due=getDueDate(f);
-      var action=getActionText(f);
-      var time=getField(f,['Due Time'],'')||inferTime(action)||'Time not set';
-      html+='<div class="event-card" onclick="window.location.href=\'./fieldiq-open-actions.html\'">'+
-        '<div class="event-top"><div class="account-name">'+escapeHtml(getAccountName(f))+'</div><div class="time-pill">'+escapeHtml(time)+'</div></div>'+
-        '<div class="action-text">'+escapeHtml(action||'Open action')+'</div>'+
-        '<div class="meta-row"><span class="meta">'+escapeHtml(dateLabel(due))+'</span><span class="meta">Open Action</span></div>'+
-      '</div>';
-    });
+
+  // Navigation bar
+  html+='<div class="cal-nav">';
+  html+='<button class="cal-nav-btn" id="calPrev">&#8249;</button>';
+  html+='<div class="cal-month-label">'+MONTH_NAMES[viewMonth]+' '+viewYear+'</div>';
+  html+='<button class="cal-nav-btn" id="calNext">&#8250;</button>';
+  html+='</div>';
+
+  // Grid
+  html+='<div class="cal-grid">';
+
+  // Day-name headers
+  DAY_NAMES.forEach(function(d){
+    html+='<div class="cal-header-cell">'+d+'</div>';
   });
+
+  // Leading empty cells
+  for(var i=0;i<firstDayOfWeek;i++){
+    html+='<div class="cal-day cal-day-empty"></div>';
+  }
+
+  // Day cells
+  for(var d=1;d<=daysInMonth;d++){
+    var mm=String(viewMonth+1).padStart(2,'0');
+    var dd=String(d).padStart(2,'0');
+    var isoDate=viewYear+'-'+mm+'-'+dd;
+    var count=byDate[isoDate]?byDate[isoDate].length:0;
+    var isToday=isoDate===today;
+    var isPast=isoDate<today;
+    var isSelected=isoDate===selectedDayISO;
+
+    var cls='cal-day';
+    if(isToday)cls+=' cal-day-today';
+    if(isPast&&!isToday)cls+=' cal-day-past';
+    if(count>0)cls+=' cal-day-has-actions';
+    if(isSelected)cls+=' cal-day-selected';
+
+    html+='<div class="'+cls+'" data-iso="'+isoDate+'">';
+    html+='<div class="cal-day-num">'+d+'</div>';
+    if(count>0)html+='<div class="cal-badge">'+count+'</div>';
+    html+='</div>';
+  }
+
+  html+='</div>'; // end cal-grid
+
+  // Day panel — shown when a day with actions is selected
+  if(selectedDayISO&&byDate[selectedDayISO]){
+    html+=renderDayPanel(selectedDayISO,byDate[selectedDayISO]);
+  }
+
   content.innerHTML=html;
   lucide.createIcons();
+
+  // Nav buttons
+  document.getElementById('calPrev').addEventListener('click',function(){
+    viewMonth--;
+    if(viewMonth<0){viewMonth=11;viewYear--;}
+    selectedDayISO=null;
+    render();
+  });
+  document.getElementById('calNext').addEventListener('click',function(){
+    viewMonth++;
+    if(viewMonth>11){viewMonth=0;viewYear++;}
+    selectedDayISO=null;
+    render();
+  });
+
+  // Day cell clicks
+  content.querySelectorAll('.cal-day[data-iso]').forEach(function(cell){
+    cell.addEventListener('click',function(){
+      var iso=cell.getAttribute('data-iso');
+      if(!byDate[iso])return; // no actions on this day, ignore tap
+      selectedDayISO=(selectedDayISO===iso)?null:iso; // toggle
+      render();
+    });
+  });
 }
+
+function renderDayPanel(isoDate,dayActions){
+  var label=formatDayLabel(isoDate);
+  var html='<div class="cal-day-panel">';
+  html+='<div class="cal-panel-header">'+escapeHtml(label)+' &mdash; '+dayActions.length+' action'+(dayActions.length!==1?'s':'')+'</div>';
+
+  dayActions.forEach(function(r){
+    var f=r.fields||{};
+    var account=getAccountName(f);
+    var action=getActionText(f);
+    var time=getField(f,['Due Time'],'')||inferTime(action)||'';
+    // Tap → Open Actions with actionId so rep lands on the correct card
+    html+='<div class="cal-action-item" onclick="window.location.href=\'./fieldiq-open-actions.html?actionId='+escapeHtml(r.id)+'\'">';
+    html+='<div class="cal-action-account">'+escapeHtml(account)+(time?'<span class="time-pill">'+escapeHtml(time)+'</span>':'')+'</div>';
+    html+='<div class="cal-action-text">'+escapeHtml(action||'Open action')+'</div>';
+    html+='<div class="cal-action-link">→ Open in My Actions</div>';
+    html+='</div>';
+  });
+
+  html+='</div>';
+  return html;
+}
+
+function formatDayLabel(iso){
+  var today=todayISO();
+  var tomorrow=addDaysISO(1);
+  if(iso===today)return 'Today';
+  if(iso===tomorrow)return 'Tomorrow';
+  try{return new Date(iso+'T00:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});}
+  catch(e){return iso;}
+}
+
 document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();loadCalendar();});
 </script>
 </body>
-</html>
+</html>       
