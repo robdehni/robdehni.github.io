@@ -96,14 +96,12 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .pin-cancel{font-size:12px;color:#8a9bb3;text-align:center;margin-top:12px;display:block;cursor:pointer;text-decoration:underline;font-weight:600}
 
 /* ── Manager reminder notifications ── */
-.notif-panel{background:#ffe1e5;border:1px solid #f5c2c8;border-radius:16px;padding:11px 14px;margin-bottom:10px}
-.notif-panel-header{display:flex;align-items:center;gap:7px;margin-bottom:8px}
-.notif-bell{font-size:13px;line-height:1}
-.notif-title{font-size:11.5px;font-weight:900;color:#c43048;text-transform:uppercase;letter-spacing:.5px}
-.notif-row{padding:7px 0;border-top:1px solid #f5c2c8;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.notif-row:first-child{border-top:none;padding-top:0}
-.notif-message{font-size:12px;color:#3d4f6b;line-height:1.4;font-weight:500;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.notif-action-btn{flex-shrink:0;background:#c43048;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
+.notif-panel{background:#ffe1e5;border:1px solid #f5c2c8;border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.notif-panel-header{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.notif-bell{font-size:14px;line-height:1}
+.notif-title{font-size:12px;font-weight:900;color:#c43048;text-transform:uppercase;letter-spacing:.5px}
+.notif-body{font-size:12.5px;color:#3d4f6b;line-height:1.5;font-weight:500;margin-bottom:12px}
+.notif-action-btn{display:inline-flex;align-items:center;gap:6px;background:#c43048;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-size:12.5px;font-weight:800;cursor:pointer;text-decoration:none}
 .notif-action-btn:hover{background:#a82840}
 </style>
 </head>
@@ -301,26 +299,19 @@ async function loadNotifications(){
     if(!records.length)return;
 
     var count=records.length;
-    var rows='';
-    records.forEach(function(r){
-      var f=r.fields||{};
-      var message=f['Message']||f['Action Text']||'Manager reminder';
-      var actionId=f['Related Action ID']||'';
-      rows+=
-        '<div class="notif-row">'+
-          '<div class="notif-message">'+escapeHtml(message)+'</div>'+
-          (actionId
-            ? '<button class="notif-action-btn" onclick="viewAction(\''+escapeHtml(r.id)+'\',\''+escapeHtml(actionId)+'\')">View Action →</button>'
-            : '')+
-        '</div>';
+    var urgency=records.some(function(r){
+      var due=(r.fields||{})['Due Date']||'';
+      return due && due<=new Date().toISOString().slice(0,10);
     });
+    var bodyText='You have '+count+' reminder'+(count>1?'s':'')+' from your manager.'+(urgency?' Some require immediate attention.':'');
     section.innerHTML=
       '<div class="notif-panel">'+
         '<div class="notif-panel-header">'+
           '<span class="notif-bell">🔔</span>'+
           '<span class="notif-title">Manager Reminder'+(count>1?'s':'')+' ('+count+')</span>'+
         '</div>'+
-        rows+
+        '<div class="notif-body">'+escapeHtml(bodyText)+'</div>'+
+        '<a class="notif-action-btn" href="./fieldiq-open-actions.html">View Reminders →</a>'+
       '</div>';
   }catch(e){
     // Silent fail — notifications are non-critical
