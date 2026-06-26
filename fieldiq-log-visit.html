@@ -362,9 +362,18 @@ async function uploadPendingPhotos(tempId) {
       var res = await fetch(WORKER + '/upload-photo', { method: 'POST', body: fd, signal: controller.signal });
       clearTimeout(timeoutId);
       var data = await res.json();
-      if (res.ok && data.url) { urls.push(data.url); }
+      if (res.ok && data.url) {
+        console.log('[FieldIQ Photo] Uploaded OK:', data.url);
+        urls.push(data.url);
+      } else {
+        // Surface the Worker error so the user and developer can see it
+        var errMsg = (data && data.error) ? data.error : ('HTTP ' + res.status);
+        console.warn('[FieldIQ Photo] Upload failed:', res.status, JSON.stringify(data));
+        alert('Photo ' + (i + 1) + ' failed to upload:\n' + errMsg + '\n\nThe visit will still save without this photo.');
+      }
     } catch (e) {
-      console.warn('Photo upload failed (non-fatal):', e);
+      console.warn('[FieldIQ Photo] Upload exception:', e.message);
+      alert('Photo ' + (i + 1) + ' upload error:\n' + e.message + '\n\nThe visit will still save without this photo.');
     }
   }
   return urls;
@@ -448,6 +457,7 @@ submitBtn.addEventListener('click',async function(){
       document.getElementById('photoUploading').style.display = 'block';
       var tempId = 'visit-' + Date.now();
       photoUrls = await uploadPendingPhotos(tempId);
+      console.log('[FieldIQ Photo] URLs returned from upload:', JSON.stringify(photoUrls));
       document.getElementById('photoUploading').style.display = 'none';
       document.getElementById('processingText').textContent = 'Saving visit...';
     }
@@ -457,6 +467,7 @@ submitBtn.addEventListener('click',async function(){
     if(isNewAccount&&newAccountId){savePayload['Account']=[newAccountId];}
     // Include photo evidence URLs if any were uploaded successfully
     if (photoUrls.length > 0) { savePayload['Photo URLs'] = photoUrls.join('\n'); }
+    console.log('[FieldIQ Photo] savePayload["Photo URLs"]:', savePayload['Photo URLs'] || '(not set)');
 
     var saveRes=await fetch(WORKER+'/save-visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(savePayload)});
     var saveData=await saveRes.json();
