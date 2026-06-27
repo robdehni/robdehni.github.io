@@ -400,7 +400,7 @@ function renderDayPanel(isoDate,dayActions){
     html+='<div class="cal-action-item" onclick="openActionPopupById(\''+r.id+'\')">';
     html+='<div class="cal-action-account">'+escapeHtml(account)+(time?'<span class="time-pill">'+escapeHtml(time)+'</span>':'')+'</div>';
     html+='<div class="cal-action-text">'+escapeHtml(action||'Open action')+'</div>';
-    html+='<div class="cal-action-link">Tap to manage →</div>';
+    html+='<a class="cal-action-link" href="./fieldiq-open-actions.html?actionId='+escapeHtml(r.id)+'&returnTo=calendar&calYear='+viewYear+'&calMonth='+viewMonth+'&calDay='+escapeHtml(isoDate)+'" onclick="event.stopPropagation()">→ Open in My Actions</a>';
     html+='</div>';
   });
 
