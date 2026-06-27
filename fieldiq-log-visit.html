@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FieldIQ — Log Visit</title>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js" defer></script>
 <style>
 [data-lucide]{display:inline-block;vertical-align:middle;stroke-width:2}
 .mic-btn [data-lucide]{width:36px;height:36px}
@@ -422,7 +422,7 @@ submitBtn.addEventListener('click',async function(){
   }else{hospitalName=hospitalInput.value.trim();if(!hospitalName){alert('Please select an account from the list, or check "Account not listed" to add a new one.');return;}if(!selectedAccountId){alert('Please select the account from the dropdown list so it links correctly.');return;}}
   submitBtn.disabled=true;submitBtn.textContent='Processing...';processingOverlay.style.display='block';successCard.style.display='none';
   var latitude=null,longitude=null,accuracy=null;
-  await new Promise(function(resolve){if(!navigator.geolocation){resolve();return;}navigator.geolocation.getCurrentPosition(function(pos){latitude=pos.coords.latitude;longitude=pos.coords.longitude;accuracy=Math.round(pos.coords.accuracy);resolve();},function(){resolve();},{timeout:3000,enableHighAccuracy:false});});
+  await new Promise(function(resolve){if(!navigator.geolocation){resolve();return;}navigator.geolocation.getCurrentPosition(function(pos){latitude=pos.coords.latitude;longitude=pos.coords.longitude;accuracy=Math.round(pos.coords.accuracy);resolve();},function(){resolve();},{timeout:12000,enableHighAccuracy:true,maximumAge:0});});
   try{
     var aiRes=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,messages:[{role:'user',content:'You are a MedTech sales intelligence assistant operating in the GCC region. The transcript below may be in English, Arabic, mixed Arabic-English, or Gulf/Levantine/Egyptian Arabic dialect. Understand the full meaning regardless of language or dialect used. Structure the intelligence into a concise English report with these exact sections:\n\nVISIT SUMMARY\nKEY CONTACTS MET\nOUTCOMES & DECISIONS\nNEXT STEPS\nOPPORTUNITY SIGNALS\nSENTIMENT\nPRIORITY LEVEL (respond with exactly one word: High, Medium, or Low)\n\nFor PRIORITY LEVEL, classify based on:\n- High: quotation requested, procurement engaged, decision maker committed, strong buying signal, evaluation planned\n- Medium: follow-up needed, positive interest, return visit requested, relationship developing\n- Low: informational visit, no current opportunity, no buying signal, long-term monitoring\n\nOutput the report in professional English only.\n\nTranscript:\n'+transcript}]})});
     var aiData=await aiRes.json();
