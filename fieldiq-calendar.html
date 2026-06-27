@@ -458,21 +458,22 @@ function setPopupBusy(busy){
 }
 
 async function doCompleteAction(){
-  if(!currentPopupActionId)return;
+  var idToComplete=currentPopupActionId; // snapshot before async gap
+  if(!idToComplete)return;
   setPopupBusy(true);
   try{
     var res=await fetch(WORKER+'/complete-action',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({actionId:currentPopupActionId,userId:currentUserId})
+      body:JSON.stringify({actionId:idToComplete,userId:currentUserId})
     });
     var data=await res.json();
-    if(!res.ok)throw new Error(data.error||('HTTP '+res.status));
-    removeEventById(currentPopupActionId);
+    if(!res.ok)throw new Error((data&&data.error)||('Worker error '+res.status));
+    removeEventById(idToComplete); // only runs after Airtable confirms success
     closeActionPopup();
   }catch(e){
     setPopupBusy(false);
-    alert('Could not mark complete: '+e.message);
+    alert('Could not mark complete:\n'+e.message);
   }
 }
 
