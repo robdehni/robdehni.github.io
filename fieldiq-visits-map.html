@@ -253,7 +253,7 @@ function renderMarkers(visits){
     var f=v.fields;
     if(!f.Latitude||!f.Longitude)return;
     shown++;
-    var sent=getSent(f['AI Summary']||'');
+    var sent=v._sent;
     if(sent==='positive')p++;
     else if(sent==='neutral')n++;
     else if(sent==='negative')neg++;
@@ -333,6 +333,7 @@ async function loadVisits(){
     var data=await res.json();
     if(!res.ok)throw new Error('Worker error '+res.status+': '+JSON.stringify(data));
     allVisits=data.records||[];
+    allVisits.forEach(function(v){v._sent=getSent(v.fields['AI Summary']||'');});
     if(allVisits.length===0){
       document.getElementById('loadingEl').style.display='none';
       document.getElementById('errorEl').style.display='block';
