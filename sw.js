@@ -2,7 +2,7 @@
 // Caches static HTML shell only.
 // NEVER caches Cloudflare Worker API calls or Airtable data.
 
-var CACHE = 'fieldiq-shell-v1';
+var CACHE = 'fieldiq-shell-v2';
 
 var SHELL = [
   '/index.html',
