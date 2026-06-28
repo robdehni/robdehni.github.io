@@ -4,13 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FieldIQ — Account Directory</title>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js" defer></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px 18px 40px}
 .container{max-width:780px;margin:0 auto}
-
-/* ── Brand block — matches fieldiq.html reference ── */
 .topbar{margin-bottom:18px}
 .topbar-brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
 .brand-cloud{font-size:26px;line-height:1}
@@ -18,38 +16,16 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .brand-text h1 span{color:#2f8fff}
 .brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
 .topbar-sub{color:#7a8aa3;font-size:12.5px;margin-top:2px;font-weight:600}
-
-/* ── Manager badge — 20px pill matching fieldiq.html ── */
-.manager-badge{
-  display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#d98a1c;
-  border:1px solid #ffe5b3;border-radius:20px;font-size:10.5px;font-weight:800;
-  padding:4px 12px;margin-left:10px;text-transform:uppercase;letter-spacing:0.4px;
-  box-shadow:0 2px 8px rgba(217,138,28,0.1);vertical-align:middle;
-}
-
-.home-btn{
-  display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
-  text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:14px;border:1px solid #e3ebf5;
-  box-shadow:0 2px 8px rgba(11,31,58,0.05);
-}
+.manager-badge{display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#d98a1c;border:1px solid #ffe5b3;border-radius:20px;font-size:10.5px;font-weight:800;padding:4px 12px;margin-left:10px;text-transform:uppercase;letter-spacing:0.4px;box-shadow:0 2px 8px rgba(217,138,28,0.1);vertical-align:middle;}
+.home-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:14px;border:1px solid #e3ebf5;box-shadow:0 2px 8px rgba(11,31,58,0.05);}
 .home-btn:hover{border-color:#2f8fff}
-
 .filter-bar{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:16px;margin-bottom:18px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .filter-bar h3{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:12px}
-.search-input{
-  width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #e3ebf5;border-radius:10px;color:#0b1f3a;
-  font-size:13.5px;outline:none;font-weight:600;
-}
+.search-input{width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #e3ebf5;border-radius:10px;color:#0b1f3a;font-size:13.5px;outline:none;font-weight:600;}
 .search-input:focus{border-color:#2f8fff}
-
 .count-label{font-size:11.5px;color:#aab8cc;font-weight:700;margin-bottom:10px}
-
 .territory-group{margin-bottom:10px}
-.territory-header{
-  display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #e3ebf5;
-  border-radius:16px;padding:14px 16px;cursor:pointer;box-shadow:0 3px 10px rgba(11,31,58,0.04);
-  transition:border-color 0.15s;
-}
+.territory-header{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px 16px;cursor:pointer;box-shadow:0 3px 10px rgba(11,31,58,0.04);transition:border-color 0.15s;}
 .territory-header:hover{border-color:#bcd8ff}
 .territory-name{font-size:14.5px;font-weight:800;color:#0b1f3a}
 .territory-count{font-size:11px;color:#7a8aa3;font-weight:700;margin-top:2px}
@@ -57,7 +33,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .territory-chevron.rotated{transform:rotate(180deg)}
 .territory-accounts{display:none;padding-top:8px}
 .territory-accounts.open{display:block}
-
 .activity-item{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px;margin-bottom:8px;box-shadow:0 3px 10px rgba(11,31,58,0.04);cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s}
 .activity-item:hover{border-color:#bcd8ff;box-shadow:0 4px 14px rgba(47,143,255,0.12)}
 .activity-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
@@ -68,60 +43,32 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .badge-rep{background:#eaf3ff;color:#2f8fff}
 .badge-territory{background:#eef3f9;color:#5b6b85}
 .activity-summary{font-size:11.5px;color:#7a8aa3;margin-top:8px;line-height:1.6}
-
 .loading{text-align:center;padding:50px;color:#aab8cc;font-weight:600}
 .spinner{width:36px;height:36px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;color:#aab8cc;font-size:13px;padding:30px;font-weight:600}
-
-.access-denied{
-  text-align:center;padding:60px 20px;display:none;flex-direction:column;align-items:center;
-}
+.access-denied{text-align:center;padding:60px 20px;display:none;flex-direction:column;align-items:center;}
 .access-denied-icon{font-size:54px;margin-bottom:16px}
 .access-denied h2{font-size:20px;color:#0b1f3a;font-weight:800;margin-bottom:8px}
 .access-denied p{font-size:13.5px;color:#7a8aa3;font-weight:600;max-width:340px;line-height:1.6;margin-bottom:20px}
-.access-denied a{
-  display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;
-  text-decoration:none;padding:12px 28px;border-radius:12px;box-shadow:0 6px 16px rgba(47,143,255,0.3);
-}
-
-.detail-overlay{
-  display:none;position:fixed;inset:0;background:rgba(11,31,58,0.45);z-index:1000;
-  align-items:flex-end;justify-content:center;
-}
-.detail-panel{
-  background:#f4f8fc;width:100%;max-width:780px;max-height:92vh;border-radius:22px 22px 0 0;
-  overflow-y:auto;box-shadow:0 -10px 34px rgba(11,31,58,0.28);
-  animation:slideUp 0.22s ease-out;
-}
+.access-denied a{display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:12px;box-shadow:0 6px 16px rgba(47,143,255,0.3);}
+.detail-overlay{display:none;position:fixed;inset:0;background:rgba(11,31,58,0.45);z-index:1000;align-items:flex-end;justify-content:center;}
+.detail-panel{background:#f4f8fc;width:100%;max-width:780px;max-height:92vh;border-radius:22px 22px 0 0;overflow-y:auto;box-shadow:0 -10px 34px rgba(11,31,58,0.28);animation:slideUp 0.22s ease-out;}
 @keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
-.detail-header{
-  position:sticky;top:0;background:#fff;padding:18px 50px 14px 18px;border-bottom:1px solid #e3ebf5;
-  border-radius:22px 22px 0 0;z-index:2;
-}
-.detail-close{
-  position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;border:none;
-  background:#f4f8fc;color:#7a8aa3;font-size:15px;font-weight:700;cursor:pointer;
-}
+.detail-header{position:sticky;top:0;background:#fff;padding:18px 50px 14px 18px;border-bottom:1px solid #e3ebf5;border-radius:22px 22px 0 0;z-index:2;}
+.detail-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;border:none;background:#f4f8fc;color:#7a8aa3;font-size:15px;font-weight:700;cursor:pointer;}
 .detail-close:hover{background:#eaf3ff;color:#2f8fff}
 .detail-header h2{font-size:18px;font-weight:800;color:#0b1f3a;letter-spacing:-0.3px}
 .detail-meta-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-
 .detail-body{padding:16px 18px 36px}
 .detail-section{margin-bottom:18px}
-.detail-section-title{
-  font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:10px;
-}
-
+.detail-section-title{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:10px;}
 .status-hero{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:6px 14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .status-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f0f4f9}
 .status-row:last-child{border-bottom:none}
 .status-label{font-size:11.5px;color:#7a8aa3;font-weight:700;white-space:nowrap}
 .status-value{font-size:13px;font-weight:800;color:#0b1f3a;text-align:right}
-.trend-up{color:#1e9e52}
-.trend-down{color:#d9483c}
-.trend-flat{color:#7a8aa3}
-
+.trend-up{color:#1e9e52}.trend-down{color:#d9483c}.trend-flat{color:#7a8aa3}
 .ownership-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .ownership-card{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:10px 12px}
 .ownership-label{font-size:9.5px;color:#aab8cc;font-weight:700;text-transform:uppercase;letter-spacing:0.3px}
@@ -129,11 +76,9 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .ownership-sub{font-size:10.5px;color:#7a8aa3;font-weight:600;margin-top:1px}
 .ownership-breakdown{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:10px 12px}
 .ownership-bar-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;font-weight:700;color:#3a4a63}
-
 .filter-pills{display:flex;gap:6px}
 .filter-pill{flex:1;text-align:center;padding:9px 4px;border-radius:10px;font-size:12px;font-weight:800;background:#fff;border:1.5px solid #e3ebf5;color:#5b6b85;cursor:pointer}
 .filter-pill.active{background:#2f8fff;border-color:#2f8fff;color:#fff}
-
 .attn-group{margin-bottom:10px}
 .attn-group-title{font-size:10.5px;color:#5b6b85;font-weight:800;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px}
 .attn-item{background:#fff;border:1px solid #e3ebf5;border-left:3px solid #d9483c;border-radius:10px;padding:10px 12px;margin-bottom:6px}
@@ -141,7 +86,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .attn-item.attn-priority{border-left-color:#c9871c}
 .attn-item-top{display:flex;justify-content:space-between;font-size:11px;color:#7a8aa3;font-weight:700;margin-bottom:4px}
 .attn-item-text{font-size:12px;color:#3a4a63;line-height:1.5}
-
 .timeline-item{background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:12px;margin-bottom:8px}
 .timeline-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px}
 .timeline-date{font-size:12.5px;font-weight:800;color:#0b1f3a;white-space:nowrap}
@@ -154,14 +98,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .summary-wrap.expanded .summary-full{display:block}
 .summary-wrap.expanded .toggle-more{display:none}
 .summary-wrap:not(.expanded) .toggle-less{display:none}
-
-.priority-high{background:#fdeceb;color:#d9483c}
-.priority-medium{background:#fff6e0;color:#c9871c}
-.priority-low{background:#eef3f9;color:#5b6b85}
-.outcome-positive{background:#e9f9ee;color:#1e9e52}
-.outcome-negative{background:#fdeceb;color:#d9483c}
-.outcome-neutral{background:#eef3f9;color:#5b6b85}
-
+.priority-high{background:#fdeceb;color:#d9483c}.priority-medium{background:#fff6e0;color:#c9871c}.priority-low{background:#eef3f9;color:#5b6b85}
+.outcome-positive{background:#e9f9ee;color:#1e9e52}.outcome-negative{background:#fdeceb;color:#d9483c}.outcome-neutral{background:#eef3f9;color:#5b6b85}
 .section-toggle{display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:12px 14px}
 .section-toggle:hover{border-color:#bcd8ff}
 .toggle-arrow{color:#aab8cc;font-size:14px;transition:transform 0.2s}
@@ -170,7 +108,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .full-history-content.open{display:block}
 .collapsible-content{display:none;margin-top:8px}
 .collapsible-content.open{display:block}
-
 .discovery-mini{font-size:11.5px;color:#3a4a63;background:#eaf3ff;border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.6}
 .discovery-mini b{color:#0b1f3a}
 .signal-badge{display:inline-block;font-size:10px;padding:3px 10px;border-radius:8px;font-weight:800;letter-spacing:0.3px;margin-top:6px;text-transform:uppercase}
@@ -184,9 +121,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 @keyframes tlPulse{0%{background:#dbeeff;box-shadow:0 0 0 3px #2f8fff}60%{background:#dbeeff;box-shadow:0 0 0 3px #2f8fff}100%{background:transparent;box-shadow:none}}
 .tl-highlight{animation:tlPulse 1.8s ease-out;border-radius:12px}
 .detail-empty{font-size:12px;color:#aab8cc;font-weight:600;padding:14px;text-align:center;background:#fff;border:1px solid #e3ebf5;border-radius:12px}
-
 .footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:24px}
-
 [data-lucide]{display:inline-block;vertical-align:middle;stroke-width:1.8}
 .access-denied-icon [data-lucide]{width:54px;height:54px;color:#d98a1c}
 .detail-close [data-lucide]{width:15px;height:15px}
@@ -197,9 +132,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 </head>
 <body>
 <div class="container">
-
 <a href="./fieldiq.html" class="home-btn">← Home</a>
-
 <div class="topbar">
   <div class="topbar-brand">
     <span class="brand-cloud">☁️</span>
@@ -210,16 +143,13 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   </div>
   <p class="topbar-sub">Account Directory</p>
 </div>
-
 <div id="accessDeniedEl" class="access-denied">
   <div class="access-denied-icon"><i data-lucide="lock"></i></div>
   <h2>Manager Access Required</h2>
   <p>The Account Directory lists every account across all reps and territories. This page is restricted to Manager accounts.</p>
   <a href="./index.html">Return Home</a>
 </div>
-
 <div id="loadingEl" class="loading"><div class="spinner"></div>Loading accounts...</div>
-
 <div id="directoryContent" style="display:none">
   <div class="filter-bar">
     <h3>Search</h3>
@@ -228,10 +158,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div class="count-label" id="directoryCount">0 accounts</div>
   <div id="directoryList"></div>
 </div>
-
 <div class="footer">FieldIQ v2.1 · 2026</div>
 </div>
-
 <div id="accountDetailOverlay" class="detail-overlay" onclick="if(event.target===this)closeAccountDetail()">
   <div class="detail-panel">
     <div class="detail-header">
@@ -242,25 +170,20 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
     <div class="detail-body" id="detailBody"></div>
   </div>
 </div>
-
 <script>
 var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
 var role=localStorage.getItem('fieldiq_user_role');
 var ACCOUNTS=[];
 var currentDetailAccountId=null;
 var currentDetailFilter='30';
-
 function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
 function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function truncate(text,len){var t=String(text||'');if(t.length<=len)return t;return t.slice(0,len).trim()+'…';}
-
 var TERRITORY_ORDER=['UAE','KSA','Qatar','Kuwait','Bahrain','Oman','Unassigned'];
-
 function getCanonicalTerritory(raw){
   var t=(raw||'').trim();if(!t)return'Unassigned';var tu=t.toUpperCase();
   if(tu.indexOf('SAUDI ARABIA')===0||tu==='KSA')return'KSA';if(tu==='UAE')return'UAE';if(tu==='QATAR')return'Qatar';if(tu==='KUWAIT')return'Kuwait';if(tu==='BAHRAIN')return'Bahrain';if(tu==='OMAN')return'Oman';return'Unassigned';
 }
-
 async function loadDirectory(){
   try{
     var [accRes,visRes]=await Promise.all([fetch(WORKER_URL+'/get-accounts'),fetch(WORKER_URL+'/get-visits')]);
@@ -286,7 +209,6 @@ async function loadDirectory(){
     document.getElementById('loadingEl').style.display='none';document.getElementById('directoryContent').style.display='block';renderDirectory();
   }catch(err){document.getElementById('loadingEl').innerHTML='<div class="empty">Failed to load: '+err.message+'</div>';}
 }
-
 function accountCardHtml(a){
   return'<div class="activity-item" onclick="openAccountDetail(\''+a.id+'\')">'+
     '<div class="activity-header"><div class="activity-hospital">'+escapeHtml(a.name)+'</div><div class="activity-chevron"><i data-lucide="chevron-right"></i></div></div>'+
@@ -298,19 +220,16 @@ function accountCardHtml(a){
     '<div class="activity-summary">'+(a.lastVisit?'Last visit: '+formatDate(a.lastVisit):'No visits logged yet')+'</div>'+
   '</div>';
 }
-
 function renderDirectory(){
   var q=document.getElementById('directorySearch').value.trim().toLowerCase();
   if(q){renderFlatList(q);}else{renderTerritoryGroups();}
 }
-
 function renderFlatList(q){
   var filtered=ACCOUNTS.filter(function(a){return a.name.toLowerCase().indexOf(q)>-1;});
   document.getElementById('directoryCount').textContent=filtered.length+' account'+(filtered.length!==1?'s':'');
   if(filtered.length===0){document.getElementById('directoryList').innerHTML='<div class="empty">No accounts match your search.</div>';return;}
   document.getElementById('directoryList').innerHTML=filtered.map(accountCardHtml).join('');lucide.createIcons();
 }
-
 function renderTerritoryGroups(){
   var total=ACCOUNTS.length;document.getElementById('directoryCount').textContent=total+' account'+(total!==1?'s':'');
   if(total===0){document.getElementById('directoryList').innerHTML='<div class="empty">No accounts found.</div>';return;}
@@ -329,15 +248,12 @@ function renderTerritoryGroups(){
   });
   document.getElementById('directoryList').innerHTML=html;lucide.createIcons();
 }
-
 function toggleTerritory(headerEl){headerEl.nextElementSibling.classList.toggle('open');headerEl.querySelector('.territory-chevron').classList.toggle('rotated');}
 document.getElementById('directorySearch').addEventListener('input',renderDirectory);
-
 function priorityClass(p){var s=String(p).toLowerCase();if(s==='high')return'priority-high';if(s==='medium'||s==='med')return'priority-medium';return'priority-low';}
 function outcomeClass(o){var s=String(o).toLowerCase();if(s==='positive')return'outcome-positive';if(s==='negative')return'outcome-negative';return'outcome-neutral';}
 function filterLabel(key){if(key==='7')return'Last 7 Days';if(key==='30')return'Last 30 Days';if(key==='90')return'Last 90 Days';return'All Time';}
 function getFilterDays(key){if(key==='7')return 7;if(key==='30')return 30;if(key==='90')return 90;return null;}
-
 function computeTrend(allVisits,filterKey){
   var days=getFilterDays(filterKey);if(days===null)return null;var now=new Date();var curStart=new Date(now.getTime()-days*86400000);var priorStart=new Date(now.getTime()-2*days*86400000);var cur=[],prior=[];
   allVisits.forEach(function(v){if(!v.date)return;if(v.date>curStart&&v.date<=now)cur.push(v);else if(v.date>priorStart&&v.date<=curStart)prior.push(v);});
@@ -345,25 +261,21 @@ function computeTrend(allVisits,filterKey){
   if(cur.length===0)return{label:'No recent activity',cls:'trend-flat',arrow:'—'};if(prior.length===0)return{label:'New activity',cls:'trend-flat',arrow:'•'};
   var cs=score(cur),ps=score(prior);if(cs>ps)return{label:'Improving',cls:'trend-up',arrow:'↑'};if(cs<ps)return{label:'Declining',cls:'trend-down',arrow:'↓'};return{label:'Flat',cls:'trend-flat',arrow:'→'};
 }
-
 function buildSummaryHtml(text){
   var t=String(text);if(t.length<=140){return'<div class="intel-text">'+escapeHtml(t)+'</div>';}
   var shortText=t.slice(0,140).trim()+'…';
   return'<div class="summary-wrap"><div class="intel-text summary-short">'+escapeHtml(shortText)+'</div><div class="intel-text summary-full">'+escapeHtml(t)+'</div><span class="summary-toggle toggle-more" onclick="this.closest(\'.summary-wrap\').classList.add(\'expanded\')">Show more</span><span class="summary-toggle toggle-less" onclick="this.closest(\'.summary-wrap\').classList.remove(\'expanded\')">Show less</span></div>';
 }
-
 function openAccountDetail(id){currentDetailAccountId=id;currentDetailFilter='30';renderAccountDetail();document.getElementById('accountDetailOverlay').style.display='flex';document.body.style.overflow='hidden';}
 function setDetailFilter(key){currentDetailFilter=key;renderAccountDetail();}
 function closeAccountDetail(){document.getElementById('accountDetailOverlay').style.display='none';document.body.style.overflow='';}
 function toggleSection(headerEl){headerEl.nextElementSibling.classList.toggle('open');headerEl.querySelector('.toggle-arrow').classList.toggle('rotated');}
 function toggleOA(id,btn){var el=document.getElementById(id);if(!el)return;var open=el.style.display!=='none';el.style.display=open?'none':'block';btn.textContent=open?'▸ Expand':'▴ Collapse';}
-
 function gotoTimeline(itemId){
   var body=document.getElementById('timeline-body');var toggle=document.getElementById('timeline-toggle');
   if(body&&!body.classList.contains('open')){if(toggle)toggleSection(toggle);}
   setTimeout(function(){var el=document.getElementById(itemId);if(!el)return;el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('tl-highlight');setTimeout(function(){el.classList.remove('tl-highlight');},1700);var wrap=el.querySelector('.summary-wrap');if(wrap)wrap.classList.add('expanded');},150);
 }
-
 function renderAccountDetail(){
   var acc=ACCOUNTS.find(function(a){return a.id===currentDetailAccountId;});if(!acc)return;
   document.getElementById('detailAccountName').textContent=acc.name;
@@ -407,7 +319,6 @@ function renderAccountDetail(){
   html+='</div></div>';
   document.getElementById('detailBody').innerHTML=html;lucide.createIcons();
 }
-
 if(role!=='Manager'){
   document.getElementById('loadingEl').style.display='none';
   document.getElementById('accessDeniedEl').style.display='flex';
