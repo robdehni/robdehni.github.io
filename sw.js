@@ -18,9 +18,9 @@ var SHELL = [
   '/fieldiq-insights.html',
   '/fieldiq-guide.html',
   '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-180.png'
+  '/icon-192.png',
+  '/icon-512.png',
+  '/icon-180.png'
 ];
 
 // Never cache these origins — always network only
