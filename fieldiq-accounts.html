@@ -249,7 +249,7 @@ function renderTerritoryGroups(){
   document.getElementById('directoryList').innerHTML=html;lucide.createIcons();
 }
 function toggleTerritory(headerEl){headerEl.nextElementSibling.classList.toggle('open');headerEl.querySelector('.territory-chevron').classList.toggle('rotated');}
-document.getElementById('directorySearch').addEventListener('input',renderDirectory);
+var _searchTimer;document.getElementById('directorySearch').addEventListener('input',function(){clearTimeout(_searchTimer);_searchTimer=setTimeout(renderDirectory,200);});
 function priorityClass(p){var s=String(p).toLowerCase();if(s==='high')return'priority-high';if(s==='medium'||s==='med')return'priority-medium';return'priority-low';}
 function outcomeClass(o){var s=String(o).toLowerCase();if(s==='positive')return'outcome-positive';if(s==='negative')return'outcome-negative';return'outcome-neutral';}
 function filterLabel(key){if(key==='7')return'Last 7 Days';if(key==='30')return'Last 30 Days';if(key==='90')return'Last 90 Days';return'All Time';}
