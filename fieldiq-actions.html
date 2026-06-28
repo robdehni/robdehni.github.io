@@ -72,6 +72,12 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   .container{max-width:620px}
 }
 </style>
+  <!-- PWA v1 -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2f8fff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="FieldIQ">
+  <link rel="apple-touch-icon" href="/icons/icon-180.png">
 </head>
 <body>
 <div class="container">
@@ -653,5 +659,6 @@ document.addEventListener('DOMContentLoaded',function(){
   loadActions(pendingScroll);
 });
 </script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
 </body>
-</html>  
+</html>

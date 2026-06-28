@@ -112,6 +112,12 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .nav-icon{margin-bottom:3px;display:flex;align-items:center;justify-content:center}
 .nav-icon [data-lucide]{width:22px;height:22px;stroke-width:1.8}
 </style>
+  <!-- PWA v1 -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2f8fff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="FieldIQ">
+  <link rel="apple-touch-icon" href="/icons/icon-180.png">
 </head>
 <body>
 
@@ -228,5 +234,6 @@ async function loadInsights(){
 loadInsights();
 document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
 </body>
 </html>
