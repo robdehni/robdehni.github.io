@@ -319,7 +319,7 @@ function buildDashboard(records){
   var todayCount=0,weekCount=0,monthCount=0,newAccountsCount=0,reps={},territories={},sentCounts={positive:0,neutral:0,negative:0,unknown:0};
   records.forEach(function(r){
     var f=r.fields;var sent=getSentiment(f['AI Summary']||'');sentCounts[sent]=(sentCounts[sent]||0)+1;
-    var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
+    var vDate=r._vDate;
     if(vDate){if(vDate>=today)todayCount++;if(vDate>=weekRange.start)weekCount++;if(vDate>=monthRange.start)monthCount++;}
     if((f["New Account"]===true||f["New Account"]==="true"||f["New Account"]===1||f["New Account"]==="1")&&f["Pending Review"]===true)newAccountsCount++;
     var rep=f['Rep Name']||'Unknown';rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
@@ -403,8 +403,8 @@ function getFilteredRecords(){
   return allRecordsRaw.filter(function(r){
     var f=r.fields;var repName=(f['Rep Name']||'').trim();repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();
     if(rep&&repName!==rep)return false;if(terr&&f['Territory']!==terr)return false;if(priority&&f['Priority']!==priority)return false;
-    if(cutoff&&f['Visit Date']&&new Date(f['Visit Date'])<cutoff)return false;
-    if(range.start||range.end){if(!f['Visit Date'])return false;var vDate=new Date(f['Visit Date']);if(range.start&&vDate<range.start)return false;if(range.end&&vDate>range.end)return false;}
+    if(cutoff&&r._vDate&&r._vDate<cutoff)return false;
+    if(range.start||range.end){if(!r._vDate)return false;var vDate=r._vDate;if(range.start&&vDate<range.start)return false;if(range.end&&vDate>range.end)return false;}
     return true;
   });
 }
@@ -423,7 +423,7 @@ function getReportRecords(days){
   return allRecordsRaw.filter(function(r){
     var f=r.fields;var repName=(f['Rep Name']||'').trim();repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();
     if(rep&&repName!==rep)return false;if(terr&&f['Territory']!==terr)return false;if(priority&&f['Priority']!==priority)return false;
-    if(!f['Visit Date'])return false;var vDate=new Date(f['Visit Date']);if(vDate<startDate||vDate>endDate)return false;return true;
+    if(!r._vDate)return false;var vDate=r._vDate;if(vDate<startDate||vDate>endDate)return false;return true;
   });
 }
 function buildRepReviewReport(){
@@ -458,7 +458,7 @@ function resetFilters(){
 async function loadDashboard(){
   try{
     var res=await fetch(WORKER_URL+'/get-visits');var data=await res.json();if(!res.ok)throw new Error(JSON.stringify(data));
-    allRecordsRaw=data.records||[];populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';
+    allRecordsRaw=data.records||[];allRecordsRaw.forEach(function(r){r._vDate=r.fields['Visit Date']?new Date(r.fields['Visit Date']):null;});populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';
     buildDashboard(allRecordsRaw);buildNewAccountsCard(allRecordsRaw);renderPrioritySection(allRecordsRaw.filter(function(r){return r.fields['Reviewed']!==true;}));
   }catch(err){document.getElementById('loadingEl').textContent='Failed to load: '+err.message;}
 }
