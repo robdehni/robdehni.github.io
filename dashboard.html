@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FieldIQ — Dashboard</title>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js" defer></script>
 <style>
 [data-lucide]{display:inline-block;vertical-align:middle;stroke-width:2}
 .nav-icon [data-lucide]{width:22px;height:22px}
@@ -16,8 +16,6 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px 18px 80px}
 .container{max-width:780px;margin:0 auto}
-
-/* ── Brand block — matches fieldiq.html reference ── */
 .topbar{margin-bottom:18px}
 .topbar-brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
 .brand-cloud{font-size:26px;line-height:1}
@@ -25,48 +23,29 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .brand-text h1 span{color:#2f8fff}
 .brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
 .topbar-sub{color:#7a8aa3;font-size:12.5px;margin-top:4px;font-weight:600}
-
-/* ── Manager badge — 20px pill matching fieldiq.html ── */
-.manager-badge{
-  display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#d98a1c;
-  border:1px solid #ffe5b3;border-radius:20px;font-size:10.5px;font-weight:800;
-  padding:4px 12px;margin-left:10px;text-transform:uppercase;letter-spacing:0.4px;
-  box-shadow:0 2px 8px rgba(217,138,28,0.1);vertical-align:middle;
-}
-
-.home-btn{
-  display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
-  text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:14px;border:1px solid #e3ebf5;
-  box-shadow:0 2px 8px rgba(11,31,58,0.05);
-}
+.manager-badge{display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#d98a1c;border:1px solid #ffe5b3;border-radius:20px;font-size:10.5px;font-weight:800;padding:4px 12px;margin-left:10px;text-transform:uppercase;letter-spacing:0.4px;box-shadow:0 2px 8px rgba(217,138,28,0.1);vertical-align:middle;}
+.home-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:14px;border:1px solid #e3ebf5;box-shadow:0 2px 8px rgba(11,31,58,0.05);}
 .home-btn:hover{border-color:#2f8fff}
-
 .filter-bar{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:16px;margin-bottom:18px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .filter-bar h3{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:12px}
 .filter-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.filter-select{
-  width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;
-  font-size:12.5px;outline:none;font-weight:600;
-}
+.filter-select{width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;font-size:12.5px;outline:none;font-weight:600;}
 .filter-select:focus{border-color:#2f8fff}
 .filter-btns{display:flex;gap:8px}
 .fbtn-apply{flex:1;padding:11px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:10px;font-size:12.5px;font-weight:800;cursor:pointer;box-shadow:0 6px 16px rgba(47,143,255,0.3)}
 .fbtn-reset{flex:1;padding:11px;background:#fff;color:#7a8aa3;border:1.5px solid #e3ebf5;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer}
 .filter-active{font-size:10.5px;color:#2f8fff;margin-top:8px;text-align:center;min-height:14px;font-weight:700}
-
 .report-period-panel{display:none;margin-top:12px;padding-top:12px;border-top:1px solid #eef3f9}
 .report-period-title{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:8px}
 .report-period-pills{display:flex;gap:6px;flex-wrap:wrap}
 .rp-pill{flex:1;min-width:64px;text-align:center;padding:9px 4px;border-radius:10px;font-size:11px;font-weight:800;background:#f4f8fc;border:1.5px solid #e3ebf5;color:#5b6b85;cursor:pointer}
 .rp-pill.active{background:#2f8fff;border-color:#2f8fff;color:#fff}
 .rp-generate-btn{margin-top:10px;width:100%}
-
 .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .kpi-card{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .kpi-label{font-size:10px;color:#8a9bb3;text-transform:uppercase;letter-spacing:0.8px;font-weight:800;margin-bottom:6px}
 .kpi-value{font-size:28px;font-weight:800;color:#2f8fff}
 .kpi-sub{font-size:11px;color:#aab8cc;margin-top:3px;font-weight:600}
-
 .sentiment-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px}
 .sent-card{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px;text-align:center;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .sent-label{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;font-weight:800}
@@ -74,7 +53,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .sent-positive .sent-label,.sent-positive .sent-value{color:#1fa861}
 .sent-neutral .sent-label,.sent-neutral .sent-value{color:#d98a1c}
 .sent-negative .sent-label,.sent-negative .sent-value{color:#e0344a}
-
 .section-title{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #e3ebf5}
 .open-actions-toggle{display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #e3ebf5;user-select:none}
 .open-actions-toggle:hover .open-actions-label{color:#2f8fff}
@@ -108,18 +86,15 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .plabel-high{background:#ffe5e8;color:#e0344a}
 .plabel-medium{background:#fff3e0;color:#d98a1c}
 .plabel-low{background:#e3f8ea;color:#1fa861}
-
 .rep-table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid #e3ebf5;border-radius:14px;overflow:hidden;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .rep-table th{color:#8a9bb3;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;font-weight:800;padding:10px 12px;text-align:left;border-bottom:1px solid #eef3f9}
 .rep-table td{padding:12px;border-bottom:1px solid #f4f8fc;color:#3a4a63}
 .rep-table tr:last-child td{border-bottom:none}
-
 .territory-item{margin-bottom:12px;background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:14px;box-shadow:0 3px 10px rgba(11,31,58,0.04)}
 .territory-header{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px}
 .territory-name{color:#3a4a63;font-weight:700}.territory-count{color:#2f8fff;font-weight:800}
 .territory-bar-bg{background:#eef3f9;border-radius:4px;height:7px}
 .territory-bar-fill{background:linear-gradient(90deg,#3d9bff,#2f8fff);border-radius:4px;height:7px}
-
 .activity-item{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:14px;margin-bottom:8px;box-shadow:0 3px 10px rgba(11,31,58,0.04)}
 .activity-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
 .activity-hospital{font-size:13.5px;font-weight:800;color:#0b1f3a}
@@ -133,7 +108,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .badge-rep{background:#eaf3ff;color:#2f8fff}
 .badge-territory{background:#eef3f9;color:#5b6b85}
 .activity-summary{font-size:11.5px;color:#7a8aa3;margin-top:8px;line-height:1.6}
-
 .radar-card{background:#fff;border:1px solid #e3ebf5;border-left:3px solid #2f8fff;border-radius:0 14px 14px 0;padding:14px;margin-bottom:8px;box-shadow:0 3px 10px rgba(11,31,58,0.04)}
 .radar-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
 .radar-account{font-size:13.5px;font-weight:800;color:#0b1f3a}
@@ -141,41 +115,24 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .radar-evidence-line{position:relative;padding-left:12px}
 .radar-evidence-line:before{content:"•";color:#2f8fff;font-weight:800;position:absolute;left:0}
 .radar-date{font-size:11px;color:#aab8cc;font-weight:600;margin-top:8px}
-
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e3ebf5;display:flex;z-index:9999;box-shadow:0 -4px 16px rgba(11,31,58,0.06)}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:#aab8cc;font-size:11px;font-weight:700;transition:color 0.2s}
 .nav-item.active{color:#2f8fff}
 .nav-icon{font-size:22px;margin-bottom:3px}
-
 .loading{text-align:center;padding:50px;color:#aab8cc;font-weight:600}
 .spinner{width:36px;height:36px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;color:#aab8cc;font-size:13px;padding:20px;font-weight:600}
-
-.access-denied{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
-  padding:80px 24px;
-}
+.access-denied{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px;}
 .access-denied-icon{font-size:54px;margin-bottom:16px}
 .access-denied h2{font-size:20px;color:#0b1f3a;font-weight:800;margin-bottom:8px}
 .access-denied p{font-size:13.5px;color:#7a8aa3;font-weight:600;max-width:340px;line-height:1.6;margin-bottom:20px}
-.access-denied a{
-  display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;
-  text-decoration:none;padding:13px 28px;border-radius:14px;box-shadow:0 8px 20px rgba(47,143,255,0.32);font-size:14px;
-}
-
-@media(min-width:1100px){
-  .container{max-width:1300px}
-  body{padding:32px 40px 90px}
-  .kpi-grid{grid-template-columns:repeat(4,1fr)}
-  .sentiment-row{grid-template-columns:repeat(3,1fr);max-width:600px}
-  .dash-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start}
-}
+.access-denied a{display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;text-decoration:none;padding:13px 28px;border-radius:14px;box-shadow:0 8px 20px rgba(47,143,255,0.32);font-size:14px;}
+@media(min-width:1100px){.container{max-width:1300px}body{padding:32px 40px 90px}.kpi-grid{grid-template-columns:repeat(4,1fr)}.sentiment-row{grid-template-columns:repeat(3,1fr);max-width:600px}.dash-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start}}
 </style>
 </head>
 <body>
 <div class="container">
-
 <div class="topbar">
   <div class="topbar-brand">
     <span class="brand-cloud">☁️</span>
@@ -186,15 +143,11 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   </div>
   <p class="topbar-sub" id="lastUpdated">Loading dashboard...</p>
 </div>
-
 <a href="./fieldiq.html" class="home-btn">← Home</a>
-
 <div id="filterBar" class="filter-bar" style="display:none">
   <h3>Manager Filters</h3>
   <div class="filter-row">
-    <select class="filter-select" id="filterRep">
-      <option value="">All Reps</option>
-    </select>
+    <select class="filter-select" id="filterRep"><option value="">All Reps</option></select>
     <select class="filter-select" id="filterTerritory">
       <option value="">All Territories</option>
       <option>UAE</option><option>KSA</option><option>Qatar</option>
@@ -224,7 +177,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
     <button class="fbtn-reset" onclick="toggleReportPeriodPanel()">Rep Review Report</button>
   </div>
   <div class="filter-active" id="filterStatus"></div>
-
   <div id="reportPeriodPanel" class="report-period-panel">
     <div class="report-period-title">Choose Report Period</div>
     <div class="report-period-pills">
@@ -237,7 +189,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
     <button class="fbtn-apply rp-generate-btn" onclick="buildRepReviewReport()">Generate Report</button>
   </div>
 </div>
-
 <div id="dashContent" style="display:none">
   <div class="dash-grid">
   <div>
@@ -290,24 +241,16 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <a class="nav-item" href="fieldiq-visits-map.html"><span class="nav-icon"><i data-lucide="map-pin"></i></span>Visit Map</a>
   <a class="nav-item active" href="dashboard.html"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>Dashboard</a>
 </nav>
-
 <script>
 var role = localStorage.getItem('fieldiq_user_role');
 var isManager = (role === 'Manager');
-
 var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
 var allRecords=[];
-
 function getSentiment(s){if(!s)return'unknown';s=s.toLowerCase();var i=s.indexOf('sentiment');if(i>-1){var t=s.substring(i,i+120);if(t.indexOf('positive')>-1)return'positive';if(t.indexOf('negative')>-1)return'negative';if(t.indexOf('neutral')>-1)return'neutral';}if(s.indexOf('positive')>-1)return'positive';if(s.indexOf('negative')>-1)return'negative';if(s.indexOf('neutral')>-1)return'neutral';return'unknown';}
 function getBadgeClass(s){if(s==='positive')return'badge-positive';if(s==='neutral')return'badge-neutral';if(s==='negative')return'badge-negative';return'badge-unknown';}
 function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
-
 function getPeriodRange(period){
-  var now=new Date();
-  var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-  var dayOfWeek=today.getDay();
-  var diffToMonday=(dayOfWeek===0?6:dayOfWeek-1);
-  var thisMonday=new Date(today);thisMonday.setDate(today.getDate()-diffToMonday);
+  var now=new Date();var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());var dayOfWeek=today.getDay();var diffToMonday=(dayOfWeek===0?6:dayOfWeek-1);var thisMonday=new Date(today);thisMonday.setDate(today.getDate()-diffToMonday);
   if(period==='today'){return {start:today,end:null};}
   if(period==='yesterday'){var yest=new Date(today);yest.setDate(today.getDate()-1);var yestEnd=new Date(today);yestEnd.setMilliseconds(-1);return {start:yest,end:yestEnd};}
   if(period==='thisWeek'){return {start:thisMonday,end:null};}
@@ -316,14 +259,12 @@ function getPeriodRange(period){
   if(period==='lastMonth'){var lm=new Date(now.getFullYear(),now.getMonth()-1,1);var lmEnd=new Date(now.getFullYear(),now.getMonth(),0);lmEnd.setHours(23,59,59,999);return {start:lm,end:lmEnd};}
   return {start:null,end:null};
 }
-
 function buildVisitHistoryLink(overrides){
   var params={rep:document.getElementById('filterRep').value,territory:document.getElementById('filterTerritory').value,priority:document.getElementById('filterPriority').value,period:document.getElementById('filterDate').value};
   for(var k in overrides){params[k]=overrides[k];}
   var qs=[];Object.keys(params).forEach(function(k){if(params[k])qs.push(k+'='+encodeURIComponent(params[k]));});
   return 'fieldiq-visit-history.html'+(qs.length?'?'+qs.join('&'):'');
 }
-
 async function updatePriority(recordId,newPriority,cardEl){
   var btns=cardEl.querySelectorAll('.pbtn');btns.forEach(function(b){b.disabled=true;});
   try{
@@ -332,7 +273,6 @@ async function updatePriority(recordId,newPriority,cardEl){
     else{btns.forEach(function(b){b.disabled=false;});alert('Failed to update priority. Please try again.');}
   }catch(err){btns.forEach(function(b){b.disabled=false;});alert('Error: '+err.message);}
 }
-
 async function markReviewed(recordId,btnEl){
   btnEl.disabled=true;btnEl.textContent='Saving...';
   try{
@@ -341,7 +281,6 @@ async function markReviewed(recordId,btnEl){
     else{btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Failed to mark reviewed. Please try again.');}
   }catch(err){btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Error: '+err.message);}
 }
-
 function makePriorityCard(record){
   var f=record.fields;var current=(f['Priority']||'Medium');var rep=f['Rep Name']||'Unknown';var date=formatDate(f['Visit Date']);
   var div=document.createElement('div');div.className='priority-card';
@@ -359,9 +298,7 @@ function makePriorityCard(record){
   }
   return div;
 }
-
 function toggleOpenActions(){document.getElementById('openActionsBody').classList.toggle('open');document.getElementById('oaArrow').classList.toggle('rotated');}
-
 function renderPrioritySection(records){
   var high=[],medium=[],low=[];
   records.forEach(function(r){var p=r.fields['Priority']||'';if(p==='High')high.push(r);else if(p==='Medium')medium.push(r);else if(p==='Low')low.push(r);});
@@ -375,7 +312,6 @@ function renderPrioritySection(records){
   renderBucket(document.getElementById('priorityMedium'),medium,'Medium Priority','#ffaa44','Medium');
   renderBucket(document.getElementById('priorityLow'),low,'Low Priority','#44cc88','Low');
 }
-
 function buildDashboard(records){
   allRecords=records;
   var today=new Date();today.setHours(0,0,0,0);
@@ -420,7 +356,6 @@ function buildDashboard(records){
   document.getElementById('dashContent').style.display='block';
   document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
 }
-
 function buildManagementRadar(records){
   var accounts={};
   records.forEach(function(r){
@@ -454,15 +389,12 @@ function buildManagementRadar(records){
   });
   document.getElementById('managementRadar').innerHTML=html||'<div class="empty">No accounts currently need attention</div>';
 }
-
 var allRecordsRaw=[];
-
 function populateRepFilter(records){
   var reps={};records.forEach(function(r){var rep=r.fields['Rep Name']||'';if(rep){rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();reps[rep]=1;}});
   var sel=document.getElementById('filterRep');while(sel.options.length>1)sel.remove(1);
   Object.keys(reps).sort().forEach(function(r){var o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});
 }
-
 function getFilteredRecords(){
   var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var period=document.getElementById('filterDate').value;var priority=document.getElementById('filterPriority').value;
   var cutoff=null;var range={start:null,end:null};
@@ -476,20 +408,15 @@ function getFilteredRecords(){
     return true;
   });
 }
-
 function csvEscape(val){val=(val===null||val===undefined)?'':String(val);if(val.indexOf('"')>-1||val.indexOf(',')>-1||val.indexOf('\n')>-1){val='"'+val.replace(/"/g,'""')+'"';}return val;}
 function exportFilteredCSV(){var records=getFilteredRecords();if(!records.length){alert('No visits match the current filters — nothing to export.');return;}var headers=['Account','Territory','Date','Rep','Priority','Outcome'];var rows=[headers.join(',')];records.forEach(function(r){var f=r.fields;var row=[f['Hospital Name']||'',f['Territory']||'',f['Visit Date']||'',f['Rep Name']||'',f['Priority']||'',f['Outcome']||''].map(csvEscape);rows.push(row.join(','));});var csvContent=rows.join('\n');var blob=new Blob([csvContent],{type:'text/csv;charset=utf-8;'});var url=URL.createObjectURL(blob);var a=document.createElement('a');var today=new Date().toISOString().slice(0,10);a.href=url;a.download='FieldIQ-Visits-'+today+'.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
-
 function escapeHtml(s){s=(s===null||s===undefined)?'':String(s);return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function groupCount(records,getKey){var counts={};records.forEach(function(r){var key=getKey(r)||'Unspecified';counts[key]=(counts[key]||0)+1;});return counts;}
 function countsToRows(counts){return Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];}).map(function(k){return'<div class="rr-count-row"><span>'+escapeHtml(k)+'</span><span>'+counts[k]+'</span></div>';}).join('');}
-
 var reportPeriodDays=30;
 var REPORT_PERIOD_LABELS={7:'Last 7 Days',30:'Last 30 Days',90:'Quarterly',180:'Half-Yearly',365:'Annual'};
-
 function toggleReportPeriodPanel(){var panel=document.getElementById('reportPeriodPanel');var willOpen=panel.style.display!=='block';if(willOpen){reportPeriodDays=30;document.querySelectorAll('.rp-pill').forEach(function(p){p.classList.toggle('active',p.getAttribute('data-days')==='30');});}panel.style.display=willOpen?'block':'none';}
 function selectReportPeriod(days,el){reportPeriodDays=days;document.querySelectorAll('.rp-pill').forEach(function(p){p.classList.remove('active');});el.classList.add('active');}
-
 function getReportRecords(days){
   var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var priority=document.getElementById('filterPriority').value;
   var endDate=new Date();var startDate=new Date(endDate.getTime()-days*24*60*60*1000);
@@ -499,7 +426,6 @@ function getReportRecords(days){
     if(!f['Visit Date'])return false;var vDate=new Date(f['Visit Date']);if(vDate<startDate||vDate>endDate)return false;return true;
   });
 }
-
 function buildRepReviewReport(){
   var days=reportPeriodDays;var endDate=new Date();var startDate=new Date(endDate.getTime()-days*24*60*60*1000);var records=getReportRecords(days);
   var rep=document.getElementById('filterRep').value||'All Reps';var terr=document.getElementById('filterTerritory').value||'All Territories';
@@ -517,7 +443,6 @@ function buildRepReviewReport(){
   try{localStorage.setItem('fieldiq_report',reportPayload);}catch(e){alert('Report data is too large for this device. Please filter by Rep or use a shorter reporting period.');return;}
   var rLink=document.createElement('a');rLink.href='fieldiq-report.html';rLink.target='_blank';rLink.rel='noopener noreferrer';document.body.appendChild(rLink);rLink.click();document.body.removeChild(rLink);
 }
-
 function applyFilters(){
   var filtered=getFilteredRecords();var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var period=document.getElementById('filterDate').value;var priority=document.getElementById('filterPriority').value;
   var periodLabels={today:'Today',yesterday:'Yesterday',thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};
@@ -525,13 +450,11 @@ function applyFilters(){
   document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+filtered.length+' visits)':'';
   buildDashboard(filtered);renderPrioritySection(allRecordsRaw.filter(function(r){return r.fields['Reviewed']!==true;}));
 }
-
 function resetFilters(){
   document.getElementById('filterRep').value='';document.getElementById('filterTerritory').value='';document.getElementById('filterDate').value='';document.getElementById('filterPriority').value='';document.getElementById('filterStatus').textContent='';document.getElementById('reportPeriodPanel').style.display='none';reportPeriodDays=30;
   document.querySelectorAll('.rp-pill').forEach(function(p){p.classList.toggle('active',p.getAttribute('data-days')==='30');});
   buildDashboard(allRecordsRaw);renderPrioritySection(allRecordsRaw.filter(function(r){return r.fields['Reviewed']!==true;}));
 }
-
 async function loadDashboard(){
   try{
     var res=await fetch(WORKER_URL+'/get-visits');var data=await res.json();if(!res.ok)throw new Error(JSON.stringify(data));
@@ -539,7 +462,6 @@ async function loadDashboard(){
     buildDashboard(allRecordsRaw);buildNewAccountsCard(allRecordsRaw);renderPrioritySection(allRecordsRaw.filter(function(r){return r.fields['Reviewed']!==true;}));
   }catch(err){document.getElementById('loadingEl').textContent='Failed to load: '+err.message;}
 }
-
 async function markPendingReviewed(recordId,btnEl){
   btnEl.disabled=true;btnEl.textContent='Saving...';
   try{
@@ -548,7 +470,6 @@ async function markPendingReviewed(recordId,btnEl){
     else{btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Failed to mark reviewed. Please try again.');}
   }catch(err){btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Error: '+err.message);}
 }
-
 function buildNewAccountsCard(records){
   var newOnes=records.filter(function(r){var f=r.fields;var isNew=f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1';var stillPending=f['Pending Review']===true;return isNew&&stillPending;});
   newOnes.sort(function(a,b){var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):0;var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):0;return db-da;});newOnes=newOnes.slice(0,10);
@@ -560,7 +481,6 @@ function buildNewAccountsCard(records){
     var btn=document.createElement('button');btn.className='pbtn-reviewed';btn.style.marginTop='8px';btn.textContent='✓ Mark Reviewed';btn.addEventListener('click',function(){markPendingReviewed(r.id,btn);});div.appendChild(btn);container.appendChild(div);
   });
 }
-
 if (role !== 'Manager') {
   document.getElementById('loadingEl').style.display = 'none';
   document.getElementById('accessDeniedHomeBtn').href = './index.html';
