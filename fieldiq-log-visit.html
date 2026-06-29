@@ -446,7 +446,7 @@ submitBtn.addEventListener('click',async function(){
       newAccountId=accData.id;ACCOUNTS.push({id:newAccountId,name:hospitalName,territory:territory});
       if(newContactName){
         document.getElementById('processingText').textContent='Saving contact...';
-        var contactPayload={'Contact Name':newContactName,'Role':newContactRole,'Mobile':newContactPhone,'Email':newContactEmail,'Status':'Current','Accounts':[newAccountId],'Added By':userId};
+        var contactPayload={'Contact Name':newContactName,'Account Role':newContactRole,'Mobile':newContactPhone,'Email':newContactEmail,'Status':'Current','Accounts':[newAccountId],'Added By':userId};
         var contactRes=await fetch(WORKER+'/save-contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(contactPayload)});
         var contactData=await contactRes.json();
         if(!contactRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';alert('The account "'+hospitalName+'" was created successfully, but saving the contact failed. The visit has NOT been saved yet.\n\nSubmit again — this time search for "'+hospitalName+'" instead of using "Account not listed," since it already exists now.\n\n'+JSON.stringify(contactData));return;}
