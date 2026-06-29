@@ -1102,8 +1102,9 @@ function renderManagerIntelligence(weeks) {
     if(!avs.some(function(v){return v.fields['Priority']==='High';})) return;
     if(avs.some(function(v){return normDate(v.fields['Visit Date'])>todayDate;})) return;
     var lp=avs.find(function(v){return normDate(v.fields['Visit Date'])<=todayDate;});
-    if(lp) watch.push((lp.fields['Hospital Name']||accKey)+
-      ' \u2014 high priority, last visited '+daysSince(normDate(lp.fields['Visit Date']))+' days ago, nothing scheduled');
+    if(lp){var ds2=daysSince(normDate(lp.fields['Visit Date']));
+      if(ds2>=14) watch.push((lp.fields['Hospital Name']||accKey)+
+        ' \u2014 high priority, last visited '+ds2+' days ago, nothing scheduled');}
   });
 
   // WATCH: accounts going cold
@@ -1120,10 +1121,10 @@ function renderManagerIntelligence(weeks) {
   });
   watch.sort();
 
-  // MONITOR: reps with no visits this week
+  // MONITOR: reps with no visits this week (Thu–Sat only — not actionable earlier)
   var twS=formatDateISO(getMondayOf(new Date()));
   var twE=formatDateISO(addDays(getMondayOf(new Date()),6));
-  activeRepNames.forEach(function(rep){
+  if(new Date().getDay()>=4||new Date().getDay()===0) activeRepNames.forEach(function(rep){
     var has=allVisits.some(function(v){var d=normDate(v.fields['Visit Date']);
       return (v.fields['Rep Name']||'')===rep&&d>=twS&&d<=twE;});
     if(!has){
@@ -1145,8 +1146,10 @@ function renderManagerIntelligence(weeks) {
   var coldT=Array.from(allT).filter(function(t){return !tInW.has(t);});
   if(coldT.length) monitor.push('No planned coverage in current window: '+coldT.join(', '));
 
-  // MONITOR: overloaded reps (6+ visits in one week)
+  // MONITOR: overloaded reps — current and future weeks only
+  var thisMon=formatDateISO(getMondayOf(new Date()));
   weeks.forEach(function(week){
+    if(week.startStr<thisMon) return; // past weeks are not actionable
     activeRepNames.forEach(function(rep){
       var n=allVisits.filter(function(v){var d=normDate(v.fields['Visit Date']);
         return (v.fields['Rep Name']||'')===rep&&d>=week.startStr&&d<=week.endStr;}).length;
@@ -1159,21 +1162,19 @@ function renderManagerIntelligence(weeks) {
   if(!actNow.length&&!watch.length&&!monitor.length){
     html+='<div class="mi-clean">&#10003; No immediate attention required \u2014 all reps and accounts on track.</div>';
   } else {
-    if(actNow.length){
-      html+='<div class="mi-tier mi-tier-high">&#9873; Act Now</div>';
-      actNow.forEach(function(i){html+='<div class="gap-item"><div class="gap-icon gap-icon-red">!</div>'+
-        '<div><div class="gap-title" style="color:#c0392b">'+escapeHtml(i)+'</div></div></div>';});
+    function renderTier(label,tierCls,icon,iconCls,colourStyle,items){
+      var CAP=5;
+      html+='<div class="mi-tier '+tierCls+'">'+label+'</div>';
+      items.slice(0,CAP).forEach(function(i){
+        html+='<div class="gap-item"><div class="gap-icon '+iconCls+'">'+icon+'</div>'+
+          '<div><div class="gap-title"'+(colourStyle?' style="color:'+colourStyle+'"':'')+'>'+escapeHtml(i)+'</div></div></div>';
+      });
+      if(items.length>CAP) html+='<div class="gap-item"><div class="gap-icon '+iconCls+'">+</div>'+
+        '<div><div class="gap-title" style="color:#8a9bb3">...and '+(items.length-CAP)+' more</div></div></div>';
     }
-    if(watch.length){
-      html+='<div class="mi-tier mi-tier-watch">&#9650; Watch</div>';
-      watch.forEach(function(i){html+='<div class="gap-item"><div class="gap-icon gap-icon-orange">&#9650;</div>'+
-        '<div><div class="gap-title">'+escapeHtml(i)+'</div></div></div>';});
-    }
-    if(monitor.length){
-      html+='<div class="mi-tier mi-tier-monitor">&#9679; Monitor</div>';
-      monitor.forEach(function(i){html+='<div class="gap-item"><div class="gap-icon gap-icon-blue">&#9679;</div>'+
-        '<div><div class="gap-title">'+escapeHtml(i)+'</div></div></div>';});
-    }
+    if(actNow.length) renderTier('&#9873; Act Now','mi-tier-high','!','gap-icon-red','#c0392b',actNow);
+    if(watch.length)  renderTier('&#9650; Watch','mi-tier-watch','&#9650;','gap-icon-orange','',watch);
+    if(monitor.length)renderTier('&#9679; Monitor','mi-tier-monitor','&#9679;','gap-icon-blue','',monitor);
   }
   return html+'</div>';
 }
