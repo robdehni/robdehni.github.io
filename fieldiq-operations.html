@@ -911,9 +911,9 @@ function jumpToDate(dateStr) {
 
 // ── Timeline matrix ───────────────────────────────────────────────────────
 function renderTimeline() {
-  if (!tlWindowStart) tlWindowStart = getMondayOf(new Date());
+  if (!tlWindowStart) tlWindowStart = addDays(getMondayOf(new Date()), -4*7); // centre: 4 back + now + 4 ahead
   var thisMonday = getMondayOf(new Date());
-  var TL_WEEKS = 8;
+  var TL_WEEKS = 9; // 4 historical + current week + 4 ahead
   var weeks = [];
   for (var i=0;i<TL_WEEKS;i++){
     var ws = addDays(tlWindowStart, i*7);
@@ -960,21 +960,14 @@ function renderTimeline() {
   var curMonthVal = tlWindowStart.getFullYear()+'-'+String(tlWindowStart.getMonth()+1).padStart(2,'0');
   var html =
     '<div class="tl-nav">'+
-      '<div class="tl-nav-quick">'+
-        '<button class="tl-nav-btn'+(windowInclNow?' tl-active':'')+'" onclick="tlToday()">Today</button>'+
-        '<button class="tl-nav-btn" onclick="tlNextWeek()">Next Week</button>'+
-        '<button class="tl-nav-btn" onclick="tlThisMonth()">This Month</button>'+
-        '<button class="tl-nav-btn" onclick="tlNextMonth()">Next Month</button>'+
-        '<input class="tl-jump-input" type="month" value="'+curMonthVal+'" onchange="tlJumpMonth(this.value)" title="Jump to any month">'+
-      '</div>'+
       '<div class="tl-nav-arrows">'+
-        '<button class="tl-nav-arr" onclick="tlShiftWeeks(-4)" title="Back 4 weeks">&laquo;</button>'+
-        '<button class="tl-nav-arr" onclick="tlShiftWeeks(-1)" title="Back 1 week">&larr;</button>'+
+        '<button class="tl-nav-arr" onclick="tlShiftWeeks(-1)" title="Back 1 week">&larr; Back</button>'+
+        '<button class="tl-nav-btn'+(windowInclNow?' tl-active':'')+'" onclick="tlToday()">Today</button>'+
         '<span class="tl-window-label">'+escapeHtml(periodStart)+' &mdash; '+escapeHtml(periodEnd)+'</span>'+
-        '<button class="tl-nav-arr" onclick="tlShiftWeeks(1)" title="Forward 1 week">&rarr;</button>'+
-        '<button class="tl-nav-arr" onclick="tlShiftWeeks(4)" title="Forward 4 weeks">&raquo;</button>'+
+        '<button class="tl-nav-arr" onclick="tlShiftWeeks(1)" title="Forward 1 week">Forward &rarr;</button>'+
       '</div>'+
     '</div>';
+  html += renderManagerIntelligence(weeks);
   html += '<div class="section-label">Team Schedule — '+escapeHtml(periodStart)+' to '+escapeHtml(periodEnd)+'</div>';
 
   if (!repList.length){
@@ -1026,7 +1019,6 @@ function renderTimeline() {
   });
 
   html += '</tbody></table></div>';
-  html += renderManagerIntelligence(weeks);
   document.getElementById('timelineZone').innerHTML = html;
 }
 
@@ -1163,7 +1155,7 @@ function tlShiftWeeks(n){
   if(!tlWindowStart) tlWindowStart=getMondayOf(new Date());
   tlWindowStart=addDays(tlWindowStart,n*7); renderTimeline();
 }
-function tlToday(){ tlWindowStart=getMondayOf(new Date()); renderTimeline(); }
+function tlToday(){ tlWindowStart=addDays(getMondayOf(new Date()),-4*7); renderTimeline(); }
 function tlNextWeek(){ tlWindowStart=addDays(getMondayOf(new Date()),7); renderTimeline(); }
 function tlThisMonth(){ var d=new Date();d.setDate(1);tlWindowStart=getMondayOf(d);renderTimeline(); }
 function tlNextMonth(){ var d=new Date();d.setMonth(d.getMonth()+1);d.setDate(1);tlWindowStart=getMondayOf(d);renderTimeline(); }
