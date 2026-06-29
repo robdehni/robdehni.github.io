@@ -195,6 +195,8 @@ function escapeHtml(str) {
   });
 }
 
+function normDate(d) { return (d||'').slice(0,10); }
+
 function formatDateISO(d) {
   var y = d.getFullYear();
   var m = String(d.getMonth()+1).padStart(2,'0');
@@ -266,7 +268,7 @@ function buildIndices() {
   // visitsByDate
   visitsByDate = {};
   allVisits.forEach(function(v) {
-    var d = v.fields['Visit Date'];
+    var d = normDate(v.fields['Visit Date']);
     if (!d) return;
     if (!visitsByDate[d]) visitsByDate[d]=[];
     visitsByDate[d].push(v);
@@ -282,7 +284,7 @@ function buildIndices() {
   });
   Object.keys(visitsByAccount).forEach(function(k){
     visitsByAccount[k].sort(function(a,b){
-      return new Date(b.fields['Visit Date']||0)-new Date(a.fields['Visit Date']||0);
+      return normDate(b.fields['Visit Date']).localeCompare(normDate(a.fields['Visit Date']));
     });
   });
 
@@ -337,19 +339,19 @@ function getSignals(visit) {
   // Last visit to this account BEFORE selected date
   var accVisits = visitsByAccount[accKey]||[];
   var lastVisit = accVisits.find(function(v){
-    return v.fields['Visit Date'] < dateStr;
+    return normDate(v.fields['Visit Date']) < dateStr;
   });
 
   // Actions for this rep
   var repActions = getRepActionsById(repName);
   var overdueActions = repActions.filter(function(a){
-    var due = a.fields['Due Date'];
+    var due = normDate(a.fields['Due Date']);
     return due && due < todayStr;
   });
 
   // Is this a new relationship for this rep?
   var isNew = !accVisits.some(function(v){
-    return (v.fields['Rep Name']||'')===repName && v.fields['Visit Date']<dateStr;
+    return (v.fields['Rep Name']||'')===repName && normDate(v.fields['Visit Date'])<dateStr;
   });
 
   var alertLevel = 0;
@@ -361,7 +363,7 @@ function getSignals(visit) {
     lastVisit:      lastVisit||null,
     lastOutcome:    lastVisit ? (lastVisit.fields['Outcome']||'') : '',
     lastAISummary:  lastVisit ? (lastVisit.fields['AI Summary']||'') : '',
-    lastVisitDate:  lastVisit ? lastVisit.fields['Visit Date'] : '',
+    lastVisitDate:  lastVisit ? normDate(lastVisit.fields['Visit Date']) : '',
     lastActionItems:lastVisit ? (lastVisit.fields['Action Items']||'') : '',
     negativeLastOutcome: lastVisit && lastVisit.fields['Outcome']==='Negative',
     positiveLastOutcome: lastVisit && lastVisit.fields['Outcome']==='Positive',
@@ -397,11 +399,11 @@ function getSignalsForDate(visit, dateStr) {
   var f = visit.fields;
   var accKey = (f['Hospital Name']||'').trim().toLowerCase();
   var accVisits = visitsByAccount[accKey]||[];
-  var lastVisit = accVisits.find(function(v){ return v.fields['Visit Date']<dateStr; });
+  var lastVisit = accVisits.find(function(v){ return normDate(v.fields['Visit Date'])<dateStr; });
   var repName = f['Rep Name']||'';
   var repActions = getRepActionsById(repName);
   var overdueCount = repActions.filter(function(a){
-    var due = a.fields['Due Date'];
+    var due = normDate(a.fields['Due Date']);
     return due && due<todayStr;
   }).length;
   var alertLevel = overdueCount>0 ? 3 : (lastVisit&&lastVisit.fields['Outcome']==='Negative') ? 2 : repActions.length>0 ? 1 : 0;
@@ -542,10 +544,10 @@ function renderMain() {
       var lastVisitDate = '';
       var allRepVisits = allVisits.filter(function(v){ return v.fields['Rep Name']===repName; });
       if (allRepVisits.length){
-        var sorted = allRepVisits.filter(function(v){ return v.fields['Visit Date']<=dateStr; })
-          .sort(function(a,b){ return new Date(b.fields['Visit Date'])-new Date(a.fields['Visit Date']); });
+        var sorted = allRepVisits.filter(function(v){ return normDate(v.fields['Visit Date'])<=dateStr; })
+          .sort(function(a,b){ return normDate(b.fields['Visit Date']).localeCompare(normDate(a.fields['Visit Date'])); });
         if (sorted.length) {
-          var ld = new Date(sorted[0].fields['Visit Date']+'T00:00:00');
+          var ld = new Date(normDate(sorted[0].fields['Visit Date'])+'T00:00:00');
           var dayDiff = Math.round((new Date(dateStr+'T00:00:00')-ld)/(1000*60*60*24));
           if (dayDiff===0) lastVisitDate = 'Last visit: today';
           else if (dayDiff===1) lastVisitDate = 'Last visit: yesterday';
@@ -710,7 +712,7 @@ function buildGapIntelligence(dateStr) {
   // 1. Overdue actions across the team
   if (actionsOk) {
     var overdueAll = allActions.filter(function(a){
-      var due = a.fields['Due Date'];
+      var due = normDate(a.fields['Due Date']);
       return due && due < todayStr;
     });
     if (overdueAll.length>0) {
@@ -738,7 +740,7 @@ function buildGapIntelligence(dateStr) {
     if (lastVisit.fields['Outcome']!=='Negative') return;
     if (lastVisit.fields['Priority']!=='High') return;
     // No future visit planned
-    var hasFuture = accVisits.some(function(v){ return v.fields['Visit Date']>dateStr; });
+    var hasFuture = accVisits.some(function(v){ return normDate(v.fields['Visit Date'])>dateStr; });
     if (!hasFuture) {
       accountsNeedingAttention.push(lastVisit.fields['Hospital Name']||accKey);
     }
