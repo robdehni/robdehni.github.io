@@ -176,6 +176,23 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .tl-flag{font-size:8.5px;font-weight:800;margin-top:1px;display:block;line-height:1}
 .tl-flag-alert{color:#e0344a}
 .tl-flag-overload{color:#d98a1c}
+
+/* ── Timeline nav controls ── */
+.tl-nav{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:12px 14px;margin-bottom:12px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.tl-nav-quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tl-nav-btn{background:#f4f8fc;border:1px solid #e3ebf5;border-radius:9px;padding:6px 12px;font-size:11.5px;font-weight:700;color:#0b1f3a;cursor:pointer;transition:all 0.12s;white-space:nowrap}
+.tl-nav-btn:hover,.tl-nav-btn.tl-active{background:#eaf3ff;border-color:#b8d8ff;color:#2f8fff}
+.tl-jump-input{background:#f4f8fc;border:1px solid #e3ebf5;border-radius:9px;padding:6px 10px;font-size:11.5px;font-weight:700;color:#0b1f3a;outline:none;cursor:pointer}
+.tl-nav-arrows{display:flex;align-items:center;gap:8px}
+.tl-nav-arr{background:#f4f8fc;border:1px solid #e3ebf5;border-radius:9px;padding:6px 13px;font-size:13px;font-weight:700;color:#0b1f3a;cursor:pointer;transition:all 0.12s}
+.tl-nav-arr:hover{background:#eaf3ff;border-color:#b8d8ff;color:#2f8fff}
+.tl-window-label{flex:1;text-align:center;font-size:12px;font-weight:700;color:#0b1f3a}
+/* ── Manager Intelligence tiers ── */
+.mi-tier{font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:0.9px;padding:8px 16px;border-bottom:1px solid rgba(0,0,0,0.05)}
+.mi-tier-high{color:#c0392b;background:#fff5f5}
+.mi-tier-watch{color:#d98a1c;background:#fffaf0}
+.mi-tier-monitor{color:#2f8fff;background:#f0f8ff}
+.mi-clean{padding:16px;text-align:center;color:#8a9bb3;font-size:12.5px;font-weight:600}
 </style>
 </head>
 <body>
@@ -229,6 +246,7 @@ var selectedDate = new Date();
 selectedDate.setHours(0,0,0,0);
 var todayStr = formatDateISO(new Date());
 var currentTab = 'today';
+var tlWindowStart = null;
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 function escapeHtml(str) {
@@ -668,7 +686,7 @@ function renderVisitCard(visit, cardId) {
   if (sig.positiveLastOutcome && !sig.negativeLastOutcome)
     badges += '<span class="vbadge vbadge-positive">✓ Positive last</span>';
   if (sig.openActionsCount>0 && sig.overdueCount===0)
-    badges += '<span class="vbadge vbadge-actions">● '+sig.openActionsCount+' open</span>';
+    badges += '<span class="vbadge vbadge-actions">● Actions</span>';
   if (sig.isHighPriority)
     badges += '<span class="vbadge vbadge-high">★ High</span>';
   if (sig.isNewRelationship)
@@ -893,16 +911,19 @@ function jumpToDate(dateStr) {
 
 // ── Timeline matrix ───────────────────────────────────────────────────────
 function renderTimeline() {
-  var monday = getMondayOf(new Date());
+  if (!tlWindowStart) tlWindowStart = getMondayOf(new Date());
+  var thisMonday = getMondayOf(new Date());
+  var TL_WEEKS = 8;
   var weeks = [];
-  for (var i=0;i<9;i++){
-    var ws = addDays(monday, i*7);
+  for (var i=0;i<TL_WEEKS;i++){
+    var ws = addDays(tlWindowStart, i*7);
     var we = addDays(ws, 6);
+    var isNow = formatDateISO(ws)===formatDateISO(thisMonday);
     weeks.push({
       start:ws, end:we,
       startStr:formatDateISO(ws), endStr:formatDateISO(we),
       label:ws.toLocaleDateString('en-GB',{day:'numeric',month:'short'}),
-      isNow:(i===0)
+      isNow:isNow
     });
   }
 
@@ -935,7 +956,26 @@ function renderTimeline() {
 
   var periodStart = weeks[0].label;
   var periodEnd   = weeks[weeks.length-1].label;
-  var html = '<div class="section-label">Team Schedule \u2014 '+escapeHtml(periodStart)+' to '+escapeHtml(periodEnd)+'</div>';
+  var windowInclNow = weeks.some(function(w){return w.isNow;});
+  var curMonthVal = tlWindowStart.getFullYear()+'-'+String(tlWindowStart.getMonth()+1).padStart(2,'0');
+  var html =
+    '<div class="tl-nav">'+
+      '<div class="tl-nav-quick">'+
+        '<button class="tl-nav-btn'+(windowInclNow?' tl-active':'')+'" onclick="tlToday()">Today</button>'+
+        '<button class="tl-nav-btn" onclick="tlNextWeek()">Next Week</button>'+
+        '<button class="tl-nav-btn" onclick="tlThisMonth()">This Month</button>'+
+        '<button class="tl-nav-btn" onclick="tlNextMonth()">Next Month</button>'+
+        '<input class="tl-jump-input" type="month" value="'+curMonthVal+'" onchange="tlJumpMonth(this.value)" title="Jump to any month">'+
+      '</div>'+
+      '<div class="tl-nav-arrows">'+
+        '<button class="tl-nav-arr" onclick="tlShiftWeeks(-4)" title="Back 4 weeks">&laquo;</button>'+
+        '<button class="tl-nav-arr" onclick="tlShiftWeeks(-1)" title="Back 1 week">&larr;</button>'+
+        '<span class="tl-window-label">'+escapeHtml(periodStart)+' &mdash; '+escapeHtml(periodEnd)+'</span>'+
+        '<button class="tl-nav-arr" onclick="tlShiftWeeks(1)" title="Forward 1 week">&rarr;</button>'+
+        '<button class="tl-nav-arr" onclick="tlShiftWeeks(4)" title="Forward 4 weeks">&raquo;</button>'+
+      '</div>'+
+    '</div>';
+  html += '<div class="section-label">Team Schedule — '+escapeHtml(periodStart)+' to '+escapeHtml(periodEnd)+'</div>';
 
   if (!repList.length){
     html += '<div class="empty-state"><div class="empty-icon">&#128197;</div>No rep data loaded yet.</div>';
@@ -986,102 +1026,148 @@ function renderTimeline() {
   });
 
   html += '</tbody></table></div>';
-  html += renderCoverageGaps(weeks);
+  html += renderManagerIntelligence(weeks);
   document.getElementById('timelineZone').innerHTML = html;
 }
 
-// ── Coverage Gaps ─────────────────────────────────────────────────────────
-function renderCoverageGaps(weeks) {
+// ── Manager Intelligence ─────────────────────────────────────────────────
+function renderManagerIntelligence(weeks) {
   var todayDate   = formatDateISO(new Date());
   var past60      = formatDateISO(addDays(new Date(),-60));
   var next28      = formatDateISO(addDays(new Date(), 28));
   var windowStart = weeks[0].startStr;
   var windowEnd   = weeks[weeks.length-1].endStr;
-  var items = [];
+  var actNow=[], watch=[], monitor=[];
 
-  // 1. Going cold
-  var cold = [];
+  function daysSince(ds) {
+    return Math.max(0,Math.round(
+      (new Date(todayDate+'T00:00:00')-new Date(ds+'T00:00:00'))/86400000));
+  }
+
+  // ACT NOW: overdue actions
+  if (actionsOk) {
+    var om={};
+    allActions.forEach(function(a){
+      var due=normDate(a.fields['Due Date']);
+      if(!due||due>=todayDate) return;
+      var d=daysSince(due);
+      var ids=a.fields['Assigned Rep']||[];
+      if(!Array.isArray(ids)) ids=[ids];
+      ids.forEach(function(id){
+        var rn=repRecordIdToName[id]||''; if(!rn) return;
+        if(!om[rn]) om[rn]={count:0,oldest:0};
+        om[rn].count++; if(d>om[rn].oldest) om[rn].oldest=d;
+      });
+    });
+    Object.keys(om).sort(function(a,b){return om[b].oldest-om[a].oldest;}).forEach(function(rep){
+      var i=om[rep];
+      actNow.push(rep+' \u2014 '+i.count+' action'+(i.count>1?'s':'')+' overdue, oldest '+i.oldest+' days');
+    });
+  }
+
+  // ACT NOW: negative outcome + no follow-up
   Object.keys(visitsByAccount).forEach(function(accKey){
-    var avs = visitsByAccount[accKey];
-    var recent = avs.some(function(v){ var d=normDate(v.fields['Visit Date']); return d>=past60&&d<=todayDate; });
-    if (!recent) return;
-    var future = avs.some(function(v){ var d=normDate(v.fields['Visit Date']); return d>todayDate&&d<=next28; });
-    if (!future) cold.push(avs[0].fields['Hospital Name']||accKey);
+    var avs=visitsByAccount[accKey];
+    var lp=avs.find(function(v){return normDate(v.fields['Visit Date'])<=todayDate;});
+    if(!lp||lp.fields['Outcome']!=='Negative') return;
+    var hf=avs.some(function(v){return normDate(v.fields['Visit Date'])>todayDate;});
+    if(!hf) actNow.push((lp.fields['Hospital Name']||accKey)+
+      ' \u2014 negative outcome '+daysSince(normDate(lp.fields['Visit Date']))+' days ago, no follow-up');
   });
-  if (cold.length)
-    items.push({level:'medium',icon:'\u2198',
-      title:cold.length+' account'+(cold.length>1?'s':'')+' going cold \u2014 visited recently, nothing planned in next 4 weeks',
-      detail:cold.slice(0,4).join(', ')+(cold.length>4?' +'+(cold.length-4)+' more':'')});
 
-  // 2. High-priority with no future visit in window
-  var hiNoVisit = [];
+  // WATCH: high-priority with no future visit
   Object.keys(visitsByAccount).forEach(function(accKey){
-    var avs = visitsByAccount[accKey];
-    var hi = avs.some(function(v){ return v.fields['Priority']==='High'; });
-    if (!hi) return;
-    var future = avs.some(function(v){ var d=normDate(v.fields['Visit Date']); return d>todayDate&&d<=windowEnd; });
-    if (!future) hiNoVisit.push(avs[0].fields['Hospital Name']||accKey);
+    var avs=visitsByAccount[accKey];
+    if(!avs.some(function(v){return v.fields['Priority']==='High';})) return;
+    if(avs.some(function(v){return normDate(v.fields['Visit Date'])>todayDate;})) return;
+    var lp=avs.find(function(v){return normDate(v.fields['Visit Date'])<=todayDate;});
+    if(lp) watch.push((lp.fields['Hospital Name']||accKey)+
+      ' \u2014 high priority, last visited '+daysSince(normDate(lp.fields['Visit Date']))+' days ago, nothing scheduled');
   });
-  if (hiNoVisit.length)
-    items.push({level:'high',icon:'\u2605',
-      title:hiNoVisit.length+' high-priority account'+(hiNoVisit.length>1?'s':'')+' with nothing planned in the 9-week window',
-      detail:hiNoVisit.slice(0,4).join(', ')+(hiNoVisit.length>4?' +'+(hiNoVisit.length-4)+' more':'')});
 
-  // 3. Reps with 2+ consecutive empty weeks
-  var lightReps = [];
+  // WATCH: accounts going cold
+  Object.keys(visitsByAccount).forEach(function(accKey){
+    var avs=visitsByAccount[accKey];
+    var lp=avs.find(function(v){return normDate(v.fields['Visit Date'])<=todayDate;});
+    if(!lp) return;
+    var ds=daysSince(normDate(lp.fields['Visit Date']));
+    if(ds>60||lp.fields['Outcome']==='Negative') return;
+    if(avs.some(function(v){return v.fields['Priority']==='High';})) return;
+    var hf=avs.some(function(v){var d=normDate(v.fields['Visit Date']);return d>todayDate&&d<=next28;});
+    if(!hf&&ds>=14) watch.push((lp.fields['Hospital Name']||accKey)+
+      ' \u2014 last visited '+ds+' days ago, nothing in next 4 weeks');
+  });
+  watch.sort();
+
+  // MONITOR: reps with no visits this week
+  var twS=formatDateISO(getMondayOf(new Date()));
+  var twE=formatDateISO(addDays(getMondayOf(new Date()),6));
   activeRepNames.forEach(function(rep){
-    var wc = weeks.map(function(w){
-      return allVisits.filter(function(v){
-        var d=normDate(v.fields['Visit Date']);
-        return (v.fields['Rep Name']||'')===rep&&d>=w.startStr&&d<=w.endStr;
-      }).length;
+    var has=allVisits.some(function(v){var d=normDate(v.fields['Visit Date']);
+      return (v.fields['Rep Name']||'')===rep&&d>=twS&&d<=twE;});
+    if(!has){
+      var lv=allVisits.filter(function(v){
+        return (v.fields['Rep Name']||'')===rep&&normDate(v.fields['Visit Date'])<=todayDate;
+      }).sort(function(a,b){return normDate(b.fields['Visit Date']).localeCompare(normDate(a.fields['Visit Date']));
+      })[0];
+      var note=lv?'last activity '+daysSince(normDate(lv.fields['Visit Date']))+' days ago':'no visits on record';
+      monitor.push(rep+' \u2014 no visits this week ('+note+')');
+    }
+  });
+
+  // MONITOR: territories with no planned activity in window
+  var tInW=new Set();
+  allVisits.forEach(function(v){var d=normDate(v.fields['Visit Date']);
+    if(d>=windowStart&&d<=windowEnd&&v.fields['Territory'])tInW.add(v.fields['Territory']);});
+  var allT=new Set(allVisits.map(function(v){return v.fields['Territory']||'';}));
+  allT.delete('');
+  var coldT=Array.from(allT).filter(function(t){return !tInW.has(t);});
+  if(coldT.length) monitor.push('No planned coverage in current window: '+coldT.join(', '));
+
+  // MONITOR: overloaded reps (6+ visits in one week)
+  weeks.forEach(function(week){
+    activeRepNames.forEach(function(rep){
+      var n=allVisits.filter(function(v){var d=normDate(v.fields['Visit Date']);
+        return (v.fields['Rep Name']||'')===rep&&d>=week.startStr&&d<=week.endStr;}).length;
+      if(n>=6) monitor.push(rep+' \u2014 '+n+' visits in week of '+week.label+' (heavy schedule)');
     });
-    var maxG=0,cur=0;
-    wc.forEach(function(c){ if(c===0){cur++;maxG=Math.max(maxG,cur);}else cur=0; });
-    if (maxG>=2) lightReps.push(rep+' ('+maxG+' empty weeks)');
   });
-  if (lightReps.length)
-    items.push({level:'medium',icon:'\u25CB',
-      title:'Reps with consecutive empty weeks in the timeline',
-      detail:lightReps.join(', ')});
 
-  // 4. Territories with zero activity in window
-  var terrCts={};
-  allVisits.forEach(function(v){
-    var d=normDate(v.fields['Visit Date']);
-    if(d<windowStart||d>windowEnd) return;
-    var t=v.fields['Territory']||'';
-    if(t) terrCts[t]=(terrCts[t]||0)+1;
-  });
-  var knownT=new Set(allVisits.map(function(v){ return v.fields['Territory']||''; }));
-  knownT.delete('');
-  var coldT=Array.from(knownT).filter(function(t){ return !(terrCts[t]>0); });
-  if (coldT.length)
-    items.push({level:'high',icon:'\u25CE',
-      title:'Territories with no planned activity in the 9-week window',
-      detail:coldT.join(', ')});
-
-  var html='<div class="section-label" style="margin-top:20px">Coverage Gaps</div><div class="gap-block">';
-  if (!items.length){
-    html+=
-      '<div class="gap-item">'+
-        '<div class="gap-icon gap-icon-blue">&#10003;</div>'+
-        '<div><div class="gap-title">No coverage gaps detected</div>'+
-        '<div class="gap-detail">All reps have planned activity across the 9-week window.</div></div>'+
-      '</div>';
+  // Render
+  var html='<div class="section-label" style="margin-top:20px">Manager Intelligence</div><div class="gap-block">';
+  if(!actNow.length&&!watch.length&&!monitor.length){
+    html+='<div class="mi-clean">&#10003; No immediate attention required \u2014 all reps and accounts on track.</div>';
   } else {
-    items.forEach(function(item){
-      var ic=item.level==='high'?'gap-icon-red':item.level==='medium'?'gap-icon-orange':'gap-icon-blue';
-      html+=
-        '<div class="gap-item">'+
-          '<div class="gap-icon '+ic+'">'+item.icon+'</div>'+
-          '<div><div class="gap-title">'+escapeHtml(item.title)+'</div>'+
-          '<div class="gap-detail">'+escapeHtml(item.detail)+'</div></div>'+
-        '</div>';
-    });
+    if(actNow.length){
+      html+='<div class="mi-tier mi-tier-high">&#9873; Act Now</div>';
+      actNow.forEach(function(i){html+='<div class="gap-item"><div class="gap-icon gap-icon-red">!</div>'+
+        '<div><div class="gap-title" style="color:#c0392b">'+escapeHtml(i)+'</div></div></div>';});
+    }
+    if(watch.length){
+      html+='<div class="mi-tier mi-tier-watch">&#9650; Watch</div>';
+      watch.forEach(function(i){html+='<div class="gap-item"><div class="gap-icon gap-icon-orange">&#9650;</div>'+
+        '<div><div class="gap-title">'+escapeHtml(i)+'</div></div></div>';});
+    }
+    if(monitor.length){
+      html+='<div class="mi-tier mi-tier-monitor">&#9679; Monitor</div>';
+      monitor.forEach(function(i){html+='<div class="gap-item"><div class="gap-icon gap-icon-blue">&#9679;</div>'+
+        '<div><div class="gap-title">'+escapeHtml(i)+'</div></div></div>';});
+    }
   }
   return html+'</div>';
 }
+
+
+// ── Timeline navigation functions ────────────────────────────────────────
+function tlShiftWeeks(n){
+  if(!tlWindowStart) tlWindowStart=getMondayOf(new Date());
+  tlWindowStart=addDays(tlWindowStart,n*7); renderTimeline();
+}
+function tlToday(){ tlWindowStart=getMondayOf(new Date()); renderTimeline(); }
+function tlNextWeek(){ tlWindowStart=addDays(getMondayOf(new Date()),7); renderTimeline(); }
+function tlThisMonth(){ var d=new Date();d.setDate(1);tlWindowStart=getMondayOf(d);renderTimeline(); }
+function tlNextMonth(){ var d=new Date();d.setMonth(d.getMonth()+1);d.setDate(1);tlWindowStart=getMondayOf(d);renderTimeline(); }
+function tlJumpMonth(val){ var p=val.split('-');tlWindowStart=getMondayOf(new Date(+p[0],+p[1]-1,1));renderTimeline(); }
 
 // ── Auth guard + start ────────────────────────────────────────────────────────
 (function(){
@@ -1101,4 +1187,4 @@ function renderCoverageGaps(weeks) {
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
 </body>
-</html> 
+</html>
