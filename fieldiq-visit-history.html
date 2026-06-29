@@ -161,7 +161,7 @@ body{padding:32px 40px 60px}
   <div class="stat-pill"><span id="statTotal">—</span>My Visits</div>  
   <div class="stat-pill"><span id="statThisWeek">—</span>This Week</div>  
   <div class="stat-pill"><span id="statNewAccounts">—</span>New Accounts</div>  
-</div>  <div id="countLabel" class="count-label"></div>  
+</div>  <div id="repSearchBox" style="display:none;margin-bottom:10px"><input type="search" id="repSearch" placeholder="Search accounts…" autocomplete="off" autocorrect="off" autocapitalize="off" style="width:100%;padding:11px 14px;background:#fff;border:1.5px solid #e3ebf5;border-radius:12px;color:#0b1f3a;font-size:14px;outline:none;font-weight:600;box-shadow:0 2px 8px rgba(11,31,58,0.04)"></div>  <div id="countLabel" class="count-label"></div>  
 <div id="visitList"><div class="loading"><div class="spinner"></div>Loading visits...</div></div>  <div class="footer">FieldIQ v2.1 · 2026</div>  
 </div>  <script>  
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';  
@@ -402,11 +402,28 @@ async function loadHistory(){
     if(currentUser.role==='Manager'){  
       populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';  
       applyUrlParams();applyFilters();expandAndScrollToVisit(targetVisitId);  
-    }else{renderVisits(allRecordsRaw);}  
+    }else{document.getElementById('repSearchBox').style.display='block';renderVisits(allRecordsRaw);}  
   }catch(err){document.getElementById('visitList').innerHTML='<div class="empty">Failed to load: '+err.message+'</div>';}  
 }  
   
 loadCurrentUser().then(function(){loadHistory();});  
-</script>  <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+</script>  <script>
+var _repSearchTimer;
+document.getElementById('repSearch').addEventListener('input',function(){
+  clearTimeout(_repSearchTimer);
+  _repSearchTimer=setTimeout(function(){
+    var q=document.getElementById('repSearch').value.trim().toLowerCase();
+    if(!q){renderVisits(allRecordsRaw);return;}
+    var filtered=allRecordsRaw.filter(function(r){
+      var f=r.fields;
+      return ['Hospital Name','AI Summary','Meeting Notes','Action Items'].some(function(key){
+        var v=f[key];return v&&String(v).toLowerCase().indexOf(q)>-1;
+      });
+    });
+    renderVisits(filtered);
+  },150);
+});
+</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
 </body>  
 </html>
