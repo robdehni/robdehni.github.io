@@ -193,6 +193,33 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .mi-tier-watch{color:#d98a1c;background:#fffaf0}
 .mi-tier-monitor{color:#2f8fff;background:#f0f8ff}
 .mi-clean{padding:16px;text-align:center;color:#8a9bb3;font-size:12.5px;font-weight:600}
+
+/* ── Team Pulse ── */
+.team-pulse{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.pulse-box{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:14px 8px;text-align:center;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.pulse-num{font-size:22px;font-weight:900;color:#0b1f3a;display:block;line-height:1.1}
+.pulse-num.p-alert{color:#e0344a}
+.pulse-label{font-size:9px;color:#8a9bb3;text-transform:uppercase;letter-spacing:0.7px;font-weight:700;margin-top:3px;display:block}
+/* ── Rep Health cards ── */
+.rh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px;margin-bottom:16px}
+.rh-card{background:#fff;border:1.5px solid #e3ebf5;border-radius:14px;padding:14px 14px 12px;box-shadow:0 4px 14px rgba(11,31,58,0.05);border-left:4px solid #e3ebf5}
+.rh-card.rh-green{border-left-color:#1fa861}
+.rh-card.rh-amber{border-left-color:#d98a1c}
+.rh-card.rh-red{border-left-color:#e0344a}
+.rh-status{display:inline-flex;align-items:center;gap:4px;border-radius:7px;padding:3px 9px;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px}
+.rhs-green{background:#e3f8ea;color:#1fa861}
+.rhs-amber{background:#fff3e0;color:#d98a1c}
+.rhs-red{background:#ffe5e8;color:#e0344a}
+.rh-name{font-size:13.5px;font-weight:800;color:#0b1f3a;margin-bottom:1px}
+.rh-terr{font-size:10.5px;color:#8a9bb3;font-weight:600;margin-bottom:10px}
+.rh-rows{display:flex;flex-direction:column;gap:3px}
+.rh-row{font-size:11.5px;color:#7a8aa3;font-weight:500}
+.rh-row strong{color:#0b1f3a;font-weight:800}
+.rh-alert-note{font-size:11px;font-weight:700;color:#e0344a;margin-top:8px;display:block}
+/* ── Matrix toggle header ── */
+.tl-matrix-hdr{display:flex;align-items:center;justify-content:space-between;margin:16px 0 8px}
+.tl-matrix-toggle{background:#f4f8fc;border:1px solid #e3ebf5;border-radius:9px;padding:5px 12px;font-size:11.5px;font-weight:700;color:#2f8fff;cursor:pointer;transition:all 0.12s}
+.tl-matrix-toggle:hover{background:#eaf3ff}
 </style>
 </head>
 <body>
@@ -967,58 +994,60 @@ function renderTimeline() {
         '<button class="tl-nav-arr" onclick="tlShiftWeeks(1)" title="Forward 1 week">Forward &rarr;</button>'+
       '</div>'+
     '</div>';
+  html += buildTeamPulse(todayDate);
   html += renderManagerIntelligence(weeks);
-  html += '<div class="section-label">Team Schedule — '+escapeHtml(periodStart)+' to '+escapeHtml(periodEnd)+'</div>';
+  html += buildRepHealthCards(todayDate);
 
-  if (!repList.length){
-    html += '<div class="empty-state"><div class="empty-icon">&#128197;</div>No rep data loaded yet.</div>';
-    document.getElementById('timelineZone').innerHTML = html;
-    return;
-  }
-
-  html += '<div class="tl-scroll"><table class="tl-table"><thead><tr>';
-  html += '<th class="tl-rep-col tl-header-cell">Rep</th>';
-  weeks.forEach(function(week){
-    var nc = week.isNow?' tl-now-hdr':'';
-    html += '<th class="tl-header-cell'+nc+'"><div class="tl-week-hdr">'+
-      '<span class="tl-week-tag">'+(week.isNow?'Now':'')+'</span>'+
-      '<span class="tl-week-dt">'+escapeHtml(week.label)+'</span>'+
-    '</div></th>';
-  });
-  html += '</tr></thead><tbody>';
-
-  repList.forEach(function(rep){
-    var terr = getRepTerritory(rep);
-    html += '<tr class="tl-row">';
-    html +=
-      '<td class="tl-rep-col tl-rep-cell">'+
+  if (repList.length) {
+    html += '<div class="tl-matrix-hdr">'+
+      '<span class="section-label" style="margin:0">Week-by-week detail</span>'+
+      '<button class="tl-matrix-toggle" id="tlMatrixToggle" onclick="toggleMatrix()">› Show matrix</button>'+
+    '</div>';
+    html += '<div id="tlMatrix" style="display:none">';
+    html += '<div class="tl-scroll"><table class="tl-table"><thead><tr>';
+    html += '<th class="tl-rep-col tl-header-cell">Rep</th>';
+    weeks.forEach(function(week){
+      var nc = week.isNow?' tl-now-hdr':'';
+      html += '<th class="tl-header-cell'+nc+'"><div class="tl-week-hdr">'+
+        '<span class="tl-week-tag">'+(week.isNow?'Now':'')+'</span>'+
+        '<span class="tl-week-dt">'+escapeHtml(week.label)+'</span>'+
+      '</div></th>';
+    });
+    html += '</tr></thead><tbody>';
+    repList.forEach(function(rep){
+      var terr = getRepTerritory(rep);
+      html += '<tr class="tl-row">';
+      html += '<td class="tl-rep-col tl-rep-cell">'+
         '<div class="tl-rep-name">'+escapeHtml(rep.split(' ')[0])+'</div>'+
         (terr?'<div class="tl-rep-terr">'+escapeHtml(terr)+'</div>':'')+
       '</td>';
-    weeks.forEach(function(week){
-      var cell = getRepWeekData(rep, week);
-      var cls  = 'tl-cell';
-      if (week.isNow)     cls += ' tl-now-col';
-      if (cell.count===0) cls += ' tl-gap';
-      if (cell.count>=6)  cls += ' tl-overload';
-      var canJump = cell.count>0 || week.startStr>=todayDate;
-      html += '<td class="'+cls+'"'+(canJump?' onclick="jumpToDate(\''+week.startStr+'\')"':'')+' title="'+(canJump?'Open '+escapeHtml(rep)+' week in Today view':'')+'">';
-      if (cell.count===0){
-        html += '<span class="tl-empty">&mdash;</span>';
-      } else {
-        html += '<span class="tl-count">'+cell.count+'</span>';
-        var show = Math.min(cell.count,5), dots='';
-        for(var d=0;d<show;d++) dots += '<span class="tl-dot'+(cell.alerts>0&&d===0?' tl-dot-alert':'')+'"></span>';
-        html += '<div class="tl-dot-row">'+dots+'</div>';
-        if (cell.alerts>0) html += '<span class="tl-flag tl-flag-alert">&#9873; alert</span>';
-        if (cell.count>=6) html += '<span class="tl-flag tl-flag-overload">busy</span>';
-      }
-      html += '</td>';
+      weeks.forEach(function(week){
+        var cell = getRepWeekData(rep, week);
+        var cls  = 'tl-cell';
+        if (week.isNow)     cls += ' tl-now-col';
+        if (cell.count===0) cls += ' tl-gap';
+        if (cell.count>=6)  cls += ' tl-overload';
+        var canJump = cell.count>0 || week.startStr>=todayDate;
+        if (cell.count===0){
+          html += '<td class="'+cls+'"><span class="tl-empty">&mdash;</span></td>';
+        } else {
+          html += '<td class="'+cls+'"'+(canJump?' onclick="jumpToDate(\''+week.startStr+'\')"':'')+' title="'+(canJump?'Open '+escapeHtml(rep)+' week in Today view':'')+'">';
+          html += '<span class="tl-count">'+cell.count+'</span>';
+          var show = Math.min(cell.count,5), dots='';
+          for(var d=0;d<show;d++) dots += '<span class="tl-dot'+(cell.alerts>0&&d===0?' tl-dot-alert':'')+'"></span>';
+          html += '<div class="tl-dot-row">'+dots+'</div>';
+          if (cell.alerts>0) html += '<span class="tl-flag tl-flag-alert">&#9873; alert</span>';
+          if (cell.count>=6) html += '<span class="tl-flag tl-flag-overload">busy</span>';
+          html += '</td>';
+        }
+      });
+      html += '</tr>';
     });
-    html += '</tr>';
-  });
-
-  html += '</tbody></table></div>';
+    html += '</tbody></table></div>';
+    html += '</div>';
+  } else {
+    html += '<div class="empty-state"><div class="empty-icon">&#128197;</div>No rep data loaded yet.</div>';
+  }
   document.getElementById('timelineZone').innerHTML = html;
 }
 
@@ -1160,6 +1189,94 @@ function tlNextWeek(){ tlWindowStart=addDays(getMondayOf(new Date()),7); renderT
 function tlThisMonth(){ var d=new Date();d.setDate(1);tlWindowStart=getMondayOf(d);renderTimeline(); }
 function tlNextMonth(){ var d=new Date();d.setMonth(d.getMonth()+1);d.setDate(1);tlWindowStart=getMondayOf(d);renderTimeline(); }
 function tlJumpMonth(val){ var p=val.split('-');tlWindowStart=getMondayOf(new Date(+p[0],+p[1]-1,1));renderTimeline(); }
+
+
+// ── Team Pulse ────────────────────────────────────────────────────────────
+function buildTeamPulse(todayDate) {
+  var past30 = formatDateISO(addDays(new Date(),-30));
+  var recent = allVisits.filter(function(v){
+    var d=normDate(v.fields['Visit Date']); return d>=past30&&d<=todayDate;
+  });
+  var repsSet = new Set(recent.map(function(v){return v.fields['Rep Name']||'';}));
+  repsSet.delete('');
+  var accsSet = new Set(recent.map(function(v){return (v.fields['Hospital Name']||'').toLowerCase();}));
+  accsSet.delete('');
+  var alertReps=0;
+  activeRepNames.forEach(function(rep){
+    var ra=getRepActionsById(rep);
+    var overdue=ra.some(function(a){return normDate(a.fields['Due Date'])<todayDate;});
+    var repV=allVisits.filter(function(v){return (v.fields['Rep Name']||'')===rep;});
+    var lp=repV.filter(function(v){return normDate(v.fields['Visit Date'])<=todayDate;})
+      .sort(function(a,b){return normDate(b.fields['Visit Date']).localeCompare(normDate(a.fields['Visit Date']));
+      })[0];
+    var negNoFU=lp&&lp.fields['Outcome']==='Negative'&&
+      !repV.some(function(v){return normDate(v.fields['Visit Date'])>todayDate;});
+    if(overdue||negNoFU) alertReps++;
+  });
+  var ac=alertReps>0?' p-alert':'';
+  return (
+    '<div class="section-label">Team Pulse \u2014 Last 30 days</div>'+
+    '<div class="team-pulse">'+
+      '<div class="pulse-box"><span class="pulse-num">'+repsSet.size+'</span><span class="pulse-label">Active Reps</span></div>'+
+      '<div class="pulse-box"><span class="pulse-num">'+recent.length+'</span><span class="pulse-label">Visits Logged</span></div>'+
+      '<div class="pulse-box"><span class="pulse-num">'+accsSet.size+'</span><span class="pulse-label">Accounts Covered</span></div>'+
+      '<div class="pulse-box"><span class="pulse-num'+ac+'">'+alertReps+'</span><span class="pulse-label">Reps Needing Attention</span></div>'+
+    '</div>'
+  );
+}
+
+// ── Rep Health cards ──────────────────────────────────────────────────────
+function buildRepHealthCards(todayDate) {
+  if (!activeRepNames.length) return '';
+  var past30=formatDateISO(addDays(new Date(),-30));
+
+  function repCard(rep){
+    var rv=allVisits.filter(function(v){return (v.fields['Rep Name']||'')===rep;});
+    var past=rv.filter(function(v){return normDate(v.fields['Visit Date'])<=todayDate;})
+      .sort(function(a,b){return normDate(b.fields['Visit Date']).localeCompare(normDate(a.fields['Visit Date']));});
+    var lv=past[0];
+    var ds=lv?Math.round((new Date(todayDate+'T00:00:00')-new Date(normDate(lv.fields['Visit Date'])+'T00:00:00'))/86400000):999;
+    var monthV=rv.filter(function(v){var d=normDate(v.fields['Visit Date']);return d>=past30&&d<=todayDate;}).length;
+    var planned=rv.filter(function(v){return normDate(v.fields['Visit Date'])>todayDate;}).length;
+    var ra=getRepActionsById(rep);
+    var open=ra.length, overdue=ra.filter(function(a){return normDate(a.fields['Due Date'])<todayDate;}).length;
+    var negNoFU=lv&&lv.fields['Outcome']==='Negative'&&!rv.some(function(v){return normDate(v.fields['Visit Date'])>todayDate;});
+    var isAlert=overdue>0||negNoFU;
+    var tv=rv.find(function(v){return v.fields['Territory'];}); var terr=tv?tv.fields['Territory']||'':'';
+    var status,sc,bc,si;
+    if(isAlert){status='Alert';sc='rh-red';bc='rhs-red';si='\u26D1 ';}
+    else if(ds<=7){status='Active';sc='rh-green';bc='rhs-green';si='\u25cf ';}
+    else if(ds<=21){status='Light';sc='rh-amber';bc='rhs-amber';si='\u25cf ';}
+    else{status='Quiet';sc='rh-red';bc='rhs-red';si='\u25cb ';}
+    var lastStr=ds===999?'No visits yet':ds===0?'Today':ds===1?'Yesterday':ds+' days ago';
+    var alertNote=overdue>0?'&#9873; '+overdue+' action'+(overdue>1?'s':'')+' overdue':negNoFU?'\u2198 Negative outcome \u2014 no follow-up':'';
+    return (
+      '<div class="rh-card '+sc+'">'+
+        '<div class="rh-status '+bc+'">'+si+escapeHtml(status)+'</div>'+
+        '<div class="rh-name">'+escapeHtml(rep)+'</div>'+
+        '<div class="rh-terr">'+(terr?escapeHtml(terr):'&nbsp;')+'</div>'+
+        '<div class="rh-rows">'+
+          '<div class="rh-row">Last visit: <strong>'+escapeHtml(lastStr)+'</strong></div>'+
+          '<div class="rh-row">This month: <strong>'+monthV+' visit'+(monthV!==1?'s':'')+'</strong></div>'+
+          (planned?'<div class="rh-row">Planned ahead: <strong>'+planned+'</strong></div>':'')+
+          (open?'<div class="rh-row">Open actions: <strong>'+open+'</strong></div>':'')+
+        '</div>'+
+        (alertNote?'<span class="rh-alert-note">'+alertNote+'</span>':'')+
+      '</div>'
+    );
+  }
+  return '<div class="section-label">Rep Health</div><div class="rh-grid">'+activeRepNames.map(repCard).join('')+'</div>';
+}
+
+// ── Matrix collapse toggle ────────────────────────────────────────────────
+function toggleMatrix(){
+  var m=document.getElementById('tlMatrix');
+  var btn=document.getElementById('tlMatrixToggle');
+  if(!m||!btn) return;
+  var open=m.style.display!=='none';
+  m.style.display=open?'none':'block';
+  btn.textContent=open?'\u203a Show matrix':'\u203a Hide matrix';
+}
 
 // ── Auth guard + start ────────────────────────────────────────────────────────
 (function(){
