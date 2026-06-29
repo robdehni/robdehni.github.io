@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldIQ — Operations</title>
+<script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js" defer></script>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#2f8fff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FieldIQ">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding-bottom:40px}
+.container{max-width:680px;margin:0 auto;padding:0 16px}
+
+/* ── Brand topbar ── */
+.topbar{padding:20px 0 10px}
+.topbar-brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.brand-cloud{font-size:26px;line-height:1}
+.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
+.brand-text h1 span{color:#2f8fff}
+.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+.manager-badge{display:inline-flex;align-items:center;background:#fff3e0;color:#d98a1c;border:1px solid #ffe5b3;border-radius:20px;font-size:10.5px;font-weight:800;padding:4px 12px;margin-left:10px;text-transform:uppercase;letter-spacing:0.4px;vertical-align:middle}
+.topbar-sub{font-size:11.5px;color:#8a9bb3;font-weight:600;margin-top:2px}
+.home-btn{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid #e3ebf5;border-radius:24px;padding:9px 18px;font-size:13px;font-weight:700;color:#2f8fff;text-decoration:none;box-shadow:0 2px 8px rgba(11,31,58,0.05);margin-bottom:16px}
+
+/* ── Day header ── */
+.day-header{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:16px 18px;margin-bottom:12px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.day-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.day-nav-btn{background:#f4f8fc;border:1px solid #e3ebf5;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;color:#0b1f3a;cursor:pointer}
+.day-nav-btn:hover{background:#eaf3ff;border-color:#b8d8ff}
+.day-nav-btn.today{background:#eaf3ff;color:#2f8fff;border-color:#b8d8ff}
+.day-label{font-size:17px;font-weight:800;color:#0b1f3a;letter-spacing:-0.3px}
+.day-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat-box{background:#f4f8fc;border-radius:12px;padding:11px 8px;text-align:center}
+.stat-num{font-size:20px;font-weight:900;color:#0b1f3a;line-height:1.1;display:block}
+.stat-num.has-alert{color:#e0344a}
+.stat-num.has-gap{color:#d98a1c}
+.stat-label{font-size:9.5px;color:#8a9bb3;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;margin-top:3px;display:block}
+
+/* ── Week strip ── */
+.week-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;scrollbar-width:none}
+.week-strip::-webkit-scrollbar{display:none}
+.week-day{flex:1;min-width:42px;background:#fff;border:1.5px solid #e3ebf5;border-radius:12px;padding:8px 4px;text-align:center;cursor:pointer;transition:all 0.15s}
+.week-day:hover{border-color:#b8d8ff;background:#f0f7ff}
+.week-day.selected{background:#2f8fff;border-color:#2f8fff}
+.week-day.today-marker{border-color:#2f8fff}
+.week-day.has-alert-day{border-color:#e0344a20}
+.wd-name{font-size:9px;font-weight:800;color:#8a9bb3;text-transform:uppercase;display:block;margin-bottom:2px}
+.week-day.selected .wd-name{color:#ffffff99}
+.wd-num{font-size:13px;font-weight:800;color:#0b1f3a;display:block}
+.week-day.selected .wd-num{color:#fff}
+.week-day.today-marker .wd-num{color:#2f8fff}
+.week-day.selected.today-marker .wd-num{color:#fff}
+.wd-dots{margin-top:4px;min-height:14px;display:flex;align-items:center;justify-content:center;gap:2px;flex-wrap:wrap}
+.wd-dot{width:5px;height:5px;border-radius:50%;background:#c8d8ea;display:inline-block}
+.week-day.selected .wd-dot{background:#ffffff66}
+.wd-dot.dot-visit{background:#2f8fff}
+.wd-dot.dot-alert{background:#e0344a}
+.wd-empty{font-size:9px;color:#c8d8ea;font-weight:600}
+
+/* ── Section labels ── */
+.section-label{font-size:10px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1.1px;font-weight:800;margin:18px 0 10px}
+
+/* ── Rep blocks ── */
+.rep-block{background:#fff;border:1px solid #e3ebf5;border-radius:16px;margin-bottom:12px;overflow:hidden;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.rep-block-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #f0f5fb}
+.rep-avatar{width:34px;height:34px;border-radius:10px;background:#eaf3ff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#2f8fff;flex-shrink:0}
+.rep-name{font-size:14px;font-weight:800;color:#0b1f3a;flex:1}
+.rep-territory{font-size:11px;color:#8a9bb3;font-weight:600;background:#f4f8fc;border-radius:8px;padding:3px 8px}
+.rep-visit-count{font-size:11px;color:#2f8fff;font-weight:700;white-space:nowrap}
+
+/* ── Visit cards ── */
+.visit-card{border-top:1px solid #f0f5fb;cursor:pointer;transition:background 0.1s}
+.visit-card:first-of-type{border-top:none}
+.visit-card:hover{background:#fafcff}
+.visit-card-compact{padding:13px 16px}
+.visit-card.alert-high{border-left:3px solid #e0344a;padding-left:13px}
+.visit-card.alert-medium{border-left:3px solid #d98a1c;padding-left:13px}
+.visit-card.alert-low{border-left:3px solid #2f8fff;padding-left:13px}
+.visit-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.visit-account{font-size:14px;font-weight:800;color:#0b1f3a;margin-bottom:2px}
+.visit-meta{font-size:11.5px;color:#7a8aa3;font-weight:500}
+.visit-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.visit-badges{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.vbadge{font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:8px;white-space:nowrap}
+.vbadge-overdue{background:#ffe5e8;color:#e0344a}
+.vbadge-negative{background:#fff0e6;color:#d98a1c}
+.vbadge-actions{background:#eaf3ff;color:#2f8fff}
+.vbadge-high{background:#f0f0ff;color:#4f46e5}
+.vbadge-new{background:#e6fff4;color:#1a7a45}
+.vbadge-positive{background:#e3f8ea;color:#1fa861}
+.chevron{color:#c8d8ea;font-size:11px;font-weight:700;transition:transform 0.2s}
+.chevron.open{transform:rotate(180deg)}
+
+/* ── Expanded card ── */
+.visit-expanded{background:#f9fcff;border-top:1px solid #edf3fb;padding:14px 16px}
+.exp-section{margin-bottom:12px}
+.exp-section:last-child{margin-bottom:0}
+.exp-label{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;font-weight:800;color:#8a9bb3;margin-bottom:5px}
+.exp-text{font-size:12.5px;color:#0b1f3a;line-height:1.55;font-weight:500}
+.exp-summary{font-size:12px;color:#3d4f6b;line-height:1.6;border-left:3px solid #e3ebf5;padding-left:10px;margin-top:4px}
+.exp-alert-row{font-size:12px;font-weight:700;color:#e0344a;margin-top:4px}
+.exp-outcome-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+
+/* ── No visits section ── */
+.no-visits-block{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px 16px;margin-bottom:10px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.no-visits-rep{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f4f8fc}
+.no-visits-rep:last-child{border-bottom:none;padding-bottom:0}
+.no-visits-dot{width:8px;height:8px;border-radius:50%;background:#e3ebf5;flex-shrink:0}
+.no-visits-name{font-size:13px;font-weight:700;color:#0b1f3a;flex:1}
+.no-visits-note{font-size:11px;color:#aab8cc;font-weight:500}
+
+/* ── Gap intelligence ── */
+.gap-block{background:#fff;border:1px solid #e3ebf5;border-radius:16px;overflow:hidden;margin-bottom:10px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.gap-item{padding:12px 16px;border-bottom:1px solid #f4f8fc;display:flex;gap:10px;align-items:flex-start}
+.gap-item:last-child{border-bottom:none}
+.gap-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px}
+.gap-icon-red{background:#ffe5e8}
+.gap-icon-orange{background:#fff0e6}
+.gap-icon-blue{background:#eaf3ff}
+.gap-title{font-size:12.5px;font-weight:800;color:#0b1f3a;margin-bottom:2px}
+.gap-detail{font-size:11.5px;color:#7a8aa3;font-weight:500;line-height:1.4}
+
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:40px 20px;color:#8a9bb3;font-size:13px;font-weight:600}
+.empty-icon{font-size:32px;margin-bottom:8px}
+
+/* ── Spinner ── */
+.spinner-wrap{text-align:center;padding:48px 20px;color:#8a9bb3;font-size:13px;font-weight:600}
+.spinner{width:28px;height:28px;border:3px solid #e3ebf5;border-top-color:#2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Error/retry ── */
+.error-state{text-align:center;padding:40px 20px}
+.error-msg{color:#e0344a;font-size:13px;font-weight:700;margin-bottom:12px}
+.retry-btn{background:#2f8fff;color:#fff;border:none;border-radius:12px;padding:11px 24px;font-size:13.5px;font-weight:700;cursor:pointer}
+
+.footer{text-align:center;color:#c8d8ea;font-size:10.5px;font-weight:600;padding:24px 0 8px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span class="brand-cloud">☁️</span>
+      <div class="brand-text">
+        <h1>Field<span>IQ</span><span class="manager-badge">⭐ Manager</span></h1>
+        <p>Territory Intelligence Platform</p>
+      </div>
+    </div>
+    <p class="topbar-sub">Operations</p>
+  </div>
+
+  <a href="./fieldiq.html" class="home-btn">← Home</a>
+
+  <!-- Day header + week strip injected here -->
+  <div id="dayHeader"></div>
+  <div id="weekStrip"></div>
+
+  <!-- Main content -->
+  <div id="mainContent">
+    <div class="spinner-wrap"><div class="spinner"></div>Loading operations…</div>
+  </div>
+</div>
+
+<div class="footer">FieldIQ Operations · Field Intelligence Platform</div>
+
+<script>
+var WORKER = 'https://fieldiq-proxy.rdehni1979.workers.dev';
+
+// ── State ────────────────────────────────────────────────────────────────────
+var allVisits   = [];   // all Field Visits records
+var allActions  = [];   // all Open Actions records (manager view)
+var allUsers    = [];   // all active user records
+var actionsOk   = false; // false if actions fetch failed — degrade gracefully
+
+// Look-up tables built once after data loads
+var visitsByDate    = {};  // ISO dateStr → [visit, …]
+var visitsByAccount = {};  // accountName.toLowerCase() → [visit, …] sorted date desc
+var actionsByRepId  = {};  // Airtable record ID → [action, …]
+var repRecordIdToName = {}; // Airtable record ID → display name
+var activeRepNames  = [];   // sorted display names of all active reps
+
+var selectedDate = new Date();
+selectedDate.setHours(0,0,0,0);
+var todayStr = formatDateISO(new Date());
+
+// ── Utilities ────────────────────────────────────────────────────────────────
+function escapeHtml(str) {
+  return String(str||'').replace(/[&<>"']/g,function(m){
+    return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
+  });
+}
+
+function formatDateISO(d) {
+  var y = d.getFullYear();
+  var m = String(d.getMonth()+1).padStart(2,'0');
+  var day = String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
+}
+
+function formatDateDisplay(d) {
+  return d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+
+function formatDateShort(d) {
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+}
+
+function addDays(d, n) {
+  var r = new Date(d);
+  r.setDate(r.getDate()+n);
+  return r;
+}
+
+function getMondayOf(d) {
+  var r = new Date(d);
+  r.setHours(0,0,0,0);
+  var day = r.getDay();
+  var diff = day===0 ? -6 : 1-day;
+  r.setDate(r.getDate()+diff);
+  return r;
+}
+
+function initials(name) {
+  var parts = (name||'').trim().split(' ');
+  if (parts.length>=2) return (parts[0][0]||'')+(parts[parts.length-1][0]||'');
+  return (name||'?')[0].toUpperCase();
+}
+
+// ── Data loading ─────────────────────────────────────────────────────────────
+async function loadData() {
+  var managerId = localStorage.getItem('fieldiq_user_id')||'';
+  var [visRes, actRes, usrRes] = await Promise.all([
+    fetch(WORKER+'/get-visits'),
+    fetch(WORKER+'/get-actions?role=Manager&status=Open&userId='+encodeURIComponent(managerId))
+      .catch(function(){return {ok:false};}),
+    fetch(WORKER+'/get-users')
+  ]);
+
+  var [visData, usrData] = await Promise.all([
+    visRes.json(),
+    usrRes.json()
+  ]);
+
+  allVisits = (visData.records||[]);
+
+  if (actRes.ok) {
+    var actData = await actRes.json();
+    allActions = (actData.records||[]);
+    actionsOk = true;
+  }
+
+  allUsers = (usrData.records||[]).filter(function(u){
+    return u.fields['Active?']!==false;
+  });
+
+  buildIndices();
+  render();
+}
+
+function buildIndices() {
+  // visitsByDate
+  visitsByDate = {};
+  allVisits.forEach(function(v) {
+    var d = v.fields['Visit Date'];
+    if (!d) return;
+    if (!visitsByDate[d]) visitsByDate[d]=[];
+    visitsByDate[d].push(v);
+  });
+
+  // visitsByAccount (sorted newest first)
+  visitsByAccount = {};
+  allVisits.forEach(function(v) {
+    var a = (v.fields['Hospital Name']||'').trim().toLowerCase();
+    if (!a) return;
+    if (!visitsByAccount[a]) visitsByAccount[a]=[];
+    visitsByAccount[a].push(v);
+  });
+  Object.keys(visitsByAccount).forEach(function(k){
+    visitsByAccount[k].sort(function(a,b){
+      return new Date(b.fields['Visit Date']||0)-new Date(a.fields['Visit Date']||0);
+    });
+  });
+
+  // repRecordIdToName and actionsByRepId
+  repRecordIdToName = {};
+  allUsers.forEach(function(u){
+    repRecordIdToName[u.id] = u.fields['Display Name']||u.fields['User ID']||'';
+  });
+
+  actionsByRepId = {};
+  allActions.forEach(function(a){
+    var repIds = a.fields['Assigned Rep']||[];
+    if (!Array.isArray(repIds)) repIds = [repIds];
+    repIds.forEach(function(id){
+      if (!actionsByRepId[id]) actionsByRepId[id]=[];
+      actionsByRepId[id].push(a);
+    });
+  });
+
+  // activeRepNames: from users (Sales Rep role) + supplement from visits
+  var nameSet = new Set();
+  allUsers.forEach(function(u){
+    var role = u.fields['Role']||'';
+    if (role!=='Manager') nameSet.add(u.fields['Display Name']||'');
+  });
+  // also add names that appear only in visits
+  allVisits.forEach(function(v){
+    var n = v.fields['Rep Name']||'';
+    if (n) nameSet.add(n);
+  });
+  nameSet.delete('');
+  activeRepNames = Array.from(nameSet).sort();
+}
+
+// ── Signal computation ────────────────────────────────────────────────────────
+function getRepActionsById(repName) {
+  // Find the user record ID matching this rep name, then get their actions
+  var repRecId = null;
+  allUsers.forEach(function(u){
+    if ((u.fields['Display Name']||'')=== repName) repRecId = u.id;
+  });
+  if (!repRecId) return [];
+  return actionsByRepId[repRecId]||[];
+}
+
+function getSignals(visit) {
+  var f = visit.fields;
+  var accKey = (f['Hospital Name']||'').trim().toLowerCase();
+  var repName = f['Rep Name']||'';
+  var dateStr = formatDateISO(selectedDate);
+
+  // Last visit to this account BEFORE selected date
+  var accVisits = visitsByAccount[accKey]||[];
+  var lastVisit = accVisits.find(function(v){
+    return v.fields['Visit Date'] < dateStr;
+  });
+
+  // Actions for this rep
+  var repActions = getRepActionsById(repName);
+  var overdueActions = repActions.filter(function(a){
+    var due = a.fields['Due Date'];
+    return due && due < todayStr;
+  });
+
+  // Is this a new relationship for this rep?
+  var isNew = !accVisits.some(function(v){
+    return (v.fields['Rep Name']||'')===repName && v.fields['Visit Date']<dateStr;
+  });
+
+  var alertLevel = 0;
+  if (overdueActions.length) alertLevel = 3;
+  else if (lastVisit && lastVisit.fields['Outcome']==='Negative') alertLevel = 2;
+  else if (repActions.length) alertLevel = 1;
+
+  return {
+    lastVisit:      lastVisit||null,
+    lastOutcome:    lastVisit ? (lastVisit.fields['Outcome']||'') : '',
+    lastAISummary:  lastVisit ? (lastVisit.fields['AI Summary']||'') : '',
+    lastVisitDate:  lastVisit ? lastVisit.fields['Visit Date'] : '',
+    lastActionItems:lastVisit ? (lastVisit.fields['Action Items']||'') : '',
+    negativeLastOutcome: lastVisit && lastVisit.fields['Outcome']==='Negative',
+    positiveLastOutcome: lastVisit && lastVisit.fields['Outcome']==='Positive',
+    openActionsCount: repActions.length,
+    overdueCount: overdueActions.length,
+    isHighPriority: f['Priority']==='High',
+    isNewRelationship: isNew,
+    alertLevel: alertLevel // 0=none 1=actions 2=negative 3=overdue
+  };
+}
+
+// ── Day stats ─────────────────────────────────────────────────────────────────
+function computeDayStats(dateStr) {
+  var visits = visitsByDate[dateStr]||[];
+  var repsSeen = new Set();
+  var alerts = 0;
+  visits.forEach(function(v){
+    repsSeen.add(v.fields['Rep Name']||'unknown');
+    var s = getSignalsForDate(v, dateStr);
+    if (s.alertLevel>=2) alerts++;
+  });
+  var gaps = activeRepNames.filter(function(r){ return !repsSeen.has(r); }).length;
+  return {
+    total: visits.length,
+    active: repsSeen.size,
+    gaps: gaps,
+    alerts: alerts
+  };
+}
+
+function getSignalsForDate(visit, dateStr) {
+  // Lightweight version used for week strip — no rep action lookup (perf)
+  var f = visit.fields;
+  var accKey = (f['Hospital Name']||'').trim().toLowerCase();
+  var accVisits = visitsByAccount[accKey]||[];
+  var lastVisit = accVisits.find(function(v){ return v.fields['Visit Date']<dateStr; });
+  var repName = f['Rep Name']||'';
+  var repActions = getRepActionsById(repName);
+  var overdueCount = repActions.filter(function(a){
+    var due = a.fields['Due Date'];
+    return due && due<todayStr;
+  }).length;
+  var alertLevel = overdueCount>0 ? 3 : (lastVisit&&lastVisit.fields['Outcome']==='Negative') ? 2 : repActions.length>0 ? 1 : 0;
+  return { alertLevel: alertLevel };
+}
+
+// ── Week strip data ──────────────────────────────────────────────────────────
+function computeWeekData() {
+  var monday = getMondayOf(selectedDate);
+  var days = [];
+  for (var i=0;i<7;i++){
+    var d = addDays(monday,i);
+    var dStr = formatDateISO(d);
+    var visits = visitsByDate[dStr]||[];
+    var alerts = 0;
+    visits.forEach(function(v){
+      if (getSignalsForDate(v,dStr).alertLevel>=2) alerts++;
+    });
+    days.push({
+      date:d, dateStr:dStr,
+      visitCount:visits.length, alerts:alerts,
+      isToday:dStr===todayStr,
+      isSelected:dStr===formatDateISO(selectedDate)
+    });
+  }
+  return days;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  renderDayHeader();
+  renderWeekStrip();
+  renderMain();
+  if (typeof lucide!=='undefined') lucide.createIcons();
+}
+
+function renderDayHeader() {
+  var dateStr = formatDateISO(selectedDate);
+  var stats = computeDayStats(dateStr);
+  var html =
+    '<div class="day-header">'+
+      '<div class="day-nav">'+
+        '<button class="day-nav-btn" onclick="shiftDay(-1)">&#8592; '+formatDateShort(addDays(selectedDate,-1))+'</button>'+
+        '<div class="day-label">'+selectedDate.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})+'</div>'+
+        (dateStr!==todayStr
+          ? '<button class="day-nav-btn today" onclick="goToday()">Today</button>'
+          : '<button class="day-nav-btn" onclick="shiftDay(1)">'+formatDateShort(addDays(selectedDate,1))+' &#8594;</button>'
+        )+
+      '</div>'+
+      '<div class="day-stats">'+
+        '<div class="stat-box"><span class="stat-num">'+stats.total+'</span><span class="stat-label">Visits</span></div>'+
+        '<div class="stat-box"><span class="stat-num">'+stats.active+'</span><span class="stat-label">Active Reps</span></div>'+
+        '<div class="stat-box"><span class="stat-num'+(stats.gaps>0?' has-gap':'')+'">'+stats.gaps+'</span><span class="stat-label">Gaps</span></div>'+
+        '<div class="stat-box"><span class="stat-num'+(stats.alerts>0?' has-alert':'')+'">'+stats.alerts+'</span><span class="stat-label">Alerts</span></div>'+
+      '</div>'+
+    '</div>';
+  document.getElementById('dayHeader').innerHTML = html;
+}
+
+function renderWeekStrip() {
+  var weekData = computeWeekData();
+  var dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var html = '<div class="week-strip">';
+  weekData.forEach(function(day,i){
+    var cls = 'week-day';
+    if (day.isSelected) cls+=' selected';
+    if (day.isToday) cls+=' today-marker';
+    if (day.alerts>0) cls+=' has-alert-day';
+    var dots = '';
+    if (day.visitCount===0){
+      dots = '<span class="wd-empty">—</span>';
+    } else {
+      // max 5 dots, last one turns red if alert
+      var show = Math.min(day.visitCount,5);
+      for(var d=0;d<show;d++){
+        var isLast = d===show-1 && day.alerts>0;
+        dots += '<span class="wd-dot'+(d<day.alerts ? ' dot-alert' : ' dot-visit')+'"></span>';
+      }
+    }
+    html +=
+      '<div class="'+cls+'" onclick="selectDay(\''+day.dateStr+'\')">'+
+        '<span class="wd-name">'+dayNames[i]+'</span>'+
+        '<span class="wd-num">'+day.date.getDate()+'</span>'+
+        '<div class="wd-dots">'+dots+'</div>'+
+      '</div>';
+  });
+  html += '</div>';
+  document.getElementById('weekStrip').innerHTML = html;
+}
+
+function renderMain() {
+  var dateStr = formatDateISO(selectedDate);
+  var visits = visitsByDate[dateStr]||[];
+  var html = '';
+
+  // ── Planned visits ──
+  var isFuture = dateStr >= todayStr;
+  var sectionTitle = isFuture
+    ? 'Planned Visits — '+selectedDate.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})
+    : 'Visits — '+selectedDate.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+
+  html += '<div class="section-label">'+escapeHtml(sectionTitle)+'</div>';
+
+  if (visits.length===0){
+    html +=
+      '<div style="background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:32px 20px;text-align:center;margin-bottom:12px;box-shadow:0 4px 14px rgba(11,31,58,0.05)">'+
+        '<div style="font-size:28px;margin-bottom:8px">📋</div>'+
+        '<div style="font-size:13.5px;font-weight:700;color:#0b1f3a;margin-bottom:4px">No visits scheduled</div>'+
+        '<div style="font-size:12px;color:#8a9bb3;font-weight:500">No field visits have been logged for this date.</div>'+
+      '</div>';
+  } else {
+    // Group by rep
+    var byRep = {};
+    var repOrder = [];
+    visits.forEach(function(v){
+      var rep = v.fields['Rep Name']||'Unknown';
+      if (!byRep[rep]){ byRep[rep]=[]; repOrder.push(rep); }
+      byRep[rep].push(v);
+    });
+    repOrder.sort();
+
+    repOrder.forEach(function(repName){
+      var repVisits = byRep[repName];
+      var territory = repVisits[0].fields['Territory']||'';
+      html += renderRepBlock(repName, territory, repVisits, dateStr);
+    });
+  }
+
+  // ── Reps with no visits ──
+  var repsSeen = new Set(visits.map(function(v){return v.fields['Rep Name']||'';}));
+  var repsGapped = activeRepNames.filter(function(r){ return !repsSeen.has(r) && r; });
+
+  if (repsGapped.length>0){
+    html += '<div class="section-label">No Visits Scheduled</div>';
+    html += '<div class="no-visits-block">';
+    repsGapped.forEach(function(repName){
+      // Find last visit date for context
+      var lastVisitDate = '';
+      var allRepVisits = allVisits.filter(function(v){ return v.fields['Rep Name']===repName; });
+      if (allRepVisits.length){
+        var sorted = allRepVisits.filter(function(v){ return v.fields['Visit Date']<=dateStr; })
+          .sort(function(a,b){ return new Date(b.fields['Visit Date'])-new Date(a.fields['Visit Date']); });
+        if (sorted.length) {
+          var ld = new Date(sorted[0].fields['Visit Date']+'T00:00:00');
+          var dayDiff = Math.round((new Date(dateStr+'T00:00:00')-ld)/(1000*60*60*24));
+          if (dayDiff===0) lastVisitDate = 'Last visit: today';
+          else if (dayDiff===1) lastVisitDate = 'Last visit: yesterday';
+          else if (dayDiff<30) lastVisitDate = 'Last visit: '+dayDiff+' days ago';
+          else lastVisitDate = 'Last visit: '+ld.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+        }
+      }
+      html +=
+        '<div class="no-visits-rep">'+
+          '<div class="no-visits-dot"></div>'+
+          '<div class="no-visits-name">'+escapeHtml(repName)+'</div>'+
+          (lastVisitDate?'<div class="no-visits-note">'+escapeHtml(lastVisitDate)+'</div>':'<div class="no-visits-note">No visits on record</div>')+
+        '</div>';
+    });
+    html += '</div>';
+  }
+
+  // ── Gap Intelligence ──
+  var gapItems = buildGapIntelligence(dateStr);
+  if (gapItems.length>0){
+    html += '<div class="section-label">Gaps &amp; Attention</div>';
+    html += '<div class="gap-block">';
+    gapItems.forEach(function(item){
+      var iconClass = item.level==='high' ? 'gap-icon-red' : item.level==='medium' ? 'gap-icon-orange' : 'gap-icon-blue';
+      html +=
+        '<div class="gap-item">'+
+          '<div class="gap-icon '+iconClass+'">'+item.icon+'</div>'+
+          '<div><div class="gap-title">'+escapeHtml(item.title)+'</div>'+
+          '<div class="gap-detail">'+escapeHtml(item.detail)+'</div></div>'+
+        '</div>';
+    });
+    html += '</div>';
+  }
+
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function renderRepBlock(repName, territory, visits, dateStr) {
+  var repInits = initials(repName);
+  var visitWord = visits.length===1 ? '1 visit' : visits.length+' visits';
+  var html =
+    '<div class="rep-block">'+
+      '<div class="rep-block-header">'+
+        '<div class="rep-avatar">'+escapeHtml(repInits)+'</div>'+
+        '<div class="rep-name">'+escapeHtml(repName)+'</div>'+
+        (territory?'<div class="rep-territory">'+escapeHtml(territory)+'</div>':'')+
+        '<div class="rep-visit-count">'+visitWord+'</div>'+
+      '</div>';
+
+  visits.forEach(function(visit,idx){
+    var cardId = 'vc-'+repName.replace(/\s/g,'_')+'-'+idx;
+    html += renderVisitCard(visit, cardId);
+  });
+
+  html += '</div>';
+  return html;
+}
+
+function renderVisitCard(visit, cardId) {
+  var f = visit.fields;
+  var sig = getSignals(visit);
+
+  // Alert border class
+  var alertCls = '';
+  if (sig.alertLevel===3) alertCls=' alert-high';
+  else if (sig.alertLevel===2) alertCls=' alert-medium';
+  else if (sig.alertLevel===1) alertCls=' alert-low';
+
+  // Badges
+  var badges = '';
+  if (sig.overdueCount>0)
+    badges += '<span class="vbadge vbadge-overdue">⚑ Overdue</span>';
+  if (sig.negativeLastOutcome)
+    badges += '<span class="vbadge vbadge-negative">↘ Negative last</span>';
+  if (sig.positiveLastOutcome && !sig.negativeLastOutcome)
+    badges += '<span class="vbadge vbadge-positive">✓ Positive last</span>';
+  if (sig.openActionsCount>0 && sig.overdueCount===0)
+    badges += '<span class="vbadge vbadge-actions">● '+sig.openActionsCount+' open</span>';
+  if (sig.isHighPriority)
+    badges += '<span class="vbadge vbadge-high">★ High</span>';
+  if (sig.isNewRelationship)
+    badges += '<span class="vbadge vbadge-new">+ New</span>';
+
+  var account = escapeHtml(f['Hospital Name']||'Unknown Account');
+  var visitType = escapeHtml(f['Visit Type']||'Visit');
+  var territory = f['Territory'] ? ' · '+escapeHtml(f['Territory']) : '';
+  var priority = f['Priority']||'';
+  var metaParts = [visitType];
+  if (priority && priority!=='Medium') metaParts.push(priority+' priority');
+  var meta = metaParts.join(' · ') + territory;
+
+  // Expanded content
+  var expHtml = '';
+
+  if (sig.lastVisitDate) {
+    var lDate = new Date(sig.lastVisitDate+'T00:00:00');
+    var lDateStr = lDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    expHtml += '<div class="exp-section">';
+    expHtml += '<div class="exp-label">Previous visit · '+lDateStr+(sig.lastOutcome ? ' · '+escapeHtml(sig.lastOutcome) : '')+'</div>';
+    if (sig.lastAISummary) {
+      var summary = sig.lastAISummary.length>280 ? sig.lastAISummary.slice(0,280)+'…' : sig.lastAISummary;
+      expHtml += '<div class="exp-summary">'+escapeHtml(summary)+'</div>';
+    } else {
+      expHtml += '<div class="exp-text" style="color:#aab8cc">No AI summary recorded for previous visit.</div>';
+    }
+    expHtml += '</div>';
+  } else {
+    expHtml += '<div class="exp-section"><div class="exp-text" style="color:#aab8cc">No previous visit to this account on record.</div></div>';
+  }
+
+  var actionItems = f['Action Items']||'';
+  if (actionItems) {
+    expHtml +=
+      '<div class="exp-section">'+
+        '<div class="exp-label">Planned actions / next steps</div>'+
+        '<div class="exp-text">'+escapeHtml(actionItems)+'</div>'+
+      '</div>';
+  }
+
+  var meetingNotes = f['Meeting Notes']||'';
+  if (meetingNotes) {
+    expHtml +=
+      '<div class="exp-section">'+
+        '<div class="exp-label">Visit objective / notes</div>'+
+        '<div class="exp-text">'+escapeHtml(meetingNotes)+'</div>'+
+      '</div>';
+  }
+
+  if (sig.overdueCount>0) {
+    expHtml +=
+      '<div class="exp-section">'+
+        '<div class="exp-label" style="color:#e0344a">Attention needed</div>'+
+        '<div class="exp-alert-row">⚑ '+sig.overdueCount+' overdue action'+(sig.overdueCount>1?'s':'')+' assigned to this rep — follow-up recommended before visit.</div>'+
+      '</div>';
+  }
+
+  if (!expHtml) expHtml = '<div class="exp-section"><div class="exp-text" style="color:#aab8cc">No additional context available.</div></div>';
+
+  return (
+    '<div class="visit-card'+alertCls+'" id="'+cardId+'">'+
+      '<div class="visit-card-compact" onclick="toggleCard(\''+cardId+'\')">'+
+        '<div class="visit-top">'+
+          '<div>'+
+            '<div class="visit-account">'+account+'</div>'+
+            '<div class="visit-meta">'+meta+'</div>'+
+          '</div>'+
+          '<div class="visit-right">'+
+            (badges?'<div class="visit-badges">'+badges+'</div>':'')+
+            '<div class="chevron" id="chev-'+cardId+'">▾</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="visit-expanded" id="exp-'+cardId+'" style="display:none">'+expHtml+'</div>'+
+    '</div>'
+  );
+}
+
+// ── Gap Intelligence builder ──────────────────────────────────────────────────
+function buildGapIntelligence(dateStr) {
+  var items = [];
+
+  // 1. Overdue actions across the team
+  if (actionsOk) {
+    var overdueAll = allActions.filter(function(a){
+      var due = a.fields['Due Date'];
+      return due && due < todayStr;
+    });
+    if (overdueAll.length>0) {
+      var repCount = new Set();
+      overdueAll.forEach(function(a){
+        var ids = a.fields['Assigned Rep']||[];
+        if (!Array.isArray(ids)) ids=[ids];
+        ids.forEach(function(id){ if(repRecordIdToName[id]) repCount.add(repRecordIdToName[id]); });
+      });
+      var repList = Array.from(repCount).slice(0,3).join(', ')+(repCount.size>3?' and others':'');
+      items.push({
+        level:'high', icon:'⚑',
+        title: overdueAll.length+' overdue action'+(overdueAll.length>1?'s':'')+' across the team',
+        detail: repList ? 'Affected reps: '+repList : 'Review open actions to reassign or close overdue items.'
+      });
+    }
+  }
+
+  // 2. High-priority accounts with negative last outcome and no planned follow-up
+  var accountsNeedingAttention = [];
+  Object.keys(visitsByAccount).forEach(function(accKey){
+    var accVisits = visitsByAccount[accKey];
+    if (!accVisits.length) return;
+    var lastVisit = accVisits[0];
+    if (lastVisit.fields['Outcome']!=='Negative') return;
+    if (lastVisit.fields['Priority']!=='High') return;
+    // No future visit planned
+    var hasFuture = accVisits.some(function(v){ return v.fields['Visit Date']>dateStr; });
+    if (!hasFuture) {
+      accountsNeedingAttention.push(lastVisit.fields['Hospital Name']||accKey);
+    }
+  });
+  if (accountsNeedingAttention.length>0){
+    var shown = accountsNeedingAttention.slice(0,3).join(', ')+(accountsNeedingAttention.length>3?' (+'+( accountsNeedingAttention.length-3)+' more)':'');
+    items.push({
+      level:'medium', icon:'↘',
+      title: accountsNeedingAttention.length+' high-priority account'+(accountsNeedingAttention.length>1?'s':'')+' with negative outcome and no follow-up planned',
+      detail: shown
+    });
+  }
+
+  // 3. Reps with no visits today who have open actions
+  if (actionsOk) {
+    var repsSeen = new Set((visitsByDate[dateStr]||[]).map(function(v){ return v.fields['Rep Name']||''; }));
+    var repsIdleWithActions = [];
+    activeRepNames.forEach(function(repName){
+      if (repsSeen.has(repName)) return;
+      var acts = getRepActionsById(repName);
+      if (acts.length>0) repsIdleWithActions.push(repName);
+    });
+    if (repsIdleWithActions.length>0){
+      items.push({
+        level:'blue', icon:'●',
+        title: repsIdleWithActions.length+' rep'+(repsIdleWithActions.length>1?'s':'')+' with no visits today ha'+(repsIdleWithActions.length>1?'ve':'s')+' open actions pending',
+        detail: repsIdleWithActions.slice(0,3).join(', ')+(repsIdleWithActions.length>3?' and others':'')
+      });
+    }
+  }
+
+  return items;
+}
+
+// ── Card toggle ───────────────────────────────────────────────────────────────
+function toggleCard(cardId) {
+  var exp = document.getElementById('exp-'+cardId);
+  var chev = document.getElementById('chev-'+cardId);
+  if (!exp) return;
+  var isOpen = exp.style.display!=='none';
+  exp.style.display = isOpen ? 'none' : 'block';
+  if (chev) chev.className = isOpen ? 'chevron' : 'chevron open';
+}
+
+// ── Date navigation ───────────────────────────────────────────────────────────
+function shiftDay(n) {
+  selectedDate = addDays(selectedDate, n);
+  renderDayHeader();
+  renderWeekStrip();
+  renderMain();
+}
+
+function goToday() {
+  selectedDate = new Date();
+  selectedDate.setHours(0,0,0,0);
+  renderDayHeader();
+  renderWeekStrip();
+  renderMain();
+}
+
+function selectDay(dateStr) {
+  var parts = dateStr.split('-');
+  selectedDate = new Date(+parts[0],+parts[1]-1,+parts[2]);
+  selectedDate.setHours(0,0,0,0);
+  renderDayHeader();
+  renderWeekStrip();
+  renderMain();
+}
+
+// ── Auth guard + start ────────────────────────────────────────────────────────
+(function(){
+  var role = localStorage.getItem('fieldiq_user_role');
+  if (role!=='Manager') {
+    window.location.href='./index.html';
+    return;
+  }
+  loadData().catch(function(err){
+    document.getElementById('mainContent').innerHTML=
+      '<div class="error-state">'+
+        '<div class="error-msg">Could not load operations data.</div>'+
+        '<button class="retry-btn" onclick="location.reload()">Retry</button>'+
+      '</div>';
+  });
+})();
+</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+</body>
+</html>
