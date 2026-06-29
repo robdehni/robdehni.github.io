@@ -139,6 +139,43 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .retry-btn{background:#2f8fff;color:#fff;border:none;border-radius:12px;padding:11px 24px;font-size:13.5px;font-weight:700;cursor:pointer}
 
 .footer{text-align:center;color:#c8d8ea;font-size:10.5px;font-weight:600;padding:24px 0 8px}
+
+/* ── Tab strip ── */
+.tab-strip{display:flex;gap:4px;background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:4px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.tab-btn{flex:1;padding:10px 0;border:none;background:none;border-radius:10px;font-size:13.5px;font-weight:700;color:#8a9bb3;cursor:pointer;transition:all 0.15s}
+.tab-btn.active{background:#2f8fff;color:#fff;box-shadow:0 2px 8px rgba(47,143,255,0.28)}
+/* ── Timeline ── */
+.tl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -2px;padding-bottom:8px}
+.tl-table{border-collapse:separate;border-spacing:0;min-width:100%}
+.tl-header-cell{background:#f4f8fc;font-size:9px;font-weight:800;color:#8a9bb3;text-transform:uppercase;letter-spacing:0.5px;padding:8px 4px;text-align:center;border-bottom:2px solid #e3ebf5;white-space:nowrap;position:sticky;top:0;z-index:3}
+.tl-rep-col{position:sticky;left:0;z-index:4;min-width:88px;width:88px}
+.tl-rep-col.tl-header-cell{z-index:5;text-align:left;padding-left:8px}
+.tl-week-hdr{display:flex;flex-direction:column;align-items:center;gap:1px}
+.tl-week-tag{font-size:8.5px;font-weight:800;color:#c8d8ea;display:block}
+.tl-week-dt{font-size:10.5px;font-weight:800;color:#0b1f3a;display:block}
+.tl-now-hdr .tl-week-tag{color:#2f8fff}
+.tl-now-hdr .tl-week-dt{color:#2f8fff}
+.tl-rep-cell{position:sticky;left:0;z-index:2;background:#fff;box-shadow:2px 0 5px rgba(11,31,58,0.06);padding:10px 8px;vertical-align:middle;border-bottom:1px solid #f0f5fb}
+.tl-rep-name{font-size:12px;font-weight:800;color:#0b1f3a;white-space:nowrap}
+.tl-rep-terr{font-size:9.5px;color:#8a9bb3;font-weight:600;margin-top:2px}
+.tl-row:nth-child(even) .tl-rep-cell{background:#fafcff}
+.tl-row:nth-child(even) .tl-cell{background:#fafcff}
+.tl-row:hover .tl-cell{background:#f0f7ff !important}
+.tl-row:hover .tl-rep-cell{background:#f0f7ff}
+.tl-cell{min-width:64px;width:64px;height:60px;text-align:center;vertical-align:middle;border-bottom:1px solid #f0f5fb;border-right:1px solid #f0f5fb;cursor:pointer;transition:background 0.12s;padding:4px 2px;position:relative}
+.tl-cell.tl-now-col{background:#f0f8ff}
+.tl-cell.tl-gap{background:#fafbfd;cursor:default}
+.tl-cell.tl-gap:hover{background:#f4f8fc !important}
+.tl-cell.tl-overload{background:#fff8f0}
+.tl-cell:hover{background:#eaf3ff !important}
+.tl-count{font-size:17px;font-weight:900;color:#2f8fff;line-height:1;display:block}
+.tl-empty{font-size:15px;font-weight:600;color:#d8e4f0;display:block}
+.tl-dot-row{display:flex;gap:2px;justify-content:center;margin-top:3px;flex-wrap:wrap;min-height:7px}
+.tl-dot{width:5px;height:5px;border-radius:50%;background:#b8d8ff;display:inline-block;flex-shrink:0}
+.tl-dot.tl-dot-alert{background:#e0344a}
+.tl-flag{font-size:8.5px;font-weight:800;margin-top:1px;display:block;line-height:1}
+.tl-flag-alert{color:#e0344a}
+.tl-flag-overload{color:#d98a1c}
 </style>
 </head>
 <body>
@@ -156,6 +193,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
   <a href="./fieldiq.html" class="home-btn">← Home</a>
 
+  <div id="tabStrip"></div>
+
   <!-- Day header + week strip injected here -->
   <div id="dayHeader"></div>
   <div id="weekStrip"></div>
@@ -165,6 +204,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
     <div class="spinner-wrap"><div class="spinner"></div>Loading operations…</div>
   </div>
 </div>
+
+  <div id="timelineZone" style="display:none"></div>
 
 <div class="footer">FieldIQ Operations · Field Intelligence Platform</div>
 
@@ -187,6 +228,7 @@ var activeRepNames  = [];   // sorted display names of all active reps
 var selectedDate = new Date();
 selectedDate.setHours(0,0,0,0);
 var todayStr = formatDateISO(new Date());
+var currentTab = 'today';
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 function escapeHtml(str) {
@@ -434,6 +476,7 @@ function computeWeekData() {
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function render() {
+  renderTabs();
   renderDayHeader();
   renderWeekStrip();
   renderMain();
@@ -810,6 +853,236 @@ function selectDay(dateStr) {
   renderMain();
 }
 
+
+// ── Tabs ──────────────────────────────────────────────────────────────────
+function renderTabs() {
+  var strip = document.getElementById('tabStrip');
+  if (!strip) return;
+  strip.innerHTML =
+    '<div class="tab-strip">'+
+      '<button class="tab-btn'+(currentTab==='today'?' active':'')+'" onclick="switchTab(\'today\')">Today</button>'+
+      '<button class="tab-btn'+(currentTab==='timeline'?' active':'')+'" onclick="switchTab(\'timeline\')">Timeline</button>'+
+    '</div>';
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  renderTabs();
+  var isTL = (tab === 'timeline');
+  document.getElementById('dayHeader').style.display    = isTL ? 'none' : '';
+  document.getElementById('weekStrip').style.display    = isTL ? 'none' : '';
+  document.getElementById('mainContent').style.display  = isTL ? 'none' : '';
+  document.getElementById('timelineZone').style.display = isTL ? 'block' : 'none';
+  if (isTL) { renderTimeline(); if(typeof lucide!=='undefined') lucide.createIcons(); }
+}
+
+function jumpToDate(dateStr) {
+  var p = dateStr.split('-');
+  selectedDate = new Date(+p[0], +p[1]-1, +p[2]);
+  selectedDate.setHours(0,0,0,0);
+  currentTab = 'today';
+  renderTabs();
+  document.getElementById('dayHeader').style.display    = '';
+  document.getElementById('weekStrip').style.display    = '';
+  document.getElementById('mainContent').style.display  = '';
+  document.getElementById('timelineZone').style.display = 'none';
+  renderDayHeader(); renderWeekStrip(); renderMain();
+  if(typeof lucide!=='undefined') lucide.createIcons();
+  window.scrollTo(0,0);
+}
+
+// ── Timeline matrix ───────────────────────────────────────────────────────
+function renderTimeline() {
+  var monday = getMondayOf(new Date());
+  var weeks = [];
+  for (var i=0;i<9;i++){
+    var ws = addDays(monday, i*7);
+    var we = addDays(ws, 6);
+    weeks.push({
+      start:ws, end:we,
+      startStr:formatDateISO(ws), endStr:formatDateISO(we),
+      label:ws.toLocaleDateString('en-GB',{day:'numeric',month:'short'}),
+      isNow:(i===0)
+    });
+  }
+
+  var repList   = activeRepNames;
+  var todayDate = formatDateISO(new Date());
+
+  function getRepWeekData(rep, week) {
+    var visits = allVisits.filter(function(v){
+      var d = normDate(v.fields['Visit Date']);
+      return (v.fields['Rep Name']||'')===rep && d>=week.startStr && d<=week.endStr;
+    });
+    var alerts = 0;
+    visits.forEach(function(v){
+      var accKey = (v.fields['Hospital Name']||'').trim().toLowerCase();
+      var avs = visitsByAccount[accKey]||[];
+      var last = avs.find(function(av){ return normDate(av.fields['Visit Date'])<week.startStr; });
+      if (last && last.fields['Outcome']==='Negative') alerts++;
+    });
+    if (actionsOk) {
+      var ra = getRepActionsById(rep);
+      if (ra.some(function(a){ return normDate(a.fields['Due Date'])<todayDate; })) alerts++;
+    }
+    return { count:visits.length, alerts:Math.min(alerts,1) };
+  }
+
+  function getRepTerritory(rep){
+    var v = allVisits.find(function(vv){ return (vv.fields['Rep Name']||'')===rep && vv.fields['Territory']; });
+    return v?(v.fields['Territory']||''):'';
+  }
+
+  var periodStart = weeks[0].label;
+  var periodEnd   = weeks[weeks.length-1].label;
+  var html = '<div class="section-label">Team Schedule \u2014 '+escapeHtml(periodStart)+' to '+escapeHtml(periodEnd)+'</div>';
+
+  if (!repList.length){
+    html += '<div class="empty-state"><div class="empty-icon">&#128197;</div>No rep data loaded yet.</div>';
+    document.getElementById('timelineZone').innerHTML = html;
+    return;
+  }
+
+  html += '<div class="tl-scroll"><table class="tl-table"><thead><tr>';
+  html += '<th class="tl-rep-col tl-header-cell">Rep</th>';
+  weeks.forEach(function(week){
+    var nc = week.isNow?' tl-now-hdr':'';
+    html += '<th class="tl-header-cell'+nc+'"><div class="tl-week-hdr">'+
+      '<span class="tl-week-tag">'+(week.isNow?'Now':'')+'</span>'+
+      '<span class="tl-week-dt">'+escapeHtml(week.label)+'</span>'+
+    '</div></th>';
+  });
+  html += '</tr></thead><tbody>';
+
+  repList.forEach(function(rep){
+    var terr = getRepTerritory(rep);
+    html += '<tr class="tl-row">';
+    html +=
+      '<td class="tl-rep-col tl-rep-cell">'+
+        '<div class="tl-rep-name">'+escapeHtml(rep.split(' ')[0])+'</div>'+
+        (terr?'<div class="tl-rep-terr">'+escapeHtml(terr)+'</div>':'')+
+      '</td>';
+    weeks.forEach(function(week){
+      var cell = getRepWeekData(rep, week);
+      var cls  = 'tl-cell';
+      if (week.isNow)     cls += ' tl-now-col';
+      if (cell.count===0) cls += ' tl-gap';
+      if (cell.count>=6)  cls += ' tl-overload';
+      var canJump = cell.count>0 || week.startStr>=todayDate;
+      html += '<td class="'+cls+'"'+(canJump?' onclick="jumpToDate(\''+week.startStr+'\')"':'')+' title="'+(canJump?'Open '+escapeHtml(rep)+' week in Today view':'')+'">';
+      if (cell.count===0){
+        html += '<span class="tl-empty">&mdash;</span>';
+      } else {
+        html += '<span class="tl-count">'+cell.count+'</span>';
+        var show = Math.min(cell.count,5), dots='';
+        for(var d=0;d<show;d++) dots += '<span class="tl-dot'+(cell.alerts>0&&d===0?' tl-dot-alert':'')+'"></span>';
+        html += '<div class="tl-dot-row">'+dots+'</div>';
+        if (cell.alerts>0) html += '<span class="tl-flag tl-flag-alert">&#9873; alert</span>';
+        if (cell.count>=6) html += '<span class="tl-flag tl-flag-overload">busy</span>';
+      }
+      html += '</td>';
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  html += renderCoverageGaps(weeks);
+  document.getElementById('timelineZone').innerHTML = html;
+}
+
+// ── Coverage Gaps ─────────────────────────────────────────────────────────
+function renderCoverageGaps(weeks) {
+  var todayDate   = formatDateISO(new Date());
+  var past60      = formatDateISO(addDays(new Date(),-60));
+  var next28      = formatDateISO(addDays(new Date(), 28));
+  var windowStart = weeks[0].startStr;
+  var windowEnd   = weeks[weeks.length-1].endStr;
+  var items = [];
+
+  // 1. Going cold
+  var cold = [];
+  Object.keys(visitsByAccount).forEach(function(accKey){
+    var avs = visitsByAccount[accKey];
+    var recent = avs.some(function(v){ var d=normDate(v.fields['Visit Date']); return d>=past60&&d<=todayDate; });
+    if (!recent) return;
+    var future = avs.some(function(v){ var d=normDate(v.fields['Visit Date']); return d>todayDate&&d<=next28; });
+    if (!future) cold.push(avs[0].fields['Hospital Name']||accKey);
+  });
+  if (cold.length)
+    items.push({level:'medium',icon:'\u2198',
+      title:cold.length+' account'+(cold.length>1?'s':'')+' going cold \u2014 visited recently, nothing planned in next 4 weeks',
+      detail:cold.slice(0,4).join(', ')+(cold.length>4?' +'+(cold.length-4)+' more':'')});
+
+  // 2. High-priority with no future visit in window
+  var hiNoVisit = [];
+  Object.keys(visitsByAccount).forEach(function(accKey){
+    var avs = visitsByAccount[accKey];
+    var hi = avs.some(function(v){ return v.fields['Priority']==='High'; });
+    if (!hi) return;
+    var future = avs.some(function(v){ var d=normDate(v.fields['Visit Date']); return d>todayDate&&d<=windowEnd; });
+    if (!future) hiNoVisit.push(avs[0].fields['Hospital Name']||accKey);
+  });
+  if (hiNoVisit.length)
+    items.push({level:'high',icon:'\u2605',
+      title:hiNoVisit.length+' high-priority account'+(hiNoVisit.length>1?'s':'')+' with nothing planned in the 9-week window',
+      detail:hiNoVisit.slice(0,4).join(', ')+(hiNoVisit.length>4?' +'+(hiNoVisit.length-4)+' more':'')});
+
+  // 3. Reps with 2+ consecutive empty weeks
+  var lightReps = [];
+  activeRepNames.forEach(function(rep){
+    var wc = weeks.map(function(w){
+      return allVisits.filter(function(v){
+        var d=normDate(v.fields['Visit Date']);
+        return (v.fields['Rep Name']||'')===rep&&d>=w.startStr&&d<=w.endStr;
+      }).length;
+    });
+    var maxG=0,cur=0;
+    wc.forEach(function(c){ if(c===0){cur++;maxG=Math.max(maxG,cur);}else cur=0; });
+    if (maxG>=2) lightReps.push(rep+' ('+maxG+' empty weeks)');
+  });
+  if (lightReps.length)
+    items.push({level:'medium',icon:'\u25CB',
+      title:'Reps with consecutive empty weeks in the timeline',
+      detail:lightReps.join(', ')});
+
+  // 4. Territories with zero activity in window
+  var terrCts={};
+  allVisits.forEach(function(v){
+    var d=normDate(v.fields['Visit Date']);
+    if(d<windowStart||d>windowEnd) return;
+    var t=v.fields['Territory']||'';
+    if(t) terrCts[t]=(terrCts[t]||0)+1;
+  });
+  var knownT=new Set(allVisits.map(function(v){ return v.fields['Territory']||''; }));
+  knownT.delete('');
+  var coldT=Array.from(knownT).filter(function(t){ return !(terrCts[t]>0); });
+  if (coldT.length)
+    items.push({level:'high',icon:'\u25CE',
+      title:'Territories with no planned activity in the 9-week window',
+      detail:coldT.join(', ')});
+
+  var html='<div class="section-label" style="margin-top:20px">Coverage Gaps</div><div class="gap-block">';
+  if (!items.length){
+    html+=
+      '<div class="gap-item">'+
+        '<div class="gap-icon gap-icon-blue">&#10003;</div>'+
+        '<div><div class="gap-title">No coverage gaps detected</div>'+
+        '<div class="gap-detail">All reps have planned activity across the 9-week window.</div></div>'+
+      '</div>';
+  } else {
+    items.forEach(function(item){
+      var ic=item.level==='high'?'gap-icon-red':item.level==='medium'?'gap-icon-orange':'gap-icon-blue';
+      html+=
+        '<div class="gap-item">'+
+          '<div class="gap-icon '+ic+'">'+item.icon+'</div>'+
+          '<div><div class="gap-title">'+escapeHtml(item.title)+'</div>'+
+          '<div class="gap-detail">'+escapeHtml(item.detail)+'</div></div>'+
+        '</div>';
+    });
+  }
+  return html+'</div>';
+}
+
 // ── Auth guard + start ────────────────────────────────────────────────────────
 (function(){
   var role = localStorage.getItem('fieldiq_user_role');
@@ -828,4 +1101,4 @@ function selectDay(dateStr) {
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
 </body>
-</html>
+</html> 
