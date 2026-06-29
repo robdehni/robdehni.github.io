@@ -462,11 +462,19 @@ function resetFilters(){
   buildDashboard(allRecordsRaw);renderPrioritySection(allRecordsRaw.filter(function(r){return r.fields['Reviewed']!==true;}));
 }
 async function loadDashboard(){
+  var _ctrl=new AbortController();
+  var _timer=setTimeout(function(){_ctrl.abort();},15000);
   try{
-    var res=await fetch(WORKER_URL+'/get-visits');var data=await res.json();if(!res.ok)throw new Error(JSON.stringify(data));
+    var res=await fetch(WORKER_URL+'/get-visits',{signal:_ctrl.signal});
+    clearTimeout(_timer);
+    var data=await res.json();if(!res.ok)throw new Error(JSON.stringify(data));
     allRecordsRaw=data.records||[];allRecordsRaw.forEach(function(r){r._vDate=r.fields['Visit Date']?new Date(r.fields['Visit Date']):null;});populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';
     buildDashboard(allRecordsRaw);buildNewAccountsCard(allRecordsRaw);renderPrioritySection(allRecordsRaw.filter(function(r){return r.fields['Reviewed']!==true;}));
-  }catch(err){document.getElementById('loadingEl').textContent='Failed to load: '+err.message;}
+  }catch(err){
+    clearTimeout(_timer);
+    var msg=(err.name==='AbortError')?'Request timed out — check your connection.':('Failed to load: '+err.message);
+    document.getElementById('loadingEl').innerHTML='<div style="text-align:center;padding:20px;color:#e0344a;font-weight:700">'+msg+'</div><div style="text-align:center;margin-top:12px"><button onclick="loadDashboard()" style="background:#2f8fff;color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer">Retry</button></div>';
+  }
 }
 async function markPendingReviewed(recordId,btnEl){
   btnEl.disabled=true;btnEl.textContent='Saving...';
