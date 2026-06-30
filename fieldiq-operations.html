@@ -183,16 +183,19 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .tb-nav-arr:hover{background:#eaf3ff;border-color:#b8d8ff;color:#2f8fff}
 .tb-nav-today{background:#eaf3ff;border:1px solid #b8d8ff;border-radius:9px;padding:6px 14px;font-size:12.5px;font-weight:700;color:#2f8fff;cursor:pointer}
 .tb-month-label{font-size:13px;font-weight:800;color:#0b1f3a}
-.tb-board{background:#fff;border:1px solid #e3ebf5;border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(11,31,58,0.05);margin-bottom:16px}
-.tb-row{display:flex;align-items:baseline;gap:6px;padding:13px 16px;border-bottom:1px solid #f4f8fc;flex-wrap:wrap}
-.tb-row:last-child{border-bottom:none}
-.tb-row:nth-child(even){background:#fafcff}
+.tb-board{background:transparent;margin-bottom:16px;display:flex;flex-direction:column;gap:8px}
+.tb-card{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:12px 16px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.tb-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
 .tb-rep-name{font-size:13.5px;font-weight:800;color:#0b1f3a}
-.tb-sentence-text{font-size:13px;font-weight:600;color:#3d4f6b}
-.tb-sentence-text strong{font-weight:800}
-.tb-s-healthy{color:#1a7a45}
-.tb-s-quiet{color:#d98a1c}
-.tb-s-attention{color:#c0392b}
+.tb-badge{font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:0.3px}
+.tb-badge-healthy{background:#e3f8ea;color:#1a7a45}
+.tb-badge-quiet{background:#fff3e0;color:#d98a1c}
+.tb-badge-attention{background:#ffe5e8;color:#c0392b}
+.tb-card-meta{font-size:12px;color:#7a8aa3;font-weight:600}
+.tb-card-stat{color:#5b6b85;font-weight:700}
+.tb-s-healthy{color:#1a7a45;font-weight:700}
+.tb-s-quiet{color:#d98a1c;font-weight:700}
+.tb-s-attention{color:#c0392b;font-weight:700}
 .attn-clean{padding:18px;text-align:center;color:#1fa861;font-size:13px;font-weight:700;background:#fff;border:1px solid #e3ebf5;border-radius:16px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .attn-item{display:flex;gap:10px;align-items:flex-start;padding:12px 16px;border-bottom:1px solid #f4f8fc;background:#fff}
 .attn-item:first-child{border-radius:16px 16px 0 0}
@@ -257,7 +260,7 @@ var activeRepNames  = [];   // sorted display names of all active reps
 var selectedDate = new Date();
 selectedDate.setHours(0,0,0,0);
 var todayStr = formatDateISO(new Date());
-var currentTab = 'today';
+var currentTab = sessionStorage.getItem('fieldiq_ops_tab') || 'today';
 var tbMonthAnchor = null; // Territory Board: month currently displayed
 
 // ── Utilities ────────────────────────────────────────────────────────────────
@@ -376,19 +379,31 @@ function buildIndices() {
     });
   });
 
-  // activeRepNames: from users (Sales Rep role) + supplement from visits
-  var nameSet = new Set();
+  // activeRepNames: from users (excluding Manager role) + supplement from visits.
+  // Dedupe case-insensitively (keep the first-seen casing) and explicitly
+  // exclude known manager-account literals that sometimes appear in Rep Name
+  // on logged visits even though the account itself is a Manager.
+  var EXCLUDED_REP_NAMES = ['the manager','manager'];
+  var seenLower = {};
+  var orderedNames = [];
+  function addRepName(n){
+    var trimmed = (n||'').trim();
+    if (!trimmed) return;
+    var lower = trimmed.toLowerCase();
+    if (EXCLUDED_REP_NAMES.indexOf(lower) !== -1) return;
+    if (seenLower[lower]) return;
+    seenLower[lower] = true;
+    orderedNames.push(trimmed);
+  }
   allUsers.forEach(function(u){
     var role = u.fields['Role']||'';
-    if (role!=='Manager') nameSet.add(u.fields['Display Name']||'');
+    if (role!=='Manager') addRepName(u.fields['Display Name']||'');
   });
-  // also add names that appear only in visits
+  // also add names that appear only in visits (reps not in Users table)
   allVisits.forEach(function(v){
-    var n = v.fields['Rep Name']||'';
-    if (n) nameSet.add(n);
+    addRepName(v.fields['Rep Name']||'');
   });
-  nameSet.delete('');
-  activeRepNames = Array.from(nameSet).sort();
+  activeRepNames = orderedNames.sort(function(a,b){return a.localeCompare(b);});
 }
 
 // ── Signal computation ────────────────────────────────────────────────────────
@@ -507,9 +522,23 @@ function computeWeekData() {
 // ── Render ────────────────────────────────────────────────────────────────────
 function render() {
   renderTabs();
-  renderDayHeader();
-  renderWeekStrip();
-  renderMain();
+  if (currentTab === 'timeline') {
+    // Restored on a Territory Board tab — show that view immediately instead
+    // of flashing Today first. Today's DOM still gets built underneath so
+    // switching tabs later is instant, just kept hidden.
+    renderDayHeader();
+    renderWeekStrip();
+    renderMain();
+    document.getElementById('dayHeader').style.display    = 'none';
+    document.getElementById('weekStrip').style.display    = 'none';
+    document.getElementById('mainContent').style.display  = 'none';
+    document.getElementById('timelineZone').style.display  = 'block';
+    renderTerritoryBoard();
+  } else {
+    renderDayHeader();
+    renderWeekStrip();
+    renderMain();
+  }
   if (typeof lucide!=='undefined') lucide.createIcons();
 }
 
@@ -909,6 +938,7 @@ function renderTabs() {
 
 function switchTab(tab) {
   currentTab = tab;
+  try{ sessionStorage.setItem('fieldiq_ops_tab', tab); }catch(e){}
   renderTabs();
   var isTL = (tab === 'timeline');
   document.getElementById('dayHeader').style.display    = isTL ? 'none' : '';
@@ -923,6 +953,7 @@ function jumpToDate(dateStr) {
   selectedDate = new Date(+p[0], +p[1]-1, +p[2]);
   selectedDate.setHours(0,0,0,0);
   currentTab = 'today';
+  try{ sessionStorage.setItem('fieldiq_ops_tab', 'today'); }catch(e){}
   renderTabs();
   document.getElementById('dayHeader').style.display    = '';
   document.getElementById('weekStrip').style.display    = '';
@@ -964,10 +995,9 @@ function renderTerritoryBoard() {
   html += '<div class="tb-board">';
 
 activeRepNames.forEach(function(rep){
-    // Days since this rep's most recent visit (any account) — drives both the
-    // "Last visit" phrase and the Status word. This is the figure that actually
-    // matters: not whether they worked "yesterday" specifically, but how long
-    // it has been since they were last in the field.
+    // Days since this rep's most recent visit (any account) — the figure that
+    // actually matters: not whether they worked "today" specifically, but how
+    // long it has been since they were last in the field.
     var repPastVisits = allVisits.filter(function(v){
       return (v.fields['Rep Name']||'')===rep && normDate(v.fields['Visit Date'])<=todayDate;
     }).sort(function(a,b){
@@ -981,26 +1011,36 @@ activeRepNames.forEach(function(rep){
     var lastVisitPhrase = daysSinceLast===null ? 'No visits on record'
       : daysSinceLast===0 ? 'Active today'
       : daysSinceLast===1 ? 'Active yesterday'
-      : 'Last visit '+daysSinceLast+' days ago';
+      : daysSinceLast+' days ago';
 
-    // Verdict word only appears when the recency fact alone doesn't make the
-    // call obvious. Active today/yesterday needs no verdict — it speaks for
-    // itself. Everything else gets exactly one decision word.
-    var statusCls, verdict;
+    var statusCls, statusBadgeCls, statusLabel;
     if (daysSinceLast!==null && daysSinceLast<=1){
-      statusCls='tb-s-healthy'; verdict='';
+      statusCls='tb-s-healthy'; statusBadgeCls='tb-badge-healthy'; statusLabel='Active';
     } else if (daysSinceLast!==null && daysSinceLast<=5){
-      statusCls='tb-s-quiet'; verdict='Behind';
+      statusCls='tb-s-quiet'; statusBadgeCls='tb-badge-quiet'; statusLabel='Behind';
     } else {
-      statusCls='tb-s-attention'; verdict='Needs Attention';
+      statusCls='tb-s-attention'; statusBadgeCls='tb-badge-attention'; statusLabel='Needs Attention';
     }
 
-    var sentence = '<span class="'+statusCls+'">'+escapeHtml(lastVisitPhrase)+'.</span>'+
-      (verdict ? ' <strong class="'+statusCls+'">'+verdict+'.</strong>' : '');
+    // Planned-today count — visits dated today for this rep.
+    var plannedToday = allVisits.filter(function(v){
+      return (v.fields['Rep Name']||'')===rep && normDate(v.fields['Visit Date'])===todayDate;
+    }).length;
 
-    html += '<div class="tb-row">'+
-      '<span class="tb-rep-name">'+escapeHtml(rep.split(' ')[0])+'</span>'+
-      '<span class="tb-sentence-text"> &mdash; '+sentence+'</span>'+
+    // Open actions count — only shown if action data loaded successfully.
+    var openActionsCount = null;
+    if (actionsOk) openActionsCount = getRepActionsById(rep).length;
+
+    html += '<div class="tb-card">'+
+      '<div class="tb-card-top">'+
+        '<span class="tb-rep-name">'+escapeHtml(rep.split(' ')[0])+'</span>'+
+        '<span class="tb-badge '+statusBadgeCls+'">'+statusLabel+'</span>'+
+      '</div>'+
+      '<div class="tb-card-meta">'+
+        '<span class="'+statusCls+'">'+escapeHtml(lastVisitPhrase)+'</span>'+
+        (plannedToday>0?' &middot; <span class="tb-card-stat">'+plannedToday+' planned today</span>':'')+
+        (openActionsCount!==null&&openActionsCount>0?' &middot; <span class="tb-card-stat">'+openActionsCount+' open action'+(openActionsCount>1?'s':'')+'</span>':'')+
+      '</div>'+
     '</div>';
   });
 
@@ -1022,13 +1062,25 @@ activeRepNames.forEach(function(rep){
 function buildAttentionRequired(todayDate) {
   var items = [];
 
+  // Reps inactive more than 5 days (not simply "no visit today" — that fires
+  // for nearly the whole team on a slow morning and isn't useful signal).
   activeRepNames.forEach(function(rep){
-    var has = allVisits.some(function(v){
-      return (v.fields['Rep Name']||'')===rep && normDate(v.fields['Visit Date'])===todayDate;
+    var repPast = allVisits.filter(function(v){
+      return (v.fields['Rep Name']||'')===rep && normDate(v.fields['Visit Date'])<=todayDate;
+    }).sort(function(a,b){
+      return normDate(b.fields['Visit Date']).localeCompare(normDate(a.fields['Visit Date']));
     });
-    if (!has) items.push({icon:'\u26A0',text:rep+' \u2014 nothing planned today.'});
+    var lastV = repPast[0];
+    var daysSince = lastV ? Math.round(
+      (new Date(todayDate+'T00:00:00')-new Date(normDate(lastV.fields['Visit Date'])+'T00:00:00'))/86400000
+    ) : null;
+    if (daysSince===null || daysSince>5) {
+      var note = daysSince===null ? 'no visits on record' : daysSince+' days since last visit';
+      items.push({icon:'\u26A0',text:rep+' \u2014 inactive ('+note+').'});
+    }
   });
 
+  // High-priority accounts, no visit in 14+ days, nothing scheduled.
   Object.keys(visitsByAccount).forEach(function(accKey){
     var avs = visitsByAccount[accKey];
     if (!avs.some(function(v){return v.fields['Priority']==='High';})) return;
@@ -1041,6 +1093,7 @@ function buildAttentionRequired(todayDate) {
     }
   });
 
+  // Overdue actions, by rep.
   if (actionsOk) {
     var om={};
     allActions.forEach(function(a){
@@ -1058,6 +1111,9 @@ function buildAttentionRequired(todayDate) {
     });
   }
 
+  // Territory coverage gap — restricted to active/current territories only.
+  // Today that is UAE. Expand ACTIVE_TERRITORIES as new pilot territories go live.
+  var ACTIVE_TERRITORIES = ['UAE'];
   var twS=formatDateISO(getMondayOf(new Date()));
   var twE=formatDateISO(addDays(getMondayOf(new Date()),6));
   var coveredTerr=new Set();
@@ -1065,9 +1121,7 @@ function buildAttentionRequired(todayDate) {
     var d=normDate(v.fields['Visit Date']);
     if(d>=twS&&d<=twE&&v.fields['Territory']) coveredTerr.add(v.fields['Territory']);
   });
-  var allTerr=new Set(allVisits.map(function(v){return v.fields['Territory']||'';}));
-  allTerr.delete('');
-  Array.from(allTerr).filter(function(t){return !coveredTerr.has(t);}).forEach(function(t){
+  ACTIVE_TERRITORIES.filter(function(t){return !coveredTerr.has(t);}).forEach(function(t){
     items.push({icon:'\u26A0',text:t+' \u2014 no visits scheduled this week.'});
   });
 
