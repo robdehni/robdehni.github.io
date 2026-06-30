@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldIQ — Manager Calendar</title>
+<script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js" defer></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:24px 20px 50px}
+.container{max-width:620px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.brand-cloud{font-size:26px;line-height:1}
+.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
+.brand-text h1 span{color:#2f8fff}
+.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+.header{margin-bottom:18px}
+.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600}
+.home-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;box-shadow:0 2px 8px rgba(11,31,58,0.05)}
+.summary{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.summary-left{display:flex;align-items:center;gap:10px}
+.summary-icon{width:40px;height:40px;border-radius:12px;background:#eaf3ff;display:flex;align-items:center;justify-content:center}
+.summary-icon [data-lucide]{width:22px;height:22px;color:#2f8fff}
+.summary-title{font-size:14px;font-weight:800;color:#0b1f3a}
+.summary-sub{font-size:11.5px;color:#8a9bb3;margin-top:2px;font-weight:600}
+.count-pill{background:#2f8fff;color:#fff;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800}
+.loading{text-align:center;padding:46px 20px;color:#8a9bb3;font-weight:700}
+.spinner{width:34px;height:34px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:34px 20px;text-align:center;color:#8a9bb3;font-weight:700;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.empty [data-lucide]{width:42px;height:42px;color:#2f8fff;margin-bottom:10px}
+.error-box{background:#fff3e0;border:1px solid #ffe5b3;border-radius:14px;padding:16px;color:#7a6000;font-size:13px;font-weight:700;text-align:center;margin-bottom:12px}
+.retry-btn{margin-top:10px;border:none;background:#2f8fff;color:#fff;padding:10px 18px;border-radius:10px;font-weight:800}
+.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:30px}
+
+/* ── Rep filter ── */
+.rep-filter-wrap{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:12px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.rep-filter-label{font-size:10px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block}
+.rep-filter-select{width:100%;padding:11px;border:1.5px solid #dde8f5;border-radius:12px;background:#f8fbff;color:#0b1f3a;font-weight:800;outline:none;font-size:13.5px}
+
+/* ── Monthly calendar grid ── */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:12px 16px;margin-bottom:10px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.cal-month-label{font-size:15px;font-weight:800;color:#0b1f3a}
+.cal-nav-btn{background:#eaf3ff;border:none;color:#2f8fff;border-radius:10px;width:34px;height:34px;font-size:20px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.cal-nav-btn:hover{background:#d5eaff}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:10px;margin-bottom:10px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.cal-header-cell{text-align:center;font-size:9.5px;font-weight:800;color:#8a9bb3;text-transform:uppercase;padding:4px 0 8px;letter-spacing:.5px}
+.cal-day{min-height:46px;border-radius:10px;padding:5px 4px;display:flex;flex-direction:column;align-items:center;cursor:default;position:relative}
+.cal-day-empty{background:transparent}
+.cal-day-num{font-size:12.5px;font-weight:700;color:#0b1f3a;margin-bottom:3px}
+.cal-day-past .cal-day-num{color:#c8d4e3}
+.cal-day-today{background:#eaf3ff}
+.cal-day-today .cal-day-num{color:#2f8fff;font-weight:900}
+.cal-day-has-actions{cursor:pointer}
+.cal-day-has-actions:hover{background:#f0f6ff}
+.cal-day-selected{background:#2f8fff !important}
+.cal-day-selected .cal-day-num{color:#fff !important;font-weight:900}
+.cal-day-selected .cal-badge{background:#fff;color:#2f8fff}
+.cal-day-selected:hover{background:#1f7fe0 !important}
+.cal-badge{background:#2f8fff;color:#fff;border-radius:999px;font-size:9px;font-weight:900;padding:2px 5px;min-width:16px;text-align:center;line-height:1.4}
+/* Day action panel */
+.cal-day-panel{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05);margin-bottom:10px}
+.cal-panel-header{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:.8px;font-weight:800;margin-bottom:10px}
+.cal-action-item{padding:12px;background:#f8fbff;border:1px solid #e3ebf5;border-radius:12px;margin-bottom:8px;cursor:pointer;transition:border-color .12s}
+.cal-action-item:last-child{margin-bottom:0}
+.cal-action-item:hover{border-color:#2f8fff}
+.cal-action-account{font-size:13px;font-weight:800;color:#0b1f3a;margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cal-action-text{font-size:12.5px;color:#3d4f6b;line-height:1.5;margin-bottom:6px}
+.cal-action-link{font-size:11px;color:#2f8fff;font-weight:800}
+.time-pill{background:#eaf3ff;color:#2f8fff;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:800;white-space:nowrap}
+.rep-pill{background:#fff3e0;color:#d98a1c;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:800;white-space:nowrap}
+.meta-tag{background:#fff;border:1px solid #e3ebf5;color:#7a8aa3;border-radius:8px;padding:3px 8px;font-size:10px;font-weight:800;white-space:nowrap}
+.meta-tag-high{background:#fff0f0;border-color:#ffd9d9;color:#c43048}
+
+/* ── Action popup (bottom sheet) ── */
+.ap-overlay{position:fixed;inset:0;background:rgba(11,31,58,0.38);z-index:8000;display:flex;align-items:flex-end;justify-content:center;animation:apFadeIn .15s ease}
+.ap-overlay.hidden{display:none}
+@keyframes apFadeIn{from{opacity:0}to{opacity:1}}
+.ap-sheet{background:#fff;border-radius:22px 22px 0 0;padding:18px 18px 36px;width:100%;max-width:480px;animation:apSlideUp .18s ease;box-shadow:0 -4px 28px rgba(11,31,58,0.14)}
+@keyframes apSlideUp{from{transform:translateY(56px);opacity:0}to{transform:translateY(0);opacity:1}}
+.ap-handle{width:36px;height:4px;background:#e3ebf5;border-radius:2px;margin:0 auto 16px}
+.ap-title{font-size:14.5px;font-weight:800;color:#0b1f3a;margin-bottom:3px;line-height:1.45}
+.ap-date{font-size:12px;color:#8a9bb3;font-weight:600;margin-bottom:16px}
+.ap-btn{width:100%;padding:13px 16px;border-radius:12px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;margin-bottom:7px;display:flex;align-items:center;gap:10px}
+.ap-btn:last-child{margin-bottom:0}
+.ap-btn-complete{background:#e8f7f0;color:#1a9454}
+.ap-btn-reschedule{background:#eaf3ff;color:#1f6fe0}
+.ap-btn-cancel{background:#fff0f0;color:#c43048}
+.ap-btn-close{background:#f4f8fc;color:#7a8aa3;justify-content:center;font-size:13px;margin-top:4px}
+.ap-btn:active{opacity:0.8}
+.ap-btn:disabled{opacity:0.45;cursor:not-allowed}
+.ap-view{display:block}
+.ap-view.hidden{display:none}
+.ap-back{background:none;border:none;color:#2f8fff;font-size:13px;font-weight:700;cursor:pointer;padding:0 0 14px;display:flex;align-items:center;gap:4px}
+.ap-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:6px;display:block}
+.ap-input{width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;font-size:14px;outline:none;margin-bottom:14px;font-family:inherit}
+.ap-input:focus{border-color:#2f8fff}
+.ap-btn-save{background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;justify-content:center}
+</style>
+  <!-- PWA v1 -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2f8fff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="FieldIQ">
+  <link rel="apple-touch-icon" href="/icon-180.png">
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="brand"><span class="brand-cloud">☁️</span><div class="brand-text"><h1>Field<span>IQ</span></h1><p>Territory Intelligence Platform</p></div></div>
+    <p class="page-subtitle">Manager Calendar</p>
+  </div>
+
+  <a href="./fieldiq.html" class="home-btn" id="homeBtn">← Manager Home</a>
+
+  <div class="summary">
+    <div class="summary-left"><div class="summary-icon"><i data-lucide="calendar-days"></i></div><div><div class="summary-title">Team Follow-ups</div><div class="summary-sub" id="repName">Loading team...</div></div></div>
+    <div class="count-pill" id="countPill">0</div>
+  </div>
+
+  <div class="rep-filter-wrap">
+    <label class="rep-filter-label">Show rep</label>
+    <select class="rep-filter-select" id="repFilterSel"><option value="">All reps</option></select>
+  </div>
+
+  <div id="content"><div class="loading"><div class="spinner"></div>Loading calendar...</div></div>
+  <div class="footer">FieldIQ Manager Calendar · 2026</div>
+</div>
+
+<!-- ── Action popup (bottom sheet) ── -->
+<div class="ap-overlay hidden" id="apOverlay">
+  <div class="ap-sheet" id="apSheet">
+    <div class="ap-handle"></div>
+
+    <div class="ap-view" id="apViewDefault">
+      <div class="ap-title" id="apTitle"></div>
+      <div class="ap-date" id="apDate"></div>
+      <button class="ap-btn ap-btn-complete" id="apBtnComplete">✅&nbsp; Mark Complete</button>
+      <button class="ap-btn ap-btn-reschedule" id="apBtnReschedule">📅&nbsp; Reschedule</button>
+      <button class="ap-btn ap-btn-cancel" id="apBtnCancel">❌&nbsp; Cancel Action</button>
+      <button class="ap-btn ap-btn-close" id="apBtnClose">Close</button>
+    </div>
+
+    <div class="ap-view hidden" id="apViewReschedule">
+      <button class="ap-back" id="apBtnBack">← Back</button>
+      <div class="ap-title" id="apRescheduleTitle"></div>
+      <div style="margin-top:16px">
+        <label class="ap-label" for="apNewDate">New Date</label>
+        <input type="date" class="ap-input" id="apNewDate">
+        <label class="ap-label" for="apReason">Reason (optional)</label>
+        <select class="ap-input" id="apReason">
+          <option value="">Select a reason...</option>
+          <option>Customer postponed</option>
+          <option>Customer cancelled</option>
+          <option>Internal scheduling conflict</option>
+          <option>Waiting for customer</option>
+          <option>Other</option>
+        </select>
+        <button class="ap-btn ap-btn-save" id="apBtnSave">Save New Date</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+var currentUserId=localStorage.getItem('fieldiq_user_id');
+var currentUserName=localStorage.getItem('fieldiq_user_name');
+var currentUserRole=localStorage.getItem('fieldiq_user_role')||'';
+
+var allEvents=[];   // every rep's events, unfiltered
+var events=[];      // currently displayed (after rep filter)
+var usersByRecordId={};
+var selectedRepFilter='';
+var currentPopupActionId=null;
+
+var viewYear=new Date().getFullYear();
+var viewMonth=new Date().getMonth();
+var selectedDayISO=null;
+
+// ── Manager-only access guard ────────────────────────────────────────────────
+if(!currentUserId||!currentUserName){window.location.href='./index.html';throw new Error('No identity locked');}
+if(currentUserRole!=='Manager'){window.location.href='./index.html';throw new Error('Manager calendar — managers only');}
+
+// ── Operations-aware Home button ─────────────────────────────────────────────
+var cameFromOperations=false;
+(function(){
+  var params=new URLSearchParams(window.location.search);
+  if(params.get('from')==='operations'){
+    cameFromOperations=true;
+    var btn=document.getElementById('homeBtn');
+    if(btn){
+      btn.href='./fieldiq-operations.html';
+      btn.textContent='← Back to Operations';
+    }
+  }
+})();
+
+document.getElementById('repName').textContent='All reps';
+
+function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,function(m){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);});}
+function todayISO(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString().slice(0,10);}
+function addDaysISO(n){var d=new Date();d.setDate(d.getDate()+n);return new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString().slice(0,10);}
+function inferTime(text){
+  var m=String(text||'').match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|AM|PM)\b/);
+  return m ? m[0].toUpperCase() : '';
+}
+function getField(f,names,fallback){
+  for(var i=0;i<names.length;i++){
+    if(f[names[i]]!==undefined&&f[names[i]]!==null&&f[names[i]]!=='')return f[names[i]];
+  }
+  return fallback||'';
+}
+function getDueDate(f){return getField(f,['Due Date','Action Due Date','Calendar Date','Follow Up Date','Follow-up Date'],'');}
+function getActionText(f){return getField(f,['Action Text','Action','Action Item','Action Items','Task','Next Step','Next Steps','Follow Up','Follow-up','Follow Up Action'],'');}
+function getAccountName(f){return getField(f,['Account Name','Hospital Name','Hospital','Account','Facility Name','Clinic Name','Customer Name'],'Unknown Account');}
+function getStatus(f){return getField(f,['Status','Action Status'],'Open');}
+function isCompleted(f){return String(getStatus(f)).toLowerCase()==='completed'||!!getField(f,['Completed At','Completed Date'],'');}
+function getTerritory(f){return getField(f,['Territory'],'');}
+function getVisitType(f){return getField(f,['Visit Type'],'');}
+function getPriority(f){return getField(f,['Priority','Action Priority'],'');}
+
+function getAssignedRepName(f){
+  var a=f['Assigned Rep']||[];
+  if(Array.isArray(a)&&a.length&&usersByRecordId[a[0]])return usersByRecordId[a[0]].name;
+  return getField(f,['Rep Name','Assigned Rep Name','Owner','User Name'],(Array.isArray(a)&&a.length?a[0]:'Unassigned'));
+}
+function getAssignedRepKey(f){
+  var a=f['Assigned Rep']||[];
+  if(Array.isArray(a)&&a.length){
+    if(usersByRecordId[a[0]])return usersByRecordId[a[0]].userId||a[0];
+    return a[0];
+  }
+  return getAssignedRepName(f);
+}
+
+function normalizeActionRecord(r){
+  var f=r.fields||{};
+  var due=getDueDate(f);
+  return {
+    id:r.id,
+    fields:{
+      'Account Name':getAccountName(f),
+      'Action Text':getActionText(f),
+      'Due Date':due,
+      'Due Time':getField(f,['Due Time','Action Due Time','Time'],''),
+      'Priority':getPriority(f),
+      'Territory':getTerritory(f),
+      'Visit Type':getVisitType(f),
+      'Status':getStatus(f),
+      'Reminder Count':getField(f,['Reminder Count'],0),
+      'Rep Name':getAssignedRepName(f),
+      'Rep Key':getAssignedRepKey(f)
+    },
+    raw:r
+  };
+}
+
+function timeoutPromise(ms,msg){
+  return new Promise(function(_,reject){setTimeout(function(){reject(new Error(msg||'Timeout'));},ms);});
+}
+function fetchJson(url,ms){
+  return Promise.race([
+    fetch(url,{cache:'no-store'}).then(function(res){
+      return res.text().then(function(text){
+        var data={};
+        try{data=text?JSON.parse(text):{};}catch(e){throw new Error('Invalid JSON from '+url+': '+text.slice(0,200));}
+        if(!res.ok)throw new Error(data.error||data.message||('HTTP '+res.status));
+        return data;
+      });
+    }),
+    timeoutPromise(ms||8000,'Worker timed out')
+  ]);
+}
+
+async function loadUsersBestEffort(){
+  try{
+    var d=await fetchJson(WORKER+'/get-users',4000);
+    (d.records||[]).forEach(function(x){
+      var f=x.fields||{};
+      usersByRecordId[x.id]={
+        name:f['Display Name']||f['User ID']||x.id,
+        userId:f['User ID']||''
+      };
+    });
+  }catch(e){}
+}
+
+async function loadCalendar(){
+  var content=document.getElementById('content');
+  content.innerHTML='<div class="loading"><div class="spinner"></div>Loading calendar...</div>';
+  try{
+    await loadUsersBestEffort();
+
+    var openData=await fetchJson(WORKER+'/get-actions?role=Manager&status=Open',8000);
+    allEvents=(openData.records||[])
+      .filter(function(r){
+        var f=r.fields||{};
+        return !isCompleted(f)&&getDueDate(f);
+      })
+      .map(normalizeActionRecord);
+
+    buildRepFilterOptions();
+    applyRepFilterAndRender();
+
+  }catch(err){
+    content.innerHTML='<div class="error-box">Could not load manager calendar.<br>'+escapeHtml(err.message)+'<br><button class="retry-btn" onclick="loadCalendar()">Retry</button></div>';
+  }
+}
+
+function buildRepFilterOptions(){
+  var sel=document.getElementById('repFilterSel');
+  var reps={};
+  allEvents.forEach(function(e){
+    var f=e.fields;
+    var k=f['Rep Key'];
+    if(k)reps[k]=f['Rep Name'];
+  });
+  var keep=selectedRepFilter;
+  sel.innerHTML='<option value="">All reps</option>';
+  Object.keys(reps).sort(function(a,b){return reps[a].localeCompare(reps[b]);}).forEach(function(k){
+    var o=document.createElement('option');
+    o.value=k;
+    o.textContent=reps[k];
+    sel.appendChild(o);
+  });
+  if(keep&&reps[keep]){sel.value=keep;}else{sel.value='';selectedRepFilter='';}
+}
+
+function applyRepFilterAndRender(){
+  events=selectedRepFilter
+    ? allEvents.filter(function(e){return e.fields['Rep Key']===selectedRepFilter;})
+    : allEvents.slice();
+  events.sort(function(a,b){
+    return String(getDueDate(a.fields||{})).localeCompare(String(getDueDate(b.fields||{})));
+  });
+  document.getElementById('repName').textContent=selectedRepFilter
+    ? (events[0]?events[0].fields['Rep Name']:'Selected rep')
+    : 'All reps';
+  render();
+}
+
+// ── Monthly calendar render ──────────────────────────────────────────────────
+
+function render(){
+  document.getElementById('countPill').textContent=events.length;
+  var content=document.getElementById('content');
+
+  if(events.length===0){
+    content.innerHTML='<div class="empty"><i data-lucide="calendar-check"></i><div>No scheduled follow-ups.</div><div style="font-size:11px;margin-top:8px;color:#aab8cc">Open actions only appear here when they have a Due Date.</div></div>';
+    lucide.createIcons();
+    return;
+  }
+
+  var byDate={};
+  events.forEach(function(r){
+    var due=getDueDate(r.fields||{});
+    if(!due)return;
+    if(!byDate[due])byDate[due]=[];
+    byDate[due].push(r);
+  });
+
+  var MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  var firstDayOfWeek=new Date(viewYear,viewMonth,1).getDay();
+  var daysInMonth=new Date(viewYear,viewMonth+1,0).getDate();
+  var today=todayISO();
+
+  var html='';
+
+  html+='<div class="cal-nav">';
+  html+='<button class="cal-nav-btn" id="calPrev">&#8249;</button>';
+  html+='<div class="cal-month-label">'+MONTH_NAMES[viewMonth]+' '+viewYear+'</div>';
+  html+='<button class="cal-nav-btn" id="calNext">&#8250;</button>';
+  html+='</div>';
+
+  html+='<div class="cal-grid">';
+  DAY_NAMES.forEach(function(d){html+='<div class="cal-header-cell">'+d+'</div>';});
+
+  for(var i=0;i<firstDayOfWeek;i++){html+='<div class="cal-day cal-day-empty"></div>';}
+
+  for(var d=1;d<=daysInMonth;d++){
+    var mm=String(viewMonth+1).padStart(2,'0');
+    var dd=String(d).padStart(2,'0');
+    var isoDate=viewYear+'-'+mm+'-'+dd;
+    var count=byDate[isoDate]?byDate[isoDate].length:0;
+    var isToday=isoDate===today;
+    var isPast=isoDate<today;
+    var isSelected=isoDate===selectedDayISO;
+
+    var cls='cal-day';
+    if(isToday)cls+=' cal-day-today';
+    if(isPast&&!isToday)cls+=' cal-day-past';
+    if(count>0)cls+=' cal-day-has-actions';
+    if(isSelected)cls+=' cal-day-selected';
+
+    html+='<div class="'+cls+'" data-iso="'+isoDate+'">';
+    html+='<div class="cal-day-num">'+d+'</div>';
+    if(count>0)html+='<div class="cal-badge">'+count+'</div>';
+    html+='</div>';
+  }
+
+  html+='</div>';
+
+  if(selectedDayISO&&byDate[selectedDayISO]){
+    html+=renderDayPanel(selectedDayISO,byDate[selectedDayISO]);
+  }
+
+  content.innerHTML=html;
+  lucide.createIcons();
+
+  document.getElementById('calPrev').addEventListener('click',function(){
+    viewMonth--;
+    if(viewMonth<0){viewMonth=11;viewYear--;}
+    selectedDayISO=null;
+    render();
+  });
+  document.getElementById('calNext').addEventListener('click',function(){
+    viewMonth++;
+    if(viewMonth>11){viewMonth=0;viewYear++;}
+    selectedDayISO=null;
+    render();
+  });
+
+  content.querySelectorAll('.cal-day[data-iso]').forEach(function(cell){
+    cell.addEventListener('click',function(){
+      var iso=cell.getAttribute('data-iso');
+      if(!byDate[iso])return;
+      selectedDayISO=(selectedDayISO===iso)?null:iso;
+      render();
+    });
+  });
+}
+
+function renderDayPanel(isoDate,dayActions){
+  var label=formatDayLabel(isoDate);
+  var html='<div class="cal-day-panel">';
+  html+='<div class="cal-panel-header">'+escapeHtml(label)+' &mdash; '+dayActions.length+' action'+(dayActions.length!==1?'s':'')+'</div>';
+
+  dayActions.forEach(function(r){
+    var f=r.fields||{};
+    var account=getAccountName(f);
+    var action=getActionText(f);
+    var rep=f['Rep Name']||'Unassigned';
+    var time=f['Due Time']||inferTime(action)||'';
+    var territory=f['Territory']||'';
+    var visitType=f['Visit Type']||'';
+    var priority=f['Priority']||'';
+
+    html+='<div class="cal-action-item" onclick="openActionPopupById(\''+r.id+'\')">';
+    html+='<div class="cal-action-account">'+escapeHtml(account)+
+      '<span class="rep-pill">'+escapeHtml(rep)+'</span>'+
+      (time?'<span class="time-pill">'+escapeHtml(time)+'</span>':'')+
+      (territory?'<span class="meta-tag">'+escapeHtml(territory)+'</span>':'')+
+      (visitType?'<span class="meta-tag">'+escapeHtml(visitType)+'</span>':'')+
+      (priority==='High'?'<span class="meta-tag meta-tag-high">High priority</span>':'')+
+      '</div>';
+    html+='<div class="cal-action-text">'+escapeHtml(action||'Open action')+'</div>';
+    html+='<a class="cal-action-link" href="'+managerActionsHref(r.id)+'" onclick="event.stopPropagation()">→ Open in Manager Actions</a>';
+    html+='</div>';
+  });
+
+  html+='</div>';
+  return html;
+}
+
+function managerActionsHref(actionId){
+  var q=['actionId='+encodeURIComponent(actionId)];
+  if(cameFromOperations)q.push('from=operations');
+  return './fieldiq-actions.html?'+q.join('&');
+}
+
+function formatDayLabel(iso){
+  var today=todayISO();
+  var tomorrow=addDaysISO(1);
+  if(iso===today)return 'Today';
+  if(iso===tomorrow)return 'Tomorrow';
+  try{return new Date(iso+'T00:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});}
+  catch(e){return iso;}
+}
+
+// ── Action popup functions ───────────────────────────────────────────────────
+
+function openActionPopupById(actionId){
+  var r=events.find(function(e){return e.id===actionId;});
+  if(!r)return;
+  var f=r.fields||{};
+  currentPopupActionId=actionId;
+
+  document.getElementById('apTitle').textContent=(f['Rep Name']?f['Rep Name']+' · ':'')+(getActionText(f)||'Open Action');
+  document.getElementById('apDate').textContent='Due: '+formatDayLabel(getDueDate(f));
+
+  document.getElementById('apRescheduleTitle').textContent=getAccountName(f);
+  var newDateInput=document.getElementById('apNewDate');
+  newDateInput.min=todayISO();
+  newDateInput.value=getDueDate(f);
+  document.getElementById('apReason').value='';
+
+  document.getElementById('apViewDefault').classList.remove('hidden');
+  document.getElementById('apViewReschedule').classList.add('hidden');
+
+  setPopupBusy(false);
+  document.getElementById('apOverlay').classList.remove('hidden');
+}
+
+function closeActionPopup(){
+  document.getElementById('apOverlay').classList.add('hidden');
+  currentPopupActionId=null;
+}
+
+function setPopupBusy(busy){
+  document.querySelectorAll('#apSheet .ap-btn').forEach(function(b){b.disabled=busy;});
+  if(document.getElementById('apBtnBack'))document.getElementById('apBtnBack').disabled=busy;
+}
+
+async function doCompleteAction(){
+  var idToComplete=currentPopupActionId;
+  if(!idToComplete)return;
+  setPopupBusy(true);
+  try{
+    var res=await fetch(WORKER+'/complete-action',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({actionId:idToComplete,userId:currentUserId})
+    });
+    var data=await res.json();
+    if(!res.ok)throw new Error((data&&data.error)||('Worker error '+res.status));
+    removeEventById(idToComplete);
+    closeActionPopup();
+  }catch(e){
+    setPopupBusy(false);
+    alert('Could not mark complete:\n'+e.message);
+  }
+}
+
+async function doCancelAction(){
+  if(!currentPopupActionId)return;
+  setPopupBusy(true);
+  try{
+    var res=await fetch(WORKER+'/update-action',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({actionId:currentPopupActionId,status:'Cancelled'})
+    });
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error||('HTTP '+res.status));
+    removeEventById(currentPopupActionId);
+    closeActionPopup();
+  }catch(e){
+    setPopupBusy(false);
+    alert('Could not cancel: '+e.message);
+  }
+}
+
+async function doRescheduleAction(){
+  var newDate=document.getElementById('apNewDate').value;
+  var reason=document.getElementById('apReason').value;
+  if(!newDate){alert('Please select a new date.');return;}
+  if(!currentPopupActionId)return;
+  setPopupBusy(true);
+  try{
+    var body={actionId:currentPopupActionId,dueDate:newDate};
+    if(reason)body.rescheduleReason=reason;
+    var res=await fetch(WORKER+'/update-action',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error||('HTTP '+res.status));
+    updateEventDueDate(currentPopupActionId,newDate);
+    closeActionPopup();
+  }catch(e){
+    setPopupBusy(false);
+    alert('Could not reschedule: '+e.message);
+  }
+}
+
+function removeEventById(id){
+  allEvents=allEvents.filter(function(e){return e.id!==id;});
+  applyRepFilterAndRender();
+  if(selectedDayISO){
+    var remaining=events.filter(function(e){return getDueDate(e.fields||{})===selectedDayISO;});
+    if(!remaining.length)selectedDayISO=null;
+  }
+  render();
+}
+
+function updateEventDueDate(id,newDate){
+  var r=allEvents.find(function(e){return e.id===id;});
+  if(r)r.fields['Due Date']=newDate;
+  applyRepFilterAndRender();
+  var parts=newDate.split('-');
+  viewYear=parseInt(parts[0],10);
+  viewMonth=parseInt(parts[1],10)-1;
+  selectedDayISO=newDate;
+  render();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded',function(){
+  lucide.createIcons();
+
+  document.getElementById('apBtnClose').addEventListener('click',closeActionPopup);
+  document.getElementById('apBtnComplete').addEventListener('click',doCompleteAction);
+  document.getElementById('apBtnCancel').addEventListener('click',doCancelAction);
+
+  document.getElementById('apBtnReschedule').addEventListener('click',function(){
+    document.getElementById('apViewDefault').classList.add('hidden');
+    document.getElementById('apViewReschedule').classList.remove('hidden');
+  });
+  document.getElementById('apBtnBack').addEventListener('click',function(){
+    document.getElementById('apViewReschedule').classList.add('hidden');
+    document.getElementById('apViewDefault').classList.remove('hidden');
+  });
+  document.getElementById('apBtnSave').addEventListener('click',doRescheduleAction);
+
+  document.getElementById('apOverlay').addEventListener('click',function(e){
+    if(e.target===this)closeActionPopup();
+  });
+
+  document.getElementById('repFilterSel').addEventListener('change',function(){
+    selectedRepFilter=this.value;
+    selectedDayISO=null;
+    applyRepFilterAndRender();
+  });
+
+  loadCalendar();
+});
+</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+</body>
+</html>
