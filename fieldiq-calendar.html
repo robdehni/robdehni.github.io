@@ -404,7 +404,7 @@ function renderDayPanel(isoDate,dayActions){
     // plumbing only, so Log Visit's AI context step can target the correct
     // prior interaction instead of guessing "most recent." Never sent to
     // the Worker, never shown to the rep, never written to any record.
-    html+=' &nbsp;&middot;&nbsp; <a class="cal-action-link" href="./fieldiq-log-visit.html?account='+encodeURIComponent(account)+'&sourceRef='+encodeURIComponent(r.id)+'" onclick="event.stopPropagation()">\ud83c\udf99\ufe0f Log Update</a>';
+    html+=' &nbsp;&middot;&nbsp; <a class="cal-action-link" href="./fieldiq-log-visit.html?account='+encodeURIComponent(account)+'&sourceRef='+encodeURIComponent(r.id)+'&calYear='+viewYear+'&calMonth='+viewMonth+'&calDay='+encodeURIComponent(isoDate)+'" onclick="event.stopPropagation()">\ud83c\udf99\ufe0f Log Update</a>';
     html+='</div>';
   });
 
