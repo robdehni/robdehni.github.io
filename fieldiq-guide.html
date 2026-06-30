@@ -19,7 +19,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;display:flex;align-items:center;gap:6px}
 .page-subtitle [data-lucide]{width:15px;height:15px;color:#2f8fff}
 
-/* ── Home button — white pill matching fieldiq.html ── */
+/* ── Home button ── */
 .home-btn{
   display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
   text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;
@@ -27,7 +27,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 }
 .home-btn:hover{border-color:#2f8fff}
 
-/* ── Section cards — radius standardised to 16px ── */
+/* ── Section cards ── */
 .section{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .section-num{display:inline-block;background:#2f8fff;color:#fff;font-size:11px;font-weight:800;width:22px;height:22px;border-radius:50%;text-align:center;line-height:22px;margin-right:8px;flex-shrink:0}
 .section-title{font-size:14px;font-weight:700;color:#0b1f3a;display:flex;align-items:center;margin-bottom:10px}
@@ -42,6 +42,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .badge-green{background:#1f8a5222;color:#1f8a52;border:1px solid #1f8a5233}
 .badge-orange{background:#b9711f22;color:#b9711f;border:1px solid #b9711f33}
 .badge-red{background:#c4304822;color:#c43048;border:1px solid #c4304833}
+.badge-manager{background:#d9a02122;color:#a06a00;border:1px solid #d9a02133}
+.divider-label{font-size:10px;color:#aab8cc;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:20px 0 8px;padding-left:2px}
 .footer{text-align:center;color:#aab8cc;font-size:11px;margin-top:24px;font-weight:600}
 </style>
 </head>
@@ -67,128 +69,181 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 })();
 </script>
 
+<div class="section" style="border-color:#dde8f5;background:#fff;text-align:center">
+  <div class="step" style="border-bottom:none;padding:4px 0;font-size:14px;color:#0b1f3a;font-weight:600;line-height:1.6">
+    FieldIQ helps field teams capture every customer interaction in seconds, automatically creating structured visit reports, follow-up actions, and management insights.
+  </div>
+</div>
+
+<!-- 📸 SCREENSHOT RECOMMENDED: login screen showing the "Who are you?" name selector,
+     so a first-time user instantly recognises what they'll see when they open the link. -->
+
 <div class="section" style="border-color:#cfe3ff;background:#eaf3ff">
-  <div class="section-title" style="color:#1f6fe0">⚡ 2-Minute First Visit</div>
-  <div class="step"><strong>1.</strong> Go to <strong>fieldiq.biz</strong> → select your name → enter your PIN → log in</div>
+  <div class="section-title" style="color:#1f6fe0">⚡ Your First 2 Minutes</div>
+  <div class="step"><strong>1.</strong> Open the FieldIQ link → select your name → enter your PIN</div>
   <div class="step"><strong>2.</strong> Tap <strong>Log Visit</strong></div>
-  <div class="step"><strong>3.</strong> Search and select your account / location</div>
-  <div class="step"><strong>4.</strong> Enter visit date, territory, visit type</div>
-  <div class="step"><strong>5.</strong> Tap 🎙️ — speak about your visit — tap again to stop</div>
-  <div class="step"><strong>6.</strong> Tap <strong>Process Visit Log</strong></div>
-  <div class="tip">✅ That's it. FieldIQ does the rest automatically.</div>
-</div>
-
-<div class="section" style="border-color:#e3d9f7;background:#f4eefc">
-  <div class="section-title" style="color:#8a5fd1">📍 GPS &amp; Privacy</div>
-  <div class="step">GPS location is captured <strong>only at the moment you submit a visit</strong>.</div>
-  <div class="step">FieldIQ does <strong>not</strong> continuously track your location.</div>
-  <div class="step">Location data is used only to plot your visit on the territory map.</div>
-  <div class="step">GPS is captured only when a visit is submitted and is used as <strong>proof of presence</strong> for field activity reporting.</div>
-</div>
-
-<div class="section" style="border-color:#dce9fc;background:#f4f9ff">
-  <div class="section-title">🤖 What happens after I press Process Visit Log?</div>
-  <div class="step">FieldIQ sends your voice transcript to AI for analysis.</div>
-  <div class="step">Within seconds it generates a structured <strong>Visit Report</strong> including:</div>
-  <div class="step">→ Visit Summary</div>
-  <div class="step">→ Key Contacts Met</div>
-  <div class="step">→ Outcomes &amp; Decisions</div>
-  <div class="step">→ Next Steps &amp; Action Items</div>
-  <div class="step">→ Opportunity Signals</div>
-  <div class="step">→ Priority Level (High / Medium / Low)</div>
-  <div class="step">Everything is saved automatically to the database. No paperwork required.</div>
+  <div class="step"><strong>3.</strong> Search for the account, then pick a date, territory, and type</div>
+  <div class="step"><strong>4.</strong> Tap 🎙️ and just talk about what happened — tap again to stop</div>
+  <div class="step"><strong>5.</strong> Tap <strong>Process Visit Log</strong></div>
+  <div class="tip">✅ That's it. FieldIQ writes the report, saves it, and creates any follow-up tasks for you.</div>
 </div>
 
 <div class="section">
-  <div class="section-title"><span class="section-num">1</span>Logging In</div>
-  <div class="step">Go to <strong>fieldiq.biz</strong> on your phone or laptop.</div>
-  <div class="step">Select your name from the <strong>Who are you?</strong> dropdown on the home screen.</div>
-  <div class="step">Enter your <strong>PIN</strong> when prompted.</div>
-  <div class="step">You are now logged in. Tap <strong>Switch User</strong> on the home screen any time to log in as someone else.</div>
-  <div class="warning">⚠️ If you're logged in as the wrong person, tap Switch User on the home screen, then select the correct name and enter your PIN.</div>
+  <div class="section-title"><span class="section-num">1</span>Getting In</div>
+  <div class="step">Open the FieldIQ link on your phone or laptop.</div>
+  <div class="step">The first time on a new device, you may be asked to confirm your email — this just checks you're an approved user before letting you in.</div>
+  <div class="step">Then select your name from the list and enter your <strong>PIN</strong>.</div>
+  <div class="step">You're in. To switch to a different name later, tap <strong>Switch User</strong> on the home screen.</div>
+  <div class="warning">⚠️ Logged in as the wrong person? Tap Switch User, pick the right name, and enter your PIN.</div>
 </div>
 
 <div class="section">
   <div class="section-title"><span class="section-num">2</span>Logging a Visit</div>
-  <div class="step"><strong>1.</strong> Tap <strong>Log Visit</strong> from the home screen.</div>
-  <div class="step"><strong>2.</strong> Search for the account name.</div>
-  <div class="step"><strong>3.</strong> Select Visit Date, Territory, Visit Type.</div>
-  <div class="step"><strong>4.</strong> Tap the <strong>🎙️ microphone</strong> and speak naturally about your visit. Tap again to stop.</div>
-  <div class="step"><strong>5.</strong> Wait for transcription. Review the text and edit if needed.</div>
-  <div class="step"><strong>6.</strong> Tap <strong>Process Visit Log</strong>. FieldIQ generates your AI report and saves everything automatically.</div>
-  <div class="tip">✅ Your name is already locked in from login — Log Visit no longer asks who you are. Speak naturally about contacts, products discussed, next steps, and sentiment. FieldIQ will extract and structure everything automatically.</div>
+  <div class="step"><strong>1.</strong> Tap <strong>Log Visit</strong>.</div>
+  <div class="step"><strong>2.</strong> Search and pick the account.</div>
+  <div class="step"><strong>3.</strong> Set the date, territory, and type — in person, phone, or virtual.</div>
+  <div class="step"><strong>4.</strong> Tap 🎙️ and talk naturally about what happened. Tap it again when you're done.</div>
+  <div class="step"><strong>5.</strong> Your words appear as text — quickly check it looks right, fix anything obvious.</div>
+  <div class="step"><strong>6.</strong> Tap <strong>Process Visit Log</strong>. FieldIQ takes it from there.</div>
+  <div class="tip">✅ You don't need to say who you are — FieldIQ already knows from your login. Just talk about the visit itself.</div>
 </div>
 
+<!-- 📸 SCREENSHOT RECOMMENDED: the Log Visit screen mid-recording (mic active, timer
+     running) — this is the single most-used screen in the app and benefits most from
+     a visual so users recognise it instantly. -->
+
 <div class="section">
-  <div class="section-title"><span class="section-num">3</span>How to Get Better Reports</div>
-  <div class="step">Speak naturally — there is no script to follow.</div>
-  <div class="step">A 30–90 second recording is usually enough.</div>
-  <div class="step">The more specific your information, the better your report.</div>
-  <div class="step"><strong>1. Who did you meet?</strong> Mention names whenever possible, plus job titles or roles.</div>
-  <div class="step"><strong>2. What was discussed?</strong> Briefly explain the purpose of the visit.</div>
-  <div class="step"><strong>3. What feedback was received?</strong> Customer reactions, concerns, objections, or interest.</div>
-  <div class="step"><strong>4. What decisions were made?</strong> Any agreements, requests, commitments, or approvals.</div>
-  <div class="step"><strong>5. What opportunities were identified?</strong> Potential business, future discussions, trials, evaluations, orders, projects, etc.</div>
-  <div class="step"><strong>6. What are the next steps?</strong> Follow-up actions, responsibilities, and agreed dates.</div>
-  <div class="warning">❌ Weak example: "Visited customer. Good meeting. Will follow up next week."</div>
-  <div class="tip">✅ Strong example: "Visited ABC Account. Met Sarah, Operations Manager. Discussed the new product range. Customer requested pricing and agreed to review next Tuesday. Potential opportunity for approximately 50 units per month."</div>
-  <div class="info">The intelligent system can only capture information that is mentioned during the recording. The more specific your information, the more accurate your reports, action items, opportunity signals, onboarding intelligence, and future handover reports will be.</div>
+  <div class="section-title"><span class="section-num">3</span>What Should I Actually Say?</div>
+  <div class="step">There's no script. Just talk like you're telling a colleague what happened.</div>
+  <div class="step">30–60 seconds is usually enough. The more specific you are, the better your report.</div>
+  <div class="step"><strong>Who did you speak to?</strong> Names and roles help a lot.</div>
+  <div class="step"><strong>What was it about?</strong> A sales conversation, a training session, a technical question, a service issue — whatever it actually was.</div>
+  <div class="step"><strong>What did they ask for, or say?</strong> A quotation, a price, samples, training, a technical answer, a complaint — say the specific thing.</div>
+  <div class="step"><strong>What did you agree to do next?</strong> Be specific — "send the quotation by Thursday" works better than "follow up."</div>
+  <div class="warning">❌ Too vague: "Good meeting, will follow up next week."</div>
+  <div class="tip">✅ Better: "Met Sarah, the Operations Manager. She asked for a quotation and the technical datasheet. Agreed I'd send both by Thursday and she'll review with her team next Tuesday."</div>
+  <div class="info">FieldIQ can only report what you actually say — it doesn't guess or assume. The more concrete the detail, the more useful the report.</div>
 </div>
 
 <div class="section">
   <div class="section-title"><span class="section-num">4</span>Adding a New Account</div>
-  <div class="step">If the account is not in the list, tick <strong>☑ Account not listed</strong>.</div>
-  <div class="step">Enter the <strong>Account Name</strong> and <strong>City</strong>.</div>
-  <div class="step">Complete the visit as normal — record your voice note and process.</div>
-  <div class="step">The visit is saved with a <span class="badge badge-blue">New Account</span> flag for manager review.</div>
-  <div class="tip">✅ GPS coordinates are captured automatically so the account appears on the Visit Map.</div>
+  <div class="step">Can't find the account in the list? Tick <strong>☑ Account not listed</strong>.</div>
+  <div class="step">Enter the account name and city.</div>
+  <div class="step">Carry on as normal — record your voice note and submit.</div>
+  <div class="step">It's saved with a <span class="badge badge-blue">New Account</span> flag so your manager can confirm it.</div>
 </div>
 
 <div class="section">
-  <div class="section-title"><span class="section-num">5</span>Viewing Your Visit History</div>
-  <div class="step">Tap <strong>Visit History</strong> from the home screen.</div>
-  <div class="step">All your visits appear, newest first.</div>
-  <div class="step">Each card shows: Account, Date, Territory, Visit Type, Priority, and AI Summary.</div>
-  <div class="step">New accounts are highlighted with a <span class="badge badge-blue">New Account</span> badge.</div>
-  <div class="info">ℹ️ Visit History is read-only. Contact your manager to correct any errors.</div>
+  <div class="section-title"><span class="section-num">5</span>After You Submit — What You Get</div>
+  <div class="step">FieldIQ turns your recording into a structured report in seconds, with:</div>
+  <div class="step">→ Visit Summary</div>
+  <div class="step">→ Key Contacts Met</div>
+  <div class="step">→ Outcomes &amp; Decisions</div>
+  <div class="step">→ Next Steps</div>
+  <div class="step">→ Opportunity Signals</div>
+  <div class="step">→ Sentiment</div>
+  <div class="step">→ Priority Level</div>
+  <div class="step">→ A suggested follow-up date, if you mentioned one</div>
+  <div class="step">Everything saves automatically — no paperwork, no separate form.</div>
 </div>
 
 <div class="section">
-  <div class="section-title"><span class="section-num">6</span>Priority Levels</div>
-  <div class="step">FieldIQ automatically assigns a priority to each visit based on your notes.</div>
-  <div class="step"><span class="badge badge-red">High</span> — Quotation requested, procurement engaged, strong buying signal.</div>
-  <div class="step"><span class="badge badge-orange">Medium</span> — Follow-up needed, positive interest, return visit requested.</div>
-  <div class="step"><span class="badge badge-green">Low</span> — Informational visit, no current opportunity.</div>
-  <div class="tip">✅ Managers can change priorities from the Dashboard.</div>
+  <div class="section-title"><span class="section-num">6</span>Priority Levels — What They Mean</div>
+  <div class="step">FieldIQ sets a priority on every visit based on what was actually said.</div>
+  <div class="step"><span class="badge badge-red">High</span> — Something concrete was asked for (a quotation, a contract, training, a technical evaluation), someone committed to a next step, or there's a risk or complaint that needs attention.</div>
+  <div class="step"><span class="badge badge-orange">Medium</span> — A next step is needed, the conversation went well, or the relationship is developing.</div>
+  <div class="step"><span class="badge badge-green">Low</span> — Just informational, nothing concrete on the table yet.</div>
 </div>
 
 <div class="section">
-  <div class="section-title"><span class="section-num">7</span>Identity Lock Rule</div>
-  <div class="step">Your name is selected once at login and stays locked across the whole app — Log Visit, Visit History, and every page reads it automatically.</div>
-  <div class="step">This ensures your visits are grouped correctly in the Dashboard and Reports.</div>
-  <div class="warning">⚠️ If you're logged in as the wrong rep, use <strong>Switch User</strong> on the home screen to fix it before logging a visit.</div>
+  <div class="section-title"><span class="section-num">7</span>Your Calendar &amp; Updating Plans</div>
+  <div class="step">Your Calendar shows upcoming follow-ups created from your visits.</div>
+  <div class="step">Plans change — a meeting gets moved, becomes a phone call, or the agenda shifts.</div>
+  <div class="step">Open the day on your Calendar and tap <strong>🎙️ Log Update</strong> next to the item.</div>
+  <div class="step">Speak naturally about what changed — same as logging any visit. No new screen to learn.</div>
+  <div class="step">If you mention a new date, FieldIQ will suggest it — you confirm the actual reschedule yourself on the Calendar.</div>
+  <div class="tip">✅ You never have to decide "is this a follow-up or a new visit?" Just speak — FieldIQ handles the rest.</div>
+</div>
+
+<!-- 📸 SCREENSHOT RECOMMENDED: a Calendar day open with an item expanded, showing
+     both "Open in My Actions" and "🎙️ Log Update" links side by side. -->
+
+<div class="section">
+  <div class="section-title"><span class="section-num">8</span>Visit History</div>
+  <div class="step">Tap <strong>Visit History</strong> to see everything you've logged, newest first.</div>
+  <div class="step">Each card shows the account, date, type, priority, and summary.</div>
+  <div class="step">New accounts are marked with a <span class="badge badge-blue">New Account</span> badge.</div>
+  <div class="info">ℹ️ This is a record, not an editor. Spot a mistake? Ask your manager to correct it.</div>
 </div>
 
 <div class="section">
-  <div class="section-title"><span class="section-num">8</span>For Managers</div>
-  <div class="step">Open the <strong>Dashboard</strong> to see KPIs, rep performance, territory coverage, and opportunity signals.</div>
-  <div class="step">Managers are automatically redirected to the Manager Portal immediately after successful login. Dashboard, Open Actions, Visit Map, AI Insights, Log Visit, Visit History, and Quick Start Guide are accessed from the Manager Portal.</div>
-  <div class="step">Reps cannot access manager-only pages by typing the URL directly; they are blocked or redirected back to their own rep screen.</div>
-  <div class="step">New accounts pending review appear with a <span class="badge badge-blue">New Account</span> badge in Visit History.</div>
+  <div class="section-title"><span class="section-num">9</span>One Identity, Everywhere</div>
+  <div class="step">You pick your name once, at login. Every screen after that already knows it's you.</div>
+  <div class="step">This is what keeps your visits, calendar, and history correctly grouped under your name.</div>
+  <div class="warning">⚠️ Logged in as someone else by mistake? Use Switch User before logging anything.</div>
+</div>
+
+<div class="divider-label">For Managers</div>
+
+<div class="section" style="border-color:#f3e3c4;background:#fdf8ee">
+  <div class="section-title"><span class="badge badge-manager" style="margin-right:8px">MANAGER</span>Operations — Your Morning Check-In</div>
+  <div class="step">Operations is the first place to look every day. It has two views:</div>
+  <div class="step"><strong>Today</strong> — what's been logged today, who's been active, and anything that needs a closer look.</div>
+  <div class="step"><strong>Territory Board</strong> — one card per rep, showing how recently they've been in the field and whether anything needs attention.</div>
+  <div class="step"><strong>Rep Activity</strong> shows you the moment a rep logs an update on something you're tracking — tap it to see what changed.</div>
+  <div class="step"><strong>Attention Required</strong> collects the things that genuinely need a look: reps who've gone quiet, overdue actions, accounts that haven't been visited in a while.</div>
+  <div class="tip">✅ If you only check one screen a day, make it this one.</div>
+</div>
+
+<!-- 📸 SCREENSHOT RECOMMENDED: Operations Territory Board view showing a few rep
+     cards with status badges (Active / Behind / Needs Attention) — this is the
+     clearest way to show a new manager what "healthy" vs "needs a look" looks like. -->
+
+<div class="section" style="border-color:#f3e3c4;background:#fdf8ee">
+  <div class="section-title"><span class="badge badge-manager" style="margin-right:8px">MANAGER</span>Manager Calendar</div>
+  <div class="step">See every rep's upcoming follow-ups in one shared calendar.</div>
+  <div class="step">Filter to a single rep if you only want to see their schedule.</div>
+  <div class="step">This is a view, not an editor — only the rep can reschedule or cancel their own items. You'll always know what's planned without needing to touch anyone's calendar.</div>
+</div>
+
+<div class="section" style="border-color:#f3e3c4;background:#fdf8ee">
+  <div class="section-title"><span class="badge badge-manager" style="margin-right:8px">MANAGER</span>Open Actions</div>
+  <div class="step">A live list of everything your team has committed to — quotations to send, samples to deliver, follow-ups due.</div>
+  <div class="step">Filter by rep, or by status — open, overdue, due today, completed.</div>
+  <div class="step">Send a reminder to a rep directly from here if something's overdue.</div>
+</div>
+
+<div class="section" style="border-color:#f3e3c4;background:#fdf8ee">
+  <div class="section-title"><span class="badge badge-manager" style="margin-right:8px">MANAGER</span>Account Directory</div>
+  <div class="step">Every account across the whole team, grouped by territory, with full visit history at a glance.</div>
+  <div class="step">Open any account to see who's visited, what was discussed, and what's outstanding — useful if a rep is away or an account changes hands.</div>
 </div>
 
 <div class="section">
-  <div class="section-title"><span class="section-num">9</span>Quick Reference</div>
+  <div class="section-title"><span class="section-num">10</span>Install FieldIQ as an App</div>
+  <div class="step">FieldIQ can be added to your phone or computer so it opens like a normal app — no need to find a browser tab each time.</div>
+  <div class="step">Windows: click the install icon in the address bar.</div>
+  <div class="step">Android: open the ⋮ menu in Chrome and tap <strong>Install app</strong>.</div>
+  <div class="step">iPhone: open the link in Safari, tap Share, then <strong>Add to Home Screen</strong>.</div>
+  <div class="info">ℹ️ See the separate FieldIQ Installation Guide for full step-by-step instructions and troubleshooting.</div>
+</div>
+
+<div class="section">
+  <div class="section-title"><span class="section-num">11</span>Quick Reference</div>
   <div class="step"><strong>Home / Login:</strong> fieldiq.biz</div>
   <div class="step"><strong>Manager Portal:</strong> fieldiq.biz/fieldiq.html</div>
   <div class="step"><strong>Log Visit:</strong> fieldiq.biz/fieldiq-log-visit.html</div>
+  <div class="step"><strong>Calendar:</strong> fieldiq.biz/fieldiq-calendar.html</div>
   <div class="step"><strong>Visit History:</strong> fieldiq.biz/fieldiq-visit-history.html</div>
   <div class="step"><strong>Visit Map:</strong> fieldiq.biz/fieldiq-visits-map.html</div>
-  <div class="step"><strong>Dashboard:</strong> fieldiq.biz/dashboard.html (Manager only)</div>
-  <div class="step"><strong>AI Insights:</strong> fieldiq.biz/fieldiq-insights.html</div>
+  <div class="step"><strong>Operations</strong> <span class="badge badge-manager">Manager</span>: fieldiq.biz/fieldiq-operations.html</div>
+  <div class="step"><strong>Manager Calendar</strong> <span class="badge badge-manager">Manager</span>: fieldiq.biz/fieldiq-manager-calendar.html</div>
+  <div class="step"><strong>Open Actions</strong> <span class="badge badge-manager">Manager</span>: fieldiq.biz/fieldiq-actions.html</div>
+  <div class="step"><strong>Account Directory</strong> <span class="badge badge-manager">Manager</span>: fieldiq.biz/fieldiq-accounts.html</div>
+  <div class="step"><strong>Dashboard</strong> <span class="badge badge-manager">Manager</span>: fieldiq.biz/dashboard.html</div>
 </div>
 
-<div class="footer">FieldIQ v2.1 · 2026</div>
+<div class="footer">FieldIQ · 2026</div>
 <script>
 document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
