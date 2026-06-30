@@ -398,9 +398,13 @@ function renderDayPanel(isoDate,dayActions){
     html+='<div class="cal-action-text">'+escapeHtml(action||'Open action')+'</div>';
     html+='<a class="cal-action-link" href="./fieldiq-open-actions.html?actionId='+escapeHtml(r.id)+'&returnTo=calendar&calYear='+viewYear+'&calMonth='+viewMonth+'&calDay='+escapeHtml(isoDate)+'" onclick="event.stopPropagation()">→ Open in My Actions</a>';
     // "Log Update" — single voice engine entry point. Reuses the existing
-    // Log Visit pipeline with the account and "Update / Follow-up" Visit Type
-    // pre-filled via URL parameters. No new recorder, no duplicate logic.
-    html+=' &nbsp;&middot;&nbsp; <a class="cal-action-link" href="./fieldiq-log-visit.html?account='+encodeURIComponent(account)+'&visitType='+encodeURIComponent('Update / Follow-up')+'" onclick="event.stopPropagation()">\ud83c\udf99\ufe0f Log Update</a>';
+    // Log Visit pipeline with the account pre-filled. There is no separate
+    // "Follow-up" Visit Type — every interaction is simply another Visit.
+    // The originating action record (r.id) is carried as sourceRef, silent
+    // plumbing only, so Log Visit's AI context step can target the correct
+    // prior interaction instead of guessing "most recent." Never sent to
+    // the Worker, never shown to the rep, never written to any record.
+    html+=' &nbsp;&middot;&nbsp; <a class="cal-action-link" href="./fieldiq-log-visit.html?account='+encodeURIComponent(account)+'&sourceRef='+encodeURIComponent(r.id)+'" onclick="event.stopPropagation()">\ud83c\udf99\ufe0f Log Update</a>';
     html+='</div>';
   });
 
