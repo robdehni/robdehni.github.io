@@ -438,6 +438,10 @@ function applyPrefillFromURL(){
         }
       }
     }
+    // Re-run the same validation that fires on manual selection — without
+    // this, selectedAccountId is set internally but the mic stays disabled
+    // because getMissingFields() was last evaluated before the prefill ran.
+    updateMicAvailability();
   }catch(e){}
 }
 
