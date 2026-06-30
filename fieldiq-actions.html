@@ -92,7 +92,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
     <p class="page-subtitle">Manager Open Actions</p>
   </div>
 
-  <a href="./fieldiq.html" class="home-btn">← Manager Home</a>
+  <a href="./fieldiq.html" class="home-btn" id="homeBtn">← Manager Home</a>
 
   <div class="summary-grid">
     <div class="summary-card"><div class="summary-num" id="openCount">0</div><div class="summary-label">Open</div></div>
@@ -150,6 +150,19 @@ if(currentUserRole!=='Manager'){
   window.location.href='./index.html';
   throw new Error('Managers only');
 }
+
+// FIX: if Operations sent us here with ?from=operations, point Home back at
+// Operations instead of the Manager Portal. No other navigation changed.
+(function(){
+  var params=new URLSearchParams(window.location.search);
+  if(params.get('from')==='operations'){
+    var btn=document.getElementById('homeBtn');
+    if(btn){
+      btn.href='./fieldiq-operations.html';
+      btn.textContent='← Back to Operations';
+    }
+  }
+})();
 
 function escapeHtml(str){
   return String(str||'').replace(/[&<>"']/g,function(m){
@@ -269,11 +282,6 @@ function showToast(msg){
 }
 
 // ─── STATE PERSISTENCE ──────────────────────────────────────────────────────
-// FIX: saveManagerActionState now sets returning:true so restoreManagerActionState
-// knows this is a genuine return from View Visit, not a fresh page load.
-// restoreManagerActionState returns the saved scrollY (or null) so loadActions
-// can apply scroll AFTER render() has built the DOM — not 250ms into nothing.
-
 function saveManagerActionState(){
   try{
     sessionStorage.setItem(SESSION_KEY,JSON.stringify({
@@ -286,13 +294,11 @@ function saveManagerActionState(){
   }catch(e){}
 }
 
-// Returns scrollY to restore (number) or null if this is a fresh load.
 function restoreManagerActionState(){
   try{
     var raw=sessionStorage.getItem(SESSION_KEY);
     if(!raw)return null;
     var s=JSON.parse(raw);
-    // Only restore if we're genuinely returning from View Visit.
     if(!s.returning)return null;
     if(s.selectedRep!==undefined)selectedRep=s.selectedRep||'';
     if(s.activeTab)activeTab=s.activeTab;
@@ -301,8 +307,6 @@ function restoreManagerActionState(){
   }catch(e){return null;}
 }
 
-// Called after render() completes so the DOM exists before we scroll.
-// Clears the returning flag so it doesn't replay on the next fresh load.
 function applyScrollAndClearFlag(scrollY){
   if(scrollY===null||scrollY===undefined)return;
   window.scrollTo(0,scrollY);
@@ -330,8 +334,6 @@ async function loadUsersBestEffort(){
   }catch(e){}
 }
 
-// FIX: loadActions now accepts an optional pendingScroll argument.
-// After render() builds the DOM, we apply scroll — guaranteed correct timing.
 async function loadActions(pendingScroll){
   document.getElementById('content').innerHTML='<div class="loading"><div class="spinner"></div>Loading manager actions...</div>';
   try{
@@ -355,7 +357,6 @@ async function loadActions(pendingScroll){
     syncTabButtons();
     render();
 
-    // Apply scroll NOW — DOM is populated.
     applyScrollAndClearFlag(pendingScroll!=null?pendingScroll:null);
 
   }catch(err){
@@ -455,7 +456,6 @@ function visitHref(action){
   if(visitId)q.push('visitId='+encodeURIComponent(visitId));
   if(action.id)q.push('actionId='+encodeURIComponent(action.id));
   if(account)q.push('account='+encodeURIComponent(account));
-  // FIX: explicit returnTo so Visit History sends the manager back here, not Dashboard.
   q.push('returnTo='+encodeURIComponent('./fieldiq-actions.html'));
   q.push('source='+encodeURIComponent('manager-actions'));
   return url+(q.length?'?'+q.join('&'):'');
@@ -598,7 +598,6 @@ async function sendReminder(actionId){
     }
 
     showToast('Reminder sent to '+getAssignedRepName(actionFields)+'.');
-    // Reload but do NOT restore scroll — manager stays where they are after a reminder.
     await loadActions(null);
 
   }catch(err){
@@ -608,11 +607,10 @@ async function sendReminder(actionId){
 }
 
 document.addEventListener('click',function(e){
-  // FIX: save full state before leaving to View Visit so we can restore on return.
   var visit=e.target.closest('[data-visit-link]');
   if(visit){
     saveManagerActionState();
-    return; // let the <a> navigate naturally
+    return;
   }
 
   var exp=e.target.closest('[data-expand-key]');
@@ -649,9 +647,6 @@ function bindStaticEvents(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
-  // FIX: capture pendingScroll BEFORE bindStaticEvents or loadActions.
-  // restoreManagerActionState sets selectedRep/activeTab/expanded in memory.
-  // loadActions then renders with that state, and only after render() applies scroll.
   var pendingScroll=restoreManagerActionState();
 
   bindStaticEvents();
