@@ -205,6 +205,11 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .qa-row{display:flex;gap:8px;flex-wrap:wrap}
 .qa-btn{flex:1;min-width:100px;background:#fff;border:1px solid #e3ebf5;border-radius:12px;padding:11px 10px;text-align:center;font-size:12px;font-weight:700;color:#2f8fff;text-decoration:none;box-shadow:0 2px 8px rgba(11,31,58,0.04)}
 .qa-btn:hover{background:#eaf3ff;border-color:#b8d8ff}
+.ra-account{font-weight:800;color:#0b1f3a}
+.ra-detail{color:#7a8aa3;font-weight:500}
+.ra-time{font-size:10.5px;color:#aab8cc;font-weight:600;white-space:nowrap;margin-left:auto;padding-left:8px}
+.ra-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+
 </style>
 </head>
 <body>
@@ -960,6 +965,68 @@ function jumpToDate(dateStr) {
   window.scrollTo(0,0);
 }
 
+
+// ── Rep Activity ──────────────────────────────────────────────────────────
+// Reuses allActions (already loaded by loadData() for Attention Required —
+// no new fetch). Shows only actions where a rep has logged a follow-up the
+// manager hasn't seen yet. Reuses the existing .gap-block/.gap-item card
+// pattern already defined for Attention Required.
+function buildRepActivity(){
+  if(!actionsOk) return '';
+  var items=allActions.filter(function(a){
+    var f=a.fields||{};
+    return f['Manager Notification']===true && f['Manager Notification Viewed']!==true;
+  });
+  if(!items.length) return '';
+
+  items.sort(function(a,b){
+    return String((b.fields||{})['Last Updated Date']||'').localeCompare(String((a.fields||{})['Last Updated Date']||''));
+  });
+
+  function timeAgo(iso){
+    if(!iso) return '';
+    var diffMs=Date.now()-new Date(iso).getTime();
+    var mins=Math.floor(diffMs/60000);
+    if(mins<1) return 'just now';
+    if(mins<60) return mins+' minute'+(mins!==1?'s':'')+' ago';
+    var hrs=Math.floor(mins/60);
+    if(hrs<24) return hrs+' hour'+(hrs!==1?'s':'')+' ago';
+    var days=Math.floor(hrs/24);
+    return days+' day'+(days!==1?'s':'')+' ago';
+  }
+
+  var CAP=6;
+  var html='<div class="section-label">Rep Activity</div><div class="gap-block">';
+  items.slice(0,CAP).forEach(function(a){
+    var f=a.fields||{};
+    var account=f['Account Name']||'Unknown account';
+    var rep=f['Last Updated By']||'A rep';
+    var ago=timeAgo(f['Last Updated Date']);
+    html+='<div class="gap-item" style="cursor:pointer" onclick="openRepActivityItem(\''+a.id+'\')">'+
+      '<div class="gap-icon gap-icon-blue">\u2705</div>'+
+      '<div style="flex:1"><div class="ra-row">'+
+        '<div><div class="gap-title ra-account">'+escapeHtml(account)+'</div>'+
+        '<div class="gap-detail ra-detail">'+escapeHtml(rep)+' logged a follow-up</div></div>'+
+        '<div class="ra-time">'+escapeHtml(ago)+'</div>'+
+      '</div></div>'+
+    '</div>';
+  });
+  html+='</div>';
+  return html;
+}
+
+// Marks the notification viewed (fire one /update-action call), then
+// continues to the existing action navigation — same destination Quick
+// Actions already uses for Open Actions.
+function openRepActivityItem(actionId){
+  fetch(WORKER+'/update-action',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({actionId:actionId,managerNotificationViewed:true})
+  }).catch(function(e){console.warn('Could not mark notification viewed:',e);});
+  window.location.href='./fieldiq-actions.html?actionId='+encodeURIComponent(actionId)+'&from=operations';
+}
+
 // ── Territory Board ──────────────────────────────────────────────────────
 function renderTerritoryBoard() {
   var todayDate = formatDateISO(new Date());
@@ -1025,6 +1092,8 @@ activeRepNames.forEach(function(rep){
   });
 
   html += '</div>';
+
+  html += buildRepActivity();
 
   html += '<div class="section-label">Attention Required</div>';
   html += buildAttentionRequired(todayDate);
