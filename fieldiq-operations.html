@@ -197,6 +197,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .attn-item{display:flex;gap:10px;align-items:flex-start;padding:12px 16px;border-bottom:1px solid #f4f8fc;background:#fff}
 .attn-item:first-child{border-radius:16px 16px 0 0}
 .attn-item:last-child{border-bottom:none;border-radius:0 0 16px 16px}
+.attn-expand:hover{background:#f4f8fc}
+.attn-hidden{padding:0 !important}
 .attn-block{border:1px solid #e3ebf5;border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(11,31,58,0.05);margin-bottom:16px}
 .attn-icon{font-size:15px;flex-shrink:0;margin-top:1px}
 .attn-text{font-size:13px;font-weight:700;color:#0b1f3a;line-height:1.4}
@@ -847,6 +849,18 @@ function buildGapIntelligence(dateStr) {
 }
 
 // ── Card toggle ───────────────────────────────────────────────────────────────
+function toggleAttnExpand() {
+  var hidden = document.querySelector('.attn-hidden');
+  var label  = document.getElementById('attnExpandLabel');
+  if (!hidden || !label) return;
+
+  var isOpen = hidden.style.display !== 'none';
+  hidden.style.display = isOpen ? 'none' : 'block';
+
+  var count = label.getAttribute('data-count') || '';
+  label.textContent = isOpen ? 'Show '+count+' more' : 'Show less';
+}
+
 function toggleCard(cardId) {
   var exp = document.getElementById('exp-'+cardId);
   var chev = document.getElementById('chev-'+cardId);
@@ -997,9 +1011,9 @@ activeRepNames.forEach(function(rep){
 
   html += '<div class="section-label">Quick Actions</div>';
   html += '<div class="qa-row">'+
-    '<a class="qa-btn" href="./fieldiq-calendar.html">Open Calendar</a>'+
-    '<a class="qa-btn" href="./fieldiq-actions.html">Open Actions</a>'+
-    '<a class="qa-btn" href="./fieldiq-accounts.html">Open Accounts</a>'+
+    '<a class="qa-btn" href="./fieldiq-manager-calendar.html?from=operations">Open Calendar</a>'+
+    '<a class="qa-btn" href="./fieldiq-actions.html?from=operations">Open Actions</a>'+
+    '<a class="qa-btn" href="./fieldiq-accounts.html?from=operations">Open Accounts</a>'+
   '</div>';
 
   document.getElementById('timelineZone').innerHTML = html;
@@ -1061,12 +1075,18 @@ function buildAttentionRequired(todayDate) {
   if (!items.length){
     return '<div class="attn-clean">&#10003; No operational issues detected.</div>';
   }
-  var html='<div class="attn-block">';
+  var html='<div class="attn-block" id="attnBlock">';
   items.slice(0,CAP).forEach(function(it){
     html+='<div class="attn-item"><div class="attn-icon">'+it.icon+'</div><div class="attn-text">'+escapeHtml(it.text)+'</div></div>';
   });
   if (items.length>CAP){
-    html+='<div class="attn-item"><div class="attn-icon">&#8230;</div><div class="attn-text" style="color:#8a9bb3">and '+(items.length-CAP)+' more</div></div>';
+    html+='<div class="attn-item attn-hidden" style="display:none">'+
+      items.slice(CAP).map(function(it){
+        return '<div class="attn-item" style="padding:0;border:none"><div class="attn-icon">'+it.icon+'</div><div class="attn-text">'+escapeHtml(it.text)+'</div></div>';
+      }).join('')+
+    '</div>';
+    html+='<div class="attn-item attn-expand" onclick="toggleAttnExpand()" style="cursor:pointer">'+
+      '<div class="attn-icon">&#8230;</div><div class="attn-text" id="attnExpandLabel" data-count="'+(items.length-CAP)+'" style="color:#2f8fff">Show '+(items.length-CAP)+' more</div></div>';
   }
   return html+'</div>';
 }
