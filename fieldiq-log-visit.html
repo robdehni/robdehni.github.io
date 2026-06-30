@@ -151,7 +151,7 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
     </div>
   </div>
   <div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
-  <div class="field"><label>Visit Type</label><select id="visitType"><option value="">Select type</option><option>In-person</option><option>Virtual</option><option>Phone</option></select></div>
+  <div class="field"><label>Visit Type</label><select id="visitType"><option value="">Select type</option><option>In-person</option><option>Virtual</option><option>Phone</option><option>Update / Follow-up</option></select></div>
 </div>
 
 <div id="identityBar" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#7a8aa3;box-shadow:0 4px 14px rgba(11,31,58,0.05)"></div>
@@ -224,6 +224,7 @@ function loadAccounts(){
   fetch(WORKER+'/get-accounts',{signal:controller.signal}).then(function(r){return r.json();}).then(function(data){
     clearTimeout(timeoutId);var records=data.records||[];
     ACCOUNTS=records.map(function(r){return {id:r.id,name:(r.fields&&r.fields['Account Name'])||'',territory:(r.fields&&r.fields['Territory'])||''};}).filter(function(a){return a.name;});
+    applyPrefillFromURL();
     accountsLoaded=true;if(document.activeElement===hospitalInput){showList(hospitalInput.value);}else{hospitalList.classList.remove('open');}
   }).catch(function(){
     clearTimeout(timeoutId);accountsLoaded=false;
@@ -409,7 +410,38 @@ document.getElementById('clearBtn').addEventListener('click',function(){
   updateMicAvailability();
 });
 
-function parseReport(text){var sections={summary:'',contacts:'',outcomes:'',nextSteps:'',signals:'',sentiment:'',priority:''};var lines=text.split('\n'),current='';for(var i=0;i<lines.length;i++){var l=lines[i].trim();if(l.match(/VISIT SUMMARY/i))current='summary';else if(l.match(/KEY CONTACTS/i))current='contacts';else if(l.match(/OUTCOMES/i))current='outcomes';else if(l.match(/NEXT STEPS/i))current='nextSteps';else if(l.match(/OPPORTUNITY/i))current='signals';else if(l.match(/SENTIMENT/i))current='sentiment';else if(l.match(/PRIORITY/i))current='priority';else if(l&&current)sections[current]+=(sections[current]?'\n':'')+l;}return sections;}
+// ── Calendar "Log Update" entry point ──────────────────────────────────────
+// Reads ?account= and ?visitType= from the URL (set by fieldiq-calendar.html's
+// "Log Update" link) and pre-selects the matching account + visit type.
+// Matches by name against the already-loaded ACCOUNTS list — no new data source.
+function applyPrefillFromURL(){
+  try{
+    var params=new URLSearchParams(window.location.search);
+    var accountParam=params.get('account');
+    var visitTypeParam=params.get('visitType');
+    if(visitTypeParam){
+      var vtSelect=document.getElementById('visitType');
+      for(var i=0;i<vtSelect.options.length;i++){
+        if(vtSelect.options[i].value===visitTypeParam){vtSelect.selectedIndex=i;break;}
+      }
+    }
+    if(accountParam&&ACCOUNTS.length){
+      var match=ACCOUNTS.find(function(a){return a.name.trim().toLowerCase()===accountParam.trim().toLowerCase();});
+      if(match){
+        selectedAccountId=match.id;
+        hospitalInput.value=match.name;
+        if(match.territory){
+          var tSelect=document.getElementById('territory');
+          for(var j=0;j<tSelect.options.length;j++){
+            if(tSelect.options[j].value===match.territory){tSelect.selectedIndex=j;break;}
+          }
+        }
+      }
+    }
+  }catch(e){}
+}
+
+function parseReport(text){var sections={summary:'',contacts:'',outcomes:'',nextSteps:'',signals:'',sentiment:'',priority:'',suggestedDate:''};var lines=text.split('\n'),current='';for(var i=0;i<lines.length;i++){var l=lines[i].trim();if(l.match(/VISIT SUMMARY/i))current='summary';else if(l.match(/KEY CONTACTS/i))current='contacts';else if(l.match(/OUTCOMES/i))current='outcomes';else if(l.match(/NEXT STEPS/i))current='nextSteps';else if(l.match(/OPPORTUNITY/i))current='signals';else if(l.match(/SENTIMENT/i))current='sentiment';else if(l.match(/SUGGESTED NEXT DATE/i))current='suggestedDate';else if(l.match(/PRIORITY/i))current='priority';else if(l&&current)sections[current]+=(sections[current]?'\n':'')+l;}return sections;}
 function getOutcome(sentiment){sentiment=(sentiment||'').toLowerCase();if(sentiment.includes('positive'))return'Positive';if(sentiment.includes('negative'))return'Negative';return'Neutral';}
 function extractPriority(text){text=(text||'').toLowerCase();if(text.includes('high'))return'High';if(text.includes('medium'))return'Medium';if(text.includes('low'))return'Low';return'Medium';}
 function getPriorityClass(t){t=t.toLowerCase();if(t.indexOf('high')>-1)return'priority-high';if(t.indexOf('medium')>-1)return'priority-medium';return'priority-low';}
@@ -431,7 +463,32 @@ submitBtn.addEventListener('click',async function(){
   var latitude=null,longitude=null,accuracy=null;
   await new Promise(function(resolve){if(!navigator.geolocation){resolve();return;}navigator.geolocation.getCurrentPosition(function(pos){latitude=pos.coords.latitude;longitude=pos.coords.longitude;accuracy=Math.round(pos.coords.accuracy);resolve();},function(){resolve();},{timeout:12000,enableHighAccuracy:true,maximumAge:0});});
   try{
-    var aiRes=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,messages:[{role:'user',content:'You are a MedTech sales intelligence assistant operating in the GCC region. The transcript below may be in English, Arabic, mixed Arabic-English, or Gulf/Levantine/Egyptian Arabic dialect. Understand the full meaning regardless of language or dialect used. Structure the intelligence into a concise English report with these exact sections:\n\nVISIT SUMMARY\nKEY CONTACTS MET\nOUTCOMES & DECISIONS\nNEXT STEPS\nOPPORTUNITY SIGNALS\nSENTIMENT\nPRIORITY LEVEL (respond with exactly one word: High, Medium, or Low)\n\nFor PRIORITY LEVEL, classify based on:\n- High: quotation requested, procurement engaged, decision maker committed, strong buying signal, evaluation planned\n- Medium: follow-up needed, positive interest, return visit requested, relationship developing\n- Low: informational visit, no current opportunity, no buying signal, long-term monitoring\n\nOutput the report in professional English only.\n\nTranscript:\n'+transcript}]})});
+    // ── Update / Follow-up context injection ──────────────────────────────
+    // For the new "Update / Follow-up" Visit Type, fetch the account's most
+    // recent prior visit so Claude can reason about what changed rather than
+    // transcribing in isolation. Uses the existing /get-visits endpoint —
+    // no Worker change, filtered client-side, same pattern used elsewhere.
+    var priorContext='';
+    var currentVisitType=document.getElementById('visitType').value;
+    var accountIdForContext=isNewAccount?null:selectedAccountId;
+    if(currentVisitType==='Update / Follow-up'&&accountIdForContext){
+      try{
+        var priorVisitsRes=await fetch(WORKER+'/get-visits');
+        var priorVisitsData=await priorVisitsRes.json();
+        var priorVisits=(priorVisitsData.records||[]).filter(function(v){
+          var acc=v.fields&&v.fields['Account'];
+          return Array.isArray(acc)&&acc.indexOf(accountIdForContext)>-1;
+        }).sort(function(a,b){
+          return String(b.fields['Visit Date']||'').localeCompare(String(a.fields['Visit Date']||''));
+        });
+        if(priorVisits.length){
+          var prior=priorVisits[0].fields;
+          priorContext='\n\nCONTEXT FROM PREVIOUS VISIT (for reference only — do not repeat, only reason about what has changed):\nPrevious visit date: '+(prior['Visit Date']||'unknown')+'\nPrevious summary: '+(prior['AI Summary']||'')+'\nPrevious next steps: '+(prior['Action Items']||'')+'\n';
+        }
+      }catch(e){/* non-fatal — proceed without prior context */}
+    }
+    var promptInstructions='You are a sales intelligence assistant. The transcript below may be in English, Arabic, mixed Arabic-English, or a regional dialect. Understand the full meaning regardless of language or dialect used. Structure the intelligence into a concise English report with these exact sections:\n\nVISIT SUMMARY\nKEY CONTACTS MET\nOUTCOMES & DECISIONS\nNEXT STEPS\nOPPORTUNITY SIGNALS\nSENTIMENT\nPRIORITY LEVEL (respond with exactly one word: High, Medium, or Low)\nSUGGESTED NEXT DATE (respond with a specific date if the speaker clearly mentioned a new meeting date, otherwise respond with exactly: None)\n\nFor PRIORITY LEVEL, classify based on:\n- High: quotation requested, procurement engaged, decision maker committed, strong buying signal, evaluation planned\n- Medium: follow-up needed, positive interest, return visit requested, relationship developing\n- Low: informational visit, no current opportunity, no buying signal, long-term monitoring\n\nOutput the report in professional English only.'+priorContext+'\n\nTranscript:\n'+transcript;
+    var aiRes=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,messages:[{role:'user',content:promptInstructions}]})});
     var aiData=await aiRes.json();
     if(!aiRes.ok||!aiData.content||!aiData.content[0]||!aiData.content[0].text){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';alert('AI processing failed, so nothing was saved — no account, no contact, no visit.\n\nPlease try again.\n\n'+JSON.stringify(aiData));return;}
     var result=aiData.content[0].text;var parsed=parseReport(result);var priority=extractPriority(parsed.priority);
@@ -495,6 +552,16 @@ submitBtn.addEventListener('click',async function(){
       console.warn('Open Actions save failed:',e);
     }
     processingOverlay.style.display='none';successCard.style.display='block';document.getElementById('reportContent').innerHTML=renderReport(result);
+    // If AI detected a possible new date, surface it as a suggestion only.
+    // No automatic write to the Calendar — the rep confirms manually using
+    // the existing Calendar reschedule control.
+    var suggestedDateText=(parsed.suggestedDate||'').trim();
+    if(suggestedDateText&&suggestedDateText.toLowerCase()!=='none'){
+      var dateNoticeEl=document.createElement('div');
+      dateNoticeEl.style.cssText='margin-top:14px;padding:13px 16px;background:#eaf3ff;border:1.5px solid #b8d8ff;border-radius:12px;font-size:13px;color:#0b1f3a;font-weight:600';
+      dateNoticeEl.innerHTML='\ud83d\udcc5 AI detected a possible new date: <strong>'+suggestedDateText.replace(/</g,'&lt;')+'</strong>. <a href="./fieldiq-calendar.html" style="color:#2f8fff;font-weight:800;text-decoration:none">Open Calendar to reschedule \u2192</a>';
+      document.getElementById('reportContent').appendChild(dateNoticeEl);
+    }
   }catch(err){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';alert('Error: '+err.message);}
 });
 document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
