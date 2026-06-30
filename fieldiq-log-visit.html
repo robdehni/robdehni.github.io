@@ -151,7 +151,7 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
     </div>
   </div>
   <div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
-  <div class="field"><label>Visit Type</label><select id="visitType"><option value="">Select type</option><option>In-person</option><option>Virtual</option><option>Phone</option><option>Update / Follow-up</option></select></div>
+  <div class="field"><label>Visit Type</label><select id="visitType"><option value="">Select type</option><option>In-person</option><option>Virtual</option><option>Phone</option></select></div>
 </div>
 
 <div id="identityBar" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#7a8aa3;box-shadow:0 4px 14px rgba(11,31,58,0.05)"></div>
@@ -414,17 +414,18 @@ document.getElementById('clearBtn').addEventListener('click',function(){
 // Reads ?account= and ?visitType= from the URL (set by fieldiq-calendar.html's
 // "Log Update" link) and pre-selects the matching account + visit type.
 // Matches by name against the already-loaded ACCOUNTS list — no new data source.
+// Every interaction is simply another Visit — there is no rep-facing
+// "Follow-up" concept. When arriving from Calendar or Open Actions, the
+// account is pre-filled and an originating-item reference (sourceRef) is
+// carried silently in memory so the AI context step below can retrieve the
+// correct prior interaction. The rep never sees this reference and Visit
+// Type is never altered — it always shows only In-person / Virtual / Phone.
+var prefillSourceRef='';
 function applyPrefillFromURL(){
   try{
     var params=new URLSearchParams(window.location.search);
     var accountParam=params.get('account');
-    var visitTypeParam=params.get('visitType');
-    if(visitTypeParam){
-      var vtSelect=document.getElementById('visitType');
-      for(var i=0;i<vtSelect.options.length;i++){
-        if(vtSelect.options[i].value===visitTypeParam){vtSelect.selectedIndex=i;break;}
-      }
-    }
+    prefillSourceRef=params.get('sourceRef')||'';
     if(accountParam&&ACCOUNTS.length){
       var match=ACCOUNTS.find(function(a){return a.name.trim().toLowerCase()===accountParam.trim().toLowerCase();});
       if(match){
@@ -467,15 +468,15 @@ submitBtn.addEventListener('click',async function(){
   var latitude=null,longitude=null,accuracy=null;
   await new Promise(function(resolve){if(!navigator.geolocation){resolve();return;}navigator.geolocation.getCurrentPosition(function(pos){latitude=pos.coords.latitude;longitude=pos.coords.longitude;accuracy=Math.round(pos.coords.accuracy);resolve();},function(){resolve();},{timeout:12000,enableHighAccuracy:true,maximumAge:0});});
   try{
-    // ── Update / Follow-up context injection ──────────────────────────────
-    // For the new "Update / Follow-up" Visit Type, fetch the account's most
-    // recent prior visit so Claude can reason about what changed rather than
-    // transcribing in isolation. Uses the existing /get-visits endpoint —
-    // no Worker change, filtered client-side, same pattern used elsewhere.
+    // ── Account-history context injection ──────────────────────────────────
+    // Every interaction is simply another Visit. If this account has a prior
+    // visit on record, fetch it so Claude can reason about what changed
+    // rather than transcribing in isolation. This applies to every visit
+    // against an existing account, not a rep-selected category — uses the
+    // existing /get-visits endpoint, no Worker change, filtered client-side.
     var priorContext='';
-    var currentVisitType=document.getElementById('visitType').value;
     var accountIdForContext=isNewAccount?null:selectedAccountId;
-    if(currentVisitType==='Update / Follow-up'&&accountIdForContext){
+    if(accountIdForContext){
       try{
         var priorVisitsRes=await fetch(WORKER+'/get-visits');
         var priorVisitsData=await priorVisitsRes.json();
@@ -485,6 +486,14 @@ submitBtn.addEventListener('click',async function(){
         }).sort(function(a,b){
           return String(b.fields['Visit Date']||'').localeCompare(String(a.fields['Visit Date']||''));
         });
+        // If arriving via Calendar/Open Actions with a specific originating
+        // record, prefer that exact visit for context over a "most recent"
+        // guess. Falls back to most-recent if no sourceRef or no match —
+        // sourceRef is never sent to the Worker, it is used here only.
+        if(prefillSourceRef){
+          var referenced=priorVisits.find(function(v){return v.id===prefillSourceRef;});
+          if(referenced){priorVisits=[referenced].concat(priorVisits.filter(function(v){return v.id!==referenced.id;}));}
+        }
         if(priorVisits.length){
           var prior=priorVisits[0].fields;
           priorContext='\n\nCONTEXT FROM PREVIOUS VISIT (for reference only — do not repeat, only reason about what has changed):\nPrevious visit date: '+(prior['Visit Date']||'unknown')+'\nPrevious summary: '+(prior['AI Summary']||'')+'\nPrevious next steps: '+(prior['Action Items']||'')+'\n';
