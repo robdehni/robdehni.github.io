@@ -135,30 +135,10 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
     <div class="ap-view" id="apViewDefault">
       <div class="ap-title" id="apTitle"></div>
       <div class="ap-date" id="apDate"></div>
-      <button class="ap-btn ap-btn-complete" id="apBtnComplete">✅&nbsp; Mark Complete</button>
-      <button class="ap-btn ap-btn-reschedule" id="apBtnReschedule">📅&nbsp; Reschedule</button>
-      <button class="ap-btn ap-btn-cancel" id="apBtnCancel">❌&nbsp; Cancel Action</button>
+      <a class="ap-btn ap-btn-reschedule" id="apBtnOpenActions" style="text-decoration:none;justify-content:center">&#128203;&nbsp; Open in Manager Actions</a>
       <button class="ap-btn ap-btn-close" id="apBtnClose">Close</button>
     </div>
 
-    <div class="ap-view hidden" id="apViewReschedule">
-      <button class="ap-back" id="apBtnBack">← Back</button>
-      <div class="ap-title" id="apRescheduleTitle"></div>
-      <div style="margin-top:16px">
-        <label class="ap-label" for="apNewDate">New Date</label>
-        <input type="date" class="ap-input" id="apNewDate">
-        <label class="ap-label" for="apReason">Reason (optional)</label>
-        <select class="ap-input" id="apReason">
-          <option value="">Select a reason...</option>
-          <option>Customer postponed</option>
-          <option>Customer cancelled</option>
-          <option>Internal scheduling conflict</option>
-          <option>Waiting for customer</option>
-          <option>Other</option>
-        </select>
-        <button class="ap-btn ap-btn-save" id="apBtnSave">Save New Date</button>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -490,15 +470,7 @@ function openActionPopupById(actionId){
 
   document.getElementById('apTitle').textContent=(f['Rep Name']?f['Rep Name']+' · ':'')+(getActionText(f)||'Open Action');
   document.getElementById('apDate').textContent='Due: '+formatDayLabel(getDueDate(f));
-
-  document.getElementById('apRescheduleTitle').textContent=getAccountName(f);
-  var newDateInput=document.getElementById('apNewDate');
-  newDateInput.min=todayISO();
-  newDateInput.value=getDueDate(f);
-  document.getElementById('apReason').value='';
-
-  document.getElementById('apViewDefault').classList.remove('hidden');
-  document.getElementById('apViewReschedule').classList.add('hidden');
+  document.getElementById('apBtnOpenActions').href=managerActionsHref(actionId);
 
   setPopupBusy(false);
   document.getElementById('apOverlay').classList.remove('hidden');
@@ -514,108 +486,12 @@ function setPopupBusy(busy){
   if(document.getElementById('apBtnBack'))document.getElementById('apBtnBack').disabled=busy;
 }
 
-async function doCompleteAction(){
-  var idToComplete=currentPopupActionId;
-  if(!idToComplete)return;
-  setPopupBusy(true);
-  try{
-    var res=await fetch(WORKER+'/complete-action',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({actionId:idToComplete,userId:currentUserId})
-    });
-    var data=await res.json();
-    if(!res.ok)throw new Error((data&&data.error)||('Worker error '+res.status));
-    removeEventById(idToComplete);
-    closeActionPopup();
-  }catch(e){
-    setPopupBusy(false);
-    alert('Could not mark complete:\n'+e.message);
-  }
-}
-
-async function doCancelAction(){
-  if(!currentPopupActionId)return;
-  setPopupBusy(true);
-  try{
-    var res=await fetch(WORKER+'/update-action',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({actionId:currentPopupActionId,status:'Cancelled'})
-    });
-    var data=await res.json();
-    if(!res.ok)throw new Error(data.error||('HTTP '+res.status));
-    removeEventById(currentPopupActionId);
-    closeActionPopup();
-  }catch(e){
-    setPopupBusy(false);
-    alert('Could not cancel: '+e.message);
-  }
-}
-
-async function doRescheduleAction(){
-  var newDate=document.getElementById('apNewDate').value;
-  var reason=document.getElementById('apReason').value;
-  if(!newDate){alert('Please select a new date.');return;}
-  if(!currentPopupActionId)return;
-  setPopupBusy(true);
-  try{
-    var body={actionId:currentPopupActionId,dueDate:newDate};
-    if(reason)body.rescheduleReason=reason;
-    var res=await fetch(WORKER+'/update-action',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(body)
-    });
-    var data=await res.json();
-    if(!res.ok)throw new Error(data.error||('HTTP '+res.status));
-    updateEventDueDate(currentPopupActionId,newDate);
-    closeActionPopup();
-  }catch(e){
-    setPopupBusy(false);
-    alert('Could not reschedule: '+e.message);
-  }
-}
-
-function removeEventById(id){
-  allEvents=allEvents.filter(function(e){return e.id!==id;});
-  applyRepFilterAndRender();
-  if(selectedDayISO){
-    var remaining=events.filter(function(e){return getDueDate(e.fields||{})===selectedDayISO;});
-    if(!remaining.length)selectedDayISO=null;
-  }
-  render();
-}
-
-function updateEventDueDate(id,newDate){
-  var r=allEvents.find(function(e){return e.id===id;});
-  if(r)r.fields['Due Date']=newDate;
-  applyRepFilterAndRender();
-  var parts=newDate.split('-');
-  viewYear=parseInt(parts[0],10);
-  viewMonth=parseInt(parts[1],10)-1;
-  selectedDayISO=newDate;
-  render();
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded',function(){
   lucide.createIcons();
 
   document.getElementById('apBtnClose').addEventListener('click',closeActionPopup);
-  document.getElementById('apBtnComplete').addEventListener('click',doCompleteAction);
-  document.getElementById('apBtnCancel').addEventListener('click',doCancelAction);
-
-  document.getElementById('apBtnReschedule').addEventListener('click',function(){
-    document.getElementById('apViewDefault').classList.add('hidden');
-    document.getElementById('apViewReschedule').classList.remove('hidden');
-  });
-  document.getElementById('apBtnBack').addEventListener('click',function(){
-    document.getElementById('apViewReschedule').classList.add('hidden');
-    document.getElementById('apViewDefault').classList.remove('hidden');
-  });
-  document.getElementById('apBtnSave').addEventListener('click',doRescheduleAction);
 
   document.getElementById('apOverlay').addEventListener('click',function(e){
     if(e.target===this)closeActionPopup();
