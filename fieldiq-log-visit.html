@@ -602,6 +602,27 @@ submitBtn.addEventListener('click',async function(){
     }catch(e){
       console.warn('Open Actions save failed:',e);
     }
+
+    // Rep Activity notification — fire-and-forget. If this visit originated
+    // from an existing Open Action (Calendar's Log Update link), let the
+    // manager know progress occurred. Never blocks or fails the visit save.
+    if(prefillSourceRef){
+      try{
+        fetch(WORKER+'/update-action',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            actionId:prefillSourceRef,
+            lastUpdatedBy:repName,
+            lastUpdatedDate:new Date().toISOString(),
+            lastVisitRecordId:saveData.id,
+            managerNotification:true,
+            managerNotificationViewed:false
+          })
+        }).catch(function(e){console.warn('Rep Activity notification failed:',e);});
+      }catch(e){console.warn('Rep Activity notification failed:',e);}
+    }
+
     processingOverlay.style.display='none';successCard.style.display='block';document.getElementById('reportContent').innerHTML=renderReport(result);
     // If AI detected a possible new date, surface it as a suggestion only.
     // No automatic write to the Calendar — the rep confirms manually using
