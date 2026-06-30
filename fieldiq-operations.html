@@ -178,11 +178,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .tl-flag-overload{color:#d98a1c}
 
 /* ── Territory Board ── */
-.tb-nav{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:10px 14px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
-.tb-nav-arr{background:#f4f8fc;border:1px solid #e3ebf5;border-radius:9px;padding:6px 13px;font-size:13px;font-weight:700;color:#0b1f3a;cursor:pointer}
-.tb-nav-arr:hover{background:#eaf3ff;border-color:#b8d8ff;color:#2f8fff}
-.tb-nav-today{background:#eaf3ff;border:1px solid #b8d8ff;border-radius:9px;padding:6px 14px;font-size:12.5px;font-weight:700;color:#2f8fff;cursor:pointer}
-.tb-month-label{font-size:13px;font-weight:800;color:#0b1f3a}
+.tb-heading{font-size:13px;font-weight:800;color:#0b1f3a;background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:13px 16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05);display:flex;align-items:center;gap:8px}
+.tb-heading-dot{width:7px;height:7px;border-radius:50%;background:#1fa861;flex-shrink:0;box-shadow:0 0 0 3px #e3f8ea}
 .tb-board{background:transparent;margin-bottom:16px;display:flex;flex-direction:column;gap:8px}
 .tb-card{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:12px 16px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .tb-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
@@ -261,7 +258,6 @@ var selectedDate = new Date();
 selectedDate.setHours(0,0,0,0);
 var todayStr = formatDateISO(new Date());
 var currentTab = sessionStorage.getItem('fieldiq_ops_tab') || 'today';
-var tbMonthAnchor = null; // Territory Board: month currently displayed
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 function escapeHtml(str) {
@@ -558,7 +554,7 @@ function renderDayHeader() {
       '<div class="day-stats">'+
         '<div class="stat-box"><span class="stat-num">'+stats.total+'</span><span class="stat-label">Visits</span></div>'+
         '<div class="stat-box"><span class="stat-num">'+stats.active+'</span><span class="stat-label">Active Reps</span></div>'+
-        '<div class="stat-box"><span class="stat-num'+(stats.gaps>0?' has-gap':'')+'">'+stats.gaps+'</span><span class="stat-label">Gaps</span></div>'+
+        '<div class="stat-box"><span class="stat-num'+(stats.gaps>0?' has-gap':'')+'">'+stats.gaps+'</span><span class="stat-label">No Visits Today</span></div>'+
         '<div class="stat-box"><span class="stat-num'+(stats.alerts>0?' has-alert':'')+'">'+stats.alerts+'</span><span class="stat-label">Alerts</span></div>'+
       '</div>'+
     '</div>';
@@ -965,27 +961,11 @@ function jumpToDate(dateStr) {
 }
 
 // ── Territory Board ──────────────────────────────────────────────────────
-function getMonthBounds(d) {
-  var first = new Date(d.getFullYear(), d.getMonth(), 1);
-  var last  = new Date(d.getFullYear(), d.getMonth()+1, 0);
-  return { first:first, last:last, daysInMonth:last.getDate() };
-}
-
 function renderTerritoryBoard() {
-  if (!tbMonthAnchor) tbMonthAnchor = new Date();
   var todayDate = formatDateISO(new Date());
   var yestDate  = formatDateISO(addDays(new Date(),-1));
-  var bounds    = getMonthBounds(tbMonthAnchor);
-  var monthLabel = tbMonthAnchor.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
-  var isCurrentMonth = tbMonthAnchor.getFullYear()===new Date().getFullYear() &&
-                        tbMonthAnchor.getMonth()===new Date().getMonth();
 
-  var html = '<div class="tb-nav">'+
-    '<button class="tb-nav-arr" onclick="tbShiftMonth(-1)">&larr;</button>'+
-    '<span class="tb-month-label">'+escapeHtml(monthLabel)+'</span>'+
-    (isCurrentMonth?'<span style="width:62px"></span>':'<button class="tb-nav-today" onclick="tbGoToday()">Today</button>')+
-    '<button class="tb-nav-arr" onclick="tbShiftMonth(1)">&rarr;</button>'+
-  '</div>';
+  var html = '<div class="tb-heading"><span class="tb-heading-dot"></span>Live Territory Board</div>';
 
   if (!activeRepNames.length) {
     document.getElementById('timelineZone').innerHTML = html+'<div class="empty-state"><div class="empty-icon">&#128203;</div>No rep data loaded yet.</div>';
@@ -1143,16 +1123,6 @@ function buildAttentionRequired(todayDate) {
       '<div class="attn-icon">&#8230;</div><div class="attn-text" id="attnExpandLabel" data-count="'+(items.length-CAP)+'" style="color:#2f8fff">Show '+(items.length-CAP)+' more</div></div>';
   }
   return html+'</div>';
-}
-
-function tbShiftMonth(n) {
-  if (!tbMonthAnchor) tbMonthAnchor = new Date();
-  tbMonthAnchor = new Date(tbMonthAnchor.getFullYear(), tbMonthAnchor.getMonth()+n, 1);
-  renderTerritoryBoard();
-}
-function tbGoToday() {
-  tbMonthAnchor = new Date();
-  renderTerritoryBoard();
 }
 
 // ── Auth guard + start ────────────────────────────────────────────────────────
