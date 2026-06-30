@@ -210,7 +210,14 @@ var notListedCheck=document.getElementById('notListedCheck');var newAccountField
 notListedCheck.addEventListener('change',function(){if(this.checked){newAccountFields.classList.add('visible');hospitalInput.value='';selectedAccountId=null;hospitalList.classList.remove('open');hospitalInput.style.display='none';}else{newAccountFields.classList.remove('visible');hospitalInput.style.display='';}updateMicAvailability();});
 
 territorySelect.addEventListener('change',function(){
-  selectedAccountId=null;hospitalInput.value='';notListedCheck.checked=false;newAccountFields.classList.remove('visible');hospitalInput.style.display='';hospitalList.classList.remove('open');
+  // Preserve a Calendar-prefilled account when the rep re-selects (or the
+  // page re-applies) the SAME territory that account already belongs to.
+  // Only clear the account if the rep genuinely switches to a different
+  // territory, where the previously selected account would no longer apply.
+  var keepPrefilledAccount = selectedAccountId && prefillAccountTerritory && this.value===prefillAccountTerritory;
+  if(!keepPrefilledAccount){
+    selectedAccountId=null;hospitalInput.value='';notListedCheck.checked=false;newAccountFields.classList.remove('visible');hospitalInput.style.display='';hospitalList.classList.remove('open');
+  }
   if(this.value){accountBlock.style.opacity='1';accountBlock.style.pointerEvents='auto';hospitalInput.disabled=false;notListedCheck.disabled=false;hospitalInput.placeholder='Search '+this.value+' accounts...';}
   else{accountBlock.style.opacity='0.5';accountBlock.style.pointerEvents='none';hospitalInput.disabled=true;notListedCheck.disabled=true;hospitalInput.placeholder='Select a territory first';}
   updateMicAvailability();
@@ -421,6 +428,36 @@ document.getElementById('clearBtn').addEventListener('click',function(){
 // correct prior interaction. The rep never sees this reference and Visit
 // Type is never altered — it always shows only In-person / Virtual / Phone.
 var prefillSourceRef='';
+var prefillAccountTerritory='';  // territory of the account pre-filled from Calendar, if any
+
+// ── Home button: Calendar-aware return ───────────────────────────────────
+// If this page was opened from Calendar's "Log Update" link (identified by
+// the presence of ?account= in the URL — the same signal already used for
+// account prefill), the Home button returns to Calendar instead of Home,
+// restoring the same month/day if those were carried in the URL too.
+// If opened normally (no account param), Home behaves exactly as before.
+(function(){
+  try{
+    var params=new URLSearchParams(window.location.search);
+    if(params.get('account')){
+      var homeBtn=document.getElementById('homeBtn');
+      if(homeBtn){
+        var calYear=params.get('calYear');
+        var calMonth=params.get('calMonth');
+        var calDay=params.get('calDay');
+        var calUrl='./fieldiq-calendar.html';
+        var calParams=[];
+        if(calYear)calParams.push('calYear='+encodeURIComponent(calYear));
+        if(calMonth)calParams.push('calMonth='+encodeURIComponent(calMonth));
+        if(calDay)calParams.push('calDay='+encodeURIComponent(calDay));
+        if(calParams.length)calUrl+='?'+calParams.join('&');
+        homeBtn.href=calUrl;
+        homeBtn.textContent='← Back to Calendar';
+      }
+    }
+  }catch(e){}
+})();
+
 function applyPrefillFromURL(){
   try{
     var params=new URLSearchParams(window.location.search);
@@ -436,6 +473,7 @@ function applyPrefillFromURL(){
           for(var j=0;j<tSelect.options.length;j++){
             if(tSelect.options[j].value===match.territory){tSelect.selectedIndex=j;break;}
           }
+          prefillAccountTerritory=match.territory;
         }
       }
     }
