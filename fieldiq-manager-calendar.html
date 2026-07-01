@@ -176,6 +176,24 @@ var cameFromOperations=false;
   }
 })();
 
+// ── Restore calendar view state when returning from Manager Actions ─────────
+// If we were sent back here with calYear/calMonth/calDay/calRep in the URL
+// (set by fieldiq-actions.html's "Back to Calendar" link), open on that same
+// month/day/rep instead of resetting to today. Purely additive — if none of
+// these params are present, the defaults above (today's date, no filter)
+// are used exactly as before.
+(function(){
+  var params=new URLSearchParams(window.location.search);
+  var y=parseInt(params.get('calYear'),10);
+  var m=parseInt(params.get('calMonth'),10);
+  if(!isNaN(y))viewYear=y;
+  if(!isNaN(m)&&m>=0&&m<=11)viewMonth=m;
+  var d=params.get('calDay');
+  if(d)selectedDayISO=d;
+  var r=params.get('calRep');
+  if(r)selectedRepFilter=r;
+})();
+
 document.getElementById('repName').textContent='All reps';
 
 function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,function(m){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);});}
@@ -445,8 +463,17 @@ function renderDayPanel(isoDate,dayActions){
   return html;
 }
 
+// Builds the link to Manager Actions for a specific action, carrying enough
+// context (source, calendar year/month/day, rep filter, and the original
+// Operations origin if any) that Manager Actions can both deep-link to this
+// exact action and send the manager back to this same calendar view.
 function managerActionsHref(actionId){
   var q=['actionId='+encodeURIComponent(actionId)];
+  q.push('source=manager-calendar');
+  q.push('calYear='+viewYear);
+  q.push('calMonth='+viewMonth);
+  if(selectedDayISO)q.push('calDay='+encodeURIComponent(selectedDayISO));
+  if(selectedRepFilter)q.push('calRep='+encodeURIComponent(selectedRepFilter));
   if(cameFromOperations)q.push('from=operations');
   return './fieldiq-actions.html?'+q.join('&');
 }
