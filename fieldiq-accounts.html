@@ -183,8 +183,6 @@ var ACCOUNTS=[];
 var currentDetailAccountId=null;
 var currentDetailFilter='30';
 
-// FIX: if Operations sent us here with ?from=operations, point Home back at
-// Operations instead of the Manager Portal. No other navigation changed.
 (function(){
   var params=new URLSearchParams(window.location.search);
   if(params.get('from')==='operations'){
@@ -348,6 +346,6 @@ if(role!=='Manager'){
 }
 document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
-<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).catch(function(){});}</script>
 </body>
 </html>
