@@ -242,7 +242,7 @@ function renderPhotoEvidence(urlsField,visitId){
   if(!urls.length)return'';
   var html='<div class="photo-evidence"><h4>Visit Evidence</h4><div class="photo-evidence-grid">';
   urls.forEach(function(url){
-    html+='<img class="photo-evidence-thumb" src="'+url+'" alt="Visit photo" loading="lazy" onclick="openPhotoModal(\''+url.replace(/'/g,"\\'")+'\',\''+String(visitId||'').replace(/'/g,"\\'")+'\')">';
+    html+='<img class="photo-evidence-thumb" src="'+url+'" alt="Visit photo" loading="lazy" onclick="event.stopPropagation();openPhotoModal(\''+url.replace(/'/g,"\\'")+'\',\''+String(visitId||'').replace(/'/g,"\\'")+'\')">';
   });
   html+='</div></div>';
   return html;
