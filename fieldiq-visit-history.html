@@ -454,6 +454,6 @@ document.getElementById('repSearch').addEventListener('input',function(){
   },150);
 });
 </script>
-<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).catch(function(){});}</script>
 </body>  
 </html>
