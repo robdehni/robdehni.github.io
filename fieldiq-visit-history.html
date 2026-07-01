@@ -180,7 +180,7 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
   var returnTo=params.get('returnTo');
   var homeBtn=document.getElementById('homeBtn');
   if(source==='manager-actions'||returnTo==='./fieldiq-actions.html'){
-    homeBtn.href='./fieldiq-actions.html';
+    homeBtn.href=returnTo||'./fieldiq-actions.html';
     homeBtn.textContent='← Back to Open Actions';
   }else{
     var role=localStorage.getItem('fieldiq_user_role');
