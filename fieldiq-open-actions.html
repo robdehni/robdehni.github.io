@@ -52,6 +52,12 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 }
 .complete-btn:disabled{opacity:.55;cursor:not-allowed}
 .complete-btn [data-lucide]{width:18px;height:18px}
+.view-visit-link{
+  display:flex;align-items:center;justify-content:center;gap:6px;width:100%;
+  border:1.5px solid #2f8fff;background:#eaf3ff;color:#2f8fff;border-radius:12px;
+  padding:11px;font-size:13.5px;font-weight:800;text-decoration:none;margin-bottom:8px;
+}
+.view-visit-link [data-lucide]{width:16px;height:16px}
 .reminder-strip{font-size:11px;font-weight:800;padding:7px 10px;border-radius:8px;margin-bottom:10px}
 .reminder-strip-red{background:#ffe1e5;color:#c43048;border:1px solid #f5c2c8}
 .reminder-strip-orange{background:#fff4d6;color:#a36a00;border:1px solid #f5dfa0}
@@ -134,6 +140,59 @@ function formatDate(value){
   try{return new Date(value+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
   catch(e){return value;}
 }
+
+// Reused verbatim from the manager Open Actions page — same field-name
+// candidates, same lookup order. The "Source Visit" linked-record field is
+// already written by the Worker's /save-actions endpoint on every action;
+// this just reads what was already there.
+function getField(f,names,fallback){
+  for(var i=0;i<names.length;i++){
+    if(f[names[i]]!==undefined&&f[names[i]]!==null&&f[names[i]]!=='')return f[names[i]];
+  }
+  return fallback||'';
+}
+function firstLinkedId(v){
+  if(Array.isArray(v)&&v.length)return v[0];
+  if(typeof v==='string')return v;
+  return '';
+}
+function getVisitId(f){
+  return firstLinkedId(getField(f,['Visit','Field Visit','Visit Record','Visit ID','Visit Record ID','Source Visit','Source Visit ID'],''));
+}
+// Builds the URL back to THIS page after viewing the visit, preserving the
+// existing Calendar-origin context (returnTo/calYear/calMonth/calDay) if
+// this page itself was opened from Calendar, so that chain isn't broken.
+function buildReturnHref(actionId){
+  var q=['actionId='+encodeURIComponent(actionId)];
+  var params=new URLSearchParams(window.location.search);
+  if(params.get('returnTo')==='calendar'){
+    q.push('returnTo=calendar');
+    ['calYear','calMonth','calDay'].forEach(function(k){
+      var v=params.get(k);
+      if(v)q.push(k+'='+encodeURIComponent(v));
+    });
+  }
+  return './fieldiq-open-actions.html?'+q.join('&');
+}
+function visitHref(r){
+  var f=r.fields||{};
+  var visitId=getVisitId(f);
+  if(!visitId)return '';
+  var account=getField(f,['Account Name'],'');
+  var url='./fieldiq-visit-history.html';
+  var q=['visitId='+encodeURIComponent(visitId),'actionId='+encodeURIComponent(r.id)];
+  if(account)q.push('account='+encodeURIComponent(account));
+  q.push('returnTo='+encodeURIComponent(buildReturnHref(r.id)));
+  // NOTE: 'manager-actions' here is Visit History's existing internal flag
+  // name for "show a Back-to-Open-Actions button using the supplied
+  // returnTo URL" — it is not manager-specific and is never displayed. It
+  // is the only value that reliably triggers that branch (Visit History's
+  // other check is an exact-match on a bare, param-less URL, which our
+  // context-carrying returnTo above will never match). Reusing it avoids
+  // any change to fieldiq-visit-history.html.
+  q.push('source='+encodeURIComponent('manager-actions'));
+  return url+'?'+q.join('&');
+}
 function showToast(msg){
   var t=document.getElementById('toast');
   t.textContent=msg||'Action completed.';
@@ -163,6 +222,8 @@ function renderActionCard(r, account){
   if(due)meta+='<span class="meta">Due: '+escapeHtml(formatDate(due))+'</span>';
   if(reminderCount!==undefined)meta+='<span class="meta">Reminders: '+escapeHtml(reminderCount)+'</span>';
 
+  var vHref=visitHref(r);
+
   return (
     '<div class="action-card" id="card-'+r.id+'">'+
       '<div class="action-top">'+
@@ -172,6 +233,7 @@ function renderActionCard(r, account){
       reminderStrip(f)+
       '<div class="action-text">'+escapeHtml(action)+'</div>'+
       '<div class="meta-row">'+meta+'</div>'+
+      (vHref?'<a class="view-visit-link" href="'+escapeHtml(vHref)+'"><i data-lucide="file-text"></i> View Visit</a>':'')+
       '<button class="complete-btn" onclick="completeAction(\''+r.id+'\')" id="btn-'+r.id+'">'+
         '<i data-lucide="check"></i> Complete'+
       '</button>'+
