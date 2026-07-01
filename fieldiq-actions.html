@@ -195,6 +195,29 @@ var calReturn=null;
   }
 })();
 
+// ── TEMPORARY DIAGNOSTIC — REMOVE AFTER USE ──────────────────────────────
+// Shows the raw incoming URL params, the resulting calReturn state, and the
+// final homeBtn href/text directly on the page — no DevTools needed.
+// Runs after the origin-aware IIFE above has already finished, so it
+// reflects whatever that logic actually decided. Does not alter it.
+(function(){
+  var params=new URLSearchParams(window.location.search);
+  var hb=document.getElementById('homeBtn');
+  var dbg=document.createElement('div');
+  dbg.style.cssText='position:fixed;top:0;left:0;right:0;background:#ffe600;color:#000;font:11px/1.6 monospace;padding:8px 10px;z-index:99999;word-break:break-all;border-bottom:3px solid #c0392b';
+  dbg.innerHTML=
+    'DEBUG(actions) — source='+JSON.stringify(params.get('source'))+
+    ' | calYear='+JSON.stringify(params.get('calYear'))+
+    ' | calMonth='+JSON.stringify(params.get('calMonth'))+
+    ' | calDay='+JSON.stringify(params.get('calDay'))+
+    ' | from='+JSON.stringify(params.get('from'))+
+    '<br>calReturn='+JSON.stringify(calReturn)+
+    '<br>homeBtn.href='+JSON.stringify(hb?hb.getAttribute('href'):null)+
+    ' | homeBtn.textContent='+JSON.stringify(hb?hb.textContent:null);
+  document.body.insertBefore(dbg,document.body.firstChild);
+})();
+// ── END TEMPORARY DIAGNOSTIC ──────────────────────────────────────────────
+
 function escapeHtml(str){
   return String(str||'').replace(/[&<>"']/g,function(m){
     return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
