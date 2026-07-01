@@ -47,6 +47,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .account-card.expanded .action-list{display:block}
 .action-row{padding:12px;background:#f8fbff;border:1px solid #e3ebf5;border-radius:14px;margin-bottom:10px}
 .action-row:last-child{margin-bottom:0}
+.action-row.highlighted{border-color:#2f8fff;box-shadow:0 0 0 3px rgba(47,143,255,0.18);background:#f0f7ff}
 .action-text{font-size:14px;color:#263b59;line-height:1.55;font-weight:750;white-space:pre-wrap}
 .meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .meta{font-size:10.5px;font-weight:900;padding:5px 9px;border-radius:8px;background:#fff;color:#7a8aa3;border:1px solid #e3ebf5}
@@ -151,15 +152,45 @@ if(currentUserRole!=='Manager'){
   throw new Error('Managers only');
 }
 
-// FIX: if Operations sent us here with ?from=operations, point Home back at
-// Operations instead of the Manager Portal. No other navigation changed.
+// ── Origin-aware Home button + deep-link target ──────────────────────────────
+// Two distinct signals are read from the URL:
+//  - source=manager-calendar: we were sent here from a specific calendar
+//    action. Takes priority for the Home button ("Back to Calendar") and
+//    carries enough calendar state (calYear/calMonth/calDay/calRep, plus a
+//    forwarded from=operations if present) to rebuild that exact calendar
+//    view on the way back.
+//  - from=operations (no source param): the pre-existing direct
+//    Operations → Actions path (e.g. the Rep Activity feed). Unchanged.
+var targetActionId=null;
+var calReturn=null;
 (function(){
   var params=new URLSearchParams(window.location.search);
-  if(params.get('from')==='operations'){
+  targetActionId=params.get('actionId')||null;
+
+  if(params.get('source')==='manager-calendar'){
+    calReturn={
+      calYear:params.get('calYear'),
+      calMonth:params.get('calMonth'),
+      calDay:params.get('calDay'),
+      calRep:params.get('calRep'),
+      from:params.get('from')
+    };
     var btn=document.getElementById('homeBtn');
     if(btn){
-      btn.href='./fieldiq-operations.html';
-      btn.textContent='← Back to Operations';
+      var q=[];
+      if(calReturn.calYear)q.push('calYear='+encodeURIComponent(calReturn.calYear));
+      if(calReturn.calMonth!==null&&calReturn.calMonth!=='')q.push('calMonth='+encodeURIComponent(calReturn.calMonth));
+      if(calReturn.calDay)q.push('calDay='+encodeURIComponent(calReturn.calDay));
+      if(calReturn.calRep)q.push('calRep='+encodeURIComponent(calReturn.calRep));
+      if(calReturn.from)q.push('from='+encodeURIComponent(calReturn.from));
+      btn.href='./fieldiq-manager-calendar.html'+(q.length?'?'+q.join('&'):'');
+      btn.textContent='← Back to Calendar';
+    }
+  }else if(params.get('from')==='operations'){
+    var btn2=document.getElementById('homeBtn');
+    if(btn2){
+      btn2.href='./fieldiq-operations.html';
+      btn2.textContent='← Back to Operations';
     }
   }
 })();
@@ -521,7 +552,7 @@ function render(){
       var lock=reminderLockText(r);
       var complete=isCompleted(x);
 
-      html+='<div class="action-row">';
+      html+='<div class="action-row" id="action-'+r.id+'">';
       html+='<div class="action-text">'+escapeHtml(getActionText(x))+'</div>';
       html+='<div class="meta-row">';
       html+='<span class="meta">Rep: '+escapeHtml(getAssignedRepName(x))+'</span>';
@@ -557,6 +588,26 @@ function toggleExpandKey(sk){
   if(!key)return;
   expanded[key]=!expanded[key];
   render();
+}
+
+// Expands the account/rep group containing a specific action, scrolls it
+// into view, and briefly highlights it. Used only for the incoming
+// ?actionId= deep link from Manager Calendar — does not alter completion
+// logic, counts, reminders, or filters.
+function focusOnAction(actionId){
+  var rec=allActions.find(function(r){return r.id===actionId;});
+  if(!rec)return;
+  var f=rec.fields||{};
+  var key=getAccountName(f)+'||'+getAssignedRepName(f);
+  expanded[key]=true;
+  render();
+  setTimeout(function(){
+    var el=document.getElementById('action-'+actionId);
+    if(!el)return;
+    el.classList.add('highlighted');
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    setTimeout(function(){el.classList.remove('highlighted');},4000);
+  },50);
 }
 
 async function sendReminder(actionId){
@@ -651,7 +702,9 @@ document.addEventListener('DOMContentLoaded',function(){
 
   bindStaticEvents();
   if(window.lucide)lucide.createIcons();
-  loadActions(pendingScroll);
+  loadActions(pendingScroll).then(function(){
+    if(pendingScroll===null&&targetActionId)focusOnAction(targetActionId);
+  });
 });
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
