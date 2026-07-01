@@ -478,6 +478,26 @@ function nextDue(group){
   return dates[0]||'';
 }
 
+// Builds the URL Manager Actions should be returned to after View Visit,
+// preserving whatever navigation context this page itself arrived with
+// (Calendar origin + calendar state, or a direct Operations origin) so the
+// breadcrumb chain survives the round trip through Visit History.
+function buildReturnHref(actionId){
+  var q=['actionId='+encodeURIComponent(actionId)];
+  if(calReturn){
+    q.push('source=manager-calendar');
+    if(calReturn.calYear)q.push('calYear='+encodeURIComponent(calReturn.calYear));
+    if(calReturn.calMonth!==null&&calReturn.calMonth!=='')q.push('calMonth='+encodeURIComponent(calReturn.calMonth));
+    if(calReturn.calDay)q.push('calDay='+encodeURIComponent(calReturn.calDay));
+    if(calReturn.calRep)q.push('calRep='+encodeURIComponent(calReturn.calRep));
+    if(calReturn.from)q.push('from='+encodeURIComponent(calReturn.from));
+  }else{
+    var params=new URLSearchParams(window.location.search);
+    if(params.get('from')==='operations')q.push('from=operations');
+  }
+  return './fieldiq-actions.html?'+q.join('&');
+}
+
 function visitHref(action){
   var f=action.fields||{};
   var visitId=getVisitId(f);
@@ -487,7 +507,7 @@ function visitHref(action){
   if(visitId)q.push('visitId='+encodeURIComponent(visitId));
   if(action.id)q.push('actionId='+encodeURIComponent(action.id));
   if(account)q.push('account='+encodeURIComponent(account));
-  q.push('returnTo='+encodeURIComponent('./fieldiq-actions.html'));
+  q.push('returnTo='+encodeURIComponent(buildReturnHref(action.id)));
   q.push('source='+encodeURIComponent('manager-actions'));
   return url+(q.length?'?'+q.join('&'):'');
 }
