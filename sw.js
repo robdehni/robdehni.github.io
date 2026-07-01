@@ -1,18 +1,20 @@
-// FieldIQ Service Worker — v1.0
-// Caches static HTML shell only.
-// NEVER caches Cloudflare Worker API calls or Airtable data.
+// FieldIQ Service Worker — v1.1
+// Safe shell cache only.
+// API/CDN/map/data requests are never intercepted.
 
-var CACHE = 'fieldiq-shell-v2';
+var CACHE = 'fieldiq-shell-v3';
 
 var SHELL = [
   '/index.html',
   '/fieldiq.html',
+  '/dashboard.html',
   '/fieldiq-log-visit.html',
   '/fieldiq-visit-history.html',
   '/fieldiq-open-actions.html',
   '/fieldiq-calendar.html',
   '/fieldiq-actions.html',
-  '/dashboard.html',
+  '/fieldiq-operations.html',
+  '/fieldiq-manager-calendar.html',
   '/fieldiq-visits-map.html',
   '/fieldiq-accounts.html',
   '/fieldiq-insights.html',
@@ -23,7 +25,6 @@ var SHELL = [
   '/icon-180.png'
 ];
 
-// Never cache these origins — always network only
 var NETWORK_ONLY = [
   'fieldiq-proxy.rdehni1979.workers.dev',
   'api.airtable.com',
@@ -31,13 +32,13 @@ var NETWORK_ONLY = [
   'api.anthropic.com',
   'unpkg.com',
   'cdnjs.cloudflare.com',
+  'tile.openstreetmap.org',
   'openstreetmap.org'
 ];
 
 self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE).then(function(cache) {
-      // Cache each file individually — failure of one does not block install
       return Promise.allSettled(
         SHELL.map(function(url) {
           return cache.add(url).catch(function() {});
@@ -53,8 +54,13 @@ self.addEventListener('activate', function(e) {
   e.waitUntil(
     caches.keys().then(function(keys) {
       return Promise.all(
-        keys.filter(function(k) { return k !== CACHE; })
-            .map(function(k) { return caches.delete(k); })
+        keys
+          .filter(function(key) {
+            return key !== CACHE;
+          })
+          .map(function(key) {
+            return caches.delete(key);
+          })
       );
     }).then(function() {
       return self.clients.claim();
@@ -63,32 +69,52 @@ self.addEventListener('activate', function(e) {
 });
 
 self.addEventListener('fetch', function(e) {
+
+  if (e.request.method !== 'GET') return;
+
   var url = e.request.url;
 
-  // Always network: API calls, CDN scripts, tiles — never cache
   for (var i = 0; i < NETWORK_ONLY.length; i++) {
     if (url.indexOf(NETWORK_ONLY[i]) !== -1) {
-      return; // let browser handle normally
+      return;
     }
   }
 
-  // Only handle GET requests
-  if (e.request.method !== 'GET') return;
+  var requestUrl = new URL(url);
 
-  // Network-first for everything else (HTML pages, manifest, icons)
+  if (requestUrl.origin !== self.location.origin) {
+    return;
+  }
+
+  var isNavigation =
+    e.request.mode === 'navigate' ||
+    requestUrl.pathname === '/' ||
+    requestUrl.pathname.endsWith('.html');
+
+  if (!isNavigation) {
+    return;
+  }
+
   e.respondWith(
-    fetch(e.request).then(function(networkRes) {
-      // Network succeeded — update cache silently
-      if (networkRes && networkRes.status === 200) {
-        var clone = networkRes.clone();
-        caches.open(CACHE).then(function(cache) {
-          cache.put(e.request, clone);
+    caches.match(e.request).then(function(cached) {
+
+      var networkUpdate = fetch(e.request)
+        .then(function(networkRes) {
+
+          if (networkRes && networkRes.status === 200) {
+            caches.open(CACHE).then(function(cache) {
+              cache.put(e.request, networkRes.clone());
+            });
+          }
+
+          return networkRes;
+        })
+        .catch(function() {
+          return null;
         });
-      }
-      return networkRes;
-    }).catch(function() {
-      // Network failed — serve from cache if available
-      return caches.match(e.request);
+
+      return cached || networkUpdate;
     })
   );
+
 });
