@@ -210,10 +210,6 @@ var notListedCheck=document.getElementById('notListedCheck');var newAccountField
 notListedCheck.addEventListener('change',function(){if(this.checked){newAccountFields.classList.add('visible');hospitalInput.value='';selectedAccountId=null;hospitalList.classList.remove('open');hospitalInput.style.display='none';}else{newAccountFields.classList.remove('visible');hospitalInput.style.display='';}updateMicAvailability();});
 
 territorySelect.addEventListener('change',function(){
-  // Preserve a Calendar-prefilled account when the rep re-selects (or the
-  // page re-applies) the SAME territory that account already belongs to.
-  // Only clear the account if the rep genuinely switches to a different
-  // territory, where the previously selected account would no longer apply.
   var keepPrefilledAccount = selectedAccountId && prefillAccountTerritory && this.value===prefillAccountTerritory;
   if(!keepPrefilledAccount){
     selectedAccountId=null;hospitalInput.value='';notListedCheck.checked=false;newAccountFields.classList.remove('visible');hospitalInput.style.display='';hospitalList.classList.remove('open');
@@ -367,19 +363,16 @@ async function uploadPendingPhotos(tempId) {
   for (var i = 0; i < pendingPhotos.length; i++) {
     try {
       var blob = pendingPhotos[i].blob;
-      if (!blob) continue; // guard against null blob from failed compression
+      if (!blob) continue;
       var fd = new FormData();
       fd.append('photo', blob, 'photo.jpg');
       fd.append('visitId', String(tempId));
-      // No AbortController — let the browser manage the connection timeout.
-      // Forcing an abort on mobile caused "signal is aborted without reason" errors.
       var res = await fetch(WORKER + '/upload-photo', { method: 'POST', body: fd });
       var data = await res.json();
       if (res.ok && data.url) {
         console.log('[FieldIQ Photo] Uploaded OK:', data.url);
         urls.push(data.url);
       } else {
-        // Surface the Worker error so the user and developer can see it
         var errMsg = (data && data.error) ? data.error : ('HTTP ' + res.status);
         console.warn('[FieldIQ Photo] Upload failed:', res.status, JSON.stringify(data));
         alert('Photo ' + (i + 1) + ' failed to upload:\n' + errMsg + '\n\nThe visit will still save without this photo.');
@@ -410,32 +403,15 @@ document.getElementById('photoGalleryInput').addEventListener('change', function
 
 document.getElementById('clearBtn').addEventListener('click',function(){
   isRecording=false;transcriptText.value='';audioPlayer.style.display='none';audioPlayer.src='';successCard.style.display='none';processingOverlay.style.display='none';statusEl.textContent='Tap mic to start recording';statusEl.className='status';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';micBtn.className='mic-btn';micBtn.innerHTML='<i data-lucide="mic"></i>';lucide.createIcons({el:micBtn});document.getElementById('recordingIndicator').className='recording-indicator';clearInterval(timerInterval);seconds=0;document.getElementById('recordingTimer').textContent='0:00';if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});streamRef=null;mediaRecorder=null;document.getElementById('editNotice').className='edit-notice';notListedCheck.checked=false;newAccountFields.classList.remove('visible');hospitalInput.style.display='';document.getElementById('newAccountName').value='';document.getElementById('newAccountCity').value='';document.getElementById('newContactName').value='';document.getElementById('newContactRole').value='';document.getElementById('newContactPhone').value='';document.getElementById('newContactEmail').value='';selectedAccountId=null;hospitalInput.value='';territorySelect.value='';accountBlock.style.opacity='0.5';accountBlock.style.pointerEvents='none';hospitalInput.disabled=true;notListedCheck.disabled=true;hospitalInput.placeholder='Select a territory first';duplicateWarningEl.style.display='none';
-  // Reset photos
   pendingPhotos.forEach(function(p){URL.revokeObjectURL(p.previewUrl);});
   pendingPhotos=[];renderPhotoPreviews();
   document.getElementById('photoUploading').style.display='none';
   updateMicAvailability();
 });
 
-// ── Calendar "Log Update" entry point ──────────────────────────────────────
-// Reads ?account= and ?visitType= from the URL (set by fieldiq-calendar.html's
-// "Log Update" link) and pre-selects the matching account + visit type.
-// Matches by name against the already-loaded ACCOUNTS list — no new data source.
-// Every interaction is simply another Visit — there is no rep-facing
-// "Follow-up" concept. When arriving from Calendar or Open Actions, the
-// account is pre-filled and an originating-item reference (sourceRef) is
-// carried silently in memory so the AI context step below can retrieve the
-// correct prior interaction. The rep never sees this reference and Visit
-// Type is never altered — it always shows only In-person / Virtual / Phone.
 var prefillSourceRef='';
-var prefillAccountTerritory='';  // territory of the account pre-filled from Calendar, if any
+var prefillAccountTerritory='';
 
-// ── Home button: Calendar-aware return ───────────────────────────────────
-// If this page was opened from Calendar's "Log Update" link (identified by
-// the presence of ?account= in the URL — the same signal already used for
-// account prefill), the Home button returns to Calendar instead of Home,
-// restoring the same month/day if those were carried in the URL too.
-// If opened normally (no account param), Home behaves exactly as before.
 (function(){
   try{
     var params=new URLSearchParams(window.location.search);
@@ -477,9 +453,6 @@ function applyPrefillFromURL(){
         }
       }
     }
-    // Re-run the same validation that fires on manual selection — without
-    // this, selectedAccountId is set internally but the mic stays disabled
-    // because getMissingFields() was last evaluated before the prefill ran.
     updateMicAvailability();
   }catch(e){}
 }
@@ -506,12 +479,6 @@ submitBtn.addEventListener('click',async function(){
   var latitude=null,longitude=null,accuracy=null;
   await new Promise(function(resolve){if(!navigator.geolocation){resolve();return;}navigator.geolocation.getCurrentPosition(function(pos){latitude=pos.coords.latitude;longitude=pos.coords.longitude;accuracy=Math.round(pos.coords.accuracy);resolve();},function(){resolve();},{timeout:12000,enableHighAccuracy:true,maximumAge:0});});
   try{
-    // ── Account-history context injection ──────────────────────────────────
-    // Every interaction is simply another Visit. If this account has a prior
-    // visit on record, fetch it so Claude can reason about what changed
-    // rather than transcribing in isolation. This applies to every visit
-    // against an existing account, not a rep-selected category — uses the
-    // existing /get-visits endpoint, no Worker change, filtered client-side.
     var priorContext='';
     var accountIdForContext=isNewAccount?null:selectedAccountId;
     if(accountIdForContext){
@@ -524,10 +491,6 @@ submitBtn.addEventListener('click',async function(){
         }).sort(function(a,b){
           return String(b.fields['Visit Date']||'').localeCompare(String(a.fields['Visit Date']||''));
         });
-        // If arriving via Calendar/Open Actions with a specific originating
-        // record, prefer that exact visit for context over a "most recent"
-        // guess. Falls back to most-recent if no sourceRef or no match —
-        // sourceRef is never sent to the Worker, it is used here only.
         if(prefillSourceRef){
           var referenced=priorVisits.find(function(v){return v.id===prefillSourceRef;});
           if(referenced){priorVisits=[referenced].concat(priorVisits.filter(function(v){return v.id!==referenced.id;}));}
@@ -536,7 +499,7 @@ submitBtn.addEventListener('click',async function(){
           var prior=priorVisits[0].fields;
           priorContext='\n\nCONTEXT FROM PREVIOUS VISIT (for reference only — do not repeat, only reason about what has changed):\nPrevious visit date: '+(prior['Visit Date']||'unknown')+'\nPrevious summary: '+(prior['AI Summary']||'')+'\nPrevious next steps: '+(prior['Action Items']||'')+'\n';
         }
-      }catch(e){/* non-fatal — proceed without prior context */}
+      }catch(e){}
     }
     var promptInstructions='You are an executive leadership panel reviewing a field interaction report — not a sales report, a field intelligence report. FieldIQ is a Field Intelligence Platform used across many industries and many field-based roles: Sales Representatives, Trainers, Product Specialists, Technical Engineers, Customer Success Managers, Service Engineers, Consultants, Project Managers, Territory Managers, and other field-based roles not yet named. Do not assume a sales role or a specific industry — read the transcript first and let it tell you who was speaking and what kind of interaction this was. The transcript below may be in English, Arabic, mixed Arabic-English, or a regional dialect. Understand the full meaning regardless of language or dialect used.\n\nAnalyse the conversation through every relevant business lens, including but not limited to: Sales and Commercial, Customer Success, Training and Education, Technical Support, Operations, Logistics and Supply Chain, Marketing, Finance, Procurement, Legal, Regulatory and Compliance, Service, Project Delivery, Territory Management, Executive Risk, and Business Growth. You are detecting business signals, not keywords. Report only what is genuinely present in the transcript — do not force a lens onto a visit just because it is on this list, and do not pad the report with categories that have no real signal. A purely technical visit should produce a technical report. A purely training visit should produce a training report. If pricing, logistics, regulatory, finance, legal, or other concerns are mentioned even briefly inside an otherwise single-purpose visit, capture that signal too — never let the dominant theme of a visit cause a real but minor detail to be dropped.\n\nNever replace a specific request with a generic phrase. If the transcript mentions a quotation, list price, price, proposal, demo, sample, registration, delivery date, stock or capacity issue, contract, purchase order, discount, training, technical specification, or any other concrete deliverable, name that exact item clearly. For example, if training was requested, write "Arrange training," not "Follow up." If samples were requested, write "Send samples," not "Provide information." Never substitute a specific, concrete request with a vague phrase like "follow up" or "provide information."\n\nReport evidence, not inference. Never infer customer intent, buying intent, procurement intent, urgency, decision readiness, budget, authority, or any other business conclusion unless it was explicitly stated or is directly supported by the transcript. Prefer factual wording over interpretive wording — for example, write "Customer requested a quotation, list price, and samples," not "Customer is showing strong buying intent." When uncertain whether something was implied, report only the fact that was actually said rather than the conclusion you might draw from it. This applies across the entire report, regardless of whether the visit is sales, training, technical, service, operations, regulatory, legal, finance, logistics, marketing, or any other field role.\n\nStructure the intelligence into a concise English report with these exact sections:\n\nVISIT SUMMARY\nKEY CONTACTS MET\nOUTCOMES & DECISIONS\nNEXT STEPS\nOPPORTUNITY SIGNALS\nSENTIMENT\nPRIORITY LEVEL (respond with exactly one word: High, Medium, or Low)\nSUGGESTED NEXT DATE (respond with a specific date if the speaker clearly mentioned a new meeting date, otherwise respond with exactly: None)\n\nVISIT SUMMARY should open by naming the primary nature of the interaction in one phrase — for example a sales visit, a technical support call, a training session, or a service escalation — so a manager scanning the report instantly understands what kind of interaction this was, before reading the detail.\n\nNEXT STEPS must list only the actual agreed actions stated in the transcript, written as specific, named commitments — for example "Send quotation to [name/role]" and "Arrange training for [name/role]" as separate lines, never merged or softened into "Follow up with customer." Do not invent actions that were not discussed. Do not exaggerate the outcome of the visit. Preserve the meaning exactly as the field user described it — if nothing concrete was agreed, say so plainly rather than manufacturing a next step.\n\nOUTCOMES & DECISIONS should capture whatever genuinely matters from this specific interaction — commercial, technical, training, operational, regulatory, financial, legal, or service-relevant — never restricted to only one business function.\n\nFor PRIORITY LEVEL, classify based on:\n- High: a concrete deliverable was requested (quotation, proposal, contract, technical evaluation, training), a decision maker committed to a next step, or a risk, complaint, competency gap, or escalation needs management attention before the next visit\n- Medium: a next step is needed, the interaction was constructive, a return visit was requested, or the relationship or capability is developing\n- Low: informational interaction, no concrete request or risk identified, long-term monitoring only\n\nOutput the report in professional English only.'+priorContext+'\n\nTranscript:\n'+transcript;
     var aiRes=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,messages:[{role:'user',content:promptInstructions}]})});
@@ -562,8 +525,6 @@ submitBtn.addEventListener('click',async function(){
       document.getElementById('processingText').textContent='Saving visit...';
     }
 
-    // Upload any pending photos before saving the visit.
-    // Non-fatal: if upload fails, the visit saves without photos.
     var photoUrls = [];
     if (pendingPhotos.length > 0) {
       document.getElementById('processingText').textContent = 'Uploading photos...';
@@ -578,7 +539,6 @@ submitBtn.addEventListener('click',async function(){
     var savePayload={'Hospital Name':hospitalName,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Rep Name':repName,'User ID':userId,'User Role':userRole,'Display Name':repName,'Raw Transcript':transcript,'AI Summary':result,'Outcome':getOutcome(parsed.sentiment),'Meeting Notes':parsed.summary,'Action Items':parsed.nextSteps,'Priority':priority,'Latitude':latitude,'Longitude':longitude,'Accuracy':accuracy,'New Account':isNewAccount,'Pending Review':isNewAccount};
     if(!isNewAccount&&selectedAccountId){savePayload['Account']=[selectedAccountId];}
     if(isNewAccount&&newAccountId){savePayload['Account']=[newAccountId];}
-    // Include photo evidence URLs in the visit payload before /save-visit.
     if (photoUrls.length > 0) {
       savePayload['Photo URLs'] = photoUrls.join('\n');
     }
@@ -603,9 +563,6 @@ submitBtn.addEventListener('click',async function(){
       console.warn('Open Actions save failed:',e);
     }
 
-    // Rep Activity notification — fire-and-forget. If this visit originated
-    // from an existing Open Action (Calendar's Log Update link), let the
-    // manager know progress occurred. Never blocks or fails the visit save.
     if(prefillSourceRef){
       try{
         fetch(WORKER+'/update-action',{
@@ -624,9 +581,6 @@ submitBtn.addEventListener('click',async function(){
     }
 
     processingOverlay.style.display='none';successCard.style.display='block';document.getElementById('reportContent').innerHTML=renderReport(result);
-    // If AI detected a possible new date, surface it as a suggestion only.
-    // No automatic write to the Calendar — the rep confirms manually using
-    // the existing Calendar reschedule control.
     var suggestedDateText=(parsed.suggestedDate||'').trim();
     if(suggestedDateText&&suggestedDateText.toLowerCase()!=='none'){
       var dateNoticeEl=document.createElement('div');
@@ -638,6 +592,6 @@ submitBtn.addEventListener('click',async function(){
 });
 document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
-<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){});}</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).catch(function(){});}</script>
 </body>
 </html>
