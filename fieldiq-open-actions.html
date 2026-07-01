@@ -152,6 +152,33 @@ function reminderStrip(f){
   return '<div class="reminder-strip '+cls+'">'+label+'</div>';
 }
 
+function renderActionCard(r, account){
+  var f=r.fields||{};
+  var action=f['Action Text']||'';
+  var source=f['Source']||'AI';
+  var due=f['Due Date']||'';
+  var reminderCount=f['Reminder Count'];
+  var meta='';
+  meta+='<span class="meta">Source: '+escapeHtml(source)+'</span>';
+  if(due)meta+='<span class="meta">Due: '+escapeHtml(formatDate(due))+'</span>';
+  if(reminderCount!==undefined)meta+='<span class="meta">Reminders: '+escapeHtml(reminderCount)+'</span>';
+
+  return (
+    '<div class="action-card" id="card-'+r.id+'">'+
+      '<div class="action-top">'+
+        '<div class="account-name">'+escapeHtml(account)+'</div>'+
+        '<div class="status-pill">Open</div>'+
+      '</div>'+
+      reminderStrip(f)+
+      '<div class="action-text">'+escapeHtml(action)+'</div>'+
+      '<div class="meta-row">'+meta+'</div>'+
+      '<button class="complete-btn" onclick="completeAction(\''+r.id+'\')" id="btn-'+r.id+'">'+
+        '<i data-lucide="check"></i> Complete'+
+      '</button>'+
+    '</div>'
+  );
+}
+
 function render(){
   var content=document.getElementById('content');
   document.getElementById('countPill').textContent=actions.length;
@@ -162,17 +189,43 @@ function render(){
     return;
   }
 
-  // Group by Account Name
+  // Manager-reminded actions must appear at the very top of the page,
+  // regardless of account grouping or alphabetical order — visibility comes
+  // from position, not a new heading or counter. No reminder-timestamp field
+  // is loaded by this page, so Due Date (ascending, undated last) is used as
+  // the tiebreaker — the same tiebreak already used for the normal sort below.
+  var remindedActions=actions.filter(function(r){
+    return Number((r.fields||{})['Reminder Count']||0)>0;
+  });
+  var normalActions=actions.filter(function(r){
+    return Number((r.fields||{})['Reminder Count']||0)===0;
+  });
+  remindedActions.sort(function(a,b){
+    var fa=a.fields||{},fb=b.fields||{};
+    var da=(fa['Due Date'])||'9999-99-99';
+    var db=(fb['Due Date'])||'9999-99-99';
+    return da.localeCompare(db);
+  });
+
+  var html='';
+  remindedActions.forEach(function(r){
+    var account=(r.fields||{})['Account Name']||'Unknown Account';
+    html+=renderActionCard(r,account);
+  });
+
+  // Group the remaining (non-reminded) actions by Account Name — identical
+  // to the existing behaviour.
   var groups={};
-  actions.forEach(function(r){
+  normalActions.forEach(function(r){
     var f=r.fields||{};
     var account=f['Account Name']||'Unknown Account';
     if(!groups[account])groups[account]=[];
     groups[account].push(r);
   });
 
-  // Sort each group: reminded actions (Reminder Count > 0) first, then normal.
-  // Within each tier, sort by Due Date ascending (undated actions go last).
+  // Sort each group: identical to existing logic. Reminded actions have
+  // already been pulled out above, so this tier check is now a no-op safety
+  // net rather than the primary mechanism — left in place unchanged.
   Object.keys(groups).forEach(function(account){
     groups[account].sort(function(a,b){
       var fa=a.fields||{},fb=b.fields||{};
@@ -190,35 +243,12 @@ function render(){
     return a.toLowerCase().localeCompare(b.toLowerCase());
   });
 
-  var html='';
   sortedAccounts.forEach(function(account){
     html+='<div class="account-group">';
     html+='<div class="account-group-label">'+escapeHtml(account)+'</div>';
 
     groups[account].forEach(function(r){
-      var f=r.fields||{};
-      var action=f['Action Text']||'';
-      var source=f['Source']||'AI';
-      var due=f['Due Date']||'';
-      var reminderCount=f['Reminder Count'];
-      var meta='';
-      meta+='<span class="meta">Source: '+escapeHtml(source)+'</span>';
-      if(due)meta+='<span class="meta">Due: '+escapeHtml(formatDate(due))+'</span>';
-      if(reminderCount!==undefined)meta+='<span class="meta">Reminders: '+escapeHtml(reminderCount)+'</span>';
-
-      html+=
-        '<div class="action-card" id="card-'+r.id+'">'+
-          '<div class="action-top">'+
-            '<div class="account-name">'+escapeHtml(account)+'</div>'+
-            '<div class="status-pill">Open</div>'+
-          '</div>'+
-          reminderStrip(f)+
-          '<div class="action-text">'+escapeHtml(action)+'</div>'+
-          '<div class="meta-row">'+meta+'</div>'+
-          '<button class="complete-btn" onclick="completeAction(\''+r.id+'\')" id="btn-'+r.id+'">'+
-            '<i data-lucide="check"></i> Complete'+
-          '</button>'+
-        '</div>';
+      html+=renderActionCard(r,account);
     });
 
     html+='</div>'; // end account-group
