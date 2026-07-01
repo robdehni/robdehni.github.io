@@ -439,7 +439,12 @@ async function loadHistory(){
       populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';  
       applyUrlParams();applyFilters();  
       if(targetVisitId){expandAndScrollToVisit(targetVisitId);}else{restoreReturnStateIfAny();}  
-    }else{document.getElementById('repSearchBox').style.display='block';renderVisits(allRecordsRaw);restoreReturnStateIfAny();}  
+    }else{  
+      document.getElementById('repSearchBox').style.display='block';  
+      targetVisitId=new URLSearchParams(window.location.search).get('visitId');  
+      renderVisits(allRecordsRaw);  
+      if(targetVisitId){expandAndScrollToVisit(targetVisitId);}else{restoreReturnStateIfAny();}  
+    }  
   }catch(err){document.getElementById('visitList').innerHTML='<div class="empty">Failed to load: '+err.message+'</div>';}  
 }  
   
