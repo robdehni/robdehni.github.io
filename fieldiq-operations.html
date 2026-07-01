@@ -271,6 +271,21 @@ function escapeHtml(str) {
   });
 }
 
+// Shared rep-name normalizer. Every place in this file that compares one
+// rep-name-bearing field against another (Rep Name vs Display Name, or
+// either against the activeRepNames list) must pass both sides through this
+// function first. Text matching on human-entered names is inherently
+// fragile — this does not eliminate that, it only makes the comparisons
+// internally consistent so the same rep's records don't silently diverge
+// depending on which field or table they were typed into.
+function normalizeRepName(value) {
+  var s = (value===null || value===undefined) ? '' : String(value);
+  s = s.replace(/\u00A0/g, ' ');                 // non-breaking space → regular space
+  s = s.replace(/[\u200B-\u200D\uFEFF]/g, '');    // zero-width chars → removed
+  s = s.replace(/\s+/g, ' ');                     // collapse repeated whitespace
+  return s.trim();
+}
+
 function normDate(d) { return (d||'').slice(0,10); }
 
 function formatDateISO(d) {
@@ -388,7 +403,7 @@ function buildIndices() {
   var seenLower = {};
   var orderedNames = [];
   function addRepName(n){
-    var trimmed = (n||'').trim();
+    var trimmed = normalizeRepName(n);
     if (!trimmed) return;
     var lower = trimmed.toLowerCase();
     if (EXCLUDED_REP_NAMES.indexOf(lower) !== -1) return;
@@ -410,9 +425,10 @@ function buildIndices() {
 // ── Signal computation ────────────────────────────────────────────────────────
 function getRepActionsById(repName) {
   // Find the user record ID matching this rep name, then get their actions
+  var target = normalizeRepName(repName);
   var repRecId = null;
   allUsers.forEach(function(u){
-    if ((u.fields['Display Name']||'')=== repName) repRecId = u.id;
+    if (normalizeRepName(u.fields['Display Name']||'') === target) repRecId = u.id;
   });
   if (!repRecId) return [];
   return actionsByRepId[repRecId]||[];
@@ -421,7 +437,7 @@ function getRepActionsById(repName) {
 function getSignals(visit) {
   var f = visit.fields;
   var accKey = (f['Hospital Name']||'').trim().toLowerCase();
-  var repName = f['Rep Name']||'';
+  var repName = normalizeRepName(f['Rep Name']);
   var dateStr = formatDateISO(selectedDate);
 
   // Last visit to this account BEFORE selected date
@@ -439,7 +455,7 @@ function getSignals(visit) {
 
   // Is this a new relationship for this rep?
   var isNew = !accVisits.some(function(v){
-    return (v.fields['Rep Name']||'')===repName && normDate(v.fields['Visit Date'])<dateStr;
+    return normalizeRepName(v.fields['Rep Name'])===repName && normDate(v.fields['Visit Date'])<dateStr;
   });
 
   var alertLevel = 0;
@@ -469,7 +485,7 @@ function computeDayStats(dateStr) {
   var repsSeen = new Set();
   var alerts = 0;
   visits.forEach(function(v){
-    repsSeen.add(v.fields['Rep Name']||'unknown');
+    repsSeen.add(normalizeRepName(v.fields['Rep Name']) || 'unknown');
     var s = getSignalsForDate(v, dateStr);
     if (s.alertLevel>=2) alerts++;
   });
@@ -488,7 +504,7 @@ function getSignalsForDate(visit, dateStr) {
   var accKey = (f['Hospital Name']||'').trim().toLowerCase();
   var accVisits = visitsByAccount[accKey]||[];
   var lastVisit = accVisits.find(function(v){ return normDate(v.fields['Visit Date'])<dateStr; });
-  var repName = f['Rep Name']||'';
+  var repName = normalizeRepName(f['Rep Name']);
   var repActions = getRepActionsById(repName);
   var overdueCount = repActions.filter(function(a){
     var due = normDate(a.fields['Due Date']);
@@ -622,7 +638,7 @@ function renderMain() {
     var byRep = {};
     var repOrder = [];
     visits.forEach(function(v){
-      var rep = v.fields['Rep Name']||'Unknown';
+      var rep = normalizeRepName(v.fields['Rep Name']) || 'Unknown';
       if (!byRep[rep]){ byRep[rep]=[]; repOrder.push(rep); }
       byRep[rep].push(v);
     });
@@ -636,7 +652,7 @@ function renderMain() {
   }
 
   // ── Reps with no visits ──
-  var repsSeen = new Set(visits.map(function(v){return v.fields['Rep Name']||'';}));
+  var repsSeen = new Set(visits.map(function(v){return normalizeRepName(v.fields['Rep Name']);}));
   var repsGapped = activeRepNames.filter(function(r){ return !repsSeen.has(r) && r; });
 
   if (repsGapped.length>0){
@@ -645,7 +661,7 @@ function renderMain() {
     repsGapped.forEach(function(repName){
       // Find last visit date for context
       var lastVisitDate = '';
-      var allRepVisits = allVisits.filter(function(v){ return v.fields['Rep Name']===repName; });
+      var allRepVisits = allVisits.filter(function(v){ return normalizeRepName(v.fields['Rep Name'])===repName; });
       if (allRepVisits.length){
         var sorted = allRepVisits.filter(function(v){ return normDate(v.fields['Visit Date'])<=dateStr; })
           .sort(function(a,b){ return normDate(b.fields['Visit Date']).localeCompare(normDate(a.fields['Visit Date'])); });
@@ -859,7 +875,7 @@ function buildGapIntelligence(dateStr) {
 
   // 3. Reps with no visits today who have open actions
   if (actionsOk) {
-    var repsSeen = new Set((visitsByDate[dateStr]||[]).map(function(v){ return v.fields['Rep Name']||''; }));
+    var repsSeen = new Set((visitsByDate[dateStr]||[]).map(function(v){ return normalizeRepName(v.fields['Rep Name']); }));
     var repsIdleWithActions = [];
     activeRepNames.forEach(function(repName){
       if (repsSeen.has(repName)) return;
@@ -1046,7 +1062,7 @@ activeRepNames.forEach(function(rep){
     // actually matters: not whether they worked "today" specifically, but how
     // long it has been since they were last in the field.
     var repPastVisits = allVisits.filter(function(v){
-      return (v.fields['Rep Name']||'')===rep && normDate(v.fields['Visit Date'])<=todayDate;
+      return normalizeRepName(v.fields['Rep Name'])===rep && normDate(v.fields['Visit Date'])<=todayDate;
     }).sort(function(a,b){
       return normDate(b.fields['Visit Date']).localeCompare(normDate(a.fields['Visit Date']));
     });
@@ -1071,7 +1087,7 @@ activeRepNames.forEach(function(rep){
 
     // Planned-today count — visits dated today for this rep.
     var plannedToday = allVisits.filter(function(v){
-      return (v.fields['Rep Name']||'')===rep && normDate(v.fields['Visit Date'])===todayDate;
+      return normalizeRepName(v.fields['Rep Name'])===rep && normDate(v.fields['Visit Date'])===todayDate;
     }).length;
 
     // Open actions count — only shown if action data loaded successfully.
@@ -1115,7 +1131,7 @@ function buildAttentionRequired(todayDate) {
   // for nearly the whole team on a slow morning and isn't useful signal).
   activeRepNames.forEach(function(rep){
     var repPast = allVisits.filter(function(v){
-      return (v.fields['Rep Name']||'')===rep && normDate(v.fields['Visit Date'])<=todayDate;
+      return normalizeRepName(v.fields['Rep Name'])===rep && normDate(v.fields['Visit Date'])<=todayDate;
     }).sort(function(a,b){
       return normDate(b.fields['Visit Date']).localeCompare(normDate(a.fields['Visit Date']));
     });
