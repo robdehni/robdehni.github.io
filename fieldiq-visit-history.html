@@ -179,6 +179,19 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
   var source=params.get('source');
   var returnTo=params.get('returnTo');
   var homeBtn=document.getElementById('homeBtn');
+
+  // ── TEMPORARY DIAGNOSTIC — REMOVE AFTER USE ──────────────────────────────
+  // Shows the raw, actually-parsed source/returnTo values directly on the
+  // page so this can be confirmed by screenshot with no DevTools needed.
+  // Does not affect navigation logic below in any way.
+  (function(){
+    var dbg=document.createElement('div');
+    dbg.style.cssText='position:fixed;top:0;left:0;right:0;background:#ffe600;color:#000;font:12px/1.5 monospace;padding:8px 10px;z-index:99999;word-break:break-all;border-bottom:3px solid #c0392b';
+    dbg.textContent='DEBUG — source='+JSON.stringify(source)+'  |  returnTo='+JSON.stringify(returnTo);
+    document.body.insertBefore(dbg,document.body.firstChild);
+  })();
+  // ── END TEMPORARY DIAGNOSTIC ──────────────────────────────────────────────
+
   if(source==='manager-actions'||returnTo==='./fieldiq-actions.html'){
     homeBtn.href=returnTo||'./fieldiq-actions.html';
     homeBtn.textContent='← Back to Open Actions';
