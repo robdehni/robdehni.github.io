@@ -128,6 +128,13 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .activity-chevron [data-lucide]{width:16px;height:16px}
 .territory-chevron [data-lucide]{width:14px;height:14px}
 .toggle-arrow [data-lucide]{width:14px;height:14px}
+.back-to-top{
+  position:fixed;right:18px;bottom:24px;width:44px;height:44px;border-radius:50%;
+  background:#2f8fff;color:#fff;border:none;box-shadow:0 6px 16px rgba(47,143,255,0.35);
+  display:none;align-items:center;justify-content:center;cursor:pointer;z-index:500;
+  font-size:20px;font-weight:900;line-height:1;
+}
+.back-to-top.visible{display:flex}
 </style>
   <!-- PWA v1 -->
   <link rel="manifest" href="/manifest.json">
@@ -292,7 +299,7 @@ function toggleOA(id,btn){var el=document.getElementById(id);if(!el)return;var o
 function gotoTimeline(itemId){
   var body=document.getElementById('timeline-body');var toggle=document.getElementById('timeline-toggle');
   if(body&&!body.classList.contains('open')){if(toggle)toggleSection(toggle);}
-  setTimeout(function(){var el=document.getElementById(itemId);if(!el)return;el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('tl-highlight');setTimeout(function(){el.classList.remove('tl-highlight');},1700);var wrap=el.querySelector('.summary-wrap');if(wrap)wrap.classList.add('expanded');},150);
+  setTimeout(function(){var el=document.getElementById(itemId);if(!el)return;el.scrollIntoView({behavior:'smooth',block:'start'});el.classList.add('tl-highlight');setTimeout(function(){el.classList.remove('tl-highlight');},1700);var wrap=el.querySelector('.summary-wrap');if(wrap)wrap.classList.add('expanded');},150);
 }
 function renderAccountDetail(){
   var acc=ACCOUNTS.find(function(a){return a.id===currentDetailAccountId;});if(!acc)return;
@@ -347,5 +354,27 @@ if(role!=='Manager'){
 document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).catch(function(){});}</script>
+<script>
+// Back-to-top floating button — purely cosmetic, self-contained. Created
+// entirely via JS so no existing HTML/IDs/layout are touched. Appears only
+// after scrolling past 500px, scrolls smoothly to top on click. Does not
+// interact with navigation, business logic, or any data.
+(function(){
+  var btn=document.createElement('button');
+  btn.type='button';
+  btn.className='back-to-top';
+  btn.setAttribute('aria-label','Back to top');
+  btn.textContent='↑';
+  btn.addEventListener('click',function(){
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+  document.addEventListener('DOMContentLoaded',function(){
+    document.body.appendChild(btn);
+  });
+  window.addEventListener('scroll',function(){
+    btn.classList.toggle('visible',(window.scrollY||document.documentElement.scrollTop)>500);
+  },{passive:true});
+})();
+</script>
 </body>
 </html>
