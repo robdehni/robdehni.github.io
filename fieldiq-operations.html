@@ -334,18 +334,19 @@ function initials(name) {
 async function loadData() {
   var managerId = localStorage.getItem('fieldiq_user_id')||'';
   var [visRes, actRes, usrRes] = await Promise.all([
-    fetch(WORKER+'/get-visits'),
+    fetch(WORKER+'/get-visits')
+      .catch(function(){return {ok:false};}),
     fetch(WORKER+'/get-actions?role=Manager&status=Open&userId='+encodeURIComponent(managerId))
       .catch(function(){return {ok:false};}),
     fetch(WORKER+'/get-users')
+      .catch(function(){return {ok:false};})
   ]);
 
-  var [visData, usrData] = await Promise.all([
-    visRes.json(),
-    usrRes.json()
-  ]);
-
-  allVisits = (visData.records||[]);
+  allVisits = [];
+  if (visRes.ok) {
+    var visData = await visRes.json();
+    allVisits = (visData.records||[]);
+  }
 
   if (actRes.ok) {
     var actData = await actRes.json();
@@ -353,9 +354,13 @@ async function loadData() {
     actionsOk = true;
   }
 
-  allUsers = (usrData.records||[]).filter(function(u){
-    return u.fields['Active?']!==false;
-  });
+  allUsers = [];
+  if (usrRes.ok) {
+    var usrData = await usrRes.json();
+    allUsers = (usrData.records||[]).filter(function(u){
+      return u.fields['Active?']!==false;
+    });
+  }
 
   buildIndices();
   render();
