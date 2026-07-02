@@ -251,7 +251,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 var role = localStorage.getItem('fieldiq_user_role');
 var isManager = (role === 'Manager');
 var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
-var allRecords=[];
+var allRecordsRawLoaded=false;
 function getSentiment(s){if(!s)return'unknown';s=s.toLowerCase();var i=s.indexOf('sentiment');if(i>-1){var t=s.substring(i,i+120);if(t.indexOf('positive')>-1)return'positive';if(t.indexOf('negative')>-1)return'negative';if(t.indexOf('neutral')>-1)return'neutral';}if(s.indexOf('positive')>-1)return'positive';if(s.indexOf('negative')>-1)return'negative';if(s.indexOf('neutral')>-1)return'neutral';return'unknown';}
 function getBadgeClass(s){if(s==='positive')return'badge-positive';if(s==='neutral')return'badge-neutral';if(s==='negative')return'badge-negative';return'badge-unknown';}
 function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
@@ -275,7 +275,7 @@ async function updatePriority(recordId,newPriority,cardEl){
   var btns=cardEl.querySelectorAll('.pbtn');btns.forEach(function(b){b.disabled=true;});
   try{
     var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:recordId,priority:newPriority})});
-    if(res.ok){var rec=allRecords.find(function(r){return r.id===recordId;});if(rec)rec.fields['Priority']=newPriority;applyFilters();}
+    if(res.ok){var rec=allRecordsRaw.find(function(r){return r.id===recordId;});if(rec)rec.fields['Priority']=newPriority;applyFilters();}
     else{btns.forEach(function(b){b.disabled=false;});alert('Failed to update priority. Please try again.');}
   }catch(err){btns.forEach(function(b){b.disabled=false;});alert('Error: '+err.message);}
 }
@@ -341,88 +341,98 @@ function normalizeTerritory(raw){
   if(tu==='OMAN')return'Oman';
   return t;
 }
-function buildDashboard(records){
-  allRecords=records;
-  var today=new Date();today.setHours(0,0,0,0);
-  var weekRange=getPeriodRange('thisWeek');var monthRange=getPeriodRange('thisMonth');
-  var todayCount=0,weekCount=0,monthCount=0,newAccountsCount=0,reps={},territories={},sentCounts={positive:0,neutral:0,negative:0,unknown:0};
-  records.forEach(function(r){
-    var f=r.fields;var sent=getSentiment(f['AI Summary']||'');sentCounts[sent]=(sentCounts[sent]||0)+1;
-    var vDate=r._vDate;
-    if(vDate){if(vDate>=today)todayCount++;if(vDate>=weekRange.start)weekCount++;if(vDate>=monthRange.start)monthCount++;}
-    if((f["New Account"]===true||f["New Account"]==="true"||f["New Account"]===1||f["New Account"]==="1")&&isReviewed(f["Pending Review"]))newAccountsCount++;
-    var rep=f['Rep Name']||'Unknown';rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
-    if(!reps[rep])reps[rep]={count:0,lastVisit:null,sentiments:[]};
-    reps[rep].count++;reps[rep].sentiments.push(sent);
-    if(vDate&&(!reps[rep].lastVisit||vDate>reps[rep].lastVisit))reps[rep].lastVisit=vDate;
-    var terr=normalizeTerritory(f['Territory']);if(terr!=='Unknown')territories[terr]=(territories[terr]||0)+1;
-  });
-  document.getElementById('kpiTotal').textContent=records.length;
-  document.getElementById('kpiNewAccounts').textContent=newAccountsCount;
-  document.getElementById('kpiMonth').textContent=monthCount;
-  document.getElementById('kpiWeekSub').textContent=weekCount+' this week';
-  document.getElementById('kpiReps').textContent=Object.keys(reps).length;
+// Fetches /get-dashboard with the given filter values (all optional).
+// No caching — every call is a genuine, fresh server-side aggregation, so
+// Mark Reviewed / priority changes are always reflected on next fetch.
+async function fetchDashboardAggregate(filters){
+  var q=[];
+  if(filters&&filters.rep)q.push('rep='+encodeURIComponent(filters.rep));
+  if(filters&&filters.territory)q.push('territory='+encodeURIComponent(filters.territory));
+  if(filters&&filters.priority)q.push('priority='+encodeURIComponent(filters.priority));
+  if(filters&&filters.period)q.push('period='+encodeURIComponent(filters.period));
+  var url=WORKER_URL+'/get-dashboard'+(q.length?'?'+q.join('&'):'');
+  var res=await fetch(url);
+  var agg=await res.json();
+  if(!res.ok)throw new Error(JSON.stringify(agg));
+  return agg;
+}
+// Paints every dashboard widget from the pre-aggregated /get-dashboard
+// response. Replaces the old buildDashboard(records), which recomputed all
+// of this client-side from the full raw record set on every load.
+function renderDashboardSummary(agg){
+  document.getElementById('kpiTotal').textContent=agg.kpi.total;
+  document.getElementById('kpiNewAccounts').textContent=agg.kpi.newAccountsPending;
+  document.getElementById('kpiMonth').textContent=agg.kpi.month;
+  document.getElementById('kpiWeekSub').textContent=agg.kpi.week+' this week';
+  document.getElementById('kpiReps').textContent=agg.kpi.repCount;
+  var sentCounts=agg.sentiment;
   var ws=sentCounts.positive+sentCounts.neutral+sentCounts.negative;
   function pct(n){return ws>0?Math.round(n/ws*100)+'%':'0%';}
   document.getElementById('sentPositive').textContent=pct(sentCounts.positive);
   document.getElementById('sentNeutral').textContent=pct(sentCounts.neutral);
   document.getElementById('sentNegative').textContent=pct(sentCounts.negative);
   var repRows='';
-  Object.keys(reps).sort(function(a,b){return reps[b].count-reps[a].count;}).forEach(function(rep){
-    var r=reps[rep];var ds=r.sentiments.reduce(function(a,s){a[s]=(a[s]||0)+1;return a;},{});var ts=Object.keys(ds).sort(function(a,b){return ds[b]-ds[a];})[0]||'unknown';
-    var ld=r.lastVisit?r.lastVisit.toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'—';
-    repRows+='<tr><td><a href="'+buildVisitHistoryLink({rep:rep})+'" style="color:#0b1f3a;font-weight:700;text-decoration:none">'+rep+' →</a></td><td style="color:#2f8fff;font-weight:800">'+r.count+'</td><td>'+ld+'</td><td><span class="activity-badge '+getBadgeClass(ts)+'">'+ts+'</span></td></tr>';
+  agg.reps.forEach(function(r){
+    var ld=r.lastVisit?new Date(r.lastVisit).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'—';
+    repRows+='<tr><td><a href="'+buildVisitHistoryLink({rep:r.name})+'" style="color:#0b1f3a;font-weight:700;text-decoration:none">'+r.name+' →</a></td><td style="color:#2f8fff;font-weight:800">'+r.count+'</td><td>'+ld+'</td><td><span class="activity-badge '+getBadgeClass(r.sentiment)+'">'+r.sentiment+'</span></td></tr>';
   });
   document.getElementById('repTable').innerHTML=repRows||'<tr><td colspan="4" class="empty">No rep data yet</td></tr>';
-  var maxT=Math.max.apply(null,Object.values(territories).concat([1]));var terrHtml='';
-  Object.keys(territories).sort(function(a,b){return territories[b]-territories[a];}).forEach(function(t){
-    var pw=Math.round(territories[t]/maxT*100);
-    terrHtml+='<a href="'+buildVisitHistoryLink({territory:t})+'" style="text-decoration:none;color:inherit;display:block"><div class="territory-item"><div class="territory-header"><span class="territory-name">'+t+'</span><span class="territory-count">'+territories[t]+' visits</span></div><div class="territory-bar-bg"><div class="territory-bar-fill" style="width:'+pw+'%"></div></div></div></a>';
+  var maxT=Math.max.apply(null,agg.territories.map(function(t){return t.count;}).concat([1]));var terrHtml='';
+  agg.territories.forEach(function(t){
+    var pw=Math.round(t.count/maxT*100);
+    terrHtml+='<a href="'+buildVisitHistoryLink({territory:t.name})+'" style="text-decoration:none;color:inherit;display:block"><div class="territory-item"><div class="territory-header"><span class="territory-name">'+t.name+'</span><span class="territory-count">'+t.count+' visits</span></div><div class="territory-bar-bg"><div class="territory-bar-fill" style="width:'+pw+'%"></div></div></div></a>';
   });
   document.getElementById('territoryBars').innerHTML=terrHtml||'<div class="empty">No territory data yet</div>';
-  try{buildManagementRadar(records);}catch(radarErr){console.error('Management Radar failed to build:',radarErr);var radarEl=document.getElementById('managementRadar');if(radarEl)radarEl.innerHTML='<div class="empty">Management Radar unavailable right now</div>';}
+  var flatPriority=[].concat(agg.priorityReview.high,agg.priorityReview.medium,agg.priorityReview.low);
+  renderPrioritySection(flatPriority);
+  buildNewAccountsCard(agg.newAccountsFeed);
+  renderManagementRadar(agg.managementRadar);
   document.getElementById('loadingEl').style.display='none';
   document.getElementById('dashContent').style.display='block';
   document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
 }
-function buildManagementRadar(records){
-  var accounts={};
-  records.forEach(function(r){
-    var f=r.fields;var key=String(f['Hospital Name']||'Unknown').trim();
-    if(!accounts[key]){accounts[key]={name:key,territory:f['Territory']||'',visits:[],reps:{},lastVisit:null,lastVisitRecord:null};}
-    var acc=accounts[key];acc.visits.push(r);
-    if(!acc.territory&&f['Territory'])acc.territory=f['Territory'];
-    var rep=String(f['Rep Name']||'Unknown').trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
-    acc.reps[rep]=true;
-    var vDate=f['Visit Date']?new Date(f['Visit Date']):null;
-    if(vDate&&!isNaN(vDate)&&(!acc.lastVisit||vDate>acc.lastVisit)){acc.lastVisit=vDate;acc.lastVisitRecord=r;}
-  });
-  var flagged=[];
-  Object.keys(accounts).forEach(function(key){
-    var acc=accounts[key];var evidence=[];
-    var highPriorityUnreviewed=acc.visits.some(function(r){return r.fields['Priority']==='High'&&r.fields['Reviewed']!==true;});
-    var negativeUnreviewed=acc.visits.some(function(r){return r.fields['Outcome']==='Negative'&&r.fields['Reviewed']!==true;});
-    var positiveWithFollowUp=acc.visits.some(function(r){return r.fields['Outcome']==='Positive'&&r.fields['Action Items']&&String(r.fields['Action Items']).trim();});
-    var repCount=Object.keys(acc.reps).length;
-    if(highPriorityUnreviewed)evidence.push('High Priority visit not reviewed');
-    if(negativeUnreviewed)evidence.push('Negative outcome not reviewed');
-    if(positiveWithFollowUp)evidence.push('Open follow-up recorded');
-    if(repCount>=2)evidence.push('Visited by '+repCount+' different reps in the selected period');
-    if(evidence.length>0){flagged.push({name:acc.name,territory:acc.territory,evidence:evidence,lastVisit:acc.lastVisit,score:evidence.length,visitId:acc.lastVisitRecord?acc.lastVisitRecord.id:null});}
-  });
-  flagged.sort(function(a,b){if(b.score!==a.score)return b.score-a.score;var ad=a.lastVisit?a.lastVisit.getTime():0,bd=b.lastVisit?b.lastVisit.getTime():0;return bd-ad;});
+// Renders Management Radar from the pre-computed managementRadar array
+// already included in the /get-dashboard response — same account-flagging
+// logic as before, just computed server-side now instead of requiring a
+// separate full-table fetch. Rendering HTML is identical to the original.
+function renderManagementRadar(radarItems){
   var html='';
-  flagged.slice(0,8).forEach(function(acc){
+  (radarItems||[]).forEach(function(acc){
     var link=acc.visitId?('fieldiq-visit-history.html?visitId='+encodeURIComponent(acc.visitId)):buildVisitHistoryLink({});
     html+='<a href="'+link+'" style="text-decoration:none;color:inherit;display:block"><div class="radar-card"><div class="radar-card-header"><div class="radar-account">'+escapeHtml(acc.name)+'</div>'+(acc.territory?'<span class="activity-badge badge-territory">'+escapeHtml(acc.territory)+'</span>':'')+'</div><div class="radar-evidence">'+acc.evidence.map(function(e){return'<div class="radar-evidence-line">'+escapeHtml(e)+'</div>';}).join('')+'</div><div class="radar-date">Last visit: '+formatDate(acc.lastVisit)+'</div></div></a>';
   });
   document.getElementById('managementRadar').innerHTML=html||'<div class="empty">No accounts currently need attention</div>';
 }
 var allRecordsRaw=[];
-function populateRepFilter(records){
-  var reps={};records.forEach(function(r){var rep=r.fields['Rep Name']||'';if(rep){rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();reps[rep]=1;}});
-  var sel=document.getElementById('filterRep');while(sel.options.length>1)sel.remove(1);
-  Object.keys(reps).sort().forEach(function(r){var o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});
+// Populates the rep filter dropdown's option list directly from the fast
+// /get-dashboard response — called once, on the initial unfiltered load
+// only, so the dropdown always shows every rep regardless of which filter
+// is currently active (matches original behavior, which built this list
+// once from the full record set rather than re-deriving it on every
+// filter change).
+function populateRepFilterFromAgg(agg){
+  var sel=document.getElementById('filterRep');
+  while(sel.options.length>1)sel.remove(1);
+  agg.reps.map(function(r){return r.name;}).sort().forEach(function(r){var o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});
+}
+// On-demand full-record loader. NOT called automatically on page load —
+// only when the user actually triggers something that genuinely needs raw
+// per-record detail beyond what /get-dashboard's aggregates provide: CSV
+// export or the Rep Review Report. Promise-cached so concurrent triggers
+// (e.g. clicking both quickly) don't fire duplicate full-table fetches.
+var _fullRecordsLoadPromise=null;
+async function ensureFullRecordsLoaded(){
+  if(allRecordsRawLoaded)return;
+  if(_fullRecordsLoadPromise)return _fullRecordsLoadPromise;
+  _fullRecordsLoadPromise=(async function(){
+    var res=await fetch(WORKER_URL+'/get-visits');
+    var data=await res.json();
+    if(!res.ok)throw new Error(JSON.stringify(data));
+    allRecordsRaw=data.records||[];
+    allRecordsRaw.forEach(function(r){r._vDate=r.fields['Visit Date']?new Date(r.fields['Visit Date']):null;});
+    allRecordsRawLoaded=true;
+  })();
+  try{await _fullRecordsLoadPromise;}finally{_fullRecordsLoadPromise=null;}
 }
 function getFilteredRecords(){
   var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var period=document.getElementById('filterDate').value;var priority=document.getElementById('filterPriority').value;
@@ -438,7 +448,7 @@ function getFilteredRecords(){
   });
 }
 function csvEscape(val){val=(val===null||val===undefined)?'':String(val);if(val.indexOf('"')>-1||val.indexOf(',')>-1||val.indexOf('\n')>-1){val='"'+val.replace(/"/g,'""')+'"';}return val;}
-function exportFilteredCSV(){var records=getFilteredRecords();if(!records.length){alert('No visits match the current filters — nothing to export.');return;}var headers=['Account','Territory','Date','Rep','Priority','Outcome'];var rows=[headers.join(',')];records.forEach(function(r){var f=r.fields;var row=[f['Hospital Name']||'',f['Territory']||'',f['Visit Date']||'',f['Rep Name']||'',f['Priority']||'',f['Outcome']||''].map(csvEscape);rows.push(row.join(','));});var csvContent=rows.join('\n');var blob=new Blob([csvContent],{type:'text/csv;charset=utf-8;'});var url=URL.createObjectURL(blob);var a=document.createElement('a');var today=new Date().toISOString().slice(0,10);a.href=url;a.download='FieldIQ-Visits-'+today+'.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
+async function exportFilteredCSV(){if(!allRecordsRawLoaded){try{await ensureFullRecordsLoaded();}catch(err){alert('Failed to load full visit history: '+err.message);return;}}var records=getFilteredRecords();if(!records.length){alert('No visits match the current filters — nothing to export.');return;}var headers=['Account','Territory','Date','Rep','Priority','Outcome'];var rows=[headers.join(',')];records.forEach(function(r){var f=r.fields;var row=[f['Hospital Name']||'',f['Territory']||'',f['Visit Date']||'',f['Rep Name']||'',f['Priority']||'',f['Outcome']||''].map(csvEscape);rows.push(row.join(','));});var csvContent=rows.join('\n');var blob=new Blob([csvContent],{type:'text/csv;charset=utf-8;'});var url=URL.createObjectURL(blob);var a=document.createElement('a');var today=new Date().toISOString().slice(0,10);a.href=url;a.download='FieldIQ-Visits-'+today+'.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
 // Priority Review's "hide once reviewed" logic previously required
 // r.fields['Reviewed'] to be the exact JS boolean true. If Airtable ever
 // returns this field as a string, number, or differently-cased value, that
@@ -473,7 +483,8 @@ function getReportRecords(days){
     if(!r._vDate)return false;var vDate=r._vDate;if(vDate<startDate||vDate>endDate)return false;return true;
   });
 }
-function buildRepReviewReport(){
+async function buildRepReviewReport(){
+  if(!allRecordsRawLoaded){try{await ensureFullRecordsLoaded();}catch(err){alert('Failed to load full visit history: '+err.message);return;}}
   var days=reportPeriodDays;var endDate=new Date();var startDate=new Date(endDate.getTime()-days*24*60*60*1000);var records=getReportRecords(days);
   var rep=document.getElementById('filterRep').value||'All Reps';var terr=document.getElementById('filterTerritory').value||'All Territories';
   var periodLabel=REPORT_PERIOD_LABELS[days]||(days+' Days');var startLabel=formatDate(startDate);var endLabel=formatDate(endDate);var generated=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
@@ -490,27 +501,38 @@ function buildRepReviewReport(){
   try{localStorage.setItem('fieldiq_report',reportPayload);}catch(e){alert('Report data is too large for this device. Please filter by Rep or use a shorter reporting period.');return;}
   var rLink=document.createElement('a');rLink.href='fieldiq-report.html';rLink.target='_blank';rLink.rel='noopener noreferrer';document.body.appendChild(rLink);rLink.click();document.body.removeChild(rLink);
 }
-function applyFilters(){
-  var filtered=getFilteredRecords();var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var period=document.getElementById('filterDate').value;var priority=document.getElementById('filterPriority').value;
+async function applyFilters(){
+  var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var period=document.getElementById('filterDate').value;var priority=document.getElementById('filterPriority').value;
   var periodLabels={today:'Today',yesterday:'Yesterday',thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};
   var parts=[];if(rep)parts.push('Rep: '+rep);if(terr)parts.push('Territory: '+terr);if(period)parts.push(periodLabels[period]||period);if(priority)parts.push('Priority: '+priority);
-  document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+filtered.length+' visits)':'';
-  buildDashboard(filtered);renderPrioritySection(allRecordsRaw.filter(function(r){return !isReviewed(r.fields['Reviewed']);}));
+  try{
+    var agg=await fetchDashboardAggregate({rep:rep,territory:terr,period:period,priority:priority});
+    document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+agg.kpi.total+' visits)':'';
+    renderDashboardSummary(agg);
+  }catch(err){
+    document.getElementById('filterStatus').textContent='Failed to apply filters: '+err.message;
+  }
 }
-function resetFilters(){
+async function resetFilters(){
   document.getElementById('filterRep').value='';document.getElementById('filterTerritory').value='';document.getElementById('filterDate').value='';document.getElementById('filterPriority').value='';document.getElementById('filterStatus').textContent='';document.getElementById('reportPeriodPanel').style.display='none';reportPeriodDays=30;
   document.querySelectorAll('.rp-pill').forEach(function(p){p.classList.toggle('active',p.getAttribute('data-days')==='30');});
-  buildDashboard(allRecordsRaw);renderPrioritySection(allRecordsRaw.filter(function(r){return !isReviewed(r.fields['Reviewed']);}));
+  try{
+    var agg=await fetchDashboardAggregate();
+    renderDashboardSummary(agg);
+  }catch(err){
+    document.getElementById('filterStatus').textContent='Failed to reset filters: '+err.message;
+  }
 }
 async function loadDashboard(){
   var _ctrl=new AbortController();
   var _timer=setTimeout(function(){_ctrl.abort();},15000);
   try{
-    var res=await fetch(WORKER_URL+'/get-visits',{signal:_ctrl.signal});
+    var res=await fetch(WORKER_URL+'/get-dashboard',{signal:_ctrl.signal});
     clearTimeout(_timer);
-    var data=await res.json();if(!res.ok)throw new Error(JSON.stringify(data));
-    allRecordsRaw=data.records||[];allRecordsRaw.forEach(function(r){r._vDate=r.fields['Visit Date']?new Date(r.fields['Visit Date']):null;});populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';
-    buildDashboard(allRecordsRaw);buildNewAccountsCard(allRecordsRaw);renderPrioritySection(allRecordsRaw.filter(function(r){return !isReviewed(r.fields['Reviewed']);}));
+    var agg=await res.json();if(!res.ok)throw new Error(JSON.stringify(agg));
+    renderDashboardSummary(agg);
+    populateRepFilterFromAgg(agg);
+    document.getElementById('filterBar').style.display='block';
   }catch(err){
     clearTimeout(_timer);
     var msg=(err.name==='AbortError')?'Request timed out — check your connection.':('Failed to load: '+err.message);
