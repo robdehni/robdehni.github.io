@@ -430,8 +430,23 @@ async function loadHistory(){
       document.getElementById('visitList').innerHTML='<div class="empty">Please select your name on the Home screen before viewing Visit History.<br><br><a href="./index.html" style="display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:12px;box-shadow:0 6px 16px rgba(47,143,255,0.3)">Return Home</a></div>';  
       document.getElementById('countLabel').textContent='';return;  
     }  
+    var _incomingParams=new URLSearchParams(window.location.search);
+    var _incomingTerritory=_incomingParams.get('territory');
+    var _incomingRep=_incomingParams.get('rep');
     var endpoint=WORKER+'/get-visits';  
-    if(currentUser.role!=='Manager'){endpoint=WORKER+'/get-visits?filterByUser='+encodeURIComponent(currentUser.userId);}  
+    if(currentUser.role!=='Manager'){
+      endpoint=WORKER+'/get-visits?filterByUser='+encodeURIComponent(currentUser.userId);
+    }else{
+      // If arriving from Dashboard's Territory Coverage (or a rep-scoped
+      // link), ask the Worker for only that slice instead of the full
+      // table — the Worker already supports these params server-side.
+      // Client-side filter dropdowns below still work exactly as before;
+      // this only scopes the initial fetch.
+      var _q=[];
+      if(_incomingTerritory)_q.push('territory='+encodeURIComponent(_incomingTerritory));
+      if(_incomingRep)_q.push('rep='+encodeURIComponent(_incomingRep));
+      if(_q.length)endpoint+='?'+_q.join('&');
+    }
     var res=await fetch(endpoint);var data=await res.json();  
     if(!res.ok)throw new Error(JSON.stringify(data));  
     allRecordsRaw=data.records||[];  
