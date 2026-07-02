@@ -52,6 +52,13 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 }
 .complete-btn:disabled{opacity:.55;cursor:not-allowed}
 .complete-btn [data-lucide]{width:18px;height:18px}
+.dismiss-btn{
+  width:100%;border:1.5px solid #dde3ec;border-radius:12px;background:#fff;color:#7a8aa3;
+  padding:10px;font-size:12.5px;font-weight:700;cursor:pointer;margin-top:8px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.dismiss-btn:disabled{opacity:.55;cursor:not-allowed}
+.dismiss-btn [data-lucide]{width:15px;height:15px}
 .view-visit-link{
   display:flex;align-items:center;justify-content:center;gap:6px;width:100%;
   border:1.5px solid #2f8fff;background:#eaf3ff;color:#2f8fff;border-radius:12px;
@@ -244,6 +251,9 @@ function renderActionCard(r, account){
       '<button class="complete-btn" onclick="completeAction(\''+r.id+'\')" id="btn-'+r.id+'">'+
         '<i data-lucide="check"></i> Complete'+
       '</button>'+
+      '<button class="dismiss-btn" onclick="dismissAction(\''+r.id+'\')" id="dbtn-'+r.id+'">'+
+        '<i data-lucide="x"></i> Dismiss'+
+      '</button>'+
     '</div>'
   );
 }
@@ -379,6 +389,46 @@ async function completeAction(actionId){
       lucide.createIcons({el:btn});
     }
     alert('Could not complete action: '+err.message);
+  }
+}
+
+async function dismissAction(actionId){
+  var confirmed=confirm('Dismiss this action?\n\nThis action will remain in the account history as "Dismissed". It will no longer appear in your Open Actions.');
+  if(!confirmed)return;
+  var btn=document.getElementById('dbtn-'+actionId);
+  if(btn){
+    btn.disabled=true;
+    btn.innerHTML='Dismissing...';
+  }
+  try{
+    var res=await fetch(WORKER+'/dismiss-action',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({actionId:actionId,userId:currentUserId})
+    });
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Could not dismiss action');
+    showToast('Action dismissed.');
+    var _rp=new URLSearchParams(window.location.search);
+    if(_rp.get('returnTo')==='calendar'){
+      var _cy=_rp.get('calYear')||'',_cm=_rp.get('calMonth')||'',_cd=_rp.get('calDay')||'';
+      var _cu='./fieldiq-calendar.html';
+      var _cq=[];
+      if(_cy)_cq.push('calYear='+encodeURIComponent(_cy));
+      if(_cm!=='')_cq.push('calMonth='+encodeURIComponent(_cm));
+      if(_cd)_cq.push('calDay='+encodeURIComponent(_cd));
+      if(_cq.length)_cu+='?'+_cq.join('&');
+      setTimeout(function(){window.location.href=_cu;},400);
+    }else{
+      setTimeout(function(){window.location.reload();},400);
+    }
+  }catch(err){
+    if(btn){
+      btn.disabled=false;
+      btn.innerHTML='<i data-lucide="x"></i> Dismiss';
+      lucide.createIcons({el:btn});
+    }
+    alert('Could not dismiss action: '+err.message);
   }
 }
 
