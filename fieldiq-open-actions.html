@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded',function(){
     var card=document.getElementById('card-'+targetActionId);
     if(!card)return;
     card.classList.add('highlighted');
-    setTimeout(function(){card.scrollIntoView({behavior:'smooth',block:'center'});},100);
+    setTimeout(function(){card.scrollIntoView({behavior:'smooth',block:'start'});},100);
   });
 });
 </script>
