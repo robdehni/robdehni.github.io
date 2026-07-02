@@ -439,6 +439,21 @@ function getFilteredRecords(){
 }
 function csvEscape(val){val=(val===null||val===undefined)?'':String(val);if(val.indexOf('"')>-1||val.indexOf(',')>-1||val.indexOf('\n')>-1){val='"'+val.replace(/"/g,'""')+'"';}return val;}
 function exportFilteredCSV(){var records=getFilteredRecords();if(!records.length){alert('No visits match the current filters — nothing to export.');return;}var headers=['Account','Territory','Date','Rep','Priority','Outcome'];var rows=[headers.join(',')];records.forEach(function(r){var f=r.fields;var row=[f['Hospital Name']||'',f['Territory']||'',f['Visit Date']||'',f['Rep Name']||'',f['Priority']||'',f['Outcome']||''].map(csvEscape);rows.push(row.join(','));});var csvContent=rows.join('\n');var blob=new Blob([csvContent],{type:'text/csv;charset=utf-8;'});var url=URL.createObjectURL(blob);var a=document.createElement('a');var today=new Date().toISOString().slice(0,10);a.href=url;a.download='FieldIQ-Visits-'+today+'.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
+// Priority Review's "hide once reviewed" logic previously required
+// r.fields['Reviewed'] to be the exact JS boolean true. If Airtable ever
+// returns this field as a string, number, or differently-cased value, that
+// strict check silently fails and a reviewed card can reappear. This
+// tolerates every plausible representation without weakening the actual
+// PATCH write, which still always sends a real boolean.
+function isReviewed(value){
+  if(value===true)return true;
+  if(value===1)return true;
+  if(typeof value==='string'){
+    var v=value.trim().toLowerCase();
+    return v==='true'||v==='1'||v==='yes';
+  }
+  return false;
+}
 function escapeHtml(s){s=(s===null||s===undefined)?'':String(s);return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function groupCount(records,getKey){var counts={};records.forEach(function(r){var key=getKey(r)||'Unspecified';counts[key]=(counts[key]||0)+1;});return counts;}
 function countsToRows(counts){return Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];}).map(function(k){return'<div class="rr-count-row"><span>'+escapeHtml(k)+'</span><span>'+counts[k]+'</span></div>';}).join('');}
@@ -477,12 +492,12 @@ function applyFilters(){
   var periodLabels={today:'Today',yesterday:'Yesterday',thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};
   var parts=[];if(rep)parts.push('Rep: '+rep);if(terr)parts.push('Territory: '+terr);if(period)parts.push(periodLabels[period]||period);if(priority)parts.push('Priority: '+priority);
   document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+filtered.length+' visits)':'';
-  buildDashboard(filtered);renderPrioritySection(allRecordsRaw.filter(function(r){return r.fields['Reviewed']!==true;}));
+  buildDashboard(filtered);renderPrioritySection(allRecordsRaw.filter(function(r){return !isReviewed(r.fields['Reviewed']);}));
 }
 function resetFilters(){
   document.getElementById('filterRep').value='';document.getElementById('filterTerritory').value='';document.getElementById('filterDate').value='';document.getElementById('filterPriority').value='';document.getElementById('filterStatus').textContent='';document.getElementById('reportPeriodPanel').style.display='none';reportPeriodDays=30;
   document.querySelectorAll('.rp-pill').forEach(function(p){p.classList.toggle('active',p.getAttribute('data-days')==='30');});
-  buildDashboard(allRecordsRaw);renderPrioritySection(allRecordsRaw.filter(function(r){return r.fields['Reviewed']!==true;}));
+  buildDashboard(allRecordsRaw);renderPrioritySection(allRecordsRaw.filter(function(r){return !isReviewed(r.fields['Reviewed']);}));
 }
 async function loadDashboard(){
   var _ctrl=new AbortController();
@@ -492,7 +507,7 @@ async function loadDashboard(){
     clearTimeout(_timer);
     var data=await res.json();if(!res.ok)throw new Error(JSON.stringify(data));
     allRecordsRaw=data.records||[];allRecordsRaw.forEach(function(r){r._vDate=r.fields['Visit Date']?new Date(r.fields['Visit Date']):null;});populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';
-    buildDashboard(allRecordsRaw);buildNewAccountsCard(allRecordsRaw);renderPrioritySection(allRecordsRaw.filter(function(r){return r.fields['Reviewed']!==true;}));
+    buildDashboard(allRecordsRaw);buildNewAccountsCard(allRecordsRaw);renderPrioritySection(allRecordsRaw.filter(function(r){return !isReviewed(r.fields['Reviewed']);}));
   }catch(err){
     clearTimeout(_timer);
     var msg=(err.name==='AbortError')?'Request timed out — check your connection.':('Failed to load: '+err.message);
