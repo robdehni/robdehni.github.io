@@ -261,6 +261,7 @@ var isManager = (role === 'Manager');
 var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
 var allRecordsRawLoaded=false;
 var lastNewAccountsFeed=[];
+var lastPriorityReviewFeed=[];
 function getSentiment(s){if(!s)return'unknown';s=s.toLowerCase();var i=s.indexOf('sentiment');if(i>-1){var t=s.substring(i,i+120);if(t.indexOf('positive')>-1)return'positive';if(t.indexOf('negative')>-1)return'negative';if(t.indexOf('neutral')>-1)return'neutral';}if(s.indexOf('positive')>-1)return'positive';if(s.indexOf('negative')>-1)return'negative';if(s.indexOf('neutral')>-1)return'neutral';return'unknown';}
 function getBadgeClass(s){if(s==='positive')return'badge-positive';if(s==='neutral')return'badge-neutral';if(s==='negative')return'badge-negative';return'badge-unknown';}
 function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
@@ -292,7 +293,11 @@ async function markReviewed(recordId,btnEl){
   btnEl.disabled=true;btnEl.textContent='Saving...';
   try{
     var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:recordId,reviewed:true})});
-    if(res.ok){var idx=allRecordsRaw.findIndex(function(r){return r.id===recordId;});if(idx>-1)allRecordsRaw[idx].fields['Reviewed']=true;applyFilters();}
+    if(res.ok){
+      lastPriorityReviewFeed=lastPriorityReviewFeed.filter(function(r){return r.id!==recordId;});
+      renderPrioritySection(lastPriorityReviewFeed);
+      applyFilters();
+    }
     else{btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Failed to mark reviewed. Please try again.');}
   }catch(err){btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Error: '+err.message);}
 }
@@ -393,6 +398,7 @@ function renderDashboardSummary(agg){
   });
   document.getElementById('territoryBars').innerHTML=terrHtml||'<div class="empty">No territory data yet</div>';
   var flatPriority=[].concat(agg.priorityReview.high,agg.priorityReview.medium,agg.priorityReview.low);
+  lastPriorityReviewFeed=flatPriority;
   renderPrioritySection(flatPriority);
   lastNewAccountsFeed=agg.newAccountsFeed;
   buildNewAccountsCard(agg.newAccountsFeed);
