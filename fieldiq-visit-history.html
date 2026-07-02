@@ -390,8 +390,17 @@ function getFilteredRecords(){
   
 function applyFilters(){  
   var filtered=getFilteredRecords();var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var priority=document.getElementById('filterPriority').value;var period=document.getElementById('filterPeriod').value;  
+  var searchBox=document.getElementById('repSearch');var q=searchBox?searchBox.value.trim().toLowerCase():'';
+  if(q){
+    filtered=filtered.filter(function(r){
+      var f=r.fields;
+      return ['Hospital Name','AI Summary','Meeting Notes','Action Items'].some(function(key){
+        var v=f[key];return v&&String(v).toLowerCase().indexOf(q)>-1;
+      });
+    });
+  }
   var periodLabels={thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};  
-  var parts=[];if(rep)parts.push('Rep: '+rep);if(terr)parts.push('Territory: '+terr);if(priority)parts.push('Priority: '+priority);if(period)parts.push(periodLabels[period]||period);  
+  var parts=[];if(rep)parts.push('Rep: '+rep);if(terr)parts.push('Territory: '+terr);if(priority)parts.push('Priority: '+priority);if(period)parts.push(periodLabels[period]||period);if(q)parts.push('Search: "'+q+'"');
   document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+filtered.length+' visits)':'';  
   renderVisits(filtered);  
 }  
@@ -461,6 +470,7 @@ async function loadHistory(){
     allRecordsRaw=data.records||[];  
     if(currentUser.role==='Manager'){  
       populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';  
+      document.getElementById('repSearchBox').style.display='block';document.getElementById('repSearch').setAttribute('placeholder','Search accounts…');
       applyUrlParams();applyFilters();  
       if(targetVisitId){expandAndScrollToVisit(targetVisitId);}else{restoreReturnStateIfAny();}  
     }else{  
@@ -478,6 +488,7 @@ var _repSearchTimer;
 document.getElementById('repSearch').addEventListener('input',function(){
   clearTimeout(_repSearchTimer);
   _repSearchTimer=setTimeout(function(){
+    if(currentUser&&currentUser.role==='Manager'){applyFilters();return;}
     var q=document.getElementById('repSearch').value.trim().toLowerCase();
     if(!q){renderVisits(allRecordsRaw);return;}
     var filtered=allRecordsRaw.filter(function(r){
