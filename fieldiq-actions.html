@@ -423,7 +423,9 @@ async function loadActions(pendingScroll){
         return((Date.now()-new Date(d).getTime())/86400000)<=7;
       });
       completedActions=completedActions.concat(recentDismissed);
-    }catch(e){}
+    }catch(e){
+      console.error('Failed to load Dismissed actions:',e);
+    }
 
     await loadUsersBestEffort();
     allActions=openActions.concat(completedActions);
