@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+c<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -96,6 +96,13 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .ap-input{width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;font-size:14px;outline:none;margin-bottom:14px;font-family:inherit}
 .ap-input:focus{border-color:#2f8fff}
 .ap-btn-save{background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;justify-content:center}
+.back-to-top{
+  position:fixed;right:18px;bottom:24px;width:44px;height:44px;border-radius:50%;
+  background:#2f8fff;color:#fff;border:none;box-shadow:0 6px 16px rgba(47,143,255,0.35);
+  display:none;align-items:center;justify-content:center;cursor:pointer;z-index:500;
+  font-size:20px;font-weight:900;line-height:1;
+}
+.back-to-top.visible{display:flex}
 </style>
   <!-- PWA v1 -->
   <link rel="manifest" href="/manifest.json">
@@ -534,5 +541,27 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).catch(function(){});}</script>
+<script>
+// Back-to-top floating button — purely cosmetic, self-contained. Created
+// entirely via JS so no existing HTML/IDs/layout are touched. Appears only
+// after scrolling past 500px, scrolls smoothly to top on click. Does not
+// interact with navigation, business logic, or any data.
+(function(){
+  var btn=document.createElement('button');
+  btn.type='button';
+  btn.className='back-to-top';
+  btn.setAttribute('aria-label','Back to top');
+  btn.textContent='↑';
+  btn.addEventListener('click',function(){
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+  document.addEventListener('DOMContentLoaded',function(){
+    document.body.appendChild(btn);
+  });
+  window.addEventListener('scroll',function(){
+    btn.classList.toggle('visible',(window.scrollY||document.documentElement.scrollTop)>500);
+  },{passive:true});
+})();
+</script>
 </body>
 </html>
