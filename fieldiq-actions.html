@@ -49,6 +49,9 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .action-row{padding:12px;background:#f8fbff;border:1px solid #e3ebf5;border-radius:14px;margin-bottom:10px}
 .action-row:last-child{margin-bottom:0}
 .action-row.highlighted{border-color:#2f8fff;box-shadow:0 0 0 3px rgba(47,143,255,0.18);background:#f0f7ff}
+.action-row.completed-action{background:#f0fbf5;border-color:#bfe9d0;box-shadow:0 0 0 1px rgba(31,168,97,0.08)}
+.action-row.completed-action .action-text{color:#214f35}
+.completed-stamp{display:inline-flex;align-items:center;gap:5px;background:#e1f5ea;color:#1f8a52;border:1px solid #bfe9d0;border-radius:999px;padding:4px 9px;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.3px}
 .action-text{font-size:14px;color:#263b59;line-height:1.55;font-weight:750;white-space:pre-wrap}
 .meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .meta{font-size:10.5px;font-weight:900;padding:5px 9px;border-radius:8px;background:#fff;color:#7a8aa3;border:1px solid #e3ebf5}
@@ -593,9 +596,10 @@ function render(){
       var lock=reminderLockText(r);
       var complete=isCompleted(x);
 
-      html+='<div class="action-row" id="action-'+r.id+'">';
+      html+='<div class="action-row'+(complete?' completed-action':'')+'" id="action-'+r.id+'">';
       html+='<div class="action-text">'+escapeHtml(getActionText(x))+'</div>';
       html+='<div class="meta-row">';
+      if(complete)html+='<span class="completed-stamp">✓ Completed</span>';
       html+='<span class="meta">Rep: '+escapeHtml(getAssignedRepName(x))+'</span>';
       html+='<span class="meta">Status: '+escapeHtml(prettyState(state))+'</span>';
       if(getDueDate(x))html+='<span class="meta">Due: '+escapeHtml(formatDate(getDueDate(x)))+'</span>';
