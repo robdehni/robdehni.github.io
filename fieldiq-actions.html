@@ -625,7 +625,7 @@ function render(){
       if(dismissed)html+='<span class="dismissed-stamp">Dismissed</span>';
       else if(complete)html+='<span class="completed-stamp">✓ Completed</span>';
       html+='<span class="meta">Rep: '+escapeHtml(getAssignedRepName(x))+'</span>';
-      html+='<span class="meta">Status: '+escapeHtml(prettyState(state))+'</span>';
+      html+='<span class="meta">Status: '+escapeHtml(dismissed?'Dismissed':prettyState(state))+'</span>';
       if(getDueDate(x))html+='<span class="meta">Due: '+escapeHtml(formatDate(getDueDate(x)))+'</span>';
       if(x['Due Time'])html+='<span class="meta">Time: '+escapeHtml(x['Due Time'])+'</span>';
       html+='<span class="meta">Reminders: '+escapeHtml(x['Reminder Count']||0)+'</span>';
