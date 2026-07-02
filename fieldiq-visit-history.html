@@ -192,7 +192,12 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
   }else{
     var role=localStorage.getItem('fieldiq_user_role');
     if(role==='Manager'){
-      homeBtn.href='./dashboard.html';
+      var dashQ=[];
+      ['rep','territory','priority','period'].forEach(function(k){
+        var v=params.get(k);
+        if(v)dashQ.push(k+'='+encodeURIComponent(v));
+      });
+      homeBtn.href='./dashboard.html'+(dashQ.length?'?'+dashQ.join('&'):'');
       homeBtn.textContent='← Back to Dashboard';
     }else{
       homeBtn.href='./index.html';
