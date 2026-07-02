@@ -646,7 +646,7 @@ function focusOnAction(actionId){
     var el=document.getElementById('action-'+actionId);
     if(!el)return;
     el.classList.add('highlighted');
-    el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.scrollIntoView({behavior:'smooth',block:'start'});
     setTimeout(function(){el.classList.remove('highlighted');},4000);
   },50);
 }
