@@ -350,7 +350,7 @@ function buildDashboard(records){
     var f=r.fields;var sent=getSentiment(f['AI Summary']||'');sentCounts[sent]=(sentCounts[sent]||0)+1;
     var vDate=r._vDate;
     if(vDate){if(vDate>=today)todayCount++;if(vDate>=weekRange.start)weekCount++;if(vDate>=monthRange.start)monthCount++;}
-    if((f["New Account"]===true||f["New Account"]==="true"||f["New Account"]===1||f["New Account"]==="1")&&f["Pending Review"]===true)newAccountsCount++;
+    if((f["New Account"]===true||f["New Account"]==="true"||f["New Account"]===1||f["New Account"]==="1")&&isReviewed(f["Pending Review"]))newAccountsCount++;
     var rep=f['Rep Name']||'Unknown';rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
     if(!reps[rep])reps[rep]={count:0,lastVisit:null,sentiments:[]};
     reps[rep].count++;reps[rep].sentiments.push(sent);
@@ -445,6 +445,9 @@ function exportFilteredCSV(){var records=getFilteredRecords();if(!records.length
 // strict check silently fails and a reviewed card can reappear. This
 // tolerates every plausible representation without weakening the actual
 // PATCH write, which still always sends a real boolean.
+// Note: also reused for the "Pending Review" field (New Accounts / Rep
+// Review Report) for the same reason — it's a generic true-like-value
+// check, not specific to the Reviewed field despite the function name.
 function isReviewed(value){
   if(value===true)return true;
   if(value===1)return true;
@@ -466,7 +469,7 @@ function getReportRecords(days){
   var endDate=new Date();var startDate=new Date(endDate.getTime()-days*24*60*60*1000);
   return allRecordsRaw.filter(function(r){
     var f=r.fields;var repName=(f['Rep Name']||'').trim();repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();
-    if(rep&&repName!==rep)return false;if(terr&&f['Territory']!==terr)return false;if(priority&&f['Priority']!==priority)return false;
+    if(rep&&repName!==rep)return false;if(terr&&normalizeTerritory(f['Territory'])!==terr)return false;if(priority&&f['Priority']!==priority)return false;
     if(!r._vDate)return false;var vDate=r._vDate;if(vDate<startDate||vDate>endDate)return false;return true;
   });
 }
@@ -478,9 +481,9 @@ function buildRepReviewReport(){
   if(!records.length){var emptyWin=window.open('','_blank');if(!emptyWin){alert('Please allow pop-ups for this site to generate the report.');return;}emptyWin.document.write('<html><head><title>Rep Review Report</title></head><body style="font-family:sans-serif;padding:40px;text-align:center;color:#555"><h2>No visits match the current filters</h2><p>Reporting Period: '+escapeHtml(periodLabel)+' ('+startLabel+' – '+endLabel+')</p><p>Adjust the filters or choose a longer period and try again.</p></body></html>');emptyWin.document.close();return;}
   var totalVisits=records.length;var accountSet={};records.forEach(function(r){accountSet[(r.fields['Hospital Name']||'Unknown').trim()]=true;});var accountsVisited=Object.keys(accountSet).length;
   var newAccounts=records.filter(function(r){return r.fields['New Account']===true;});var visitTypeCounts=groupCount(records,function(r){return r.fields['Visit Type'];});var outcomeCounts=groupCount(records,function(r){return r.fields['Outcome'];});var priorityCounts=groupCount(records,function(r){return r.fields['Priority'];});var highPriority=records.filter(function(r){return r.fields['Priority']==='High';});var followUps=records.filter(function(r){return r.fields['Action Items']&&String(r.fields['Action Items']).trim();});
-  var prompts=[];if(highPriority.length>0){prompts.push('Discuss the '+highPriority.length+' High Priority opportunit'+(highPriority.length===1?'y':'ies')+' below — what is the next step on each?');}var negNeutral=(outcomeCounts['Negative']||0)+(outcomeCounts['Neutral']||0);if(negNeutral>0){prompts.push(negNeutral+' visit'+(negNeutral===1?'':'s')+' had a Negative or Neutral outcome — what happened, and what is the plan?');}var pendingNew=newAccounts.filter(function(r){return r.fields['Pending Review']===true;});if(pendingNew.length>0){prompts.push(pendingNew.length+' new account'+(pendingNew.length===1?'':'s')+' still awaiting review — confirm details and prioritize next steps.');}if(followUps.length>0){prompts.push(followUps.length+' visit'+(followUps.length===1?'':'s')+' have open follow-ups — confirm status on each below.');}if(prompts.length===0){prompts.push('No specific flags this period — use this time for general check-in and forward planning.');}
+  var prompts=[];if(highPriority.length>0){prompts.push('Discuss the '+highPriority.length+' High Priority opportunit'+(highPriority.length===1?'y':'ies')+' below — what is the next step on each?');}var negNeutral=(outcomeCounts['Negative']||0)+(outcomeCounts['Neutral']||0);if(negNeutral>0){prompts.push(negNeutral+' visit'+(negNeutral===1?'':'s')+' had a Negative or Neutral outcome — what happened, and what is the plan?');}var pendingNew=newAccounts.filter(function(r){return isReviewed(r.fields['Pending Review']);});if(pendingNew.length>0){prompts.push(pendingNew.length+' new account'+(pendingNew.length===1?'':'s')+' still awaiting review — confirm details and prioritize next steps.');}if(followUps.length>0){prompts.push(followUps.length+' visit'+(followUps.length===1?'':'s')+' have open follow-ups — confirm status on each below.');}if(prompts.length===0){prompts.push('No specific flags this period — use this time for general check-in and forward planning.');}
   var visitRows=records.slice().sort(function(a,b){return new Date(b.fields['Visit Date'])-new Date(a.fields['Visit Date']);}).map(function(r){var f=r.fields;return'<tr><td>'+escapeHtml(f['Hospital Name']||'—')+'</td><td>'+escapeHtml(f['Territory']||'—')+'</td><td>'+formatDate(f['Visit Date'])+'</td><td>'+escapeHtml(f['Visit Type']||'—')+'</td><td>'+escapeHtml(f['Priority']||'—')+'</td><td>'+escapeHtml(f['Outcome']||'—')+'</td></tr>';}).join('');
-  var newAccountRows=newAccounts.length?newAccounts.map(function(r){var f=r.fields;return'<tr><td>'+escapeHtml(f['Hospital Name']||'—')+'</td><td>'+escapeHtml(f['Territory']||'—')+'</td><td>'+escapeHtml(f['Rep Name']||'—')+'</td><td>'+formatDate(f['Visit Date'])+'</td><td>'+(f['Pending Review']===true?'Pending':'Reviewed')+'</td></tr>';}).join(''):'<tr><td colspan="5" class="rr-empty">No new accounts discovered this period.</td></tr>';
+  var newAccountRows=newAccounts.length?newAccounts.map(function(r){var f=r.fields;return'<tr><td>'+escapeHtml(f['Hospital Name']||'—')+'</td><td>'+escapeHtml(f['Territory']||'—')+'</td><td>'+escapeHtml(f['Rep Name']||'—')+'</td><td>'+formatDate(f['Visit Date'])+'</td><td>'+(isReviewed(f['Pending Review'])?'Pending':'Reviewed')+'</td></tr>';}).join(''):'<tr><td colspan="5" class="rr-empty">No new accounts discovered this period.</td></tr>';
   var highPriorityBlocks=highPriority.length?highPriority.map(function(r){var f=r.fields;var summary=f['Meeting Notes']||f['AI Summary']||'No summary available.';return'<div class="rr-highlight"><div class="rr-highlight-head"><strong>'+escapeHtml(f['Hospital Name']||'—')+'</strong> · '+escapeHtml(f['Rep Name']||'—')+' · '+formatDate(f['Visit Date'])+' · <span class="rr-priority-tag">'+escapeHtml(f['Priority']||'—')+'</span></div><div class="rr-highlight-body">'+escapeHtml(summary)+'</div></div>';}).join(''):'<p class="rr-empty">No High Priority visits this period.</p>';
   var followUpRows=followUps.length?followUps.map(function(r){var f=r.fields;return'<tr><td>'+escapeHtml(f['Hospital Name']||'—')+'</td><td>'+escapeHtml(f['Rep Name']||'—')+'</td><td>'+formatDate(f['Visit Date'])+'</td><td>'+escapeHtml(f['Action Items'])+'</td></tr>';}).join(''):'<tr><td colspan="4" class="rr-empty">No open follow-ups logged this period.</td></tr>';
   var reportPayload=JSON.stringify({meta:{rep:rep,terr:terr,periodLabel:periodLabel,startLabel:startLabel,endLabel:endLabel,generated:generated},summary:{totalVisits:totalVisits,accountsVisited:accountsVisited,newAccountsCount:newAccounts.length,highPriorityCount:highPriority.length,visitTypeHtml:countsToRows(visitTypeCounts),outcomeHtml:countsToRows(outcomeCounts),priorityHtml:countsToRows(priorityCounts)},prompts:prompts,html:{visitRows:visitRows,newAccountRows:newAccountRows,highPriorityBlocks:highPriorityBlocks,followUpRows:followUpRows}});
@@ -523,7 +526,7 @@ async function markPendingReviewed(recordId,btnEl){
   }catch(err){btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Error: '+err.message);}
 }
 function buildNewAccountsCard(records){
-  var newOnes=records.filter(function(r){var f=r.fields;var isNew=f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1';var stillPending=f['Pending Review']===true;return isNew&&stillPending;});
+  var newOnes=records.filter(function(r){var f=r.fields;var isNew=f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1';var stillPending=isReviewed(f['Pending Review']);return isNew&&stillPending;});
   newOnes.sort(function(a,b){var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):0;var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):0;return db-da;});newOnes=newOnes.slice(0,10);
   var container=document.getElementById('newAccountsList');container.innerHTML='';
   if(newOnes.length===0){container.innerHTML='<div class="empty">No new accounts added recently</div>';return;}
