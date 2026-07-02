@@ -117,6 +117,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   </div>
 
   <div class="control-panel">
+    <div style="margin-bottom:10px"><input type="search" id="actionSearch" placeholder="Search accounts…" autocomplete="off" autocorrect="off" autocapitalize="off" style="width:100%;padding:11px 14px;background:#fff;border:1.5px solid #e3ebf5;border-radius:12px;color:#0b1f3a;font-size:14px;outline:none;font-weight:600;box-shadow:0 2px 8px rgba(11,31,58,0.04)"></div>
     <div class="filter-row">
       <div class="filter-field">
         <label>Show rep</label>
@@ -485,13 +486,24 @@ function applyRepFilter(list){
     return true;
   });
 }
+function applyActionSearch(list){
+  var box=document.getElementById('actionSearch');
+  var q=box?box.value.trim().toLowerCase():'';
+  if(!q)return list;
+  return list.filter(function(r){
+    var f=r.fields||{};
+    return ['Account Name','Action Text'].some(function(key){
+      var v=f[key];return v&&String(v).toLowerCase().indexOf(q)>-1;
+    });
+  });
+}
 function listForTab(){
   var l;
   if(activeTab==='open')l=openActions;
   else if(activeTab==='completed')l=completedActions;
   else if(activeTab==='all')l=allActions;
   else l=openActions.filter(function(r){return getDueState(r.fields||{})===activeTab;});
-  return applyRepFilter(l);
+  return applyActionSearch(applyRepFilter(l));
 }
 function groupActions(list){
   var g={};
@@ -765,6 +777,18 @@ function bindStaticEvents(){
       selectedRep=rep.value;
       expanded={};
       render();
+    });
+  }
+
+  var searchBox=document.getElementById('actionSearch');
+  if(searchBox){
+    var _actionSearchTimer;
+    searchBox.addEventListener('input',function(){
+      clearTimeout(_actionSearchTimer);
+      _actionSearchTimer=setTimeout(function(){
+        expanded={};
+        render();
+      },150);
     });
   }
 }
