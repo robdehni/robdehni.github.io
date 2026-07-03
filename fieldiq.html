@@ -7,169 +7,214 @@
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 20px 50px}
-.wrap{width:100%;max-width:420px}
+body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
 
-.topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;gap:10px}
+/* ── Mobile-first: no sidebar, single scrolling column ── */
+.shell{display:flex;min-height:100vh}
+.sidebar{display:none}
+.main{flex:1;min-width:0;padding:20px 18px 90px}
+
+.header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:22px}
 .brand{display:flex;align-items:center;gap:10px}
-.brand-cloud{font-size:26px;line-height:1}
-.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
+.brand-cloud{font-size:24px;line-height:1}
+.brand-text h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
 .brand-text h1 span{color:#2f8fff}
-.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
-p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text-transform:none;letter-spacing:normal}
-.manager-tag-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.brand-text p.eyebrow{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+.brand-text p.page-subtitle{color:#7a8aa3;font-size:12.5px;margin-top:4px;font-weight:600}
+.header-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .manager-tag{
   display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#d98a1c;border:1px solid #ffe5b3;
-  border-radius:20px;font-size:11px;font-weight:800;padding:6px 14px;letter-spacing:0.4px;text-transform:uppercase;
-  box-shadow:0 2px 8px rgba(217,138,28,0.1);
+  border-radius:20px;font-size:10.5px;font-weight:800;padding:5px 12px;letter-spacing:0.4px;text-transform:uppercase;
 }
-.exit-manager-btn{font-size:11px;color:#c43048;background:none;border:none;cursor:pointer;text-decoration:underline;padding:2px;font-weight:700}
-.exit-manager-btn:hover{color:#e0445b}
+.exit-manager-btn{font-size:11px;color:#c43048;background:#fff;border:1px solid #f6c4cc;border-radius:20px;padding:6px 12px;cursor:pointer;font-weight:700}
+.exit-manager-btn:hover{background:#fff0f0}
 
-.section-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:22px 0 10px}
+.section-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1.1px;font-weight:800;margin:32px 0 12px}
+.section-label:first-of-type{margin-top:0}
 
+.module-grid{display:flex;flex-direction:column;gap:10px}
 .module-card{
-  display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #e3ebf5;border-radius:18px;
-  padding:18px 20px;text-decoration:none;margin-bottom:12px;box-shadow:0 4px 14px rgba(11,31,58,0.05);
-  transition:transform 0.15s;
+  display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #e8edf5;border-radius:16px;
+  padding:16px 18px;text-decoration:none;transition:border-color 0.15s;
 }
 .module-card:active{transform:scale(0.98)}
-.module-card.primary{background:linear-gradient(135deg,#3d9bff,#1f6fe0);border:none;box-shadow:0 10px 26px rgba(47,143,255,0.32)}
+.module-card.primary{background:linear-gradient(135deg,#3d9bff,#1f6fe0);border:none}
 .module-card.primary .module-title{color:#fff}
 .module-card.primary .module-desc{color:#dbecff}
 .module-card.primary .module-icon-wrap{background:#fff}
 
 .module-icon-wrap{
-  width:50px;height:50px;border-radius:14px;background:#eaf3ff;display:flex;align-items:center;
-  justify-content:center;font-size:24px;flex-shrink:0;
+  width:46px;height:46px;border-radius:13px;background:#eaf3ff;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;
 }
-.module-icon-wrap [data-lucide]{width:26px;height:26px;stroke-width:1.8;color:#2f8fff}
+.module-icon-wrap [data-lucide]{width:23px;height:23px;stroke-width:1.8;color:#2f8fff}
 .module-card.primary .module-icon-wrap [data-lucide]{color:#2f8fff}
 
-.module-text{flex:1}
-.module-title{font-size:15.5px;font-weight:800;color:#0b1f3a;margin-bottom:2px}
+.module-text{flex:1;min-width:0}
+.module-title{font-size:15px;font-weight:800;color:#0b1f3a;margin-bottom:2px}
 .module-desc{font-size:12px;color:#7a8aa3;font-weight:500}
-.module-arrow{color:#aab8cc;font-size:18px}
+.module-arrow{color:#aab8cc;font-size:18px;flex-shrink:0}
 .module-card.primary .module-arrow{color:#fff}
 
-.footer{text-align:center;color:#aab8cc;font-size:11px;margin-top:24px;font-weight:600}
+.footer{text-align:center;color:#aab8cc;font-size:11px;margin-top:32px;font-weight:600}
 
+/* ── Desktop: persistent left sidebar, header + content to the right ── */
 @media(min-width:1100px){
-  .wrap{max-width:1400px}
-  body{padding:32px 40px 60px}
-  .topbar{margin-bottom:32px}
-  .module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-  .module-card{margin-bottom:0}
+  .sidebar{
+    display:flex;flex-direction:column;width:240px;flex-shrink:0;background:#fff;
+    border-right:1px solid #e8edf5;padding:24px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;
+  }
+  .sidebar-brand{display:flex;align-items:center;gap:9px;margin-bottom:4px;padding:0 8px}
+  .sidebar-brand h1{font-size:19px;font-weight:800;letter-spacing:-0.4px;color:#0b1f3a}
+  .sidebar-brand h1 span{color:#2f8fff}
+  .sidebar-eyebrow{font-size:9px;color:#8a9bb3;letter-spacing:1px;text-transform:uppercase;font-weight:700;padding:0 8px;margin-bottom:26px}
+  .sidebar-group-label{font-size:10px;color:#aab8cc;text-transform:uppercase;letter-spacing:0.9px;font-weight:800;padding:0 8px;margin:18px 0 6px}
+  .sidebar-group-label:first-of-type{margin-top:0}
+  .sidebar-link{
+    display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;text-decoration:none;
+    color:#5b6b85;font-size:13.5px;font-weight:700;margin-bottom:2px;
+  }
+  .sidebar-link:hover{background:#f4f8fc}
+  .sidebar-link.current{background:#eaf3ff;color:#1f6fe0}
+  .sidebar-link [data-lucide]{width:17px;height:17px;stroke-width:1.9;flex-shrink:0}
+
+  .main{padding:32px 40px 60px;max-width:1120px}
+  .header{margin-bottom:32px}
+  .module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
   .module-card.primary{grid-column:1/-1}
 }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="topbar">
-    <div class="brand">
-      <span class="brand-cloud">☁️</span>
-      <div class="brand-text">
-        <h1>Field<span>IQ</span></h1>
-        <p>Territory Intelligence Platform</p>
-        <p class="page-subtitle">Everything you need to manage your field team in one place.</p>
+<div class="shell">
+
+  <!-- Desktop-only sidebar. Hidden entirely below 1100px via CSS — no JS
+       toggle, no new logic. Every href below is identical to the
+       corresponding module card in the main content area. -->
+  <nav class="sidebar">
+    <div class="sidebar-brand"><span class="brand-cloud">☁️</span><h1>Field<span>IQ</span></h1></div>
+    <div class="sidebar-eyebrow">Territory Intelligence Platform</div>
+
+    <a href="./fieldiq.html" class="sidebar-link current"><i data-lucide="home"></i> Manager Home</a>
+
+    <div class="sidebar-group-label">Management</div>
+    <a href="https://fieldiq.biz/dashboard.html" class="sidebar-link"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+    <a href="./fieldiq-operations.html" class="sidebar-link"><i data-lucide="activity"></i> Operations</a>
+    <a href="https://fieldiq.biz/fieldiq-actions.html" class="sidebar-link"><i data-lucide="check-square"></i> Open Actions</a>
+    <a href="https://fieldiq.biz/fieldiq-accounts.html" class="sidebar-link"><i data-lucide="building-2"></i> Account Directory</a>
+
+    <div class="sidebar-group-label">Intelligence</div>
+    <a href="https://fieldiq.biz/fieldiq-insights.html" class="sidebar-link"><i data-lucide="brain-circuit"></i> AI Insights</a>
+    <a href="https://fieldiq.biz/fieldiq-visits-map.html" class="sidebar-link"><i data-lucide="map-pin"></i> Visit Map</a>
+
+    <div class="sidebar-group-label">Field &amp; Help</div>
+    <a href="./fieldiq-log-visit.html" class="sidebar-link"><i data-lucide="mic"></i> Log Visit</a>
+    <a href="./fieldiq-visit-history.html?source=manager-home" class="sidebar-link"><i data-lucide="clock"></i> Visit History</a>
+    <a href="./fieldiq-guide.html" class="sidebar-link"><i data-lucide="book-open"></i> Quick Start Guide</a>
+  </nav>
+
+  <div class="main">
+    <div class="header">
+      <div class="brand">
+        <span class="brand-cloud">☁️</span>
+        <div class="brand-text">
+          <h1>Field<span>IQ</span></h1>
+          <p class="eyebrow">Territory Intelligence Platform</p>
+          <p class="page-subtitle">Everything you need to manage your field team in one place.</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="manager-tag">⭐ Manager Home</div>
+        <button class="exit-manager-btn" onclick="exitManager()">Exit Manager</button>
       </div>
     </div>
-    <div class="manager-tag-wrap">
-      <div class="manager-tag">⭐ Manager Home</div>
-      <button class="exit-manager-btn" onclick="exitManager()">Exit Manager</button>
+
+    <div class="section-label">Management</div>
+    <div class="module-grid">
+      <a class="module-card primary" href="https://fieldiq.biz/dashboard.html">
+        <div class="module-icon-wrap"><i data-lucide="layout-dashboard"></i></div>
+        <div class="module-text">
+          <div class="module-title">Dashboard</div>
+          <div class="module-desc">KPIs, rep performance, territory coverage, filters</div>
+        </div>
+        <div class="module-arrow">›</div>
+      </a>
+      <a class="module-card" href="./fieldiq-operations.html">
+        <div class="module-icon-wrap"><i data-lucide="activity"></i></div>
+        <div class="module-text">
+          <div class="module-title">Operations</div>
+          <div class="module-desc">Daily field operations command centre</div>
+        </div>
+        <div class="module-arrow">›</div>
+      </a>
+      <a class="module-card" href="https://fieldiq.biz/fieldiq-actions.html">
+        <div class="module-icon-wrap"><i data-lucide="check-square"></i></div>
+        <div class="module-text">
+          <div class="module-title">Open Actions</div>
+          <div class="module-desc">Outstanding action items by account and rep</div>
+        </div>
+        <div class="module-arrow">›</div>
+      </a>
+      <a class="module-card" href="https://fieldiq.biz/fieldiq-accounts.html">
+        <div class="module-icon-wrap"><i data-lucide="building-2"></i></div>
+        <div class="module-text">
+          <div class="module-title">Account Directory</div>
+          <div class="module-desc">Search and browse all accounts by territory</div>
+        </div>
+        <div class="module-arrow">›</div>
+      </a>
     </div>
-  </div>
 
-  <div class="section-label">Management</div>
-  <div class="module-grid">
-    <a class="module-card primary" href="https://fieldiq.biz/dashboard.html">
-      <div class="module-icon-wrap"><i data-lucide="layout-dashboard"></i></div>
-      <div class="module-text">
-        <div class="module-title">Dashboard</div>
-        <div class="module-desc">KPIs, rep performance, territory coverage, filters</div>
-      </div>
-      <div class="module-arrow">›</div>
-    </a>
-    <a class="module-card" href="./fieldiq-operations.html">
-      <div class="module-icon-wrap"><i data-lucide="activity"></i></div>
-      <div class="module-text">
-        <div class="module-title">Operations</div>
-        <div class="module-desc">Daily field operations command centre</div>
-      </div>
-      <div class="module-arrow">›</div>
-    </a>
-    <a class="module-card" href="https://fieldiq.biz/fieldiq-actions.html">
-      <div class="module-icon-wrap"><i data-lucide="check-square"></i></div>
-      <div class="module-text">
-        <div class="module-title">Open Actions</div>
-        <div class="module-desc">Outstanding action items by account and rep</div>
-      </div>
-      <div class="module-arrow">›</div>
-    </a>
-    <a class="module-card" href="https://fieldiq.biz/fieldiq-visits-map.html">
-      <div class="module-icon-wrap"><i data-lucide="map-pin"></i></div>
-      <div class="module-text">
-        <div class="module-title">Visit Map</div>
-        <div class="module-desc">Live GPS map of all field activity across GCC</div>
-      </div>
-      <div class="module-arrow">›</div>
-    </a>
-    <a class="module-card" href="https://fieldiq.biz/fieldiq-accounts.html">
-      <div class="module-icon-wrap"><i data-lucide="building-2"></i></div>
-      <div class="module-text">
-        <div class="module-title">Account Directory</div>
-        <div class="module-desc">Search and browse all accounts by territory</div>
-      </div>
-      <div class="module-arrow">›</div>
-    </a>
-  </div>
+    <div class="section-label">Intelligence</div>
+    <div class="module-grid">
+      <a class="module-card" href="https://fieldiq.biz/fieldiq-insights.html">
+        <div class="module-icon-wrap"><i data-lucide="brain-circuit"></i></div>
+        <div class="module-text">
+          <div class="module-title">AI Insights</div>
+          <div class="module-desc">Account intelligence, territory trends, institutional memory</div>
+        </div>
+        <div class="module-arrow">›</div>
+      </a>
+      <a class="module-card" href="https://fieldiq.biz/fieldiq-visits-map.html">
+        <div class="module-icon-wrap"><i data-lucide="map-pin"></i></div>
+        <div class="module-text">
+          <div class="module-title">Visit Map</div>
+          <div class="module-desc">Live GPS map of all field activity across GCC</div>
+        </div>
+        <div class="module-arrow">›</div>
+      </a>
+    </div>
 
-  <div class="section-label">Intelligence</div>
-  <div class="module-grid">
-    <a class="module-card" href="https://fieldiq.biz/fieldiq-insights.html">
-      <div class="module-icon-wrap"><i data-lucide="brain-circuit"></i></div>
-      <div class="module-text">
-        <div class="module-title">AI Insights</div>
-        <div class="module-desc">Account intelligence, territory trends, institutional memory</div>
-      </div>
-      <div class="module-arrow">›</div>
-    </a>
-  </div>
+    <div class="section-label">Field &amp; Help</div>
+    <div class="module-grid">
+      <a class="module-card" href="./fieldiq-log-visit.html">
+        <div class="module-icon-wrap"><i data-lucide="mic"></i></div>
+        <div class="module-text">
+          <div class="module-title">Log Visit</div>
+          <div class="module-desc">Record a field visit — voice to AI report</div>
+        </div>
+        <div class="module-arrow">›</div>
+      </a>
+      <a class="module-card" href="./fieldiq-visit-history.html?source=manager-home">
+        <div class="module-icon-wrap"><i data-lucide="clock"></i></div>
+        <div class="module-text">
+          <div class="module-title">Visit History</div>
+          <div class="module-desc">Your logged visits — dates, accounts, summaries</div>
+        </div>
+        <div class="module-arrow">›</div>
+      </a>
+      <a class="module-card" href="./fieldiq-guide.html">
+        <div class="module-icon-wrap"><i data-lucide="book-open"></i></div>
+        <div class="module-text">
+          <div class="module-title">Quick Start Guide</div>
+          <div class="module-desc">How to use FieldIQ — for reps and managers</div>
+        </div>
+        <div class="module-arrow">›</div>
+      </a>
+    </div>
 
-  <div class="section-label">Field Operations</div>
-  <div class="module-grid">
-    <a class="module-card" href="./fieldiq-log-visit.html">
-      <div class="module-icon-wrap"><i data-lucide="mic"></i></div>
-      <div class="module-text">
-        <div class="module-title">Log Visit</div>
-        <div class="module-desc">Record a field visit — voice to AI report</div>
-      </div>
-      <div class="module-arrow">›</div>
-    </a>
-    <a class="module-card" href="./fieldiq-visit-history.html?source=manager-home">
-      <div class="module-icon-wrap"><i data-lucide="clock"></i></div>
-      <div class="module-text">
-        <div class="module-title">Visit History</div>
-        <div class="module-desc">Your logged visits — dates, accounts, summaries</div>
-      </div>
-      <div class="module-arrow">›</div>
-    </a>
+    <div class="footer">FieldIQ v2.1 · Manager Home · 2026</div>
   </div>
-
-  <div class="section-label">Help</div>
-  <div class="module-grid">
-    <a class="module-card" href="./fieldiq-guide.html">
-      <div class="module-icon-wrap"><i data-lucide="book-open"></i></div>
-      <div class="module-text">
-        <div class="module-title">Quick Start Guide</div>
-        <div class="module-desc">How to use FieldIQ — for reps and managers</div>
-      </div>
-      <div class="module-arrow">›</div>
-    </a>
-  </div>
-
-  <div class="footer">FieldIQ v2.1 · Manager Home · 2026</div>
 </div>
 <script>
 var role = localStorage.getItem('fieldiq_user_role');
