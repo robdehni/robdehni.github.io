@@ -16,6 +16,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
 /* ── Topbar: ☁️ cloud + Field/IQ treatment, white pill home button ── */
 .topbar{background:#fff;border-bottom:1px solid #e3ebf5;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(11,31,58,0.04)}
+.page-subtitle{color:#7a8aa3;font-size:11px;margin-top:2px;font-weight:600}
 .topbar-left{display:flex;align-items:center;gap:8px}
 .topbar-cloud{font-size:20px;line-height:1}
 .topbar h1{font-size:17px;color:#0b1f3a;font-weight:800;letter-spacing:-0.3px}
@@ -98,6 +99,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <div class="topbar-left">
     <span class="topbar-cloud">☁️</span>
     <h1>Field<span>IQ</span> — Territory Map</h1>
+    <p class="page-subtitle">Visualise field activity, visit locations and territory coverage.</p>
   </div>
   <div style="display:flex;align-items:center;gap:10px;">
     <span id="updated" style="color:#aab8cc;font-size:11.5px;font-weight:600">Loading...</span>
@@ -152,7 +154,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 var role = localStorage.getItem('fieldiq_user_role');
 var isManager = (role === 'Manager');
 
-document.getElementById('topHomeBtn').href = isManager ? './dashboard.html' : './index.html';
+document.getElementById('topHomeBtn').href = isManager ? './fieldiq.html' : './index.html';
+document.getElementById('topHomeBtn').textContent = isManager ? '← Manager Home' : '← Home';
 document.getElementById('accessDeniedHomeBtn').href = isManager ? './dashboard.html' : './index.html';
 
 if (!isManager) {
