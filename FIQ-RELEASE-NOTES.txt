@@ -24,3 +24,5 @@ Verified:
 
 Live URL:
 https://fieldiq.biz/fiq-wallet-live-1.html
+
+Redeploy trigger 03 Jul
