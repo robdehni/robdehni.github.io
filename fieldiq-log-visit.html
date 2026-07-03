@@ -513,7 +513,7 @@ submitBtn.addEventListener('click',async function(){
       var accPayload={'Account Name':hospitalName,'Territory':territory,'City':newAccountCity,'Created By':userId};
       var accRes=await fetch(WORKER+'/save-account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(accPayload)});
       var accData=await accRes.json();
-      if(!accRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';alert('Failed to create the new account. Nothing was saved — please try again.\n\n'+JSON.stringify(accData));return;}
+      if(!accRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';console.error('Account creation failed:',accData);alert('Could not create the new account. Nothing was saved — please try again.');return;}
       newAccountId=accData.id;ACCOUNTS.push({id:newAccountId,name:hospitalName,territory:territory});
       if(newContactName){
         document.getElementById('processingText').textContent='Saving contact...';
