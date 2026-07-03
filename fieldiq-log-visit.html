@@ -123,7 +123,7 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
 (function(){
   var role=localStorage.getItem('fieldiq_user_role');
   var btn=document.getElementById('homeBtn');
-  if(btn){btn.href=(role==='Manager')?'./fieldiq.html':'./index.html';}
+  if(btn){btn.href=(role==='Manager')?'./fieldiq.html':'./index.html';btn.textContent=(role==='Manager')?'← Manager Home':'← Home';}
 })();
 </script>
 
