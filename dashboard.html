@@ -638,7 +638,7 @@ async function loadWatchlist(){
   try{
     var res=await fetch(WORKER_URL+'/get-watchlist');
     var data=await res.json();
-    if(!res.ok)throw new Error('Could not load watchlist');
+    if(!res.ok)throw new Error(data.error||'Could not load watchlist');
     renderWatchlistSection(data.records||[]);
   }catch(err){
     console.error('Could not load watchlist:',err);
