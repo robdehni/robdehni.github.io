@@ -191,6 +191,9 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
   if(source==='manager-actions'||returnTo==='./fieldiq-actions.html'){
     homeBtn.href=returnTo||'./fieldiq-actions.html';
     homeBtn.textContent='← Back to Open Actions';
+  }else if(source==='manager-home'){
+    homeBtn.href='./fieldiq.html';
+    homeBtn.textContent='← Manager Home';
   }else{
     var role=localStorage.getItem('fieldiq_user_role');
     if(role==='Manager'){
