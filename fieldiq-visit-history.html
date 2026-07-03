@@ -77,7 +77,7 @@ box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color
 .avf-badge-dismissed{background:#eceef1;color:#6b7280;border:1px solid #dde1e6}
 .avf-badge-pending{background:#eaf3ff;color:#2f8fff;border:1px solid #cfe3ff}
 .visit-watch-row{margin:2px 0 8px}
-.watch-star{border:none;background:none;color:#c8d0dc;font-size:17px;line-height:1;cursor:pointer;padding:0;margin-right:6px;vertical-align:middle}
+.watch-star{border:none;background:none;color:#c8d0dc;font-size:17px;line-height:1;cursor:pointer;padding:0;margin-right:6px;flex-shrink:0;align-self:flex-start;margin-top:1px}
 .watch-star.watching{color:#f0a400}
 .watch-star:disabled{opacity:.5;cursor:not-allowed}
 .visit-detail .report-section:first-child{margin-top:0}
@@ -394,7 +394,8 @@ function renderVisits(records){
     html+=  
       '<div class="visit-card'+(isNew?' new-account':'')+'" data-idx="'+idx+'" data-id="'+r.id+'">'+  
         '<div class="visit-header">'+  
-          '<div class="visit-account">'+starHtml+(f['Hospital Name']||'Unknown Account')+'</div>'+  
+          starHtml+
+          '<div class="visit-account">'+(f['Hospital Name']||'Unknown Account')+'</div>'+  
           '<div class="visit-date">'+formatDate(f['Visit Date'])+'</div>'+  
         '</div>'+  
         '<div class="visit-meta">'+  
