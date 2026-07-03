@@ -80,6 +80,7 @@ box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color
 .watch-star{border:none;background:none;color:#c8d0dc;font-size:17px;line-height:1;cursor:pointer;padding:0;margin-right:6px;flex-shrink:0;align-self:flex-start;margin-top:1px}
 .watch-star.watching{color:#f0a400}
 .watch-star:disabled{opacity:.5;cursor:not-allowed}
+.watch-star-unresolved{color:#c8d0dc;opacity:.6}
 .visit-detail .report-section:first-child{margin-top:0}
 .visit-detail .report-section h4{color:#2f8fff;font-size:10.5px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;font-weight:800}
 .visit-detail .report-section p{color:#3d4f6b;font-size:13px;line-height:1.65}
@@ -358,6 +359,7 @@ function loadActionsForVisit(detailEl,visitRecordId){
 var sortedRecords=[];  
 var allRecordsRaw=[];  
 var watchedAccountIds={};
+var accountIdByName={};
 var targetVisitId=null;  
   
 function renderVisits(records){  
@@ -386,10 +388,18 @@ function renderVisits(records){
     var isNew=(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1');  
     var summary=truncateSummary(f['AI Summary']||f['Meeting Notes']||'',180);  
     var linkedAccountId=(f['Account']&&f['Account'][0])?f['Account'][0]:null;
+    if(!linkedAccountId){
+      var normalizedName=String(f['Hospital Name']||'').trim().toLowerCase();
+      if(normalizedName&&accountIdByName[normalizedName])linkedAccountId=accountIdByName[normalizedName];
+    }
     var starHtml='';
-    if(currentUser.role==='Manager'&&linkedAccountId){
-      var isWatched=!!watchedAccountIds[linkedAccountId];
-      starHtml='<button class="watch-star'+(isWatched?' watching':'')+'" onclick="event.stopPropagation();toggleWatch(\''+linkedAccountId+'\',this)" data-account-id="'+linkedAccountId+'" aria-label="'+(isWatched?'Remove from watchlist':'Add to watchlist')+'" title="'+(isWatched?'Watching — tap to remove':'Tap to watch this account')+'">'+(isWatched?'⭐':'☆')+'</button>';
+    if(currentUser.role==='Manager'){
+      if(linkedAccountId){
+        var isWatched=!!watchedAccountIds[linkedAccountId];
+        starHtml='<button class="watch-star'+(isWatched?' watching':'')+'" onclick="event.stopPropagation();toggleWatch(\''+linkedAccountId+'\',this)" data-account-id="'+linkedAccountId+'" aria-label="'+(isWatched?'Remove from watchlist':'Add to watchlist')+'" title="'+(isWatched?'Watching — tap to remove':'Tap to watch this account')+'">'+(isWatched?'⭐':'☆')+'</button>';
+      }else{
+        starHtml='<button class="watch-star watch-star-unresolved" disabled aria-label="Account not linked — cannot watch" title="This visit is not linked to an account record yet, so it cannot be watched.">☆</button>';
+      }
     }
     html+=  
       '<div class="visit-card'+(isNew?' new-account':'')+'" data-idx="'+idx+'" data-id="'+r.id+'">'+  
@@ -524,6 +534,29 @@ function expandAndScrollToVisit(recordId){
   if(!recordId)return;  
   var card=document.querySelector('.visit-card[data-id="'+recordId+'"]');if(!card)return;  
   var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');  
+  // Defensive correction: ensure this specific card's header has the same
+  // watch star every other card gets, using the identical construction as
+  // the main render loop — not a variant. Self-healing, idempotent: only
+  // acts if the star is actually missing and should be present.
+  if(idx!==null&&sortedRecords[idx]){
+    var hf=sortedRecords[idx].fields||{};
+    var hLinkedAccountId=(hf['Account']&&hf['Account'][0])?hf['Account'][0]:null;
+    if(!hLinkedAccountId){
+      var hNormalizedName=String(hf['Hospital Name']||'').trim().toLowerCase();
+      if(hNormalizedName&&accountIdByName[hNormalizedName])hLinkedAccountId=accountIdByName[hNormalizedName];
+    }
+    var header=card.querySelector('.visit-header');
+    if(header&&currentUser.role==='Manager'&&!header.querySelector('.watch-star')){
+      var hStarHtml;
+      if(hLinkedAccountId){
+        var hIsWatched=!!watchedAccountIds[hLinkedAccountId];
+        hStarHtml='<button class="watch-star'+(hIsWatched?' watching':'')+'" onclick="event.stopPropagation();toggleWatch(\''+hLinkedAccountId+'\',this)" data-account-id="'+hLinkedAccountId+'" aria-label="'+(hIsWatched?'Remove from watchlist':'Add to watchlist')+'" title="'+(hIsWatched?'Watching — tap to remove':'Tap to watch this account')+'">'+(hIsWatched?'⭐':'☆')+'</button>';
+      }else{
+        hStarHtml='<button class="watch-star watch-star-unresolved" disabled aria-label="Account not linked — cannot watch" title="This visit is not linked to an account record yet, so it cannot be watched.">☆</button>';
+      }
+      header.insertAdjacentHTML('afterbegin',hStarHtml);
+    }
+  }
   if(detail&&!detail.classList.contains('open')){  
     if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}  
     detail.classList.add('open');card.classList.add('expanded');  
@@ -576,6 +609,15 @@ async function loadHistory(){
         watchedAccountIds={};
         (wlData.records||[]).forEach(function(w){watchedAccountIds[w.id]=true;});
       }catch(e){watchedAccountIds={};}
+      try{
+        var accRes=await fetch(WORKER+'/get-accounts');
+        var accData=await accRes.json();
+        accountIdByName={};
+        (accData.records||[]).forEach(function(a){
+          var name=String((a.fields||{})['Account Name']||'').trim().toLowerCase();
+          if(name)accountIdByName[name]=a.id;
+        });
+      }catch(e){accountIdByName={};}
     }
     if(currentUser.role==='Manager'){  
       populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';  
