@@ -48,6 +48,20 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
 .kpi-value{font-size:28px;font-weight:800;color:#2f8fff}
 .kpi-sub{font-size:11px;color:#aab8cc;margin-top:3px;font-weight:600}
 .sentiment-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px}
+.dash-grid{width:100%;max-width:1120px;margin:0 auto}
+@media(max-width:767px){
+  .filter-row,
+  .filter-btns,
+  .kpi-grid,
+  .sentiment-row{
+    grid-template-columns:1fr;
+    flex-direction:column;
+  }
+}
+@media(min-width:768px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .sentiment-row{grid-template-columns:repeat(3,1fr);}
+}
 .sent-card{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px;text-align:center;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .sent-label{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;font-weight:800}
 .sent-value{font-size:22px;font-weight:800}
@@ -137,7 +151,7 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
 .access-denied h2{font-size:20px;color:#0b1f3a;font-weight:800;margin-bottom:8px}
 .access-denied p{font-size:13.5px;color:#7a8aa3;font-weight:600;max-width:340px;line-height:1.6;margin-bottom:20px}
 .access-denied a{display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;text-decoration:none;padding:13px 28px;border-radius:14px;box-shadow:0 8px 20px rgba(47,143,255,0.32);font-size:14px;}
-@media(min-width:1100px){.container{max-width:1300px}body{padding:32px 40px 90px}.kpi-grid{grid-template-columns:repeat(4,1fr)}.sentiment-row{grid-template-columns:repeat(3,1fr);max-width:600px}.dash-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start}}
+@media(min-width:1100px){.container{max-width:1300px}body{padding:32px 40px 90px}.kpi-grid{grid-template-columns:repeat(4,1fr)}.dash-grid{max-width:1120px}}
 .back-to-top{
   position:fixed;right:18px;bottom:85px;width:44px;height:44px;border-radius:50%;
   background:#2f8fff;color:#fff;border:none;box-shadow:0 6px 16px rgba(47,143,255,0.35);
@@ -214,7 +228,6 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
 </div>
 <div id="dashContent" style="display:none">
   <div class="dash-grid">
-  <div>
   <div class="kpi-grid">
     <div class="kpi-card"><div class="kpi-label">Lifetime Activity</div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-sub">All time visits</div></div>
     <div class="kpi-card"><div class="kpi-label">Current Month Activity</div><div class="kpi-value" id="kpiMonth">0</div><div class="kpi-sub" id="kpiWeekSub">— this week</div></div>
@@ -239,13 +252,12 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
   <div class="group-header">🌱 Growth</div>
   <div class="section-title">New Accounts Added</div>
   <div id="newAccountsList"></div>
-  </div>
-  <div>
   <div class="section-title">Rep Performance</div>
   <table class="rep-table">
     <thead><tr><th>Rep</th><th>Visits</th><th>Last Visit</th><th>Sentiment</th></tr></thead>
     <tbody id="repTable"></tbody>
   </table>
+  <div id="repTableMoreLink"></div>
   <div class="section-title">Territory Coverage</div>
   <div id="territoryBars"></div>
   <div class="group-header">⭐ My Watchlist</div>
@@ -253,7 +265,6 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
   <div class="group-header">🧠 Strategic Intelligence</div>
   <div class="section-title">Management Radar</div>
   <div id="managementRadar"></div>
-  </div>
   </div>
 </div>
 <div class="loading" id="loadingEl"><div class="spinner"></div>Loading dashboard...</div>
@@ -405,11 +416,18 @@ function renderDashboardSummary(agg){
   document.getElementById('sentNeutral').textContent=pct(sentCounts.neutral);
   document.getElementById('sentNegative').textContent=pct(sentCounts.negative);
   var repRows='';
-  agg.reps.forEach(function(r){
+  var topReps=agg.reps.slice(0,5);
+  topReps.forEach(function(r){
     var ld=r.lastVisit?new Date(r.lastVisit).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'—';
     repRows+='<tr><td><a href="'+buildVisitHistoryLink({rep:r.name})+'" style="color:#0b1f3a;font-weight:700;text-decoration:none">'+r.name+' →</a></td><td style="color:#2f8fff;font-weight:800">'+r.count+'</td><td>'+ld+'</td><td><span class="activity-badge '+getBadgeClass(r.sentiment)+'">'+r.sentiment+'</span></td></tr>';
   });
   document.getElementById('repTable').innerHTML=repRows||'<tr><td colspan="4" class="empty">No rep data yet</td></tr>';
+  var moreLinkEl=document.getElementById('repTableMoreLink');
+  if(agg.reps.length>5){
+    moreLinkEl.innerHTML='<a href="'+buildVisitHistoryLink({})+'" style="display:block;text-align:right;font-size:12px;font-weight:700;color:#2f8fff;text-decoration:none;margin-top:8px">View all '+agg.reps.length+' reps in Visit History →</a>';
+  }else{
+    moreLinkEl.innerHTML='';
+  }
   var maxT=Math.max.apply(null,agg.territories.map(function(t){return t.count;}).concat([1]));var terrHtml='';
   agg.territories.forEach(function(t){
     var pw=Math.round(t.count/maxT*100);
