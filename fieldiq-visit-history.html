@@ -76,6 +76,10 @@ box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color
 .avf-badge-completed{background:#e1f5ea;color:#1f8a52;border:1px solid #bfe9d0}
 .avf-badge-dismissed{background:#eceef1;color:#6b7280;border:1px solid #dde1e6}
 .avf-badge-pending{background:#eaf3ff;color:#2f8fff;border:1px solid #cfe3ff}
+.visit-watch-row{margin:2px 0 8px}
+.watch-toggle-btn{border:1.5px solid #dde3ec;background:#fff;color:#7a8aa3;border-radius:999px;padding:5px 12px;font-size:11.5px;font-weight:700;cursor:pointer}
+.watch-toggle-btn.watching{border-color:#f0c86a;background:#fff8e8;color:#a06a00}
+.watch-toggle-btn:disabled{opacity:.55;cursor:not-allowed}
 .visit-detail .report-section:first-child{margin-top:0}
 .visit-detail .report-section h4{color:#2f8fff;font-size:10.5px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;font-weight:800}
 .visit-detail .report-section p{color:#3d4f6b;font-size:13px;line-height:1.65}
@@ -353,6 +357,7 @@ function loadActionsForVisit(detailEl,visitRecordId){
   
 var sortedRecords=[];  
 var allRecordsRaw=[];  
+var watchedAccountIds={};
 var targetVisitId=null;  
   
 function renderVisits(records){  
@@ -380,12 +385,19 @@ function renderVisits(records){
     var f=r.fields;var priority=f['Priority']||'Medium';  
     var isNew=(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1');  
     var summary=truncateSummary(f['AI Summary']||f['Meeting Notes']||'',180);  
+    var linkedAccountId=(f['Account']&&f['Account'][0])?f['Account'][0]:null;
+    var watchBtnHtml='';
+    if(currentUser.role==='Manager'&&linkedAccountId){
+      var isWatched=!!watchedAccountIds[linkedAccountId];
+      watchBtnHtml='<button class="watch-toggle-btn'+(isWatched?' watching':'')+'" onclick="event.stopPropagation();toggleWatch(\''+linkedAccountId+'\',this)" data-account-id="'+linkedAccountId+'">'+(isWatched?'⭐ Watching':'☆ Watch Account')+'</button>';
+    }
     html+=  
       '<div class="visit-card'+(isNew?' new-account':'')+'" data-idx="'+idx+'" data-id="'+r.id+'">'+  
         '<div class="visit-header">'+  
           '<div class="visit-account">'+(f['Hospital Name']||'Unknown Account')+'</div>'+  
           '<div class="visit-date">'+formatDate(f['Visit Date'])+'</div>'+  
         '</div>'+  
+        (watchBtnHtml?'<div class="visit-watch-row">'+watchBtnHtml+'</div>':'')+
         '<div class="visit-meta">'+  
           (f['Territory']?'<span class="badge badge-territory">'+f['Territory']+'</span>':'')+  
           (f['Visit Type']?'<span class="badge badge-type">'+f['Visit Type']+'</span>':'')+  
@@ -402,6 +414,35 @@ function renderVisits(records){
   document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();  
 }  
   
+// ── Watch / Unwatch Account ──────────────────────────────────────────────
+// Instant, optimistic toggle — same pattern already proven for Dismiss and
+// Mark Reviewed elsewhere in this app. Watching is Account-level, resolved
+// via the visit's linked Account field; every other card for the same
+// Account updates too, so the toggle state never contradicts itself across
+// cards for the same account on screen at once.
+function toggleWatch(accountId,btnEl){
+  var isWatching=btnEl.classList.contains('watching');
+  btnEl.disabled=true;
+  var endpoint=isWatching?'/unwatch-account':'/watch-account';
+  fetch(WORKER+endpoint,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({accountId:accountId})
+  }).then(function(res){
+    if(!res.ok)throw new Error('Request failed');
+    watchedAccountIds[accountId]=!isWatching;
+    document.querySelectorAll('.watch-toggle-btn[data-account-id="'+accountId+'"]').forEach(function(b){
+      b.classList.toggle('watching',!isWatching);
+      b.textContent=isWatching?'☆ Watch Account':'⭐ Watching';
+      b.disabled=false;
+    });
+  }).catch(function(err){
+    console.error('Could not update watch status:',err);
+    btnEl.disabled=false;
+    alert('Could not update watch status. Please try again.');
+  });
+}
+
 document.getElementById('visitList').addEventListener('click',function(e){  
   var card=e.target.closest('.visit-card');if(!card)return;  
   var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');  
@@ -525,6 +566,14 @@ async function loadHistory(){
     var res=await fetch(endpoint);var data=await res.json();  
     if(!res.ok)throw new Error(JSON.stringify(data));  
     allRecordsRaw=data.records||[];  
+    if(currentUser.role==='Manager'){
+      try{
+        var wlRes=await fetch(WORKER+'/get-watchlist');
+        var wlData=await wlRes.json();
+        watchedAccountIds={};
+        (wlData.records||[]).forEach(function(w){watchedAccountIds[w.id]=true;});
+      }catch(e){watchedAccountIds={};}
+    }
     if(currentUser.role==='Manager'){  
       populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';  
       document.getElementById('repSearchBox').style.display='block';document.getElementById('repSearch').setAttribute('placeholder','Search accounts…');
