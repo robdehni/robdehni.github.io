@@ -112,6 +112,10 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
 .badge-territory{background:#eef3f9;color:#5b6b85}
 .activity-summary{font-size:11.5px;color:#7a8aa3;margin-top:8px;line-height:1.6}
 .radar-card{background:#fff;border:1px solid #e3ebf5;border-left:3px solid #2f8fff;border-radius:0 14px 14px 0;padding:14px;margin-bottom:8px;box-shadow:0 3px 10px rgba(11,31,58,0.04)}
+.watchlist-grid{display:flex;flex-direction:column;gap:8px}
+.watchlist-card{background:#fff;border:1px solid #e3ebf5;border-left:3px solid #f0c86a;border-radius:0 14px 14px 0;padding:14px;box-shadow:0 3px 10px rgba(11,31,58,0.04)}
+.watchlist-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.meta-chip{font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:8px;background:#f4f8fc;color:#7a8aa3;border:1px solid #e3ebf5}
 .radar-card-highlighted{border-left-color:#ffaa44;box-shadow:0 0 0 2px #ffaa4455,0 3px 10px rgba(11,31,58,0.04);transition:box-shadow 0.3s ease}
 .radar-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
 .radar-account{font-size:13.5px;font-weight:800;color:#0b1f3a}
@@ -244,6 +248,8 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
   </table>
   <div class="section-title">Territory Coverage</div>
   <div id="territoryBars"></div>
+  <div class="group-header">⭐ My Watchlist</div>
+  <div id="myWatchlist"></div>
   <div class="group-header">🧠 Strategic Intelligence</div>
   <div class="section-title">Management Radar</div>
   <div id="managementRadar"></div>
@@ -614,11 +620,49 @@ async function loadDashboard(){
     populateRepFilterFromAgg(agg);
     document.getElementById('filterBar').style.display='block';
     await restoreDashboardContext();
+    loadWatchlist();
   }catch(err){
     clearTimeout(_timer);
     var msg=(err.name==='AbortError')?'Request timed out — check your connection.':('Failed to load: '+err.message);
     document.getElementById('loadingEl').innerHTML='<div style="text-align:center;padding:20px;color:#e0344a;font-weight:700">'+msg+'</div><div style="text-align:center;margin-top:12px"><button onclick="loadDashboard()" style="background:#2f8fff;color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer">Retry</button></div>';
   }
+}
+// ── My Watchlist ──────────────────────────────────────────────────────────
+// Fetched separately from the main dashboard aggregate and never awaited
+// inline in loadDashboard() — a failure or delay here must never affect
+// Priority Review, New Accounts, or Management Radar loading. Manually
+// curated, Account-level, entirely independent of AI Strategic
+// Intelligence scoring — watching an account never changes its AI score,
+// and AI never adds or removes watched accounts.
+async function loadWatchlist(){
+  try{
+    var res=await fetch(WORKER_URL+'/get-watchlist');
+    var data=await res.json();
+    if(!res.ok)throw new Error('Could not load watchlist');
+    renderWatchlistSection(data.records||[]);
+  }catch(err){
+    console.error('Could not load watchlist:',err);
+    document.getElementById('myWatchlist').innerHTML='<div class="empty">Could not load watchlist.</div>';
+  }
+}
+function renderWatchlistSection(records){
+  var el=document.getElementById('myWatchlist');
+  if(!records.length){el.innerHTML='<div class="empty">No accounts on your watchlist yet. Star an account from Visit History to add it here.</div>';return;}
+  var html='<div class="watchlist-grid">';
+  records.forEach(function(w){
+    var link=w.visitId?buildVisitHistoryLink({visitId:w.visitId}):buildVisitHistoryLink({});
+    html+='<a href="'+link+'" style="text-decoration:none;color:inherit;display:block"><div class="watchlist-card">'+
+      '<div class="radar-card-header"><div class="radar-account">'+escapeHtml(w.accountName)+'</div>'+(w.territory?'<span class="activity-badge badge-territory">'+escapeHtml(w.territory)+'</span>':'')+'</div>'+
+      '<div class="watchlist-meta">'+
+        (w.lastRep?'<span class="meta-chip">Rep: '+escapeHtml(w.lastRep)+'</span>':'')+
+        (w.priority?'<span class="meta-chip">Priority: '+escapeHtml(w.priority)+'</span>':'')+
+        '<span class="meta-chip">Open actions: '+w.openActionCount+'</span>'+
+      '</div>'+
+      '<div class="radar-date">Last visit: '+formatDate(w.lastVisit)+'</div>'+
+    '</div></a>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
 }
 async function markPendingReviewed(recordId,btnEl){
   btnEl.disabled=true;btnEl.textContent='Saving...';
