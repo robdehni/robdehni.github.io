@@ -83,6 +83,147 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   .module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
   .module-card.primary{grid-column:1/-1}
 }
+[data-lucide]{display:inline-block;vertical-align:middle;stroke-width:2}
+.nav-icon [data-lucide]{width:22px;height:22px}
+.access-denied-icon [data-lucide]{width:54px;height:54px;stroke:#d98a1c}
+.pdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle;flex-shrink:0}
+.pdot-high{background:#e0344a}
+.pdot-medium{background:#d98a1c}
+.pdot-low{background:#1fa861}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:24px 18px 80px}
+.filter-bar{background:#fff;border:1px solid #e8edf5;border-radius:16px;padding:18px;margin-bottom:24px}
+.filter-bar h3{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:12px}
+.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.filter-select{width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;font-size:12.5px;outline:none;font-weight:600;}
+.filter-select:focus{border-color:#2f8fff}
+.filter-btns{display:flex;gap:8px}
+.fbtn-apply{flex:1;padding:11px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:10px;font-size:12.5px;font-weight:800;cursor:pointer;box-shadow:0 2px 6px rgba(47,143,255,0.18)}
+.fbtn-reset{flex:1;padding:11px;background:#fff;color:#7a8aa3;border:1.5px solid #e8edf5;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer}
+.filter-active{font-size:10.5px;color:#2f8fff;margin-top:8px;text-align:center;min-height:14px;font-weight:700}
+.report-period-panel{display:none;margin-top:12px;padding-top:12px;border-top:1px solid #eef3f9}
+.report-period-title{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:8px}
+.report-period-pills{display:flex;gap:6px;flex-wrap:wrap}
+.rp-pill{flex:1;min-width:64px;text-align:center;padding:9px 4px;border-radius:10px;font-size:11px;font-weight:800;background:#f4f8fc;border:1.5px solid #e3ebf5;color:#5b6b85;cursor:pointer}
+.rp-pill.active{background:#2f8fff;border-color:#2f8fff;color:#fff}
+.rp-generate-btn{margin-top:10px;width:100%}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.kpi-card{background:#fff;border:1px solid #e8edf5;border-radius:14px;padding:20px 18px}
+.kpi-label{font-size:10px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:10px}
+.kpi-value{font-size:36px;font-weight:800;color:#0b1f3a;letter-spacing:-0.8px;line-height:1}
+.kpi-sub{font-size:11px;color:#aab8cc;margin-top:6px;font-weight:600}
+.sentiment-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:28px}
+.dash-grid{width:100%;max-width:1120px;margin:0 auto}
+@media(max-width:767px){
+  .filter-row,
+  .filter-btns,
+  .kpi-grid,
+  .sentiment-row{
+    grid-template-columns:1fr;
+    flex-direction:column;
+  }
+}
+@media(min-width:768px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .sentiment-row{grid-template-columns:repeat(3,1fr);}
+}
+.sent-card{background:#fff;border:1px solid #e8edf5;border-radius:14px;padding:18px 16px;text-align:center}
+.sent-label{font-size:10px;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;font-weight:800}
+.sent-value{font-size:24px;font-weight:800}
+.sent-positive .sent-label,.sent-positive .sent-value{color:#1fa861}
+.sent-neutral .sent-label,.sent-neutral .sent-value{color:#d98a1c}
+.sent-negative .sent-label,.sent-negative .sent-value{color:#e0344a}
+.section-title{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1.2px;font-weight:800;margin:40px 0 14px;padding-bottom:10px;border-bottom:1px solid #e8edf5}
+.group-header{font-size:15px;color:#0b1f3a;font-weight:800;margin:48px 0 8px;display:flex;align-items:center;gap:7px;letter-spacing:-0.3px}
+.group-header:first-child{margin-top:0}
+.open-actions-toggle{display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin:40px 0 14px;padding-bottom:10px;border-bottom:1px solid #e8edf5;user-select:none}
+.open-actions-toggle:hover .open-actions-label{color:#2f8fff}
+.open-actions-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;transition:color 0.15s}
+.oa-arrow{color:#aab8cc;font-size:14px;font-weight:700;transition:transform 0.2s;flex-shrink:0}
+.oa-arrow [data-lucide]{width:14px;height:14px}
+.oa-arrow.rotated{transform:rotate(180deg)}
+.oa-body{display:none}
+.oa-body.open{display:block}
+.priority-section{margin-bottom:8px}
+.priority-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.priority-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.priority-title{font-size:12.5px;font-weight:800;color:#0b1f3a}
+.priority-count{font-size:11.5px;color:#aab8cc;font-weight:600}
+.priority-card{background:#fff;border:1px solid #e8edf5;border-radius:14px;padding:14px;margin-bottom:8px}
+.priority-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.priority-hospital{font-size:13.5px;font-weight:800;color:#0b1f3a}
+.priority-meta{font-size:11.5px;color:#aab8cc;margin-top:2px;font-weight:600}
+.priority-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.pbtn{font-size:11px;padding:5px 11px;border-radius:8px;border:none;cursor:pointer;font-weight:800;transition:opacity 0.2s}
+.pbtn:disabled{opacity:0.45;cursor:not-allowed}
+.pbtn-high{background:#ffe5e8;color:#e0344a}
+.pbtn-medium{background:#fff3e0;color:#d98a1c}
+.pbtn-low{background:#e3f8ea;color:#1fa861}
+.pbtn-active-high{background:#e0344a;color:#fff}
+.pbtn-active-medium{background:#d98a1c;color:#fff}
+.pbtn-active-low{background:#1fa861;color:#fff}
+.pbtn-reviewed{font-size:11px;padding:6px 11px;border-radius:8px;border:none;cursor:pointer;font-weight:800;background:#e3f8ea;color:#1fa861;width:100%;margin-top:8px;transition:opacity 0.2s}
+.pbtn-reviewed:disabled{opacity:0.45;cursor:not-allowed}
+.priority-label{font-size:11px;padding:4px 12px;border-radius:8px;font-weight:800;display:inline-block;margin-top:6px}
+.plabel-high{background:#ffe5e8;color:#e0344a}
+.plabel-medium{background:#fff3e0;color:#d98a1c}
+.plabel-low{background:#e3f8ea;color:#1fa861}
+.rep-table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid #e8edf5;border-radius:14px;overflow:hidden}
+.rep-table th{color:#8a9bb3;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;font-weight:800;padding:10px 12px;text-align:left;border-bottom:1px solid #eef3f9}
+.rep-table td{padding:12px;border-bottom:1px solid #f4f8fc;color:#3a4a63}
+.rep-table tr:last-child td{border-bottom:none}
+.territory-item{margin-bottom:12px;background:#fff;border:1px solid #e8edf5;border-radius:14px;padding:14px}
+.territory-header{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px}
+.territory-name{color:#3a4a63;font-weight:700}.territory-count{color:#2f8fff;font-weight:800}
+.territory-bar-bg{background:#eef3f9;border-radius:4px;height:7px}
+.territory-bar-fill{background:linear-gradient(90deg,#3d9bff,#2f8fff);border-radius:4px;height:7px}
+.activity-item{background:#fff;border:1px solid #e8edf5;border-radius:14px;padding:14px;margin-bottom:8px}
+.activity-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.activity-hospital{font-size:13.5px;font-weight:800;color:#0b1f3a}
+.activity-date{font-size:11px;color:#aab8cc;font-weight:600}
+.activity-meta{display:flex;gap:6px;flex-wrap:wrap}
+.activity-badge{font-size:10px;padding:3px 10px;border-radius:8px;font-weight:700}
+.badge-positive{background:#e3f8ea;color:#1fa861}
+.badge-neutral{background:#fff3e0;color:#d98a1c}
+.badge-negative{background:#ffe5e8;color:#e0344a}
+.badge-unknown{background:#eef3f9;color:#7a8aa3}
+.badge-rep{background:#eaf3ff;color:#2f8fff}
+.badge-territory{background:#eef3f9;color:#5b6b85}
+.activity-summary{font-size:11.5px;color:#7a8aa3;margin-top:8px;line-height:1.6}
+.radar-card{background:#fff;border:1px solid #e8edf5;border-left:3px solid #2f8fff;border-radius:0 14px 14px 0;padding:14px;margin-bottom:8px}
+.watchlist-grid{display:flex;flex-direction:column;gap:8px}
+.watchlist-card{background:#fff;border:1px solid #e8edf5;border-left:3px solid #f0c86a;border-radius:0 14px 14px 0;padding:14px}
+.watchlist-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.meta-chip{font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:8px;background:#f4f8fc;color:#7a8aa3;border:1px solid #e8edf5}
+.radar-card-highlighted{border-left-color:#ffaa44;box-shadow:0 0 0 2px #ffaa4455,0 3px 10px rgba(11,31,58,0.04);transition:box-shadow 0.3s ease}
+.radar-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.radar-account{font-size:13.5px;font-weight:800;color:#0b1f3a}
+.radar-evidence-label{font-size:10px;color:#8a9bb3;text-transform:uppercase;letter-spacing:.4px;font-weight:800;margin:6px 0 3px}
+.radar-evidence{font-size:11.5px;color:#3a4a63;line-height:1.8}
+.radar-evidence-line{position:relative;padding-left:12px}
+.radar-evidence-line:before{content:"•";color:#2f8fff;font-weight:800;position:absolute;left:0}
+.radar-date{font-size:11px;color:#aab8cc;font-weight:600;margin-top:8px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e3ebf5;display:flex;z-index:9999;box-shadow:0 -4px 16px rgba(11,31,58,0.06)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:#aab8cc;font-size:11px;font-weight:700;transition:color 0.2s}
+.nav-item.active{color:#2f8fff}
+.nav-icon{font-size:22px;margin-bottom:3px}
+.loading{text-align:center;padding:50px;color:#aab8cc;font-weight:600}
+.spinner{width:36px;height:36px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;color:#aab8cc;font-size:13px;padding:20px;font-weight:600}
+.access-denied{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px;}
+.access-denied-icon{font-size:54px;margin-bottom:16px}
+.access-denied h2{font-size:20px;color:#0b1f3a;font-weight:800;margin-bottom:8px}
+.access-denied p{font-size:13.5px;color:#7a8aa3;font-weight:600;max-width:340px;line-height:1.6;margin-bottom:20px}
+.access-denied a{display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;text-decoration:none;padding:13px 28px;border-radius:14px;box-shadow:0 8px 20px rgba(47,143,255,0.32);font-size:14px;}
+@media(min-width:1100px){.kpi-grid{grid-template-columns:repeat(4,1fr)}.dash-grid{max-width:1120px}}
+.back-to-top{
+  position:fixed;right:18px;bottom:85px;width:44px;height:44px;border-radius:50%;
+  background:#2f8fff;color:#fff;border:none;box-shadow:0 6px 16px rgba(47,143,255,0.35);
+  display:none;align-items:center;justify-content:center;cursor:pointer;z-index:9999;
+  font-size:20px;font-weight:900;line-height:1;
+}
+.back-to-top.visible{display:flex}
 </style>
 </head>
 <body>
@@ -124,94 +265,106 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
         </div>
       </div>
       <div class="header-right">
+        <span id="lastUpdated" style="display:none"></span>
+        <span id="managerBadge" style="display:none"></span>
         <div class="manager-tag">⭐ Manager Home</div>
         <button class="exit-manager-btn" onclick="exitManager()">Exit Manager</button>
       </div>
     </div>
 
-    <div class="section-label">Management</div>
-    <div class="module-grid">
-      <a class="module-card primary" href="https://fieldiq.biz/dashboard.html">
-        <div class="module-icon-wrap"><i data-lucide="layout-dashboard"></i></div>
-        <div class="module-text">
-          <div class="module-title">Dashboard</div>
-          <div class="module-desc">KPIs, rep performance, territory coverage, filters</div>
-        </div>
-        <div class="module-arrow">›</div>
-      </a>
-      <a class="module-card" href="./fieldiq-operations.html">
-        <div class="module-icon-wrap"><i data-lucide="activity"></i></div>
-        <div class="module-text">
-          <div class="module-title">Operations</div>
-          <div class="module-desc">Daily field operations command centre</div>
-        </div>
-        <div class="module-arrow">›</div>
-      </a>
-      <a class="module-card" href="https://fieldiq.biz/fieldiq-actions.html">
-        <div class="module-icon-wrap"><i data-lucide="check-square"></i></div>
-        <div class="module-text">
-          <div class="module-title">Open Actions</div>
-          <div class="module-desc">Outstanding action items by account and rep</div>
-        </div>
-        <div class="module-arrow">›</div>
-      </a>
-      <a class="module-card" href="https://fieldiq.biz/fieldiq-accounts.html">
-        <div class="module-icon-wrap"><i data-lucide="building-2"></i></div>
-        <div class="module-text">
-          <div class="module-title">Account Directory</div>
-          <div class="module-desc">Search and browse all accounts by territory</div>
-        </div>
-        <div class="module-arrow">›</div>
-      </a>
+<div id="filterBar" class="filter-bar" style="display:none">
+  <h3>Manager Filters</h3>
+  <div class="filter-row">
+    <select class="filter-select" id="filterRep"><option value="">All Reps</option></select>
+    <select class="filter-select" id="filterTerritory">
+      <option value="">All Territories</option>
+      <option>UAE</option><option>KSA</option><option>Qatar</option>
+      <option>Kuwait</option><option>Bahrain</option><option>Oman</option>
+    </select>
+  </div>
+  <div class="filter-row">
+    <select class="filter-select" id="filterDate">
+      <option value="">All Time</option>
+      <option value="today">Today</option>
+      <option value="yesterday">Yesterday</option>
+      <option value="thisWeek">This Week</option>
+      <option value="lastWeek">Last Week</option>
+      <option value="thisMonth">This Month</option>
+      <option value="lastMonth">Last Month</option>
+      <option value="30">Last 30 Days</option>
+      <option value="90">Last 90 Days</option>
+    </select>
+    <select class="filter-select" id="filterPriority">
+      <option value="">All Priorities</option>
+      <option>High</option><option>Medium</option><option>Low</option>
+    </select>
+  </div>
+  <div class="filter-btns">
+    <button class="fbtn-apply" onclick="applyFilters()">Apply Filters</button>
+    <button class="fbtn-reset" onclick="resetFilters()">Reset</button>
+    <button class="fbtn-reset" onclick="toggleReportPeriodPanel()">Rep Review Report</button>
+  </div>
+  <div class="filter-active" id="filterStatus"></div>
+  <div id="reportPeriodPanel" class="report-period-panel">
+    <div class="report-period-title">Choose Report Period</div>
+    <div class="report-period-pills">
+      <div class="rp-pill" data-days="7" onclick="selectReportPeriod(7,this)">7 Days</div>
+      <div class="rp-pill active" data-days="30" onclick="selectReportPeriod(30,this)">30 Days</div>
+      <div class="rp-pill" data-days="90" onclick="selectReportPeriod(90,this)">Quarterly</div>
+      <div class="rp-pill" data-days="180" onclick="selectReportPeriod(180,this)">Half-Yearly</div>
+      <div class="rp-pill" data-days="365" onclick="selectReportPeriod(365,this)">Annual</div>
     </div>
-
-    <div class="section-label">Intelligence</div>
-    <div class="module-grid">
-      <a class="module-card" href="https://fieldiq.biz/fieldiq-insights.html">
-        <div class="module-icon-wrap"><i data-lucide="brain-circuit"></i></div>
-        <div class="module-text">
-          <div class="module-title">AI Insights</div>
-          <div class="module-desc">Account intelligence, territory trends, institutional memory</div>
-        </div>
-        <div class="module-arrow">›</div>
-      </a>
-      <a class="module-card" href="https://fieldiq.biz/fieldiq-visits-map.html">
-        <div class="module-icon-wrap"><i data-lucide="map-pin"></i></div>
-        <div class="module-text">
-          <div class="module-title">Visit Map</div>
-          <div class="module-desc">Live GPS map of all field activity across GCC</div>
-        </div>
-        <div class="module-arrow">›</div>
-      </a>
-    </div>
-
-    <div class="section-label">Field &amp; Help</div>
-    <div class="module-grid">
-      <a class="module-card" href="./fieldiq-log-visit.html">
-        <div class="module-icon-wrap"><i data-lucide="mic"></i></div>
-        <div class="module-text">
-          <div class="module-title">Log Visit</div>
-          <div class="module-desc">Record a field visit — voice to AI report</div>
-        </div>
-        <div class="module-arrow">›</div>
-      </a>
-      <a class="module-card" href="./fieldiq-visit-history.html?source=manager-home">
-        <div class="module-icon-wrap"><i data-lucide="clock"></i></div>
-        <div class="module-text">
-          <div class="module-title">Visit History</div>
-          <div class="module-desc">Your logged visits — dates, accounts, summaries</div>
-        </div>
-        <div class="module-arrow">›</div>
-      </a>
-      <a class="module-card" href="./fieldiq-guide.html">
-        <div class="module-icon-wrap"><i data-lucide="book-open"></i></div>
-        <div class="module-text">
-          <div class="module-title">Quick Start Guide</div>
-          <div class="module-desc">How to use FieldIQ — for reps and managers</div>
-        </div>
-        <div class="module-arrow">›</div>
-      </a>
-    </div>
+    <button class="fbtn-apply rp-generate-btn" onclick="buildRepReviewReport()">Generate Report</button>
+  </div>
+</div>
+<div id="dashContent" style="display:none">
+  <div class="dash-grid">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Lifetime Activity</div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-sub">All time visits</div></div>
+    <div class="kpi-card"><div class="kpi-label">Current Month Activity</div><div class="kpi-value" id="kpiMonth">0</div><div class="kpi-sub" id="kpiWeekSub">— this week</div></div>
+    <div class="kpi-card"><div class="kpi-label">Rep Activity</div><div class="kpi-value" id="kpiReps">0</div><div class="kpi-sub">Unique active reps</div></div>
+    <div class="kpi-card"><div class="kpi-label">New Accounts Pending Review</div><div class="kpi-value" id="kpiNewAccounts">0</div><div class="kpi-sub">Awaiting manager review</div></div>
+  </div>
+  <div class="sentiment-row">
+    <div class="sent-card sent-positive"><div class="sent-label">Positive</div><div class="sent-value" id="sentPositive">0%</div></div>
+    <div class="sent-card sent-neutral"><div class="sent-label">Neutral</div><div class="sent-value" id="sentNeutral">0%</div></div>
+    <div class="sent-card sent-negative"><div class="sent-label">Negative</div><div class="sent-value" id="sentNegative">0%</div></div>
+  </div>
+  <div class="group-header">🚨 Today's Priorities</div>
+  <div class="open-actions-toggle" id="openActionsToggle" onclick="toggleOpenActions()">
+    <span class="open-actions-label">Priority Review (<span id="openActionsCount">0</span>)</span>
+    <span class="oa-arrow" id="oaArrow"><i data-lucide="chevron-down"></i></span>
+  </div>
+  <div class="oa-body" id="openActionsBody">
+    <div id="priorityHigh" class="priority-section"></div>
+    <div id="priorityMedium" class="priority-section"></div>
+    <div id="priorityLow" class="priority-section"></div>
+  </div>
+  <div class="group-header">🌱 Growth</div>
+  <div class="section-title">New Accounts Added</div>
+  <div id="newAccountsList"></div>
+  <div class="section-title">Rep Performance</div>
+  <table class="rep-table">
+    <thead><tr><th>Rep</th><th>Visits</th><th>Last Visit</th><th>Sentiment</th></tr></thead>
+    <tbody id="repTable"></tbody>
+  </table>
+  <div id="repTableMoreLink"></div>
+  <div class="section-title">Territory Coverage</div>
+  <div id="territoryBars"></div>
+  <div class="group-header">⭐ My Watchlist</div>
+  <div id="myWatchlist"></div>
+  <div class="group-header">🧠 Strategic Intelligence</div>
+  <div class="section-title">Management Radar</div>
+  <div id="managementRadar"></div>
+  </div>
+</div>
+<div class="loading" id="loadingEl"><div class="spinner"></div>Loading dashboard...</div>
+<div class="access-denied" id="accessDeniedEl" style="display:none">
+  <div class="access-denied-icon"><i data-lucide="lock"></i></div>
+  <h2>Manager Access Required</h2>
+  <p>The Dashboard shows KPIs, rep performance, and territory data across all reps. This page is restricted to Manager accounts.</p>
+  <a href="./index.html" id="accessDeniedHomeBtn">Return Home</a>
+</div>
 
     <div class="footer">FieldIQ v2.1 · Manager Home · 2026</div>
   </div>
@@ -229,6 +382,464 @@ function exitManager(){
   window.location.href = './index.html';
 }
 document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
+var isManager = (role === 'Manager');
+var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
+var allRecordsRawLoaded=false;
+var lastNewAccountsFeed=[];
+var lastPriorityReviewFeed=[];
+function getSentiment(s){if(!s)return'unknown';s=s.toLowerCase();var i=s.indexOf('sentiment');if(i>-1){var t=s.substring(i,i+120);if(t.indexOf('positive')>-1)return'positive';if(t.indexOf('negative')>-1)return'negative';if(t.indexOf('neutral')>-1)return'neutral';}if(s.indexOf('positive')>-1)return'positive';if(s.indexOf('negative')>-1)return'negative';if(s.indexOf('neutral')>-1)return'neutral';return'unknown';}
+function getBadgeClass(s){if(s==='positive')return'badge-positive';if(s==='neutral')return'badge-neutral';if(s==='negative')return'badge-negative';return'badge-unknown';}
+function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+function getPeriodRange(period){
+  var now=new Date();var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());var dayOfWeek=today.getDay();var diffToMonday=(dayOfWeek===0?6:dayOfWeek-1);var thisMonday=new Date(today);thisMonday.setDate(today.getDate()-diffToMonday);
+  if(period==='today'){return {start:today,end:null};}
+  if(period==='yesterday'){var yest=new Date(today);yest.setDate(today.getDate()-1);var yestEnd=new Date(today);yestEnd.setMilliseconds(-1);return {start:yest,end:yestEnd};}
+  if(period==='thisWeek'){return {start:thisMonday,end:null};}
+  if(period==='lastWeek'){var lastMonday=new Date(thisMonday);lastMonday.setDate(thisMonday.getDate()-7);var lastSunday=new Date(thisMonday);lastSunday.setDate(thisMonday.getDate()-1);lastSunday.setHours(23,59,59,999);return {start:lastMonday,end:lastSunday};}
+  if(period==='thisMonth'){return {start:new Date(now.getFullYear(),now.getMonth(),1),end:null};}
+  if(period==='lastMonth'){var lm=new Date(now.getFullYear(),now.getMonth()-1,1);var lmEnd=new Date(now.getFullYear(),now.getMonth(),0);lmEnd.setHours(23,59,59,999);return {start:lm,end:lmEnd};}
+  return {start:null,end:null};
+}
+function buildVisitHistoryLink(overrides){
+  var params={rep:document.getElementById('filterRep').value,territory:document.getElementById('filterTerritory').value,priority:document.getElementById('filterPriority').value,period:document.getElementById('filterDate').value};
+  for(var k in overrides){params[k]=overrides[k];}
+  var qs=[];Object.keys(params).forEach(function(k){if(params[k])qs.push(k+'='+encodeURIComponent(params[k]));});
+  return 'fieldiq-visit-history.html'+(qs.length?'?'+qs.join('&'):'');
+}
+async function updatePriority(recordId,newPriority,cardEl){
+  var btns=cardEl.querySelectorAll('.pbtn');btns.forEach(function(b){b.disabled=true;});
+  try{
+    var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:recordId,priority:newPriority})});
+    if(res.ok){
+      var rec=lastPriorityReviewFeed.find(function(r){return r.id===recordId;});
+      if(rec)rec.fields['Priority']=newPriority;
+      renderPrioritySection(lastPriorityReviewFeed);
+      applyFilters();
+    }
+    else{btns.forEach(function(b){b.disabled=false;});alert('Could not update priority. Please try again.');}
+  }catch(err){btns.forEach(function(b){b.disabled=false;});alert('Error: '+err.message);}
+}
+async function markReviewed(recordId,btnEl){
+  btnEl.disabled=true;btnEl.textContent='Saving...';
+  try{
+    var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:recordId,reviewed:true})});
+    if(res.ok){
+      lastPriorityReviewFeed=lastPriorityReviewFeed.filter(function(r){return r.id!==recordId;});
+      renderPrioritySection(lastPriorityReviewFeed);
+      applyFilters();
+    }
+    else{btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Could not mark as reviewed. Please try again.');}
+  }catch(err){btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Error: '+err.message);}
+}
+function makePriorityCard(record){
+  var f=record.fields;var current=(f['Priority']||'Medium');var rep=f['Rep Name']||'Unknown';var date=formatDate(f['Visit Date']);
+  var div=document.createElement('div');div.className='priority-card';
+  var buttonsHtml='';
+  if(isManager){
+    buttonsHtml='<div class="priority-btns"><button class="pbtn pbtn-high'+(current==="High"?' pbtn-active-high':'')+'" data-p="High"><span class="pdot pdot-high"></span>High</button><button class="pbtn pbtn-medium'+(current==="Medium"?' pbtn-active-medium':'')+'" data-p="Medium"><span class="pdot pdot-medium"></span>Medium</button><button class="pbtn pbtn-low'+(current==="Low"?' pbtn-active-low':'')+' " data-p="Low"><span class="pdot pdot-low"></span>Low</button></div><button class="pbtn-reviewed">✓ Mark Reviewed</button>';
+  }else{
+    var labelClass=current==='High'?'plabel-high':current==='Low'?'plabel-low':'plabel-medium';var dotCls=current==='High'?'pdot-high':current==='Low'?'pdot-low':'pdot-medium';var dot='<span class="pdot '+dotCls+'"></span>';
+    buttonsHtml='<div><span class="priority-label '+labelClass+'">'+dot+' '+current+'</span></div>';
+  }
+  div.innerHTML='<div class="priority-card-header"><div><div class="priority-hospital">'+(f['Hospital Name']||'Unknown')+'</div><div class="priority-meta">'+rep+' · '+date+(f['Territory']?' · '+f['Territory']:'')+'</div></div></div>'+buttonsHtml;
+  if(isManager){
+    div.querySelectorAll('.pbtn').forEach(function(btn){btn.addEventListener('click',function(){if(btn.getAttribute('data-p')!==current){updatePriority(record.id,btn.getAttribute('data-p'),div);}});});
+    var reviewedBtn=div.querySelector('.pbtn-reviewed');if(reviewedBtn){reviewedBtn.addEventListener('click',function(){markReviewed(record.id,reviewedBtn);});}
+  }
+  return div;
+}
+function toggleOpenActions(){document.getElementById('openActionsBody').classList.toggle('open');document.getElementById('oaArrow').classList.toggle('rotated');}
+function renderPrioritySection(records){
+  var high=[],medium=[],low=[];
+  records.forEach(function(r){var p=r.fields['Priority']||'';if(p==='High')high.push(r);else if(p==='Medium')medium.push(r);else if(p==='Low')low.push(r);});
+  var countEl=document.getElementById('openActionsCount');if(countEl)countEl.textContent=high.length+medium.length+low.length;
+  function renderBucket(el,list,label,dot,priorityValue){
+    el.innerHTML='<a href="'+buildVisitHistoryLink({priority:priorityValue})+'" class="priority-header" style="text-decoration:none;color:inherit"><div class="priority-dot" style="background:'+dot+'"></div><span class="priority-title">'+label+' →</span><span class="priority-count">('+list.length+')</span></a>';
+    if(list.length===0){el.innerHTML+='<div class="empty" style="padding:8px">None</div>';}
+    else{list.forEach(function(r){el.appendChild(makePriorityCard(r));});}
+  }
+  renderBucket(document.getElementById('priorityHigh'),high,'High Priority','#ff4444','High');
+  renderBucket(document.getElementById('priorityMedium'),medium,'Medium Priority','#ffaa44','Medium');
+  renderBucket(document.getElementById('priorityLow'),low,'Low Priority','#44cc88','Low');
+}
+// Normalizes a Territory value for comparison/grouping purposes across this
+// page. Deliberately narrower than fieldiq-accounts.html's
+// getCanonicalTerritory(): that function collapses any unrecognized value
+// into "Unassigned", which would hide a genuinely new/different territory
+// by merging it with blank records. This version only fixes the proven
+// issue — the "Saudi Arabia" vs "KSA" split that function's own logic
+// proves exists in real visit data — and otherwise preserves any other
+// distinct territory value untouched, just trimmed. Used consistently by
+// every function on this page that groups or filters by Territory, so
+// Territory Coverage counts, CSV export, and the Rep Review Report all
+// agree with each other.
+function normalizeTerritory(raw){
+  var t=(raw||'').trim();
+  if(!t)return'Unknown';
+  var tu=t.toUpperCase();
+  if(tu.indexOf('SAUDI ARABIA')===0||tu==='KSA')return'KSA';
+  if(tu==='UAE')return'UAE';
+  if(tu==='QATAR')return'Qatar';
+  if(tu==='KUWAIT')return'Kuwait';
+  if(tu==='BAHRAIN')return'Bahrain';
+  if(tu==='OMAN')return'Oman';
+  return t;
+}
+// Fetches /get-dashboard with the given filter values (all optional).
+// No caching — every call is a genuine, fresh server-side aggregation, so
+// Mark Reviewed / priority changes are always reflected on next fetch.
+async function fetchDashboardAggregate(filters){
+  var q=[];
+  if(filters&&filters.rep)q.push('rep='+encodeURIComponent(filters.rep));
+  if(filters&&filters.territory)q.push('territory='+encodeURIComponent(filters.territory));
+  if(filters&&filters.priority)q.push('priority='+encodeURIComponent(filters.priority));
+  if(filters&&filters.period)q.push('period='+encodeURIComponent(filters.period));
+  var url=WORKER_URL+'/get-dashboard'+(q.length?'?'+q.join('&'):'');
+  var res=await fetch(url);
+  var agg=await res.json();
+  if(!res.ok)throw new Error(JSON.stringify(agg));
+  return agg;
+}
+// Paints every dashboard widget from the pre-aggregated /get-dashboard
+// response. Replaces the old buildDashboard(records), which recomputed all
+// of this client-side from the full raw record set on every load.
+function renderDashboardSummary(agg){
+  document.getElementById('kpiTotal').textContent=agg.kpi.total;
+  document.getElementById('kpiNewAccounts').textContent=agg.kpi.newAccountsPending;
+  document.getElementById('kpiMonth').textContent=agg.kpi.month;
+  document.getElementById('kpiWeekSub').textContent=agg.kpi.week+' this week';
+  document.getElementById('kpiReps').textContent=agg.kpi.repCount;
+  var sentCounts=agg.sentiment;
+  var ws=sentCounts.positive+sentCounts.neutral+sentCounts.negative;
+  function pct(n){return ws>0?Math.round(n/ws*100)+'%':'0%';}
+  document.getElementById('sentPositive').textContent=pct(sentCounts.positive);
+  document.getElementById('sentNeutral').textContent=pct(sentCounts.neutral);
+  document.getElementById('sentNegative').textContent=pct(sentCounts.negative);
+  var repRows='';
+  var topReps=agg.reps.slice(0,5);
+  topReps.forEach(function(r){
+    var ld=r.lastVisit?new Date(r.lastVisit).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'—';
+    repRows+='<tr><td><a href="'+buildVisitHistoryLink({rep:r.name})+'" style="color:#0b1f3a;font-weight:700;text-decoration:none">'+r.name+' →</a></td><td style="color:#2f8fff;font-weight:800">'+r.count+'</td><td>'+ld+'</td><td><span class="activity-badge '+getBadgeClass(r.sentiment)+'">'+r.sentiment+'</span></td></tr>';
+  });
+  document.getElementById('repTable').innerHTML=repRows||'<tr><td colspan="4" class="empty">No rep data yet</td></tr>';
+  var moreLinkEl=document.getElementById('repTableMoreLink');
+  if(agg.reps.length>5){
+    moreLinkEl.innerHTML='<a href="'+buildVisitHistoryLink({})+'" style="display:block;text-align:right;font-size:12px;font-weight:700;color:#2f8fff;text-decoration:none;margin-top:8px">View all '+agg.reps.length+' reps in Visit History →</a>';
+  }else{
+    moreLinkEl.innerHTML='';
+  }
+  var maxT=Math.max.apply(null,agg.territories.map(function(t){return t.count;}).concat([1]));var terrHtml='';
+  agg.territories.forEach(function(t){
+    var pw=Math.round(t.count/maxT*100);
+    terrHtml+='<a href="'+buildVisitHistoryLink({territory:t.name})+'" style="text-decoration:none;color:inherit;display:block"><div class="territory-item"><div class="territory-header"><span class="territory-name">'+t.name+'</span><span class="territory-count">'+t.count+' visits</span></div><div class="territory-bar-bg"><div class="territory-bar-fill" style="width:'+pw+'%"></div></div></div></a>';
+  });
+  document.getElementById('territoryBars').innerHTML=terrHtml||'<div class="empty">No territory data yet</div>';
+  var flatPriority=[].concat(agg.priorityReview.high,agg.priorityReview.medium,agg.priorityReview.low);
+  lastPriorityReviewFeed=flatPriority;
+  renderPrioritySection(flatPriority);
+  lastNewAccountsFeed=agg.newAccountsFeed;
+  buildNewAccountsCard(agg.newAccountsFeed);
+  renderManagementRadar(agg.managementRadar);
+  document.getElementById('loadingEl').style.display='none';
+  document.getElementById('dashContent').style.display='block';
+  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
+}
+// Renders Management Radar from the pre-computed managementRadar array
+// already included in the /get-dashboard response — same account-flagging
+// logic as before, just computed server-side now instead of requiring a
+// separate full-table fetch. Rendering HTML is identical to the original.
+function renderManagementRadar(radarItems){
+  var html='';
+  (radarItems||[]).forEach(function(acc){
+    var link=acc.visitId?buildVisitHistoryLink({visitId:acc.visitId}):buildVisitHistoryLink({});
+    var safeName=escapeHtml(acc.name);
+    html+='<a href="'+link+'" data-radar-account="'+safeName+'" onclick="try{sessionStorage.setItem(\'fieldiq_dashboard_lastRadarCard\',this.getAttribute(\'data-radar-account\'));}catch(e){}" style="text-decoration:none;color:inherit;display:block"><div class="radar-card"><div class="radar-card-header"><div class="radar-account">'+safeName+'</div>'+(acc.territory?'<span class="activity-badge badge-territory">'+escapeHtml(acc.territory)+'</span>':'')+'</div><div class="radar-evidence-label">Why AI flagged this</div><div class="radar-evidence">'+acc.evidence.map(function(e){return'<div class="radar-evidence-line">'+escapeHtml(e)+'</div>';}).join('')+'</div><div class="radar-date">Last visit: '+formatDate(acc.lastVisit)+'</div></div></a>';
+  });
+  document.getElementById('managementRadar').innerHTML=html||'<div class="empty">No accounts currently need attention</div>';
+}
+var allRecordsRaw=[];
+// Populates the rep filter dropdown's option list directly from the fast
+// /get-dashboard response — called once, on the initial unfiltered load
+// only, so the dropdown always shows every rep regardless of which filter
+// is currently active (matches original behavior, which built this list
+// once from the full record set rather than re-deriving it on every
+// filter change).
+function populateRepFilterFromAgg(agg){
+  var sel=document.getElementById('filterRep');
+  while(sel.options.length>1)sel.remove(1);
+  agg.reps.map(function(r){return r.name;}).sort().forEach(function(r){var o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});
+}
+// On-demand full-record loader. NOT called automatically on page load —
+// only when the user actually triggers something that genuinely needs raw
+// per-record detail beyond what /get-dashboard's aggregates provide: CSV
+// export or the Rep Review Report. Promise-cached so concurrent triggers
+// (e.g. clicking both quickly) don't fire duplicate full-table fetches.
+var _fullRecordsLoadPromise=null;
+async function ensureFullRecordsLoaded(){
+  if(allRecordsRawLoaded)return;
+  if(_fullRecordsLoadPromise)return _fullRecordsLoadPromise;
+  _fullRecordsLoadPromise=(async function(){
+    var res=await fetch(WORKER_URL+'/get-visits');
+    var data=await res.json();
+    if(!res.ok)throw new Error(JSON.stringify(data));
+    allRecordsRaw=data.records||[];
+    allRecordsRaw.forEach(function(r){r._vDate=r.fields['Visit Date']?new Date(r.fields['Visit Date']):null;});
+    allRecordsRawLoaded=true;
+  })();
+  try{await _fullRecordsLoadPromise;}finally{_fullRecordsLoadPromise=null;}
+}
+function getFilteredRecords(){
+  var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var period=document.getElementById('filterDate').value;var priority=document.getElementById('filterPriority').value;
+  var cutoff=null;var range={start:null,end:null};
+  if(period==='30'||period==='90'){cutoff=new Date(Date.now()-parseInt(period)*24*60*60*1000);}
+  else if(period){range=getPeriodRange(period);}
+  return allRecordsRaw.filter(function(r){
+    var f=r.fields;var repName=(f['Rep Name']||'').trim();repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();
+    if(rep&&repName!==rep)return false;if(terr&&normalizeTerritory(f['Territory'])!==terr)return false;if(priority&&f['Priority']!==priority)return false;
+    if(cutoff&&r._vDate&&r._vDate<cutoff)return false;
+    if(range.start||range.end){if(!r._vDate)return false;var vDate=r._vDate;if(range.start&&vDate<range.start)return false;if(range.end&&vDate>range.end)return false;}
+    return true;
+  });
+}
+function csvEscape(val){val=(val===null||val===undefined)?'':String(val);if(val.indexOf('"')>-1||val.indexOf(',')>-1||val.indexOf('\n')>-1){val='"'+val.replace(/"/g,'""')+'"';}return val;}
+async function exportFilteredCSV(){if(!allRecordsRawLoaded){try{await ensureFullRecordsLoaded();}catch(err){alert('Failed to load full visit history: '+err.message);return;}}var records=getFilteredRecords();if(!records.length){alert('No visits match the current filters — nothing to export.');return;}var headers=['Account','Territory','Date','Rep','Priority','Outcome'];var rows=[headers.join(',')];records.forEach(function(r){var f=r.fields;var row=[f['Hospital Name']||'',f['Territory']||'',f['Visit Date']||'',f['Rep Name']||'',f['Priority']||'',f['Outcome']||''].map(csvEscape);rows.push(row.join(','));});var csvContent=rows.join('\n');var blob=new Blob([csvContent],{type:'text/csv;charset=utf-8;'});var url=URL.createObjectURL(blob);var a=document.createElement('a');var today=new Date().toISOString().slice(0,10);a.href=url;a.download='FieldIQ-Visits-'+today+'.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
+// Priority Review's "hide once reviewed" logic previously required
+// r.fields['Reviewed'] to be the exact JS boolean true. If Airtable ever
+// returns this field as a string, number, or differently-cased value, that
+// strict check silently fails and a reviewed card can reappear. This
+// tolerates every plausible representation without weakening the actual
+// PATCH write, which still always sends a real boolean.
+// Note: also reused for the "Pending Review" field (New Accounts / Rep
+// Review Report) for the same reason — it's a generic true-like-value
+// check, not specific to the Reviewed field despite the function name.
+function isReviewed(value){
+  if(value===true)return true;
+  if(value===1)return true;
+  if(typeof value==='string'){
+    var v=value.trim().toLowerCase();
+    return v==='true'||v==='1'||v==='yes';
+  }
+  return false;
+}
+function escapeHtml(s){s=(s===null||s===undefined)?'':String(s);return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function groupCount(records,getKey){var counts={};records.forEach(function(r){var key=getKey(r)||'Unspecified';counts[key]=(counts[key]||0)+1;});return counts;}
+function countsToRows(counts){return Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];}).map(function(k){return'<div class="rr-count-row"><span>'+escapeHtml(k)+'</span><span>'+counts[k]+'</span></div>';}).join('');}
+var reportPeriodDays=30;
+var REPORT_PERIOD_LABELS={7:'Last 7 Days',30:'Last 30 Days',90:'Quarterly',180:'Half-Yearly',365:'Annual'};
+function toggleReportPeriodPanel(){var panel=document.getElementById('reportPeriodPanel');var willOpen=panel.style.display!=='block';if(willOpen){reportPeriodDays=30;document.querySelectorAll('.rp-pill').forEach(function(p){p.classList.toggle('active',p.getAttribute('data-days')==='30');});}panel.style.display=willOpen?'block':'none';}
+function selectReportPeriod(days,el){reportPeriodDays=days;document.querySelectorAll('.rp-pill').forEach(function(p){p.classList.remove('active');});el.classList.add('active');}
+function getReportRecords(days){
+  var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var priority=document.getElementById('filterPriority').value;
+  var endDate=new Date();var startDate=new Date(endDate.getTime()-days*24*60*60*1000);
+  return allRecordsRaw.filter(function(r){
+    var f=r.fields;var repName=(f['Rep Name']||'').trim();repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();
+    if(rep&&repName!==rep)return false;if(terr&&normalizeTerritory(f['Territory'])!==terr)return false;if(priority&&f['Priority']!==priority)return false;
+    if(!r._vDate)return false;var vDate=r._vDate;if(vDate<startDate||vDate>endDate)return false;return true;
+  });
+}
+async function buildRepReviewReport(){
+  if(!allRecordsRawLoaded){try{await ensureFullRecordsLoaded();}catch(err){alert('Failed to load full visit history: '+err.message);return;}}
+  var days=reportPeriodDays;var endDate=new Date();var startDate=new Date(endDate.getTime()-days*24*60*60*1000);var records=getReportRecords(days);
+  var rep=document.getElementById('filterRep').value||'All Reps';var terr=document.getElementById('filterTerritory').value||'All Territories';
+  var periodLabel=REPORT_PERIOD_LABELS[days]||(days+' Days');var startLabel=formatDate(startDate);var endLabel=formatDate(endDate);var generated=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('reportPeriodPanel').style.display='none';
+  if(!records.length){var emptyWin=window.open('','_blank');if(!emptyWin){alert('Please allow pop-ups for this site to generate the report.');return;}emptyWin.document.write('<html><head><title>Rep Review Report</title></head><body style="font-family:sans-serif;padding:40px;text-align:center;color:#555"><h2>No visits match the current filters</h2><p>Reporting Period: '+escapeHtml(periodLabel)+' ('+startLabel+' – '+endLabel+')</p><p>Adjust the filters or choose a longer period and try again.</p></body></html>');emptyWin.document.close();return;}
+  var totalVisits=records.length;var accountSet={};records.forEach(function(r){accountSet[(r.fields['Hospital Name']||'Unknown').trim()]=true;});var accountsVisited=Object.keys(accountSet).length;
+  var newAccounts=records.filter(function(r){return r.fields['New Account']===true;});var visitTypeCounts=groupCount(records,function(r){return r.fields['Visit Type'];});var outcomeCounts=groupCount(records,function(r){return r.fields['Outcome'];});var priorityCounts=groupCount(records,function(r){return r.fields['Priority'];});var highPriority=records.filter(function(r){return r.fields['Priority']==='High';});var followUps=records.filter(function(r){return r.fields['Action Items']&&String(r.fields['Action Items']).trim();});
+  var prompts=[];if(highPriority.length>0){prompts.push('Discuss the '+highPriority.length+' High Priority opportunit'+(highPriority.length===1?'y':'ies')+' below — what is the next step on each?');}var negNeutral=(outcomeCounts['Negative']||0)+(outcomeCounts['Neutral']||0);if(negNeutral>0){prompts.push(negNeutral+' visit'+(negNeutral===1?'':'s')+' had a Negative or Neutral outcome — what happened, and what is the plan?');}var pendingNew=newAccounts.filter(function(r){return isReviewed(r.fields['Pending Review']);});if(pendingNew.length>0){prompts.push(pendingNew.length+' new account'+(pendingNew.length===1?'':'s')+' still awaiting review — confirm details and prioritize next steps.');}if(followUps.length>0){prompts.push(followUps.length+' visit'+(followUps.length===1?'':'s')+' have open follow-ups — confirm status on each below.');}if(prompts.length===0){prompts.push('No specific flags this period — use this time for general check-in and forward planning.');}
+  var visitRows=records.slice().sort(function(a,b){return new Date(b.fields['Visit Date'])-new Date(a.fields['Visit Date']);}).map(function(r){var f=r.fields;return'<tr><td>'+escapeHtml(f['Hospital Name']||'—')+'</td><td>'+escapeHtml(f['Territory']||'—')+'</td><td>'+formatDate(f['Visit Date'])+'</td><td>'+escapeHtml(f['Visit Type']||'—')+'</td><td>'+escapeHtml(f['Priority']||'—')+'</td><td>'+escapeHtml(f['Outcome']||'—')+'</td></tr>';}).join('');
+  var newAccountRows=newAccounts.length?newAccounts.map(function(r){var f=r.fields;return'<tr><td>'+escapeHtml(f['Hospital Name']||'—')+'</td><td>'+escapeHtml(f['Territory']||'—')+'</td><td>'+escapeHtml(f['Rep Name']||'—')+'</td><td>'+formatDate(f['Visit Date'])+'</td><td>'+(isReviewed(f['Pending Review'])?'Pending':'Reviewed')+'</td></tr>';}).join(''):'<tr><td colspan="5" class="rr-empty">No new accounts discovered this period.</td></tr>';
+  var highPriorityBlocks=highPriority.length?highPriority.map(function(r){var f=r.fields;var summary=f['Meeting Notes']||f['AI Summary']||'No summary available.';return'<div class="rr-highlight"><div class="rr-highlight-head"><strong>'+escapeHtml(f['Hospital Name']||'—')+'</strong> · '+escapeHtml(f['Rep Name']||'—')+' · '+formatDate(f['Visit Date'])+' · <span class="rr-priority-tag">'+escapeHtml(f['Priority']||'—')+'</span></div><div class="rr-highlight-body">'+escapeHtml(summary)+'</div></div>';}).join(''):'<p class="rr-empty">No High Priority visits this period.</p>';
+  var followUpRows=followUps.length?followUps.map(function(r){var f=r.fields;return'<tr><td>'+escapeHtml(f['Hospital Name']||'—')+'</td><td>'+escapeHtml(f['Rep Name']||'—')+'</td><td>'+formatDate(f['Visit Date'])+'</td><td>'+escapeHtml(f['Action Items'])+'</td></tr>';}).join(''):'<tr><td colspan="4" class="rr-empty">No open follow-ups logged this period.</td></tr>';
+  var reportPayload=JSON.stringify({meta:{rep:rep,terr:terr,periodLabel:periodLabel,startLabel:startLabel,endLabel:endLabel,generated:generated},summary:{totalVisits:totalVisits,accountsVisited:accountsVisited,newAccountsCount:newAccounts.length,highPriorityCount:highPriority.length,visitTypeHtml:countsToRows(visitTypeCounts),outcomeHtml:countsToRows(outcomeCounts),priorityHtml:countsToRows(priorityCounts)},prompts:prompts,html:{visitRows:visitRows,newAccountRows:newAccountRows,highPriorityBlocks:highPriorityBlocks,followUpRows:followUpRows}});
+  try{localStorage.setItem('fieldiq_report',reportPayload);}catch(e){alert('Report data is too large for this device. Please filter by Rep or use a shorter reporting period.');return;}
+  var rLink=document.createElement('a');rLink.href='fieldiq-report.html';rLink.target='_blank';rLink.rel='noopener noreferrer';document.body.appendChild(rLink);rLink.click();document.body.removeChild(rLink);
+}
+async function applyFilters(){
+  var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var period=document.getElementById('filterDate').value;var priority=document.getElementById('filterPriority').value;
+  var periodLabels={today:'Today',yesterday:'Yesterday',thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};
+  var parts=[];if(rep)parts.push('Rep: '+rep);if(terr)parts.push('Territory: '+terr);if(period)parts.push(periodLabels[period]||period);if(priority)parts.push('Priority: '+priority);
+  try{
+    var agg=await fetchDashboardAggregate({rep:rep,territory:terr,period:period,priority:priority});
+    document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+agg.kpi.total+' visits)':'';
+    renderDashboardSummary(agg);
+  }catch(err){
+    document.getElementById('filterStatus').textContent='Failed to apply filters: '+err.message;
+  }
+}
+async function resetFilters(){
+  document.getElementById('filterRep').value='';document.getElementById('filterTerritory').value='';document.getElementById('filterDate').value='';document.getElementById('filterPriority').value='';document.getElementById('filterStatus').textContent='';document.getElementById('reportPeriodPanel').style.display='none';reportPeriodDays=30;
+  document.querySelectorAll('.rp-pill').forEach(function(p){p.classList.toggle('active',p.getAttribute('data-days')==='30');});
+  try{
+    var agg=await fetchDashboardAggregate();
+    renderDashboardSummary(agg);
+  }catch(err){
+    document.getElementById('filterStatus').textContent='Failed to reset filters: '+err.message;
+  }
+}
+// Restores working context after returning from a Visit History drill-down
+// (e.g. via a Management Radar card): dashboard filters from URL params
+// (rep/territory/priority/period — same param names buildVisitHistoryLink()
+// already writes), then a one-shot scroll + brief highlight back to the
+// specific Radar card that was opened, identified by hospital name — a
+// stable identity, not list position. The Radar list can legitimately
+// reorder or shrink between visits, since reviewing a flagged account is
+// often exactly what resolves the flag; if the card is gone, that's a
+// correct outcome, not a failure to restore.
+async function restoreDashboardContext(){
+  var params=new URLSearchParams(window.location.search);
+  var rep=params.get('rep')||'';
+  var territory=params.get('territory')||'';
+  var priority=params.get('priority')||'';
+  var period=params.get('period')||'';
+  if(rep||territory||priority||period){
+    document.getElementById('filterRep').value=rep;
+    document.getElementById('filterTerritory').value=territory;
+    document.getElementById('filterPriority').value=priority;
+    document.getElementById('filterDate').value=period;
+    try{
+      var agg=await fetchDashboardAggregate({rep:rep,territory:territory,priority:priority,period:period});
+      var periodLabels={today:'Today',yesterday:'Yesterday',thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};
+      var parts=[];if(rep)parts.push('Rep: '+rep);if(territory)parts.push('Territory: '+territory);if(period)parts.push(periodLabels[period]||period);if(priority)parts.push('Priority: '+priority);
+      document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+agg.kpi.total+' visits)':'';
+      renderDashboardSummary(agg);
+    }catch(err){
+      document.getElementById('filterStatus').textContent='Failed to restore filters: '+err.message;
+    }
+  }
+  var lastCard=null;
+  try{lastCard=sessionStorage.getItem('fieldiq_dashboard_lastRadarCard');sessionStorage.removeItem('fieldiq_dashboard_lastRadarCard');}catch(e){}
+  if(lastCard!==null){
+    var radarSection=document.getElementById('managementRadar');
+    if(radarSection){
+      radarSection.scrollIntoView({behavior:'smooth',block:'start'});
+      var cards=radarSection.querySelectorAll('[data-radar-account]');
+      for(var i=0;i<cards.length;i++){
+        if(cards[i].getAttribute('data-radar-account')===lastCard){
+          var cardDiv=cards[i].querySelector('.radar-card');
+          if(cardDiv){
+            cardDiv.classList.add('radar-card-highlighted');
+            (function(el){setTimeout(function(){el.classList.remove('radar-card-highlighted');},4000);})(cardDiv);
+          }
+          break;
+        }
+      }
+    }
+  }
+}
+async function loadDashboard(){
+  var _ctrl=new AbortController();
+  var _timer=setTimeout(function(){_ctrl.abort();},15000);
+  try{
+    var res=await fetch(WORKER_URL+'/get-dashboard',{signal:_ctrl.signal});
+    clearTimeout(_timer);
+    var agg=await res.json();if(!res.ok)throw new Error(JSON.stringify(agg));
+    renderDashboardSummary(agg);
+    populateRepFilterFromAgg(agg);
+    document.getElementById('filterBar').style.display='block';
+    await restoreDashboardContext();
+    loadWatchlist();
+  }catch(err){
+    clearTimeout(_timer);
+    var msg=(err.name==='AbortError')?'Request timed out — check your connection.':('Failed to load: '+err.message);
+    document.getElementById('loadingEl').innerHTML='<div style="text-align:center;padding:20px;color:#e0344a;font-weight:700">'+msg+'</div><div style="text-align:center;margin-top:12px"><button onclick="loadDashboard()" style="background:#2f8fff;color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer">Retry</button></div>';
+  }
+}
+// ── My Watchlist ──────────────────────────────────────────────────────────
+// Fetched separately from the main dashboard aggregate and never awaited
+// inline in loadDashboard() — a failure or delay here must never affect
+// Priority Review, New Accounts, or Management Radar loading. Manually
+// curated, Account-level, entirely independent of AI Strategic
+// Intelligence scoring — watching an account never changes its AI score,
+// and AI never adds or removes watched accounts.
+async function loadWatchlist(){
+  try{
+    var res=await fetch(WORKER_URL+'/get-watchlist');
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Could not load watchlist');
+    renderWatchlistSection(data.records||[]);
+  }catch(err){
+    console.error('Could not load watchlist:',err);
+    document.getElementById('myWatchlist').innerHTML='<div class="empty">Could not load watchlist.</div>';
+  }
+}
+function renderWatchlistSection(records){
+  var el=document.getElementById('myWatchlist');
+  if(!records.length){el.innerHTML='<div class="empty">No accounts on your watchlist yet. Star an account from Visit History to add it here.</div>';return;}
+  var html='<div class="watchlist-grid">';
+  records.forEach(function(w){
+    var link=w.visitId?buildVisitHistoryLink({visitId:w.visitId}):buildVisitHistoryLink({});
+    html+='<a href="'+link+'" style="text-decoration:none;color:inherit;display:block"><div class="watchlist-card">'+
+      '<div class="radar-card-header"><div class="radar-account">'+escapeHtml(w.accountName)+'</div>'+(w.territory?'<span class="activity-badge badge-territory">'+escapeHtml(w.territory)+'</span>':'')+'</div>'+
+      '<div class="watchlist-meta">'+
+        (w.lastRep?'<span class="meta-chip">Rep: '+escapeHtml(w.lastRep)+'</span>':'')+
+        (w.priority?'<span class="meta-chip">Priority: '+escapeHtml(w.priority)+'</span>':'')+
+        '<span class="meta-chip">Open actions: '+w.openActionCount+'</span>'+
+      '</div>'+
+      '<div class="radar-date">Last visit: '+formatDate(w.lastVisit)+'</div>'+
+    '</div></a>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+async function markPendingReviewed(recordId,btnEl){
+  btnEl.disabled=true;btnEl.textContent='Saving...';
+  try{
+    var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:recordId,pendingReview:false})});
+    if(res.ok){
+      var idx=lastNewAccountsFeed.findIndex(function(r){return r.id===recordId;});
+      if(idx>-1)lastNewAccountsFeed[idx].fields['Pending Review']=false;
+      buildNewAccountsCard(lastNewAccountsFeed);
+      var countEl=document.getElementById('kpiNewAccounts');
+      if(countEl){var n=parseInt(countEl.textContent,10);if(!isNaN(n)&&n>0)countEl.textContent=n-1;}
+      applyFilters();
+    }
+    else{btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Could not mark as reviewed. Please try again.');}
+  }catch(err){btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Error: '+err.message);}
+}
+function buildNewAccountsCard(records){
+  var newOnes=records.filter(function(r){var f=r.fields;var isNew=f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1';var stillPending=isReviewed(f['Pending Review']);return isNew&&stillPending;});
+  newOnes.sort(function(a,b){var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):0;var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):0;return db-da;});newOnes=newOnes.slice(0,10);
+  var container=document.getElementById('newAccountsList');container.innerHTML='';
+  if(newOnes.length===0){container.innerHTML='<div class="empty">No new accounts added recently</div>';return;}
+  newOnes.forEach(function(r){
+    var f=r.fields;var div=document.createElement('div');div.className='activity-item';
+    div.innerHTML='<a href="fieldiq-visit-history.html?visitId='+encodeURIComponent(r.id)+'" style="text-decoration:none;color:inherit;display:block"><div class="activity-header"><div class="activity-hospital">'+(f['Hospital Name']||'Unknown')+'</div><div class="activity-date">'+formatDate(f['Visit Date'])+'</div></div><div class="activity-meta">'+(f['Rep Name']?'<span class="activity-badge badge-rep">'+f['Rep Name']+'</span>':'')+(f['Territory']?'<span class="activity-badge badge-territory">'+f['Territory']+'</span>':'')+(f['City']?'<span class="activity-badge badge-territory">'+f['City']+'</span>':'')+'</div></a>';
+    var btn=document.createElement('button');btn.className='pbtn-reviewed';btn.style.marginTop='8px';btn.textContent='✓ Mark Reviewed';btn.addEventListener('click',function(){markPendingReviewed(r.id,btn);});div.appendChild(btn);container.appendChild(div);
+  });
+}
+if (role !== 'Manager') {
+  document.getElementById('loadingEl').style.display = 'none';
+  document.getElementById('accessDeniedHomeBtn').href = './index.html';
+  document.getElementById('accessDeniedEl').style.display = 'flex';
+} else {
+  document.getElementById('managerBadge').style.display='inline-flex';
+  loadDashboard();
+}
+document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
+
+</script>
+<script>
+// Back-to-top floating button — purely cosmetic, self-contained. Created
+// entirely via JS so no existing HTML/IDs/layout are touched. Appears only
+// after scrolling past 500px, scrolls smoothly to top on click. Does not
+// interact with navigation, business logic, or any data.
+(function(){
+  var btn=document.createElement('button');
+  btn.type='button';
+  btn.className='back-to-top';
+  btn.setAttribute('aria-label','Back to top');
+  btn.textContent='↑';
+  btn.addEventListener('click',function(){
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+  document.addEventListener('DOMContentLoaded',function(){
+    document.body.appendChild(btn);
+  });
+  window.addEventListener('scroll',function(){
+    btn.classList.toggle('visible',(window.scrollY||document.documentElement.scrollTop)>500);
+  },{passive:true});
+})();
 </script>
 </body>
 </html>
