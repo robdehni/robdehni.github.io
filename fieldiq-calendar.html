@@ -15,7 +15,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .brand-text h1 span{color:#2f8fff}
 .brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
 .header{margin-bottom:18px}
-.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600}
+p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text-transform:none;letter-spacing:normal}
 .home-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;box-shadow:0 2px 8px rgba(11,31,58,0.05)}
 .summary{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
 .summary-left{display:flex;align-items:center;gap:10px}
@@ -101,7 +101,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 <div class="container">
   <div class="header">
     <div class="brand"><span class="brand-cloud">☁️</span><div class="brand-text"><h1>Field<span>IQ</span></h1><p>Territory Intelligence Platform</p></div></div>
-    <p class="page-subtitle">Calendar</p>
+    <p class="page-subtitle">See your upcoming visits, due dates and follow-ups in one place.</p>
   </div>
 
   <a href="./index.html" class="home-btn">← Home</a>
@@ -397,13 +397,6 @@ function renderDayPanel(isoDate,dayActions){
     html+='<div class="cal-action-account">'+escapeHtml(account)+(time?'<span class="time-pill">'+escapeHtml(time)+'</span>':'')+'</div>';
     html+='<div class="cal-action-text">'+escapeHtml(action||'Open action')+'</div>';
     html+='<a class="cal-action-link" href="./fieldiq-open-actions.html?actionId='+escapeHtml(r.id)+'&returnTo=calendar&calYear='+viewYear+'&calMonth='+viewMonth+'&calDay='+escapeHtml(isoDate)+'" onclick="event.stopPropagation()">→ Open in My Actions</a>';
-    // "Log Update" — single voice engine entry point. Reuses the existing
-    // Log Visit pipeline with the account pre-filled. There is no separate
-    // "Follow-up" Visit Type — every interaction is simply another Visit.
-    // The originating action record (r.id) is carried as sourceRef, silent
-    // plumbing only, so Log Visit's AI context step can target the correct
-    // prior interaction instead of guessing "most recent." Never sent to
-    // the Worker, never shown to the rep, never written to any record.
     html+=' &nbsp;&middot;&nbsp; <a class="cal-action-link" href="./fieldiq-log-visit.html?account='+encodeURIComponent(account)+'&sourceRef='+encodeURIComponent(r.id)+'&calYear='+viewYear+'&calMonth='+viewMonth+'&calDay='+encodeURIComponent(isoDate)+'" onclick="event.stopPropagation()">\ud83c\udf99\ufe0f Log Update</a>';
     html+='</div>';
   });
@@ -429,25 +422,20 @@ function openActionPopupById(actionId){
   var f=r.fields||{};
   currentPopupActionId=actionId;
 
-  // Populate default view
   document.getElementById('apTitle').textContent=getActionText(f)||'Open Action';
   document.getElementById('apDate').textContent='Due: '+formatDayLabel(getDueDate(f));
 
-  // Populate reschedule view
   document.getElementById('apRescheduleTitle').textContent=getAccountName(f);
   var newDateInput=document.getElementById('apNewDate');
   newDateInput.min=todayISO();
   newDateInput.value=getDueDate(f);
   document.getElementById('apReason').value='';
 
-  // Show default view, hide reschedule view
   document.getElementById('apViewDefault').classList.remove('hidden');
   document.getElementById('apViewReschedule').classList.add('hidden');
 
-  // Un-busy all buttons
   setPopupBusy(false);
 
-  // Show overlay
   document.getElementById('apOverlay').classList.remove('hidden');
 }
 
@@ -462,7 +450,7 @@ function setPopupBusy(busy){
 }
 
 async function doCompleteAction(){
-  var idToComplete=currentPopupActionId; // snapshot before async gap
+  var idToComplete=currentPopupActionId;
   if(!idToComplete)return;
   setPopupBusy(true);
   try{
@@ -473,7 +461,7 @@ async function doCompleteAction(){
     });
     var data=await res.json();
     if(!res.ok)throw new Error((data&&data.error)||('Worker error '+res.status));
-    removeEventById(idToComplete); // only runs after Airtable confirms success
+    removeEventById(idToComplete);
     closeActionPopup();
   }catch(e){
     setPopupBusy(false);
@@ -527,7 +515,6 @@ async function doRescheduleAction(){
 function removeEventById(id){
   events=events.filter(function(e){return e.id!==id;});
   document.getElementById('countPill').textContent=events.length;
-  // If selected day now empty, close the panel
   if(selectedDayISO){
     var remaining=events.filter(function(e){
       return getDueDate(e.fields||{})===selectedDayISO;
@@ -545,7 +532,6 @@ function updateEventDueDate(id,newDate){
       return String(getDueDate(a.fields||{})).localeCompare(String(getDueDate(b.fields||{})));
     });
   }
-  // Navigate to the month of the new date and select that day
   var parts=newDate.split('-');
   viewYear=parseInt(parts[0],10);
   viewMonth=parseInt(parts[1],10)-1;
@@ -553,12 +539,9 @@ function updateEventDueDate(id,newDate){
   render();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-
 document.addEventListener('DOMContentLoaded',function(){
   lucide.createIcons();
 
-  // Popup button listeners (wired once, survive render() rebuilds)
   document.getElementById('apBtnClose').addEventListener('click',closeActionPopup);
   document.getElementById('apBtnComplete').addEventListener('click',doCompleteAction);
   document.getElementById('apBtnCancel').addEventListener('click',doCancelAction);
@@ -573,12 +556,10 @@ document.addEventListener('DOMContentLoaded',function(){
   });
   document.getElementById('apBtnSave').addEventListener('click',doRescheduleAction);
 
-  // Tap outside sheet to close
   document.getElementById('apOverlay').addEventListener('click',function(e){
     if(e.target===this)closeActionPopup();
   });
 
-  // Restore month/day context if returning from Open Actions via Calendar link.
   var rp=new URLSearchParams(window.location.search);
   var ry=rp.get('calYear'),rm=rp.get('calMonth'),rd=rp.get('calDay');
   if(ry)viewYear=parseInt(ry,10);
