@@ -115,6 +115,7 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
 .radar-card-highlighted{border-left-color:#ffaa44;box-shadow:0 0 0 2px #ffaa4455,0 3px 10px rgba(11,31,58,0.04);transition:box-shadow 0.3s ease}
 .radar-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
 .radar-account{font-size:13.5px;font-weight:800;color:#0b1f3a}
+.radar-evidence-label{font-size:10px;color:#8a9bb3;text-transform:uppercase;letter-spacing:.4px;font-weight:800;margin:6px 0 3px}
 .radar-evidence{font-size:11.5px;color:#3a4a63;line-height:1.8}
 .radar-evidence-line{position:relative;padding-left:12px}
 .radar-evidence-line:before{content:"•";color:#2f8fff;font-weight:800;position:absolute;left:0}
@@ -428,7 +429,7 @@ function renderManagementRadar(radarItems){
   (radarItems||[]).forEach(function(acc){
     var link=acc.visitId?buildVisitHistoryLink({visitId:acc.visitId}):buildVisitHistoryLink({});
     var safeName=escapeHtml(acc.name);
-    html+='<a href="'+link+'" data-radar-account="'+safeName+'" onclick="try{sessionStorage.setItem(\'fieldiq_dashboard_lastRadarCard\',this.getAttribute(\'data-radar-account\'));}catch(e){}" style="text-decoration:none;color:inherit;display:block"><div class="radar-card"><div class="radar-card-header"><div class="radar-account">'+safeName+'</div>'+(acc.territory?'<span class="activity-badge badge-territory">'+escapeHtml(acc.territory)+'</span>':'')+'</div><div class="radar-evidence">'+acc.evidence.map(function(e){return'<div class="radar-evidence-line">'+escapeHtml(e)+'</div>';}).join('')+'</div><div class="radar-date">Last visit: '+formatDate(acc.lastVisit)+'</div></div></a>';
+    html+='<a href="'+link+'" data-radar-account="'+safeName+'" onclick="try{sessionStorage.setItem(\'fieldiq_dashboard_lastRadarCard\',this.getAttribute(\'data-radar-account\'));}catch(e){}" style="text-decoration:none;color:inherit;display:block"><div class="radar-card"><div class="radar-card-header"><div class="radar-account">'+safeName+'</div>'+(acc.territory?'<span class="activity-badge badge-territory">'+escapeHtml(acc.territory)+'</span>':'')+'</div><div class="radar-evidence-label">Why AI flagged this</div><div class="radar-evidence">'+acc.evidence.map(function(e){return'<div class="radar-evidence-line">'+escapeHtml(e)+'</div>';}).join('')+'</div><div class="radar-date">Last visit: '+formatDate(acc.lastVisit)+'</div></div></a>';
   });
   document.getElementById('managementRadar').innerHTML=html||'<div class="empty">No accounts currently need attention</div>';
 }
