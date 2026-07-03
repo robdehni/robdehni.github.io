@@ -55,6 +55,8 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
 .sent-neutral .sent-label,.sent-neutral .sent-value{color:#d98a1c}
 .sent-negative .sent-label,.sent-negative .sent-value{color:#e0344a}
 .section-title{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #e3ebf5}
+.group-header{font-size:13px;color:#0b1f3a;font-weight:800;margin:24px 0 4px;display:flex;align-items:center;gap:7px}
+.group-header:first-child{margin-top:0}
 .open-actions-toggle{display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #e3ebf5;user-select:none}
 .open-actions-toggle:hover .open-actions-label{color:#2f8fff}
 .open-actions-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;transition:color 0.15s}
@@ -219,8 +221,7 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
     <div class="sent-card sent-neutral"><div class="sent-label">Neutral</div><div class="sent-value" id="sentNeutral">0%</div></div>
     <div class="sent-card sent-negative"><div class="sent-label">Negative</div><div class="sent-value" id="sentNegative">0%</div></div>
   </div>
-  <div class="section-title">New Accounts Added</div>
-  <div id="newAccountsList"></div>
+  <div class="group-header">🚨 Today's Priorities</div>
   <div class="open-actions-toggle" id="openActionsToggle" onclick="toggleOpenActions()">
     <span class="open-actions-label">Priority Review (<span id="openActionsCount">0</span>)</span>
     <span class="oa-arrow" id="oaArrow"><i data-lucide="chevron-down"></i></span>
@@ -230,6 +231,9 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
     <div id="priorityMedium" class="priority-section"></div>
     <div id="priorityLow" class="priority-section"></div>
   </div>
+  <div class="group-header">🌱 Growth</div>
+  <div class="section-title">New Accounts Added</div>
+  <div id="newAccountsList"></div>
   </div>
   <div>
   <div class="section-title">Rep Performance</div>
@@ -239,6 +243,7 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
   </table>
   <div class="section-title">Territory Coverage</div>
   <div id="territoryBars"></div>
+  <div class="group-header">🧠 Strategic Intelligence</div>
   <div class="section-title">Management Radar</div>
   <div id="managementRadar"></div>
   </div>
