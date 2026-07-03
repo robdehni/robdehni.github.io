@@ -65,7 +65,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 (function(){
   var role=localStorage.getItem('fieldiq_user_role');
   var btn=document.getElementById('homeBtn');
-  if(btn){btn.href=(role==='Manager')?'./fieldiq.html':'./index.html';}
+  if(btn){btn.href=(role==='Manager')?'./fieldiq.html':'./index.html';btn.textContent=(role==='Manager')?'← Manager Home':'← Home';}
 })();
 </script>
 
