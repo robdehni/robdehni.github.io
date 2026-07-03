@@ -77,9 +77,9 @@ box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color
 .avf-badge-dismissed{background:#eceef1;color:#6b7280;border:1px solid #dde1e6}
 .avf-badge-pending{background:#eaf3ff;color:#2f8fff;border:1px solid #cfe3ff}
 .visit-watch-row{margin:2px 0 8px}
-.watch-toggle-btn{border:1.5px solid #dde3ec;background:#fff;color:#7a8aa3;border-radius:999px;padding:5px 12px;font-size:11.5px;font-weight:700;cursor:pointer}
-.watch-toggle-btn.watching{border-color:#f0c86a;background:#fff8e8;color:#a06a00}
-.watch-toggle-btn:disabled{opacity:.55;cursor:not-allowed}
+.watch-star{border:none;background:none;color:#c8d0dc;font-size:17px;line-height:1;cursor:pointer;padding:0;margin-right:6px;vertical-align:middle}
+.watch-star.watching{color:#f0a400}
+.watch-star:disabled{opacity:.5;cursor:not-allowed}
 .visit-detail .report-section:first-child{margin-top:0}
 .visit-detail .report-section h4{color:#2f8fff;font-size:10.5px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;font-weight:800}
 .visit-detail .report-section p{color:#3d4f6b;font-size:13px;line-height:1.65}
@@ -386,18 +386,17 @@ function renderVisits(records){
     var isNew=(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1');  
     var summary=truncateSummary(f['AI Summary']||f['Meeting Notes']||'',180);  
     var linkedAccountId=(f['Account']&&f['Account'][0])?f['Account'][0]:null;
-    var watchBtnHtml='';
+    var starHtml='';
     if(currentUser.role==='Manager'&&linkedAccountId){
       var isWatched=!!watchedAccountIds[linkedAccountId];
-      watchBtnHtml='<button class="watch-toggle-btn'+(isWatched?' watching':'')+'" onclick="event.stopPropagation();toggleWatch(\''+linkedAccountId+'\',this)" data-account-id="'+linkedAccountId+'">'+(isWatched?'⭐ Watching':'☆ Watch Account')+'</button>';
+      starHtml='<button class="watch-star'+(isWatched?' watching':'')+'" onclick="event.stopPropagation();toggleWatch(\''+linkedAccountId+'\',this)" data-account-id="'+linkedAccountId+'" aria-label="'+(isWatched?'Remove from watchlist':'Add to watchlist')+'" title="'+(isWatched?'Watching — tap to remove':'Tap to watch this account')+'">'+(isWatched?'⭐':'☆')+'</button>';
     }
     html+=  
       '<div class="visit-card'+(isNew?' new-account':'')+'" data-idx="'+idx+'" data-id="'+r.id+'">'+  
         '<div class="visit-header">'+  
-          '<div class="visit-account">'+(f['Hospital Name']||'Unknown Account')+'</div>'+  
+          '<div class="visit-account">'+starHtml+(f['Hospital Name']||'Unknown Account')+'</div>'+  
           '<div class="visit-date">'+formatDate(f['Visit Date'])+'</div>'+  
         '</div>'+  
-        (watchBtnHtml?'<div class="visit-watch-row">'+watchBtnHtml+'</div>':'')+
         '<div class="visit-meta">'+  
           (f['Territory']?'<span class="badge badge-territory">'+f['Territory']+'</span>':'')+  
           (f['Visit Type']?'<span class="badge badge-type">'+f['Visit Type']+'</span>':'')+  
@@ -431,9 +430,12 @@ function toggleWatch(accountId,btnEl){
   }).then(function(res){
     if(!res.ok)throw new Error('Request failed');
     watchedAccountIds[accountId]=!isWatching;
-    document.querySelectorAll('.watch-toggle-btn[data-account-id="'+accountId+'"]').forEach(function(b){
-      b.classList.toggle('watching',!isWatching);
-      b.textContent=isWatching?'☆ Watch Account':'⭐ Watching';
+    document.querySelectorAll('.watch-star[data-account-id="'+accountId+'"]').forEach(function(b){
+      var nowWatching=!isWatching;
+      b.classList.toggle('watching',nowWatching);
+      b.textContent=nowWatching?'⭐':'☆';
+      b.setAttribute('aria-label',nowWatching?'Remove from watchlist':'Add to watchlist');
+      b.setAttribute('title',nowWatching?'Watching — tap to remove':'Tap to watch this account');
       b.disabled=false;
     });
   }).catch(function(err){
