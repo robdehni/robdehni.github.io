@@ -16,6 +16,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
 .brand-text h1 span{color:#2f8fff}
 .brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text-transform:none;letter-spacing:normal}
 .manager-tag-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .manager-tag{
   display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#d98a1c;border:1px solid #ffe5b3;
@@ -71,10 +72,11 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
       <div class="brand-text">
         <h1>Field<span>IQ</span></h1>
         <p>Territory Intelligence Platform</p>
+        <p class="page-subtitle">Everything you need to manage your field team in one place.</p>
       </div>
     </div>
     <div class="manager-tag-wrap">
-      <div class="manager-tag">⭐ Manager Portal</div>
+      <div class="manager-tag">⭐ Manager Home</div>
       <button class="exit-manager-btn" onclick="exitManager()">Exit Manager</button>
     </div>
   </div>
@@ -145,7 +147,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
       </div>
       <div class="module-arrow">›</div>
     </a>
-    <a class="module-card" href="./fieldiq-visit-history.html">
+    <a class="module-card" href="./fieldiq-visit-history.html?source=manager-home">
       <div class="module-icon-wrap"><i data-lucide="clock"></i></div>
       <div class="module-text">
         <div class="module-title">Visit History</div>
@@ -167,7 +169,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
     </a>
   </div>
 
-  <div class="footer">FieldIQ v2.1 · Manager Portal · 2026</div>
+  <div class="footer">FieldIQ v2.1 · Manager Home · 2026</div>
 </div>
 <script>
 var role = localStorage.getItem('fieldiq_user_role');
@@ -184,4 +186,4 @@ function exitManager(){
 document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
 </body>
-</html>          
+</html>
