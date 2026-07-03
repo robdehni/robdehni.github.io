@@ -293,7 +293,7 @@ async function updatePriority(recordId,newPriority,cardEl){
       renderPrioritySection(lastPriorityReviewFeed);
       applyFilters();
     }
-    else{btns.forEach(function(b){b.disabled=false;});alert('Failed to update priority. Please try again.');}
+    else{btns.forEach(function(b){b.disabled=false;});alert('Could not update priority. Please try again.');}
   }catch(err){btns.forEach(function(b){b.disabled=false;});alert('Error: '+err.message);}
 }
 async function markReviewed(recordId,btnEl){
@@ -305,7 +305,7 @@ async function markReviewed(recordId,btnEl){
       renderPrioritySection(lastPriorityReviewFeed);
       applyFilters();
     }
-    else{btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Failed to mark reviewed. Please try again.');}
+    else{btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Could not mark as reviewed. Please try again.');}
   }catch(err){btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Error: '+err.message);}
 }
 function makePriorityCard(record){
@@ -626,7 +626,7 @@ async function markPendingReviewed(recordId,btnEl){
       if(countEl){var n=parseInt(countEl.textContent,10);if(!isNaN(n)&&n>0)countEl.textContent=n-1;}
       applyFilters();
     }
-    else{btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Failed to mark reviewed. Please try again.');}
+    else{btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Could not mark as reviewed. Please try again.');}
   }catch(err){btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Error: '+err.message);}
 }
 function buildNewAccountsCard(records){
