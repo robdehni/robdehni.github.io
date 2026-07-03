@@ -234,7 +234,7 @@ async function loadDirectory(){
     });
     ACCOUNTS.sort(function(a,b){return a.name.localeCompare(b.name);});
     document.getElementById('loadingEl').style.display='none';document.getElementById('directoryContent').style.display='block';renderDirectory();
-  }catch(err){document.getElementById('loadingEl').innerHTML='<div class="empty">Failed to load: '+err.message+'</div>';}
+  }catch(err){console.error('Account Directory failed to load:',err);document.getElementById('loadingEl').innerHTML='<div class="empty">Could not load accounts. Please try again.</div>';}
 }
 function accountCardHtml(a){
   return'<div class="activity-item" onclick="openAccountDetail(\''+a.id+'\')">'+
