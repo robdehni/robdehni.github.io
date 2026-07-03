@@ -69,6 +69,13 @@ box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color
 .visit-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid #eef3f9}
 .visit-detail.open{display:block}
 .visit-detail .report-section{margin:10px 0}
+.avf-list{display:flex;flex-direction:column;gap:6px}
+.avf-item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f8fbff;border:1px solid #e3ebf5;border-radius:10px;padding:8px 11px}
+.avf-text{font-size:12.5px;color:#3d4f6b;font-weight:500;line-height:1.4}
+.avf-badge{flex-shrink:0;font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.3px}
+.avf-badge-completed{background:#e1f5ea;color:#1f8a52;border:1px solid #bfe9d0}
+.avf-badge-dismissed{background:#eceef1;color:#6b7280;border:1px solid #dde1e6}
+.avf-badge-pending{background:#eaf3ff;color:#2f8fff;border:1px solid #cfe3ff}
 .visit-detail .report-section:first-child{margin-top:0}
 .visit-detail .report-section h4{color:#2f8fff;font-size:10.5px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;font-weight:800}
 .visit-detail .report-section p{color:#3d4f6b;font-size:13px;line-height:1.65}
@@ -298,6 +305,51 @@ function renderFullReport(text){
   if(s.sentiment)html+='<div class="report-section"><h4>Sentiment</h4><p>'+s.sentiment.replace(/\n/g,'<br>')+'</p></div>';  
   return html||'<div class="report-section"><p>'+text+'</p></div>';  
 }  
+
+// ── Actions from this Visit ──────────────────────────────────────────────
+// New, additive block shown beneath the existing AI Summary / Next Steps —
+// that content is never modified. Shows each action linked to this specific
+// visit (via the Source Visit field) with its true current status. No
+// inline matching or guessing against the AI-generated text — this is a
+// separate, honest list sourced directly from Open Actions records.
+function escapeHtmlLocal(str){
+  return String(str||'').replace(/[&<>"']/g,function(m){
+    return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
+  });
+}
+function renderActionsFromVisitList(records){
+  if(!records.length)return '<p style="color:#8a9bb3;font-size:12px;margin:0">No actions linked to this visit.</p>';
+  return '<div class="avf-list">'+records.map(function(r){
+    var f=r.fields||{};
+    var text=f['Action Text']||'';
+    var status=String(f['Status']||'Open').toLowerCase();
+    var isDismissed=status==='dismissed';
+    var isCompleted=status==='completed';
+    var badgeClass=isDismissed?'avf-badge-dismissed':(isCompleted?'avf-badge-completed':'avf-badge-pending');
+    var badgeText=isDismissed?'Dismissed':(isCompleted?'Completed':'Pending');
+    return '<div class="avf-item"><span class="avf-text">'+escapeHtmlLocal(text)+'</span><span class="avf-badge '+badgeClass+'">'+badgeText+'</span></div>';
+  }).join('')+'</div>';
+}
+// Fetches and appends the Actions-from-this-Visit block to an already-
+// rendered detail panel. Called after the existing synchronous AI report
+// content, so it never delays or blocks that rendering. Fails gracefully —
+// a fetch error or an empty result both produce a calm, honest message,
+// never a raw error shown to the user.
+function loadActionsForVisit(detailEl,visitRecordId){
+  var container=document.createElement('div');
+  container.className='report-section';
+  container.innerHTML='<h4>Actions from this Visit</h4><p style="color:#8a9bb3;font-size:12px;margin:0">Loading actions...</p>';
+  detailEl.appendChild(container);
+  fetch(WORKER+'/get-actions?visitId='+encodeURIComponent(visitRecordId))
+    .then(function(res){return res.json();})
+    .then(function(data){
+      container.innerHTML='<h4>Actions from this Visit</h4>'+renderActionsFromVisitList(data.records||[]);
+    })
+    .catch(function(err){
+      console.error('Could not load actions for this visit:',err);
+      container.innerHTML='<h4>Actions from this Visit</h4><p style="color:#8a9bb3;font-size:12px;margin:0">Could not load actions for this visit.</p>';
+    });
+}  
   
 var sortedRecords=[];  
 var allRecordsRaw=[];  
@@ -359,7 +411,7 @@ document.getElementById('visitList').addEventListener('click',function(e){
     detail.classList.remove('open');card.classList.remove('expanded');  
     toggle.innerHTML='<i data-lucide="chevron-down"></i> Tap to view full report';lucide.createIcons({el:toggle});  
   }else{  
-    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');}  
+    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}  
     detail.classList.add('open');card.classList.add('expanded');  
     toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
   }  
@@ -429,7 +481,7 @@ function expandAndScrollToVisit(recordId){
   var card=document.querySelector('.visit-card[data-id="'+recordId+'"]');if(!card)return;  
   var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');  
   if(detail&&!detail.classList.contains('open')){  
-    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');}  
+    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}  
     detail.classList.add('open');card.classList.add('expanded');  
     if(toggle)toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
   }  
