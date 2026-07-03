@@ -111,6 +111,13 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .nav-item.active{color:#2f8fff}
 .nav-icon{margin-bottom:3px;display:flex;align-items:center;justify-content:center}
 .nav-icon [data-lucide]{width:22px;height:22px;stroke-width:1.8}
+.back-to-top{
+  position:fixed;right:18px;bottom:85px;width:44px;height:44px;border-radius:50%;
+  background:#2f8fff;color:#fff;border:none;box-shadow:0 6px 16px rgba(47,143,255,0.35);
+  display:none;align-items:center;justify-content:center;cursor:pointer;z-index:9999;
+  font-size:20px;font-weight:900;line-height:1;
+}
+.back-to-top.visible{display:flex}
 </style>
   <!-- PWA v1 -->
   <link rel="manifest" href="/manifest.json">
@@ -235,5 +242,27 @@ loadInsights();
 document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).catch(function(){});}</script>
+<script>
+// Back-to-top floating button — purely cosmetic, self-contained. Created
+// entirely via JS so no existing HTML/IDs/layout are touched. Appears only
+// after scrolling past 500px, scrolls smoothly to top on click. Does not
+// interact with search, insights cards, filters, data loading, or AI logic.
+(function(){
+  var btn=document.createElement('button');
+  btn.type='button';
+  btn.className='back-to-top';
+  btn.setAttribute('aria-label','Back to top');
+  btn.textContent='↑';
+  btn.addEventListener('click',function(){
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+  document.addEventListener('DOMContentLoaded',function(){
+    document.body.appendChild(btn);
+  });
+  window.addEventListener('scroll',function(){
+    btn.classList.toggle('visible',(window.scrollY||document.documentElement.scrollTop)>500);
+  },{passive:true});
+})();
+</script>
 </body>
 </html>
