@@ -484,7 +484,7 @@ async function loadHistory(){
       renderVisits(allRecordsRaw);  
       if(targetVisitId){expandAndScrollToVisit(targetVisitId);}else{restoreReturnStateIfAny();}  
     }  
-  }catch(err){document.getElementById('visitList').innerHTML='<div class="empty">Failed to load: '+err.message+'</div>';}  
+  }catch(err){console.error('Visit History failed to load:',err);document.getElementById('visitList').innerHTML='<div class="empty">Could not load your visits. Please try again.</div>';}  
 }  
   
 loadCurrentUser().then(function(){loadHistory();});  
