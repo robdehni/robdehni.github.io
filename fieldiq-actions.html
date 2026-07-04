@@ -684,6 +684,13 @@ async function completeOwnAction(actionId,btnEl){
     });
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not complete action');
+    // Immediate local removal — independent of any cache, browser or
+    // server-side. The reload afterward is only for full consistency
+    // (counts, tabs), not for making the action itself disappear.
+    openActions=openActions.filter(function(r){return r.id!==actionId;});
+    allActions=allActions.filter(function(r){return r.id!==actionId;});
+    render();
+    saveManagerActionState();
     setTimeout(function(){window.location.reload();},300);
   }catch(err){
     if(btnEl){btnEl.disabled=false;btnEl.textContent='Complete';}
@@ -702,6 +709,10 @@ async function dismissOwnAction(actionId,btnEl){
     });
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not dismiss action');
+    openActions=openActions.filter(function(r){return r.id!==actionId;});
+    allActions=allActions.filter(function(r){return r.id!==actionId;});
+    render();
+    saveManagerActionState();
     setTimeout(function(){window.location.reload();},300);
   }catch(err){
     if(btnEl){btnEl.disabled=false;btnEl.textContent='Dismiss';}
