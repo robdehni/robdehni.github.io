@@ -19,6 +19,7 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .topbar{margin-bottom:24px}
 .topbar-brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
 .brand-cloud{font-size:26px;line-height:1}
+.page-kind{font-size:10px;font-weight:800;letter-spacing:1.3px;color:#2f8fff;text-transform:uppercase;margin-bottom:2px}
 .brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
 .brand-text h1 span{color:#2f8fff}
 .brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
@@ -36,6 +37,12 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:5px;font-weight:600;text
 .fbtn-apply{flex:1;padding:11px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:10px;font-size:12.5px;font-weight:800;cursor:pointer;box-shadow:0 2px 6px rgba(47,143,255,0.18)}
 .fbtn-reset{flex:1;padding:11px;background:#fff;color:#7a8aa3;border:1.5px solid #e8edf5;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer}
 .filter-active{font-size:10.5px;color:#2f8fff;margin-top:8px;text-align:center;min-height:14px;font-weight:700}
+.filter-active.filter-banner-active{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;
+  background:#eaf3ff;border:1px solid #bcdcff;border-radius:10px;padding:10px 14px;font-size:12.5px;color:#1f6fe0;
+}
+.clear-filters-btn{background:#fff;color:#1f6fe0;border:1px solid #bcdcff;border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:800;cursor:pointer;white-space:nowrap}
+.clear-filters-btn:hover{background:#1f6fe0;color:#fff}
 .report-period-panel{display:none;margin-top:12px;padding-top:12px;border-top:1px solid #eef3f9}
 .report-period-title{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:8px}
 .report-period-pills{display:flex;gap:6px;flex-wrap:wrap}
@@ -173,6 +180,7 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:5px;font-weight:600;text
   <div class="topbar-brand">
     <span class="brand-cloud">☁️</span>
     <div class="brand-text">
+      <div class="page-kind">ANALYTICS</div>
       <h1>Field<span>IQ</span><span id="managerBadge" style="display:none" class="manager-badge">⭐ Manager</span></h1>
       <p>Territory Intelligence Platform</p>
       <p class="page-subtitle">Review today's priorities and monitor your team's field performance.</p>
@@ -301,7 +309,7 @@ function getPeriodRange(period){
   return {start:null,end:null};
 }
 function buildVisitHistoryLink(overrides){
-  var params={rep:document.getElementById('filterRep').value,territory:document.getElementById('filterTerritory').value,priority:document.getElementById('filterPriority').value,period:document.getElementById('filterDate').value};
+  var params={rep:document.getElementById('filterRep').value,territory:document.getElementById('filterTerritory').value,priority:document.getElementById('filterPriority').value,period:document.getElementById('filterDate').value,source:'dashboard'};
   for(var k in overrides){params[k]=overrides[k];}
   var qs=[];Object.keys(params).forEach(function(k){if(params[k])qs.push(k+'='+encodeURIComponent(params[k]));});
   return 'fieldiq-visit-history.html'+(qs.length?'?'+qs.join('&'):'');
@@ -555,13 +563,20 @@ async function buildRepReviewReport(){
   try{localStorage.setItem('fieldiq_report',reportPayload);}catch(e){alert('Report data is too large for this device. Please filter by Rep or use a shorter reporting period.');return;}
   var rLink=document.createElement('a');rLink.href='fieldiq-report.html';rLink.target='_blank';rLink.rel='noopener noreferrer';document.body.appendChild(rLink);rLink.click();document.body.removeChild(rLink);
 }
+function renderFilterBanner(parts,totalVisits){
+  var el=document.getElementById('filterStatus');
+  if(!parts.length){el.innerHTML='';el.classList.remove('filter-banner-active');return;}
+  el.classList.add('filter-banner-active');
+  el.innerHTML='<span>Viewing: '+parts.join(' • ')+' ('+totalVisits+' visits)</span>'+
+    '<button class="clear-filters-btn" onclick="resetFilters()">Clear Filters</button>';
+}
 async function applyFilters(){
   var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var period=document.getElementById('filterDate').value;var priority=document.getElementById('filterPriority').value;
   var periodLabels={today:'Today',yesterday:'Yesterday',thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};
   var parts=[];if(rep)parts.push('Rep: '+rep);if(terr)parts.push('Territory: '+terr);if(period)parts.push(periodLabels[period]||period);if(priority)parts.push('Priority: '+priority);
   try{
     var agg=await fetchDashboardAggregate({rep:rep,territory:terr,period:period,priority:priority});
-    document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+agg.kpi.total+' visits)':'';
+    renderFilterBanner(parts,agg.kpi.total);
     renderDashboardSummary(agg);
     loadWatchlist({rep:rep,territory:terr,period:period,priority:priority});
   }catch(err){
@@ -603,7 +618,7 @@ async function restoreDashboardContext(){
       var agg=await fetchDashboardAggregate({rep:rep,territory:territory,priority:priority,period:period});
       var periodLabels={today:'Today',yesterday:'Yesterday',thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};
       var parts=[];if(rep)parts.push('Rep: '+rep);if(territory)parts.push('Territory: '+territory);if(period)parts.push(periodLabels[period]||period);if(priority)parts.push('Priority: '+priority);
-      document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+agg.kpi.total+' visits)':'';
+      renderFilterBanner(parts,agg.kpi.total);
       renderDashboardSummary(agg);
     }catch(err){
       document.getElementById('filterStatus').textContent='Failed to restore filters: '+err.message;
