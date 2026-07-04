@@ -587,11 +587,13 @@ function expandAndScrollToVisit(recordId){
   var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');  
   // Command Centre context marker — purely in-memory, a plain DOM class
   // with no storage backing it at all (no sessionStorage, localStorage, or
-  // cookies). It exists only because this specific page load happened to
-  // include source=manager-home in the URL; navigating anywhere else, or
-  // loading Visit History normally, never applies it.
+  // cookies). Applies when arriving from Manager Home's Needs Attention
+  // (source=manager-home) or from Manager Open Actions' View Visit
+  // (source=manager-actions) — both are "a manager was sent here to look
+  // at one specific visit" contexts. Loading Visit History normally never
+  // applies it.
   var _srcParams=new URLSearchParams(window.location.search);
-  if(_srcParams.get('source')==='manager-home'){
+  if(_srcParams.get('source')==='manager-home'||_srcParams.get('source')==='manager-actions'){
     card.classList.add('command-centre-highlight');
   }
   // Defensive correction: ensure this specific card's header has the same
