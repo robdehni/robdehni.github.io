@@ -326,7 +326,7 @@ function renderReviewButton(f, recordId){
   if(f['Reviewed']===true){
     return '<div class="review-row"><span class="reviewed-badge">Reviewed ✓</span></div>';
   }
-  return '<div class="review-row"><button class="mark-reviewed-btn" id="reviewBtn-'+recordId+'" onclick="markVisitReviewed(\''+recordId+'\',this)">✓ Mark as Reviewed</button></div>';
+  return '<div class="review-row"><button class="mark-reviewed-btn" id="reviewBtn-'+recordId+'" onclick="event.stopPropagation();markVisitReviewed(\''+recordId+'\',this)">✓ Mark as Reviewed</button></div>';
 }
 function markVisitReviewed(recordId,btnEl){
   btnEl.disabled=true;
