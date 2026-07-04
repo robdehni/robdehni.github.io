@@ -434,28 +434,43 @@ var prefillAccountTerritory='';
   }catch(e){}
 })();
 
-function applyPrefillFromURL(){
+async function applyPrefillFromURL(){
   try{
     var params=new URLSearchParams(window.location.search);
     var accountParam=params.get('account');
+    var visitIdParam=params.get('visitId')||'';
     prefillSourceRef=params.get('sourceRef')||'';
     if(accountParam&&ACCOUNTS.length){
       var match=ACCOUNTS.find(function(a){return a.name.trim().toLowerCase()===accountParam.trim().toLowerCase();});
       if(match){
         selectedAccountId=match.id;
         hospitalInput.value=match.name;
-        if(match.territory){
+        var resolvedTerritory=match.territory||'';
+        // The visit's own Territory is more authoritative than the
+        // Account record's — an Account can have Territory blank even
+        // when every one of its visits correctly recorded one. Only
+        // attempted when arriving from Calendar's Log Update link with a
+        // resolvable visitId.
+        if(visitIdParam){
+          try{
+            var vRes=await fetch(WORKER+'/get-visit-territory?visitId='+encodeURIComponent(visitIdParam));
+            var vData=await vRes.json();
+            if(vData&&vData.territory)resolvedTerritory=vData.territory;
+          }catch(e){}
+        }
+        if(resolvedTerritory){
           var tSelect=document.getElementById('territory');
           for(var j=0;j<tSelect.options.length;j++){
-            if(tSelect.options[j].value===match.territory){tSelect.selectedIndex=j;break;}
+            if(tSelect.options[j].value===resolvedTerritory){tSelect.selectedIndex=j;break;}
           }
-          prefillAccountTerritory=match.territory;
+          prefillAccountTerritory=resolvedTerritory;
         }
         // Update Mode — arrived from Calendar's "Log Update" link for a
-        // specific existing follow-up (sourceRef present). Both fields are
-        // already correctly resolved above; lock them so the update stays
-        // tied to the account/territory it was actually opened for.
-        if(prefillSourceRef){
+        // specific existing follow-up (sourceRef present). Lock only when
+        // territory was actually resolved above — locking a blank dropdown
+        // left the page permanently unusable (mic never activates), which
+        // was the actual regression, not the locking behavior itself.
+        if(prefillSourceRef&&resolvedTerritory){
           territorySelect.disabled=true;
           hospitalInput.disabled=true;
           hospitalInput.placeholder=match.name;
