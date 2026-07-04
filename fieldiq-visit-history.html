@@ -86,6 +86,10 @@ box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color
 .watch-star.watching{color:#f0a400}
 .watch-star:disabled{opacity:.5;cursor:not-allowed}
 .watch-star-unresolved{color:#c8d0dc;opacity:.6}
+.review-row{margin:0 0 14px}
+.mark-reviewed-btn{background:#2f8fff;color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:12.5px;font-weight:700;cursor:pointer}
+.mark-reviewed-btn:disabled{opacity:.6;cursor:not-allowed}
+.reviewed-badge{display:inline-block;background:#e3f8ea;color:#1fa861;border-radius:999px;padding:6px 14px;font-size:12px;font-weight:800}
 .visit-detail .report-section:first-child{margin-top:0}
 .visit-detail .report-section h4{color:#2f8fff;font-size:10.5px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;font-weight:800}
 .visit-detail .report-section p{color:#3d4f6b;font-size:13px;line-height:1.65}
@@ -315,6 +319,35 @@ function restoreReturnStateIfAny(){
     }
   }catch(e){}
 }  
+function renderReviewButton(f, recordId){
+  if(!currentUser||currentUser.role!=='Manager')return'';
+  var qualifies=(f['Priority']==='High'||f['Outcome']==='Negative');
+  if(!qualifies)return'';
+  if(f['Reviewed']===true){
+    return '<div class="review-row"><span class="reviewed-badge">Reviewed ✓</span></div>';
+  }
+  return '<div class="review-row"><button class="mark-reviewed-btn" id="reviewBtn-'+recordId+'" onclick="markVisitReviewed(\''+recordId+'\',this)">✓ Mark as Reviewed</button></div>';
+}
+function markVisitReviewed(recordId,btnEl){
+  btnEl.disabled=true;
+  btnEl.textContent='Saving…';
+  fetch(WORKER+'/update-visit',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({recordId:recordId,reviewed:true})
+  }).then(function(res){
+    if(!res.ok)throw new Error('Request failed');
+    var rec=sortedRecords.find(function(r){return r.id===recordId;});
+    if(rec)rec.fields['Reviewed']=true;
+    var wrapper=btnEl.parentElement;
+    wrapper.innerHTML='<span class="reviewed-badge">Reviewed ✓</span>';
+  }).catch(function(err){
+    console.error('Could not mark visit reviewed:',err);
+    btnEl.disabled=false;
+    btnEl.textContent='✓ Mark as Reviewed';
+    alert('Could not save right now. Please try again.');
+  });
+}
 function renderFullReport(text){  
   if(!text)return'<div class="report-section"><p>No additional details available.</p></div>';  
   var s=parseFullReport(text),html='';  
@@ -481,7 +514,7 @@ document.getElementById('visitList').addEventListener('click',function(e){
     detail.classList.remove('open');card.classList.remove('expanded');  
     toggle.innerHTML='<i data-lucide="chevron-down"></i> Tap to view full report';lucide.createIcons({el:toggle});  
   }else{  
-    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}  
+    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderReviewButton(f,sortedRecords[idx].id)+renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}  
     detail.classList.add('open');card.classList.add('expanded');  
     toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
   }  
@@ -583,7 +616,7 @@ function expandAndScrollToVisit(recordId){
     }
   }
   if(detail&&!detail.classList.contains('open')){  
-    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}  
+    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderReviewButton(f,sortedRecords[idx].id)+renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}  
     detail.classList.add('open');card.classList.add('expanded');  
     if(toggle)toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
   }  
