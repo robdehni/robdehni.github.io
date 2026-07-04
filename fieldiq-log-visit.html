@@ -556,6 +556,7 @@ submitBtn.addEventListener('click',async function(){
           accountId:isNewAccount?newAccountId:selectedAccountId,
           accountName:hospitalName,
           userId:userId,
+          assignedRepRecordId:localStorage.getItem('fieldiq_user_record_id')||'',
           actionText:parsed.nextSteps
         })
       });
