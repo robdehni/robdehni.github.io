@@ -205,7 +205,8 @@ function renderHomeSummary(agg){
     var evidence = acc.evidence || [];
     return evidence.indexOf('High Priority visit not reviewed') > -1 ||
            evidence.indexOf('Negative outcome not reviewed') > -1 ||
-           evidence.indexOf('Open follow-up recorded') > -1;
+           evidence.indexOf('Follow-up overdue') > -1 ||
+           evidence.indexOf('Follow-up due today') > -1;
   });
   var top = actionable.slice(0, 2);
   if (!top.length) {
@@ -219,8 +220,10 @@ function renderHomeSummary(agg){
       dot = '🔴'; reason = 'High Priority — awaiting review';
     } else if (evidence.indexOf('Negative outcome not reviewed') > -1) {
       dot = '🔴'; reason = 'Negative outcome — awaiting review';
+    } else if (evidence.indexOf('Follow-up overdue') > -1) {
+      dot = '🔴'; reason = 'Follow-up overdue';
     } else {
-      dot = '🟠'; reason = 'Follow-up action outstanding';
+      dot = '🟠'; reason = 'Follow-up due today';
     }
     var dest = acc.visitId
       ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(acc.visitId) + '&source=manager-home'
