@@ -150,6 +150,7 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 var SESSION_KEY='fieldiq_actions_return_state';
 
 var currentUserId=localStorage.getItem('fieldiq_user_id');
+var myOwnRecordId=localStorage.getItem('fieldiq_user_record_id')||null;
 var currentUserName=localStorage.getItem('fieldiq_user_name');
 var currentUserRole=localStorage.getItem('fieldiq_user_role')||'';
 
@@ -623,7 +624,8 @@ function render(){
       var lock=reminderLockText(r);
       var complete=isCompleted(x);
       var dismissed=isDismissed(x);
-      var isOwner=(getAssignedRepKey(x)===currentUserId);
+      var assignedRecId=(x['Assigned Rep']&&x['Assigned Rep'][0])?x['Assigned Rep'][0]:null;
+      var isOwner=(assignedRecId!==null&&assignedRecId===myOwnRecordId);
 
       html+='<div class="action-row'+(complete?' completed-action':'')+(dismissed?' dismissed-action':'')+'" id="action-'+r.id+'">';
       html+='<div class="action-text">'+escapeHtml(getActionText(x))+'</div>';
