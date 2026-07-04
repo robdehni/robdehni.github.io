@@ -51,6 +51,11 @@ box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color
 }
 .visit-card.new-account{border-color:#bfe0ff;background:#f3f9ff}
 .visit-card.expanded{border-color:#2f8fff}
+.visit-card.command-centre-highlight{border-color:#2f8fff;box-shadow:0 0 0 3px rgba(47,143,255,0.18);position:relative}
+.visit-card.command-centre-highlight::before{
+  content:'Opened from Command Centre';position:absolute;top:-9px;left:14px;background:#2f8fff;color:#fff;
+  font-size:9.5px;font-weight:800;letter-spacing:0.3px;text-transform:uppercase;padding:2px 9px;border-radius:999px;
+}
 .visit-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:10px}
 .visit-account{font-size:15px;font-weight:800;color:#0b1f3a;flex:1}
 .visit-date{font-size:11.5px;color:#aab8cc;white-space:nowrap;font-weight:700}
@@ -545,6 +550,15 @@ function expandAndScrollToVisit(recordId){
   if(!recordId)return;  
   var card=document.querySelector('.visit-card[data-id="'+recordId+'"]');if(!card)return;  
   var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');  
+  // Command Centre context marker — purely in-memory, a plain DOM class
+  // with no storage backing it at all (no sessionStorage, localStorage, or
+  // cookies). It exists only because this specific page load happened to
+  // include source=manager-home in the URL; navigating anywhere else, or
+  // loading Visit History normally, never applies it.
+  var _srcParams=new URLSearchParams(window.location.search);
+  if(_srcParams.get('source')==='manager-home'){
+    card.classList.add('command-centre-highlight');
+  }
   // Defensive correction: ensure this specific card's header has the same
   // watch star every other card gets, using the identical construction as
   // the main render loop — not a variant. Self-healing, idempotent: only
