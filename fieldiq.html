@@ -183,6 +183,13 @@ function exitManager(){
 // functions. This page never becomes a second copy of the Dashboard.
 var WORKER_URL_HOME = 'https://fieldiq-proxy.rdehni1979.workers.dev';
 
+function truncateActionSnippet(text){
+  var t = String(text || '').trim();
+  if (!t) return '';
+  var short = t.length > 40 ? t.slice(0, 40).trim() + '…' : t;
+  return ': ' + short;
+}
+
 function escapeHtmlHome(str){
   return String(str||'').replace(/[&<>"']/g,function(m){
     return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
@@ -215,18 +222,20 @@ function renderHomeSummary(agg){
   }
   radarEl.innerHTML = top.map(function(acc){
     var evidence = acc.evidence || [];
-    var dot, reason;
+    var dot, reason, targetVisitId;
     if (evidence.indexOf('High Priority visit not reviewed') > -1) {
-      dot = '🔴'; reason = 'High Priority — awaiting review';
+      dot = '🔴'; reason = 'High Priority — awaiting review'; targetVisitId = acc.visitId;
     } else if (evidence.indexOf('Negative outcome not reviewed') > -1) {
-      dot = '🔴'; reason = 'Negative outcome — awaiting review';
+      dot = '🔴'; reason = 'Negative outcome — awaiting review'; targetVisitId = acc.visitId;
     } else if (evidence.indexOf('Follow-up overdue') > -1) {
-      dot = '🔴'; reason = 'Follow-up overdue';
+      dot = '🔴'; reason = 'Follow-up overdue' + truncateActionSnippet(acc.followUpOverdueActionText);
+      targetVisitId = acc.followUpOverdueVisitId || acc.visitId;
     } else {
-      dot = '🟠'; reason = 'Follow-up due today';
+      dot = '🟠'; reason = 'Follow-up due today' + truncateActionSnippet(acc.followUpDueTodayActionText);
+      targetVisitId = acc.followUpDueTodayVisitId || acc.visitId;
     }
-    var dest = acc.visitId
-      ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(acc.visitId) + '&source=manager-home'
+    var dest = targetVisitId
+      ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(targetVisitId) + '&source=manager-home'
       : 'https://fieldiq.biz/dashboard.html';
     return '<a class="radar-mini-item" href="' + dest + '">' +
       '<div><div class="radar-mini-name">' + dot + ' ' + escapeHtmlHome(acc.name) + '</div>' +
