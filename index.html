@@ -146,6 +146,7 @@ function switchUser(){
   localStorage.removeItem('fieldiq_user_id');
   localStorage.removeItem('fieldiq_user_name');
   localStorage.removeItem('fieldiq_user_role');
+  localStorage.removeItem('fieldiq_user_record_id');
   pendingUser=null;
   location.reload();
 }
@@ -184,7 +185,8 @@ function showPinBox(opt){
     id: opt.value,
     name: opt.getAttribute('data-name')||opt.value,
     role: opt.getAttribute('data-role')||'Sales Rep',
-    pin: opt.getAttribute('data-pin')||''
+    pin: opt.getAttribute('data-pin')||'',
+    recordId: opt.getAttribute('data-record-id')||''
   };
   var pinSection=document.getElementById('pinSection');
   pinSection.innerHTML=
@@ -216,6 +218,7 @@ function checkPin(){
     localStorage.setItem('fieldiq_user_id',pendingUser.id);
     localStorage.setItem('fieldiq_user_name',pendingUser.name);
     localStorage.setItem('fieldiq_user_role',pendingUser.role);
+    localStorage.setItem('fieldiq_user_record_id',pendingUser.recordId);
     if(pendingUser.role==='Manager'){
       window.location.href='./fieldiq.html';
       return;
@@ -247,6 +250,7 @@ async function loadUsers(){
         opt.setAttribute('data-name',f['Display Name']||'');
         opt.setAttribute('data-role',f['Role']||'Sales Rep');
         opt.setAttribute('data-pin',f['PIN']||'');
+        opt.setAttribute('data-record-id',r.id);
         sel.appendChild(opt);
       });
     }
