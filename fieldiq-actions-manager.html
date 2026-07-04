@@ -670,9 +670,10 @@ function render(){
 // Owner-only actions — the Worker's /complete-action and /dismiss-action
 // already enforce ownership server-side (Assigned Rep must include the
 // calling user's own record), so these are only ever rendered for actions
-// where getAssignedRepKey(x) === currentUserId (i.e. actions The Manager
-// created for themselves by logging a visit). Never shown for actions
-// belonging to another rep — that existing restriction is untouched.
+// where the action's Assigned Rep record ID equals myOwnRecordId (read
+// directly from login storage) — i.e. actions The Manager created for
+// themselves by logging a visit. Never shown for actions belonging to
+// another rep — that existing restriction is untouched.
 async function completeOwnAction(actionId,btnEl){
   if(btnEl){btnEl.disabled=true;btnEl.textContent='Completing…';}
   try{
