@@ -563,6 +563,7 @@ async function applyFilters(){
     var agg=await fetchDashboardAggregate({rep:rep,territory:terr,period:period,priority:priority});
     document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+agg.kpi.total+' visits)':'';
     renderDashboardSummary(agg);
+    loadWatchlist({rep:rep,territory:terr,period:period,priority:priority});
   }catch(err){
     document.getElementById('filterStatus').textContent='Failed to apply filters: '+err.message;
   }
@@ -573,6 +574,7 @@ async function resetFilters(){
   try{
     var agg=await fetchDashboardAggregate();
     renderDashboardSummary(agg);
+    loadWatchlist();
   }catch(err){
     document.getElementById('filterStatus').textContent='Failed to reset filters: '+err.message;
   }
@@ -638,7 +640,12 @@ async function loadDashboard(){
     populateRepFilterFromAgg(agg);
     document.getElementById('filterBar').style.display='block';
     await restoreDashboardContext();
-    loadWatchlist();
+    loadWatchlist({
+      rep:document.getElementById('filterRep').value,
+      territory:document.getElementById('filterTerritory').value,
+      priority:document.getElementById('filterPriority').value,
+      period:document.getElementById('filterDate').value
+    });
   }catch(err){
     clearTimeout(_timer);
     var msg=(err.name==='AbortError')?'Request timed out — check your connection.':('Failed to load: '+err.message);
@@ -652,9 +659,17 @@ async function loadDashboard(){
 // curated, Account-level, entirely independent of AI Strategic
 // Intelligence scoring — watching an account never changes its AI score,
 // and AI never adds or removes watched accounts.
-async function loadWatchlist(){
+async function loadWatchlist(filters){
   try{
-    var res=await fetch(WORKER_URL+'/get-watchlist');
+    var q=new URLSearchParams();
+    if(filters){
+      if(filters.rep)q.set('rep',filters.rep);
+      if(filters.territory)q.set('territory',filters.territory);
+      if(filters.priority)q.set('priority',filters.priority);
+      if(filters.period)q.set('period',filters.period);
+    }
+    var qs=q.toString();
+    var res=await fetch(WORKER_URL+'/get-watchlist'+(qs?('?'+qs):''));
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not load watchlist');
     renderWatchlistSection(data.records||[]);
