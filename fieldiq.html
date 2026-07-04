@@ -222,21 +222,32 @@ function renderHomeSummary(agg){
   }
   radarEl.innerHTML = top.map(function(acc){
     var evidence = acc.evidence || [];
-    var dot, reason, targetVisitId;
+    var dot, reason, dest;
     if (evidence.indexOf('High Priority visit not reviewed') > -1) {
-      dot = '🔴'; reason = 'High Priority — awaiting review'; targetVisitId = acc.visitId;
+      dot = '🔴'; reason = 'High Priority — awaiting review';
+      dest = acc.visitId
+        ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(acc.visitId) + '&source=manager-home'
+        : 'https://fieldiq.biz/dashboard.html';
     } else if (evidence.indexOf('Negative outcome not reviewed') > -1) {
-      dot = '🔴'; reason = 'Negative outcome — awaiting review'; targetVisitId = acc.visitId;
+      dot = '🔴'; reason = 'Negative outcome — awaiting review';
+      dest = acc.visitId
+        ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(acc.visitId) + '&source=manager-home'
+        : 'https://fieldiq.biz/dashboard.html';
     } else if (evidence.indexOf('Follow-up overdue') > -1) {
       dot = '🔴'; reason = 'Follow-up overdue' + truncateActionSnippet(acc.followUpOverdueActionText);
-      targetVisitId = acc.followUpOverdueVisitId || acc.visitId;
+      dest = acc.followUpOverdueActionId
+        ? 'https://fieldiq.biz/fieldiq-actions.html?actionId=' + encodeURIComponent(acc.followUpOverdueActionId)
+        : (acc.followUpOverdueVisitId
+            ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(acc.followUpOverdueVisitId) + '&source=manager-home'
+            : 'https://fieldiq.biz/dashboard.html');
     } else {
       dot = '🟠'; reason = 'Follow-up due today' + truncateActionSnippet(acc.followUpDueTodayActionText);
-      targetVisitId = acc.followUpDueTodayVisitId || acc.visitId;
+      dest = acc.followUpDueTodayActionId
+        ? 'https://fieldiq.biz/fieldiq-actions.html?actionId=' + encodeURIComponent(acc.followUpDueTodayActionId)
+        : (acc.followUpDueTodayVisitId
+            ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(acc.followUpDueTodayVisitId) + '&source=manager-home'
+            : 'https://fieldiq.biz/dashboard.html');
     }
-    var dest = targetVisitId
-      ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(targetVisitId) + '&source=manager-home'
-      : 'https://fieldiq.biz/dashboard.html';
     return '<a class="radar-mini-item" href="' + dest + '">' +
       '<div><div class="radar-mini-name">' + dot + ' ' + escapeHtmlHome(acc.name) + '</div>' +
       '<div class="radar-mini-reason">' + escapeHtmlHome(reason) + '</div></div>' +
