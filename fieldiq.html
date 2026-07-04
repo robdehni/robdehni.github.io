@@ -201,7 +201,13 @@ function renderHomeSummary(agg){
   });
 
   var radarEl = document.getElementById('radarMini');
-  var top = (agg.managementRadar || []).slice(0, 2);
+  var actionable = (agg.managementRadar || []).filter(function(acc){
+    var evidence = acc.evidence || [];
+    return evidence.indexOf('High Priority visit not reviewed') > -1 ||
+           evidence.indexOf('Negative outcome not reviewed') > -1 ||
+           evidence.indexOf('Open follow-up recorded') > -1;
+  });
+  var top = actionable.slice(0, 2);
   if (!top.length) {
     radarEl.innerHTML = '<div class="summary-empty">Nothing flagged right now.</div>';
     return;
@@ -213,13 +219,11 @@ function renderHomeSummary(agg){
       dot = '🔴'; reason = 'High Priority — awaiting review';
     } else if (evidence.indexOf('Negative outcome not reviewed') > -1) {
       dot = '🔴'; reason = 'Negative outcome — awaiting review';
-    } else if (evidence.indexOf('Open follow-up recorded') > -1) {
-      dot = '🟠'; reason = 'Follow-up action outstanding';
     } else {
-      dot = '🔵'; reason = evidence[0] || 'Flagged for review';
+      dot = '🟠'; reason = 'Follow-up action outstanding';
     }
     var dest = acc.visitId
-      ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(acc.visitId)
+      ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(acc.visitId) + '&source=manager-home'
       : 'https://fieldiq.biz/dashboard.html';
     return '<a class="radar-mini-item" href="' + dest + '">' +
       '<div><div class="radar-mini-name">' + dot + ' ' + escapeHtmlHome(acc.name) + '</div>' +
