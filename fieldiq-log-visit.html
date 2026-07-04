@@ -451,6 +451,18 @@ function applyPrefillFromURL(){
           }
           prefillAccountTerritory=match.territory;
         }
+        // Update Mode — arrived from Calendar's "Log Update" link for a
+        // specific existing follow-up (sourceRef present). Both fields are
+        // already correctly resolved above; lock them so the update stays
+        // tied to the account/territory it was actually opened for.
+        if(prefillSourceRef){
+          territorySelect.disabled=true;
+          hospitalInput.disabled=true;
+          hospitalInput.placeholder=match.name;
+          accountBlock.style.opacity='1';
+          accountBlock.style.pointerEvents='none';
+          accountBlock.style.cursor='not-allowed';
+        }
       }
     }
     updateMicAvailability();
