@@ -200,12 +200,23 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
   var source=params.get('source');
   var returnTo=params.get('returnTo');
   var homeBtn=document.getElementById('homeBtn');
-  if(source==='manager-actions'||returnTo==='./fieldiq-actions.html'){
+  if(source==='manager-actions'||source==='open-actions'||returnTo==='./fieldiq-actions.html'){
     homeBtn.href=returnTo||'./fieldiq-actions.html';
     homeBtn.textContent='← Back to Open Actions';
   }else if(source==='manager-home'){
     homeBtn.href='./fieldiq.html';
-    homeBtn.textContent='← Manager Home';
+    homeBtn.textContent='← Back to Manager Home';
+  }else if(source==='operations'){
+    homeBtn.href='./fieldiq-operations.html';
+    homeBtn.textContent='← Back to Operations';
+  }else if(source==='dashboard'){
+    var dashQ2=[];
+    ['rep','territory','priority','period'].forEach(function(k){
+      var v=params.get(k);
+      if(v)dashQ2.push(k+'='+encodeURIComponent(v));
+    });
+    homeBtn.href='./dashboard.html'+(dashQ2.length?'?'+dashQ2.join('&'):'');
+    homeBtn.textContent='← Back to Dashboard';
   }else{
     var role=localStorage.getItem('fieldiq_user_role');
     if(role==='Manager'){
