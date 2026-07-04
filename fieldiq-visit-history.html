@@ -17,11 +17,6 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
 .topbar-sub{color:#7a8aa3;font-size:12.5px;margin-top:2px;font-weight:600}
 
-#dashboardContextBanner{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f0fdfa;border:1px solid #99f6e4;
-  border-radius:10px;padding:10px 14px;margin:0 0 14px;font-size:12.5px;color:#0d9488;font-weight:700;
-}
-#dashboardContextBanner a{color:#0d9488;font-weight:800;text-decoration:none;white-space:nowrap}
 .home-btn{
 display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
 text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:18px;border:1px solid #e3ebf5;
@@ -166,7 +161,6 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text
   </div>  
   <p class="topbar-sub" id="lastUpdated">Loading...</p>  
 </div>  <a href="./index.html" id="homeBtn" class="home-btn">← Home</a>
-<div id="dashboardContextBanner" style="display:none"></div>
 
 <div id="filterBar" class="filter-bar" style="display:none">  
   <h3>Manager Filters</h3>  
@@ -232,14 +226,8 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
       var v=params.get(k);
       if(v)dashQ2.push(k+'='+encodeURIComponent(v));
     });
-    var dashboardUrl='./dashboard.html'+(dashQ2.length?'?'+dashQ2.join('&'):'');
-    homeBtn.href=dashboardUrl;
+    homeBtn.href='./dashboard.html'+(dashQ2.length?'?'+dashQ2.join('&'):'');
     homeBtn.textContent='← Back to Dashboard';
-    var ctxBanner=document.getElementById('dashboardContextBanner');
-    if(ctxBanner){
-      ctxBanner.style.display='flex';
-      ctxBanner.innerHTML='<span>Opened from Dashboard</span><a href="'+dashboardUrl+'">Return to Dashboard →</a>';
-    }
   }else{
     var role=localStorage.getItem('fieldiq_user_role');
     if(role==='Manager'){
