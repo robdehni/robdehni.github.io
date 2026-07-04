@@ -397,7 +397,9 @@ function renderDayPanel(isoDate,dayActions){
     html+='<div class="cal-action-account">'+escapeHtml(account)+(time?'<span class="time-pill">'+escapeHtml(time)+'</span>':'')+'</div>';
     html+='<div class="cal-action-text">'+escapeHtml(action||'Open action')+'</div>';
     html+='<a class="cal-action-link" href="./fieldiq-open-actions.html?actionId='+escapeHtml(r.id)+'&returnTo=calendar&calYear='+viewYear+'&calMonth='+viewMonth+'&calDay='+escapeHtml(isoDate)+'" onclick="event.stopPropagation()">→ Open in My Actions</a>';
-    html+=' &nbsp;&middot;&nbsp; <a class="cal-action-link" href="./fieldiq-log-visit.html?account='+encodeURIComponent(account)+'&sourceRef='+encodeURIComponent(r.id)+'&calYear='+viewYear+'&calMonth='+viewMonth+'&calDay='+encodeURIComponent(isoDate)+'" onclick="event.stopPropagation()">\ud83c\udf99\ufe0f Log Update</a>';
+    var linkedVisitArr=f['Source Visit']||f['Visit']||f['Field Visit']||f['Visit Record']||[];
+    var linkedVisitId=Array.isArray(linkedVisitArr)&&linkedVisitArr.length?linkedVisitArr[0]:(typeof linkedVisitArr==='string'?linkedVisitArr:'');
+    html+=' &nbsp;&middot;&nbsp; <a class="cal-action-link" href="./fieldiq-log-visit.html?account='+encodeURIComponent(account)+'&sourceRef='+encodeURIComponent(r.id)+(linkedVisitId?'&visitId='+encodeURIComponent(linkedVisitId):'')+'&calYear='+viewYear+'&calMonth='+viewMonth+'&calDay='+encodeURIComponent(isoDate)+'" onclick="event.stopPropagation()">\ud83c\udf99\ufe0f Log Update</a>';
     html+='</div>';
   });
 
