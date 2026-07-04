@@ -145,14 +145,14 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
     <div class="section-label">Quick Actions</div>
     <div class="quick-actions">
-      <a class="quick-action" href="./fieldiq-log-visit.html">
-        <div class="qa-icon-wrap"><i data-lucide="mic"></i></div>
-        <div class="qa-title">Log Visit</div>
-        <div class="qa-arrow">›</div>
-      </a>
       <a class="quick-action primary" href="https://fieldiq.biz/dashboard.html">
         <div class="qa-icon-wrap"><i data-lucide="layout-dashboard"></i></div>
         <div class="qa-title">Dashboard</div>
+        <div class="qa-arrow">›</div>
+      </a>
+      <a class="quick-action" href="./fieldiq-log-visit.html">
+        <div class="qa-icon-wrap"><i data-lucide="mic"></i></div>
+        <div class="qa-title">Log Visit</div>
         <div class="qa-arrow">›</div>
       </a>
       <a class="quick-action" href="./fieldiq-operations.html">
@@ -262,13 +262,15 @@ function renderHomeSummary(agg){
     var dot, reason, dest;
     if (evidence.indexOf('High Priority visit not reviewed') > -1) {
       dot = '🔴'; reason = 'High Priority — awaiting review';
-      dest = acc.visitId
-        ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(acc.visitId) + '&source=manager-home'
+      var hpTarget = acc.highPriorityVisitId || acc.visitId;
+      dest = hpTarget
+        ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(hpTarget) + '&source=manager-home'
         : 'https://fieldiq.biz/dashboard.html';
     } else if (evidence.indexOf('Negative outcome not reviewed') > -1) {
       dot = '🔴'; reason = 'Negative outcome — awaiting review';
-      dest = acc.visitId
-        ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(acc.visitId) + '&source=manager-home'
+      var negTarget = acc.negativeVisitId || acc.visitId;
+      dest = negTarget
+        ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(negTarget) + '&source=manager-home'
         : 'https://fieldiq.biz/dashboard.html';
     } else if (evidence.indexOf('Follow-up overdue') > -1) {
       dot = '🔴'; reason = 'Follow-up overdue' + truncateActionSnippet(acc.followUpOverdueActionText);
