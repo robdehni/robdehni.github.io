@@ -344,7 +344,7 @@ async function loadActions(){
   content.innerHTML='<div class="loading"><div class="spinner"></div>Loading actions...</div>';
   try{
     var url=WORKER+'/get-actions?userId='+encodeURIComponent(currentUserId)+'&role='+encodeURIComponent(currentUserRole)+'&status=Open';
-    var res=await fetch(url);
+    var res=await fetch(url,{cache:'no-store'});
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not load actions');
     actions=data.records||[];
@@ -368,8 +368,11 @@ async function completeAction(actionId){
     });
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not complete action');
-    // Reload the page after a short delay so the UI always reflects the true
-    // server state — avoids stale "Completing..." when switching between accounts.
+    // Immediate local removal — independent of any cache. The navigation
+    // below (calendar-return or reload) is only for full consistency
+    // afterward, not for making the action itself disappear.
+    actions=actions.filter(function(r){return r.id!==actionId;});
+    render();
     showToast('Action completed.');
     var _rp=new URLSearchParams(window.location.search);
     if(_rp.get('returnTo')==='calendar'){
@@ -410,6 +413,8 @@ async function dismissAction(actionId){
     });
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not dismiss action');
+    actions=actions.filter(function(r){return r.id!==actionId;});
+    render();
     showToast('Action dismissed.');
     var _rp=new URLSearchParams(window.location.search);
     if(_rp.get('returnTo')==='calendar'){
