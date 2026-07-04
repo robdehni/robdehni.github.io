@@ -21,10 +21,6 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .brand-text p.eyebrow{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
 .brand-text p.page-subtitle{color:#7a8aa3;font-size:12.5px;margin-top:4px;font-weight:600}
 .header-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.manager-tag{
-  display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#d98a1c;border:1px solid #ffe5b3;
-  border-radius:20px;font-size:10.5px;font-weight:800;padding:5px 12px;letter-spacing:0.4px;text-transform:uppercase;
-}
 .exit-manager-btn{font-size:11px;color:#c43048;background:#fff;border:1px solid #f6c4cc;border-radius:20px;padding:6px 12px;cursor:pointer;font-weight:700}
 .exit-manager-btn:hover{background:#fff0f0}
 
@@ -83,7 +79,7 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
     color:#5b6b85;font-size:13.5px;font-weight:700;margin-bottom:2px;
   }
   .sidebar-link:hover{background:#f4f8fc}
-  .sidebar-link.current{background:#eaf3ff;color:#1f6fe0}
+  .sidebar-link.current{background:#eaf3ff;color:#1f6fe0;pointer-events:none;cursor:default}
   .sidebar-link [data-lucide]{width:17px;height:17px;stroke-width:1.9;flex-shrink:0}
 
   .main{padding:32px 40px 60px;max-width:1120px}
@@ -128,7 +124,6 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
         </div>
       </div>
       <div class="header-right">
-        <div class="manager-tag">⭐ Manager Home</div>
         <button class="exit-manager-btn" onclick="exitManager()">Exit Manager</button>
       </div>
     </div>
@@ -212,9 +207,22 @@ function renderHomeSummary(agg){
     return;
   }
   radarEl.innerHTML = top.map(function(acc){
-    var reason = (acc.evidence && acc.evidence[0]) || 'Flagged for review';
-    return '<a class="radar-mini-item" href="https://fieldiq.biz/dashboard.html">' +
-      '<div><div class="radar-mini-name">' + escapeHtmlHome(acc.name) + '</div>' +
+    var evidence = acc.evidence || [];
+    var dot, reason;
+    if (evidence.indexOf('High Priority visit not reviewed') > -1) {
+      dot = '🔴'; reason = 'High Priority — awaiting review';
+    } else if (evidence.indexOf('Negative outcome not reviewed') > -1) {
+      dot = '🔴'; reason = 'Negative outcome — awaiting review';
+    } else if (evidence.indexOf('Open follow-up recorded') > -1) {
+      dot = '🟠'; reason = 'Follow-up action outstanding';
+    } else {
+      dot = '🔵'; reason = evidence[0] || 'Flagged for review';
+    }
+    var dest = acc.visitId
+      ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(acc.visitId)
+      : 'https://fieldiq.biz/dashboard.html';
+    return '<a class="radar-mini-item" href="' + dest + '">' +
+      '<div><div class="radar-mini-name">' + dot + ' ' + escapeHtmlHome(acc.name) + '</div>' +
       '<div class="radar-mini-reason">' + escapeHtmlHome(reason) + '</div></div>' +
       '<div class="radar-mini-arrow">›</div></a>';
   }).join('');
