@@ -230,8 +230,10 @@ function renderActionCard(r, account){
   var action=f['Action Text']||'';
   var source=f['Source']||'AI';
   var due=f['Due Date']||'';
+  var created=r.createdTime?r.createdTime.slice(0,10):'';
   var reminderCount=f['Reminder Count'];
   var meta='';
+  if(created)meta+='<span class="meta">Created: '+escapeHtml(formatDate(created))+'</span>';
   meta+='<span class="meta">Source: '+escapeHtml(source)+'</span>';
   if(due)meta+='<span class="meta">Due: '+escapeHtml(formatDate(due))+'</span>';
   if(reminderCount!==undefined)meta+='<span class="meta">Reminders: '+escapeHtml(reminderCount)+'</span>';
