@@ -63,7 +63,7 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text
 .reminder-btn{background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;box-shadow:0 6px 16px rgba(47,143,255,0.25)}
 .reminder-btn:disabled{opacity:.55;cursor:not-allowed;background:#8a9bb3;box-shadow:none}
 .owner-complete-btn,.owner-dismiss-btn{width:100%;border-radius:12px;padding:13px;font-size:14px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
-.owner-complete-btn{background:#1fa861;color:#fff;border:none}
+.owner-complete-btn{background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;box-shadow:0 6px 16px rgba(47,143,255,0.25)}
 .owner-complete-btn:disabled{opacity:.55;cursor:not-allowed}
 .owner-dismiss-btn{background:#fff;color:#7a8aa3;border:1.5px solid #e3ebf5}
 .owner-dismiss-btn:disabled{opacity:.55;cursor:not-allowed}
@@ -408,32 +408,29 @@ async function loadUsersBestEffort(){
 async function loadActions(pendingScroll){
   document.getElementById('content').innerHTML='<div class="loading"><div class="spinner"></div>Loading manager actions...</div>';
   try{
-    var openData=await fetchJson(WORKER+'/get-actions?role=Manager&status=Open',8000);
+    var results=await Promise.all([
+      fetchJson(WORKER+'/get-actions?role=Manager&status=Open',8000),
+      fetchJson(WORKER+'/get-actions?role=Manager&status=Completed',5000).catch(function(){return {records:[]};}),
+      fetchJson(WORKER+'/get-actions?role=Manager&status=Dismissed',5000).catch(function(e){console.error('Failed to load Dismissed actions:',e);return {records:[]};}),
+      loadUsersBestEffort()
+    ]);
+    var openData=results[0],compData=results[1],dismissData=results[2];
+
     openActions=openData.records||[];
 
-    completedActions=[];
-    try{
-      var compData=await fetchJson(WORKER+'/get-actions?role=Manager&status=Completed',5000);
-      completedActions=(compData.records||[]).filter(function(r){
-        var c=getCompletedAt(r.fields||{});
-        if(!c)return true;
-        return((Date.now()-new Date(c).getTime())/86400000)<=7;
-      });
-    }catch(e){completedActions=[];}
+    completedActions=(compData.records||[]).filter(function(r){
+      var c=getCompletedAt(r.fields||{});
+      if(!c)return true;
+      return((Date.now()-new Date(c).getTime())/86400000)<=7;
+    });
 
-    try{
-      var dismissData=await fetchJson(WORKER+'/get-actions?role=Manager&status=Dismissed',5000);
-      var recentDismissed=(dismissData.records||[]).filter(function(r){
-        var d=getDismissedAt(r.fields||{});
-        if(!d)return true;
-        return((Date.now()-new Date(d).getTime())/86400000)<=7;
-      });
-      completedActions=completedActions.concat(recentDismissed);
-    }catch(e){
-      console.error('Failed to load Dismissed actions:',e);
-    }
+    var recentDismissed=(dismissData.records||[]).filter(function(r){
+      var d=getDismissedAt(r.fields||{});
+      if(!d)return true;
+      return((Date.now()-new Date(d).getTime())/86400000)<=7;
+    });
+    completedActions=completedActions.concat(recentDismissed);
 
-    await loadUsersBestEffort();
     allActions=openActions.concat(completedActions);
     buildRepFilter();
     applyCurrentRepToSelect();
