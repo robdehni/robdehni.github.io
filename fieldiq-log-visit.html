@@ -207,7 +207,7 @@ if(!currentUserId||!currentUserName){
 }
 document.getElementById('identityBar').innerHTML='Logging visit as <strong style="color:#00d4ff">'+currentUserName+'</strong> ('+(currentUserRole||'Sales Rep')+')';
 var notListedCheck=document.getElementById('notListedCheck');var newAccountFields=document.getElementById('newAccountFields');var hospitalInput=document.getElementById('hospital');var hospitalList=document.getElementById('hospitalList');var territorySelect=document.getElementById('territory');var accountBlock=document.getElementById('accountBlock');
-notListedCheck.addEventListener('change',function(){if(this.checked){newAccountFields.classList.add('visible');hospitalInput.value='';selectedAccountId=null;hospitalList.classList.remove('open');hospitalInput.style.display='none';}else{newAccountFields.classList.remove('visible');hospitalInput.style.display='';}updateMicAvailability();});
+notListedCheck.addEventListener('change',function(){if(this.checked){newAccountFields.classList.add('visible');hospitalInput.value='';selectedAccountId=null;hospitalList.classList.remove('open');hospitalInput.style.display='none';}else{newAccountFields.classList.remove('visible');hospitalInput.style.display='';duplicateWarningEl.style.display='none';submitBtn.disabled=false;}updateMicAvailability();});
 
 territorySelect.addEventListener('change',function(){
   var keepPrefilledAccount = selectedAccountId && prefillAccountTerritory && this.value===prefillAccountTerritory;
@@ -242,8 +242,8 @@ function findPossibleDuplicates(name){var q=name.trim().toLowerCase();if(q.lengt
 var newAccountNameInput=document.getElementById('newAccountName');var duplicateWarningEl=document.getElementById('duplicateWarning');
 newAccountNameInput.addEventListener('input',function(){
   var matches=findPossibleDuplicates(this.value);
-  if(matches.length>0){var names=matches.slice(0,3).map(function(m){return m.name;}).join(', ');duplicateWarningEl.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> This may already exist: <strong>'+names+'</strong>. Please check Account search before adding as new.';duplicateWarningEl.style.display='block';}
-  else{duplicateWarningEl.style.display='none';}
+  if(matches.length>0){var names=matches.slice(0,3).map(function(m){return m.name;}).join(', ');duplicateWarningEl.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> This already exists: <strong>'+names+'</strong>. Please use Account Search instead of adding it as new.';duplicateWarningEl.style.display='block';submitBtn.disabled=true;}
+  else{duplicateWarningEl.style.display='none';submitBtn.disabled=false;}
   updateMicAvailability();
 });
 
@@ -503,7 +503,7 @@ submitBtn.addEventListener('click',async function(){
   if(isNewAccount){
     var newName=document.getElementById('newAccountName').value.trim();if(!newName){alert('Please enter the account name.');return;}
     var dupMatches=findPossibleDuplicates(newName);
-    if(dupMatches.length>0){var matchNames=dupMatches.slice(0,3).map(function(m){return m.name;}).join(', ');if(!confirm('This may already exist as: '+matchNames+'.\n\nAre you sure "'+newName+'" is a different, genuinely new account?')){return;}}
+    if(dupMatches.length>0){var matchNames=dupMatches.slice(0,3).map(function(m){return m.name;}).join(', ');alert('"'+newName+'" already exists as: '+matchNames+'.\n\nPlease use Account Search to select the existing account instead of adding it as new.');return;}
     hospitalName=newName;newAccountCity=document.getElementById('newAccountCity').value.trim();newContactName=document.getElementById('newContactName').value.trim();newContactRole=document.getElementById('newContactRole').value.trim();newContactPhone=document.getElementById('newContactPhone').value.trim();newContactEmail=document.getElementById('newContactEmail').value.trim();
     if(!newAccountCity){alert('Please enter the city.');return;}if(!newContactName){alert('Please enter the primary contact\'s name.');return;}if(!newContactRole){alert('Please enter the contact role or title.');return;}if(!newContactPhone){alert('Please enter the primary contact\'s telephone number.');return;}
   }else{hospitalName=hospitalInput.value.trim();if(!hospitalName){alert('Please select an account from the list, or check "Account not listed" to add a new one.');return;}if(!selectedAccountId){alert('Please select the account from the dropdown list so it links correctly.');return;}}
