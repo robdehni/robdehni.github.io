@@ -643,8 +643,10 @@ function render(){
       if(dismissed){
         html+='<button class="reminder-btn" disabled><i data-lucide="x"></i> Dismissed</button>';
       }else if(!complete){
-        html+='<button class="reminder-btn" data-reminder-id="'+escapeHtml(r.id)+'" '+(lock?'disabled':'')+'>';
-        html+='<i data-lucide="send"></i> '+(lock?'Reminder sent · '+lock:'Send Reminder')+'</button>';
+        if(!isOwner){
+          html+='<button class="reminder-btn" data-reminder-id="'+escapeHtml(r.id)+'" '+(lock?'disabled':'')+'>';
+          html+='<i data-lucide="send"></i> '+(lock?'Reminder sent · '+lock:'Send Reminder')+'</button>';
+        }
         if(isOwner){
           html+='<button class="owner-complete-btn" onclick="completeOwnAction(\''+r.id+'\',this)"><i data-lucide="check"></i> Complete</button>';
           html+='<button class="owner-dismiss-btn" onclick="dismissOwnAction(\''+r.id+'\',this)">Dismiss</button>';
