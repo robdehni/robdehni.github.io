@@ -353,13 +353,13 @@ function markVisitReviewed(recordId,btnEl){
 function renderFullReport(text){  
   if(!text)return'<div class="report-section"><p>No additional details available.</p></div>';  
   var s=parseFullReport(text),html='';  
-  if(s.summary)html+='<div class="report-section"><h4>Visit Summary</h4><p>'+s.summary.replace(/\n/g,'<br>')+'</p></div>';  
-  if(s.contacts)html+='<div class="report-section"><h4>Key Contacts</h4><p>'+s.contacts.replace(/\n/g,'<br>')+'</p></div>';  
-  if(s.outcomes)html+='<div class="report-section"><h4>Outcomes & Decisions</h4><p>'+s.outcomes.replace(/\n/g,'<br>')+'</p></div>';  
-  if(s.nextSteps)html+='<div class="report-section"><h4>Next Steps</h4><p>'+s.nextSteps.replace(/\n/g,'<br>')+'</p></div>';  
-  if(s.signals)html+='<div class="report-section"><h4>Opportunity Signals</h4><p>'+s.signals.replace(/\n/g,'<br>')+'</p></div>';  
-  if(s.sentiment)html+='<div class="report-section"><h4>Sentiment</h4><p>'+s.sentiment.replace(/\n/g,'<br>')+'</p></div>';  
-  return html||'<div class="report-section"><p>'+text+'</p></div>';  
+  if(s.summary)html+='<div class="report-section"><h4>Visit Summary</h4><p>'+escapeHtmlLocal(s.summary).replace(/\n/g,'<br>')+'</p></div>';  
+  if(s.contacts)html+='<div class="report-section"><h4>Key Contacts</h4><p>'+escapeHtmlLocal(s.contacts).replace(/\n/g,'<br>')+'</p></div>';  
+  if(s.outcomes)html+='<div class="report-section"><h4>Outcomes & Decisions</h4><p>'+escapeHtmlLocal(s.outcomes).replace(/\n/g,'<br>')+'</p></div>';  
+  if(s.nextSteps)html+='<div class="report-section"><h4>Next Steps</h4><p>'+escapeHtmlLocal(s.nextSteps).replace(/\n/g,'<br>')+'</p></div>';  
+  if(s.signals)html+='<div class="report-section"><h4>Opportunity Signals</h4><p>'+escapeHtmlLocal(s.signals).replace(/\n/g,'<br>')+'</p></div>';  
+  if(s.sentiment)html+='<div class="report-section"><h4>Sentiment</h4><p>'+escapeHtmlLocal(s.sentiment).replace(/\n/g,'<br>')+'</p></div>';  
+  return html||'<div class="report-section"><p>'+escapeHtmlLocal(text)+'</p></div>';  
 }  
 
 // ── Actions from this Visit ──────────────────────────────────────────────
