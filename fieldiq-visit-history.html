@@ -57,6 +57,11 @@ box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color
   content:'Opened from Command Centre';position:absolute;top:-9px;left:14px;background:#2f8fff;color:#fff;
   font-size:9.5px;font-weight:800;letter-spacing:0.3px;text-transform:uppercase;padding:2px 9px;border-radius:999px;
 }
+.visit-card.rep-actions-highlight{border-color:#2f8fff;box-shadow:0 0 0 3px rgba(47,143,255,0.18);position:relative}
+.visit-card.rep-actions-highlight::before{
+  content:'Opened from Open Actions';position:absolute;top:-9px;left:14px;background:#2f8fff;color:#fff;
+  font-size:9.5px;font-weight:800;letter-spacing:0.3px;text-transform:uppercase;padding:2px 9px;border-radius:999px;
+}
 .visit-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:10px}
 .visit-account{font-size:15px;font-weight:800;color:#0b1f3a;flex:1}
 .visit-date{font-size:11.5px;color:#aab8cc;white-space:nowrap;font-weight:700}
@@ -585,16 +590,18 @@ function expandAndScrollToVisit(recordId){
   if(!recordId)return;  
   var card=document.querySelector('.visit-card[data-id="'+recordId+'"]');if(!card)return;  
   var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');  
-  // Command Centre context marker — purely in-memory, a plain DOM class
-  // with no storage backing it at all (no sessionStorage, localStorage, or
-  // cookies). Applies when arriving from Manager Home's Needs Attention
-  // (source=manager-home) or from Manager Open Actions' View Visit
-  // (source=manager-actions) — both are "a manager was sent here to look
-  // at one specific visit" contexts. Loading Visit History normally never
-  // applies it.
+  // Command Centre / Open Actions context marker — purely in-memory, a
+  // plain DOM class with no storage backing it at all. Manager sources
+  // (manager-home, manager-actions) keep the original "Opened from
+  // Command Centre" treatment, unchanged. The Rep's own Open Actions
+  // source gets its own correct wording instead of incorrectly reusing
+  // the Manager's ribbon text. Loading Visit History normally, or from
+  // any other source, never applies either.
   var _srcParams=new URLSearchParams(window.location.search);
   if(_srcParams.get('source')==='manager-home'||_srcParams.get('source')==='manager-actions'){
     card.classList.add('command-centre-highlight');
+  }else if(_srcParams.get('source')==='rep-actions'){
+    card.classList.add('rep-actions-highlight');
   }
   // Defensive correction: ensure this specific card's header has the same
   // watch star every other card gets, using the identical construction as
