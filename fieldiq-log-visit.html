@@ -658,6 +658,8 @@ submitBtn.addEventListener('click',async function(){
     }
 
     processingOverlay.style.display='none';successCard.style.display='block';document.getElementById('reportContent').innerHTML=renderReport(result);
+    document.getElementById('editNotice').className='edit-notice';
+    audioPlayer.style.display='none';
     var suggestedDateText=(parsed.suggestedDate||'').trim();
     if(suggestedDateText&&suggestedDateText.toLowerCase()!=='none'){
       var dateNoticeEl=document.createElement('div');
