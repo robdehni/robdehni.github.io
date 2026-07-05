@@ -297,6 +297,7 @@ async function startRecording(){
   }catch(e){isRecording=false;statusEl.textContent='Mic error: '+e.message;}
 }
 function discardRecordingOnly(){
+  transcriptText.disabled=false;
   document.getElementById('autoStopChoice').style.display='none';
   clearTimeout(autoStopTimeout);clearInterval(timerInterval);
   isRecording=false;wasAutoStopped=false;pendingAutoStopBlob=null;chunks=[];seconds=0;
@@ -433,6 +434,7 @@ document.getElementById('photoGalleryInput').addEventListener('change', function
 // ────────────────────────────────────────────────────────────────────────────
 
 document.getElementById('clearBtn').addEventListener('click',function(){
+  transcriptText.disabled=false;
   document.getElementById('autoStopChoice').style.display='none';
   isRecording=false;transcriptText.value='';audioPlayer.style.display='none';audioPlayer.src='';successCard.style.display='none';processingOverlay.style.display='none';statusEl.textContent='Tap mic to start recording';statusEl.className='status';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';micBtn.className='mic-btn';micBtn.innerHTML='<i data-lucide="mic"></i>';lucide.createIcons({el:micBtn});document.getElementById('recordingIndicator').className='recording-indicator';clearTimeout(autoStopTimeout);clearInterval(timerInterval);seconds=0;document.getElementById('recordingTimer').textContent='0:00';if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});streamRef=null;mediaRecorder=null;document.getElementById('editNotice').className='edit-notice';notListedCheck.checked=false;newAccountFields.classList.remove('visible');hospitalInput.style.display='';document.getElementById('newAccountName').value='';document.getElementById('newAccountCity').value='';document.getElementById('newContactName').value='';document.getElementById('newContactRole').value='';document.getElementById('newContactPhone').value='';document.getElementById('newContactEmail').value='';selectedAccountId=null;hospitalInput.value='';territorySelect.value='';accountBlock.style.opacity='0.5';accountBlock.style.pointerEvents='none';hospitalInput.disabled=true;notListedCheck.disabled=true;hospitalInput.placeholder='Select a territory first';duplicateWarningEl.style.display='none';
   pendingPhotos.forEach(function(p){URL.revokeObjectURL(p.previewUrl);});
