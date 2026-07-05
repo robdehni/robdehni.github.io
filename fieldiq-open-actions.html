@@ -204,7 +204,7 @@ function visitHref(r){
   // other check is an exact-match on a bare, param-less URL, which our
   // context-carrying returnTo above will never match). Reusing it avoids
   // any change to fieldiq-visit-history.html.
-  q.push('source='+encodeURIComponent('manager-actions'));
+  q.push('source='+encodeURIComponent('rep-actions'));
   return url+'?'+q.join('&');
 }
 function showToast(msg){
