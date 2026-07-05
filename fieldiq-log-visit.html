@@ -160,10 +160,16 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
   <button class="mic-btn" id="micBtn"><i data-lucide="mic"></i></button>
   <div class="status" id="status">Tap mic to start recording</div>
   <div class="recording-indicator" id="recordingIndicator"><div class="recording-timer" id="recordingTimer">0:00</div></div>
+  <div id="autoStopChoice" style="display:none;margin:10px 0;padding:12px;border:1px solid #e3ebf5;border-radius:12px;background:#fff">
+    <div style="display:flex;gap:8px">
+      <button type="button" id="autoStopTranscribeBtn" class="btn btn-primary" style="flex:1">Transcribe Recording</button>
+      <button type="button" id="autoStopDiscardBtn" class="btn btn-secondary" style="flex:1">Discard Recording</button>
+    </div>
+  </div>
   <audio id="audioPlayer" controls></audio>
 </div>
 <div style="position:relative">
-  <div class="edit-notice" id="editNotice"><i data-lucide="pencil"></i> <strong>Review your transcript.</strong> Tap to correct any mistakes before processing.</div>
+  <div class="edit-notice" id="editNotice"><i data-lucide="pencil"></i> <strong>Review your transcript.</strong> Tap to correct any mistakes before processing. <a href="#" id="discardRecordingLink" style="margin-left:8px;color:#c43048;font-weight:700;text-decoration:underline">Discard Recording</a></div>
   <textarea class="transcript-box" id="transcriptText" placeholder="Your speech will appear here automatically after recording... tap to edit before processing."></textarea>
   <div style="font-size:11px;color:#555;text-align:right;margin-top:-8px;margin-bottom:8px;">Tap to edit before processing</div>
 </div>
@@ -261,25 +267,50 @@ document.addEventListener('click',function(e){if(!e.target.closest('.hospital-wr
 document.getElementById('visitDate').value=new Date().toISOString().split('T')[0];
 document.getElementById('visitDate').addEventListener('change',function(){updateMicAvailability();});
 document.getElementById('visitType').addEventListener('change',function(){updateMicAvailability();});
-var mediaRecorder=null,chunks=[],seconds=0,timerInterval=null,streamRef=null,isRecording=false;
+var mediaRecorder=null,chunks=[],seconds=0,timerInterval=null,streamRef=null,isRecording=false,autoStopTimeout=null,wasAutoStopped=false,pendingAutoStopBlob=null;
 var micBtn=document.getElementById('micBtn');var statusEl=document.getElementById('status');var transcriptText=document.getElementById('transcriptText');var audioPlayer=document.getElementById('audioPlayer');var submitBtn=document.getElementById('submitBtn');var successCard=document.getElementById('successCard');var processingOverlay=document.getElementById('processingOverlay');
 var validationMessageEl=document.getElementById('validationMessage');
 function getMissingFields(){var missing=[];if(!territorySelect.value)missing.push('Territory');var newAccountNameVal=notListedCheck.checked?document.getElementById('newAccountName').value.trim():'';var isDuplicateNewAccount=notListedCheck.checked&&newAccountNameVal.length>0&&findPossibleDuplicates(newAccountNameVal).length>0;var accountOk=!!selectedAccountId||(notListedCheck.checked&&newAccountNameVal.length>0&&!isDuplicateNewAccount);if(!accountOk)missing.push(isDuplicateNewAccount?'Account (duplicate)':'Account');if(!document.getElementById('visitDate').value)missing.push('Visit Date');if(!document.getElementById('visitType').value)missing.push('Visit Type');if(!currentUserId||!currentUserName)missing.push('Rep Identity');return missing;}
 function updateMicAvailability(){var missing=getMissingFields();if(missing.length>0){micBtn.disabled=true;if(validationMessageEl){if(missing.indexOf('Account (duplicate)')>-1){validationMessageEl.textContent='This account already exists. Please select it from Account Search instead of adding it as new.';}else{validationMessageEl.textContent='Complete required fields to start recording: '+missing.join(', ');}validationMessageEl.style.display='block';}}else{micBtn.disabled=false;if(validationMessageEl){validationMessageEl.style.display='none';}}}
 updateMicAvailability();
 micBtn.addEventListener('click',function(){if(!isRecording)startRecording();else stopRecording();});
+function proceedToTranscribe(blob){
+  statusEl.className='status transcribing';statusEl.textContent='Transcribing visit...';
+  var fd=new FormData();fd.append('file',blob,'visit.webm');fd.append('model','whisper-1');
+  fetch(WORKER+'/transcribe',{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(d){var t=d.text||d.transcript||'';if(t){transcriptText.value=t;statusEl.className='status done';statusEl.textContent='Transcript ready. Edit if needed then process.';document.getElementById('editNotice').className='edit-notice visible';micBtn.disabled=true;}else{statusEl.className='status';statusEl.textContent='Transcription failed. Type notes manually.';}}).catch(function(){statusEl.className='status';statusEl.textContent='Transcription error — type notes manually.';});
+}
 async function startRecording(){
-  try{isRecording=true;chunks=[];seconds=0;document.getElementById('recordingTimer').textContent='0:00';transcriptText.value='';audioPlayer.style.display='none';successCard.style.display='none';statusEl.className='status active';
+  try{isRecording=true;chunks=[];seconds=0;wasAutoStopped=false;document.getElementById('recordingTimer').textContent='0:00';transcriptText.value='';audioPlayer.style.display='none';successCard.style.display='none';statusEl.className='status active';
   streamRef=await navigator.mediaDevices.getUserMedia({audio:true});mediaRecorder=new MediaRecorder(streamRef);
   mediaRecorder.ondataavailable=function(e){if(e.data&&e.data.size>0)chunks.push(e.data);};
-  mediaRecorder.onstop=function(){isRecording=false;var blob=new Blob(chunks,{type:'audio/webm'});audioPlayer.src=URL.createObjectURL(blob);audioPlayer.style.display='block';micBtn.className='mic-btn';micBtn.innerHTML='<i data-lucide="mic"></i>';lucide.createIcons({el:micBtn});document.getElementById('recordingIndicator').className='recording-indicator';statusEl.className='status transcribing';statusEl.textContent='Transcribing visit...';if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});
-  var fd=new FormData();fd.append('file',blob,'visit.webm');fd.append('model','whisper-1');
-  fetch(WORKER+'/transcribe',{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(d){var t=d.text||d.transcript||'';if(t){transcriptText.value=t;statusEl.className='status done';statusEl.textContent='Transcript ready. Edit if needed then process.';document.getElementById('editNotice').className='edit-notice visible';micBtn.disabled=true;}else{statusEl.className='status';statusEl.textContent='Transcription failed. Type notes manually.';}}).catch(function(){statusEl.className='status';statusEl.textContent='Transcription error — type notes manually.';});};
-  mediaRecorder.start();timerInterval=setInterval(function(){seconds++;var m=Math.floor(seconds/60),s=seconds%60;document.getElementById('recordingTimer').textContent=m+':'+(s<10?'0':'')+s;},1000);
+  mediaRecorder.onstop=function(){isRecording=false;var blob=new Blob(chunks,{type:'audio/webm'});audioPlayer.src=URL.createObjectURL(blob);audioPlayer.style.display='block';micBtn.className='mic-btn';micBtn.innerHTML='<i data-lucide="mic"></i>';lucide.createIcons({el:micBtn});document.getElementById('recordingIndicator').className='recording-indicator';if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});
+  if(wasAutoStopped){
+    statusEl.className='status';statusEl.textContent='Maximum recording time reached (10 minutes). Please review your recording before continuing.';
+    pendingAutoStopBlob=blob;
+    document.getElementById('autoStopChoice').style.display='block';
+  }else{
+    proceedToTranscribe(blob);
+  }
+  };
+  mediaRecorder.start();timerInterval=setInterval(function(){seconds++;var m=Math.floor(seconds/60),s=seconds%60;document.getElementById('recordingTimer').textContent=m+':'+(s<10?'0':'')+s;},1000);autoStopTimeout=setTimeout(function(){wasAutoStopped=true;stopRecording();},600000);
   micBtn.className='mic-btn recording';micBtn.innerHTML='<i data-lucide="square"></i>';lucide.createIcons({el:micBtn});document.getElementById('recordingIndicator').className='recording-indicator visible';statusEl.textContent='Recording... tap mic to stop';
   }catch(e){isRecording=false;statusEl.textContent='Mic error: '+e.message;}
 }
-function stopRecording(){clearInterval(timerInterval);document.getElementById('recordingIndicator').className='recording-indicator';if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}
+function discardRecordingOnly(){
+  document.getElementById('autoStopChoice').style.display='none';
+  clearTimeout(autoStopTimeout);clearInterval(timerInterval);
+  isRecording=false;wasAutoStopped=false;pendingAutoStopBlob=null;chunks=[];seconds=0;
+  transcriptText.value='';
+  audioPlayer.style.display='none';audioPlayer.src='';
+  document.getElementById('recordingTimer').textContent='0:00';
+  document.getElementById('recordingIndicator').className='recording-indicator';
+  document.getElementById('editNotice').className='edit-notice';
+  statusEl.className='status';statusEl.textContent='Tap mic to start recording';
+  micBtn.className='mic-btn';micBtn.innerHTML='<i data-lucide="mic"></i>';lucide.createIcons({el:micBtn});
+  if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});streamRef=null;mediaRecorder=null;
+  updateMicAvailability();
+}
+function stopRecording(){clearTimeout(autoStopTimeout);clearInterval(timerInterval);document.getElementById('recordingIndicator').className='recording-indicator';if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}
 
 // ── Visit Evidence / Photo capture ──────────────────────────────────────────
 var pendingPhotos = [];   // [{blob, previewUrl}, ...] — max 2
@@ -402,11 +433,24 @@ document.getElementById('photoGalleryInput').addEventListener('change', function
 // ────────────────────────────────────────────────────────────────────────────
 
 document.getElementById('clearBtn').addEventListener('click',function(){
-  isRecording=false;transcriptText.value='';audioPlayer.style.display='none';audioPlayer.src='';successCard.style.display='none';processingOverlay.style.display='none';statusEl.textContent='Tap mic to start recording';statusEl.className='status';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';micBtn.className='mic-btn';micBtn.innerHTML='<i data-lucide="mic"></i>';lucide.createIcons({el:micBtn});document.getElementById('recordingIndicator').className='recording-indicator';clearInterval(timerInterval);seconds=0;document.getElementById('recordingTimer').textContent='0:00';if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});streamRef=null;mediaRecorder=null;document.getElementById('editNotice').className='edit-notice';notListedCheck.checked=false;newAccountFields.classList.remove('visible');hospitalInput.style.display='';document.getElementById('newAccountName').value='';document.getElementById('newAccountCity').value='';document.getElementById('newContactName').value='';document.getElementById('newContactRole').value='';document.getElementById('newContactPhone').value='';document.getElementById('newContactEmail').value='';selectedAccountId=null;hospitalInput.value='';territorySelect.value='';accountBlock.style.opacity='0.5';accountBlock.style.pointerEvents='none';hospitalInput.disabled=true;notListedCheck.disabled=true;hospitalInput.placeholder='Select a territory first';duplicateWarningEl.style.display='none';
+  document.getElementById('autoStopChoice').style.display='none';
+  isRecording=false;transcriptText.value='';audioPlayer.style.display='none';audioPlayer.src='';successCard.style.display='none';processingOverlay.style.display='none';statusEl.textContent='Tap mic to start recording';statusEl.className='status';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';micBtn.className='mic-btn';micBtn.innerHTML='<i data-lucide="mic"></i>';lucide.createIcons({el:micBtn});document.getElementById('recordingIndicator').className='recording-indicator';clearTimeout(autoStopTimeout);clearInterval(timerInterval);seconds=0;document.getElementById('recordingTimer').textContent='0:00';if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});streamRef=null;mediaRecorder=null;document.getElementById('editNotice').className='edit-notice';notListedCheck.checked=false;newAccountFields.classList.remove('visible');hospitalInput.style.display='';document.getElementById('newAccountName').value='';document.getElementById('newAccountCity').value='';document.getElementById('newContactName').value='';document.getElementById('newContactRole').value='';document.getElementById('newContactPhone').value='';document.getElementById('newContactEmail').value='';selectedAccountId=null;hospitalInput.value='';territorySelect.value='';accountBlock.style.opacity='0.5';accountBlock.style.pointerEvents='none';hospitalInput.disabled=true;notListedCheck.disabled=true;hospitalInput.placeholder='Select a territory first';duplicateWarningEl.style.display='none';
   pendingPhotos.forEach(function(p){URL.revokeObjectURL(p.previewUrl);});
   pendingPhotos=[];renderPhotoPreviews();
   document.getElementById('photoUploading').style.display='none';
   updateMicAvailability();
+});
+
+document.getElementById('autoStopTranscribeBtn').addEventListener('click',function(){
+  document.getElementById('autoStopChoice').style.display='none';
+  proceedToTranscribe(pendingAutoStopBlob);
+});
+document.getElementById('autoStopDiscardBtn').addEventListener('click',function(){
+  discardRecordingOnly();
+});
+document.getElementById('discardRecordingLink').addEventListener('click',function(e){
+  e.preventDefault();
+  discardRecordingOnly();
 });
 
 var prefillSourceRef='';
