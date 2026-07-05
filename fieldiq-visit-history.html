@@ -216,7 +216,7 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
   var source=params.get('source');
   var returnTo=params.get('returnTo');
   var homeBtn=document.getElementById('homeBtn');
-  if(source==='manager-actions'||source==='open-actions'||returnTo==='./fieldiq-actions.html'){
+  if(source==='manager-actions'||source==='open-actions'||source==='rep-actions'||returnTo==='./fieldiq-actions.html'){
     homeBtn.href=returnTo||'./fieldiq-actions.html';
     homeBtn.textContent='← Back to Open Actions';
   }else if(source==='manager-home'){
