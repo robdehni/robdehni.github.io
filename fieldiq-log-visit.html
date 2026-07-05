@@ -660,7 +660,7 @@ submitBtn.addEventListener('click',async function(){
       }catch(e){console.warn('Rep Activity notification failed:',e);}
     }
 
-    processingOverlay.style.display='none';successCard.style.display='block';document.getElementById('reportContent').innerHTML=renderReport(result);
+    processingOverlay.style.display='none';successCard.style.display='block';submitBtn.textContent='Success';document.getElementById('reportContent').innerHTML=renderReport(result);
     var suggestedDateText=(parsed.suggestedDate||'').trim();
     if(suggestedDateText&&suggestedDateText.toLowerCase()!=='none'){
       var dateNoticeEl=document.createElement('div');
