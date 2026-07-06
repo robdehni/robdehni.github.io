@@ -171,6 +171,11 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text
   </div>  
   <p class="topbar-sub" id="lastUpdated">Loading...</p>  
 </div>  <a href="./index.html" id="homeBtn" class="home-btn">← Home</a>
+  <div id="mapNavControls" style="display:none;margin-top:10px;align-items:center;gap:10px">
+    <a href="#" id="mapPrevBtn" class="home-btn" style="padding:9px 14px">← Previous</a>
+    <span id="mapProgress" style="font-size:12.5px;color:#7a8aa3;font-weight:700;white-space:nowrap"></span>
+    <a href="#" id="mapNextBtn" class="home-btn" style="padding:9px 14px">Next →</a>
+  </div>
 
 <div id="filterBar" class="filter-bar" style="display:none">  
   <h3>Manager Filters</h3>  
@@ -241,6 +246,37 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
   }else if(source==='map'){
     homeBtn.href=returnTo||'./fieldiq-visits-map.html';
     homeBtn.textContent='← Back to Territory Map';
+    var mapVisitListRaw=params.get('mapVisitList');
+    var currentVisitId=params.get('visitId');
+    if(mapVisitListRaw&&currentVisitId){
+      var mapVisitList=mapVisitListRaw.split(',').filter(function(x){return x;});
+      var curIdx=mapVisitList.indexOf(currentVisitId);
+      if(curIdx>-1&&mapVisitList.length>1){
+        document.getElementById('mapProgress').textContent='Visit '+(curIdx+1)+' of '+mapVisitList.length;
+        var prevBtn=document.getElementById('mapPrevBtn');
+        var nextBtn=document.getElementById('mapNextBtn');
+        function _mapNavHref(idx){
+          var baseReturnTo=returnTo||'./fieldiq-visits-map.html';
+          var qIdx=baseReturnTo.indexOf('?');
+          var returnPath=qIdx>-1?baseReturnTo.substring(0,qIdx):baseReturnTo;
+          var returnParams=qIdx>-1?new URLSearchParams(baseReturnTo.substring(qIdx+1)):new URLSearchParams();
+          returnParams.set('mapVisitId',mapVisitList[idx]);
+          var rebuiltReturnTo=returnPath+'?'+returnParams.toString();
+          return './fieldiq-visit-history.html?visitId='+encodeURIComponent(mapVisitList[idx])+'&source=map&returnTo='+encodeURIComponent(rebuiltReturnTo)+'&mapVisitList='+encodeURIComponent(mapVisitListRaw);
+        }
+        if(curIdx>0){
+          prevBtn.href=_mapNavHref(curIdx-1);
+        }else{
+          prevBtn.style.visibility='hidden';
+        }
+        if(curIdx<mapVisitList.length-1){
+          nextBtn.href=_mapNavHref(curIdx+1);
+        }else{
+          nextBtn.style.visibility='hidden';
+        }
+        document.getElementById('mapNavControls').style.display='flex';
+      }
+    }
   }else{
     var role=localStorage.getItem('fieldiq_user_role');
     if(role==='Manager'){
