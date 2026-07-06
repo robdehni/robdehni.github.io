@@ -280,8 +280,9 @@ function goToVisit(visitId){
   var fRep=document.getElementById('fRep').value;
   var fSent=document.getElementById('fSent').value;
   var mapVisitIds=currentFilteredVisits.filter(function(v){return v.fields.Latitude&&v.fields.Longitude;}).map(function(v){return v.id;});
+  try{sessionStorage.setItem('fieldiq_map_visit_list',JSON.stringify(mapVisitIds));}catch(e){}
   var returnUrl='./fieldiq-visits-map.html?mapLat='+encodeURIComponent(c.lat)+'&mapLng='+encodeURIComponent(c.lng)+'&mapZoom='+encodeURIComponent(z)+'&mapVisitId='+encodeURIComponent(visitId)+'&fPeriod='+encodeURIComponent(fPeriod)+'&fTerr='+encodeURIComponent(fTerr)+'&fRep='+encodeURIComponent(fRep)+'&fSent='+encodeURIComponent(fSent);
-  var navUrl='./fieldiq-visit-history.html?visitId='+encodeURIComponent(visitId)+'&source=map&returnTo='+encodeURIComponent(returnUrl)+'&mapVisitList='+encodeURIComponent(mapVisitIds.join(','));
+  var navUrl='./fieldiq-visit-history.html?visitId='+encodeURIComponent(visitId)+'&source=map&returnTo='+encodeURIComponent(returnUrl);
   window.location.href=navUrl;
 }
 function renderMarkers(visits){
