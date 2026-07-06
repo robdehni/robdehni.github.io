@@ -788,6 +788,7 @@ function renderWatchlistSection(records){
   if(!records.length){el.innerHTML='<div class="empty">No accounts on your watchlist yet. Star an account from Visit History to add it here.</div>';return;}
   var html='<div class="watchlist-grid">';
   records.forEach(function(w){
+    if(!w.visitId)return;
     var link=buildVisitHistoryLink({visitId:w.visitId});
     var safeName=escapeHtml(w.accountName);
     var lastVisitText=w.lastVisit?('Last visit: '+formatDate(w.lastVisit)):'No linked visit yet';
