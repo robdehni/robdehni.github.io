@@ -273,7 +273,8 @@ function renderMarkers(visits){
       '<div class="pr"><span class="pl">Date</span><span class="pv">'+formatDate(f['Visit Date'])+'</span></div>'+
       '<div class="pr"><span class="pl">Time</span><span class="pv">'+formatTime(v.createdTime)+'</span></div>'+
       '<div class="pr"><span class="pl">Territory</span><span class="pv">'+(f['Territory']||'—')+'</span></div>'+
-      '<div class="pr"><span class="pl">Type</span><span class="pv">'+(f['Visit Type']||'—')+'</span></div>';
+      '<div class="pr"><span class="pl">Type</span><span class="pv">'+(f['Visit Type']||'—')+'</span></div>'+
+      '<div style="margin-top:8px"><a href="./fieldiq-visit-history.html?visitId='+encodeURIComponent(v.id)+'&source=map&returnTo='+encodeURIComponent('./fieldiq-visits-map.html')+'" style="display:block;text-align:center;background:#2f8fff;color:#fff;font-weight:800;font-size:11.5px;padding:7px 0;border-radius:8px;text-decoration:none">View Visit</a></div>';
     markers.addLayer(
       L.marker([f.Latitude,f.Longitude],{icon:makeIcon(getColor(sent))})
        .bindPopup(popup,{maxWidth:280})
