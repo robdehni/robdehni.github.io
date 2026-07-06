@@ -159,6 +159,11 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text
   <link rel="apple-touch-icon" href="/icon-180.png">
 </head>  
 <body>  
+  <div id="mapNavControls" style="display:none;position:fixed;top:0;left:0;right:0;z-index:800;background:#fff;border-bottom:1px solid #e3ebf5;box-shadow:0 2px 10px rgba(11,31,58,0.06);align-items:center;justify-content:center;gap:14px;padding:11px 16px">
+    <a href="#" id="mapPrevBtn" class="home-btn" style="padding:8px 14px;font-size:13px">← Previous</a>
+    <span id="mapProgress" style="font-size:12.5px;color:#7a8aa3;font-weight:700;white-space:nowrap"></span>
+    <a href="#" id="mapNextBtn" class="home-btn" style="padding:8px 14px;font-size:13px">Next →</a>
+  </div>
 <div class="container">  <div class="topbar">  
   <div class="topbar-brand">  
     <span class="brand-cloud">☁️</span>  
@@ -171,11 +176,6 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text
   </div>  
   <p class="topbar-sub" id="lastUpdated">Loading...</p>  
 </div>  <a href="./index.html" id="homeBtn" class="home-btn">← Home</a>
-  <div id="mapNavControls" style="display:none;margin-top:10px;align-items:center;gap:10px">
-    <a href="#" id="mapPrevBtn" class="home-btn" style="padding:9px 14px">← Previous</a>
-    <span id="mapProgress" style="font-size:12.5px;color:#7a8aa3;font-weight:700;white-space:nowrap"></span>
-    <a href="#" id="mapNextBtn" class="home-btn" style="padding:9px 14px">Next →</a>
-  </div>
 
 <div id="filterBar" class="filter-bar" style="display:none">  
   <h3>Manager Filters</h3>  
@@ -275,6 +275,8 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
           nextBtn.style.visibility='hidden';
         }
         document.getElementById('mapNavControls').style.display='flex';
+        var _navBarEl=document.getElementById('mapNavControls');
+        document.body.style.paddingTop=(_navBarEl.offsetHeight+16)+'px';
       }
     }
   }else{
