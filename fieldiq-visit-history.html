@@ -685,6 +685,10 @@ function expandAndScrollToVisit(recordId){
     detail.classList.add('open');card.classList.add('expanded');  
     if(toggle)toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
   }  
+  var _stickyBar=document.getElementById('mapNavControls');
+  if(_stickyBar&&_stickyBar.style.display==='flex'){
+    card.style.scrollMarginTop=(_stickyBar.offsetHeight+12)+'px';
+  }
   card.scrollIntoView({behavior:'smooth',block:'start'});  
 }  
   
