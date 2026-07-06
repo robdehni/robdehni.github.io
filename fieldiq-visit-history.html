@@ -793,9 +793,7 @@ document.getElementById('repSearch').addEventListener('input',function(){
   btn.setAttribute('aria-label','Back to top');
   btn.textContent='↑';
   btn.addEventListener('click',function(){
-    var _navBar=document.getElementById('mapNavControls');
-    var _targetTop=(_navBar&&_navBar.style.display==='flex')?_navBar.offsetHeight:0;
-    window.scrollTo({top:_targetTop,behavior:'smooth'});
+    window.scrollTo({top:0,behavior:'smooth'});
   });
   document.addEventListener('DOMContentLoaded',function(){
     document.body.appendChild(btn);
