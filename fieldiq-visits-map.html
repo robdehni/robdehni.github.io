@@ -168,6 +168,7 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 var allVisits=[];
 var markers;
 var theMap;
+var markersByVisitId={};
 
 theMap=L.map('map',{zoomControl:true}).setView([24.5,54.0],6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
@@ -255,8 +256,19 @@ function getDateCutoffs(period){
   return {start:null,end:null};
 }
 
+function goToVisit(visitId){
+  var c=theMap.getCenter();
+  var z=theMap.getZoom();
+  var fPeriod=document.getElementById('fPeriod').value;
+  var fTerr=document.getElementById('fTerr').value;
+  var fRep=document.getElementById('fRep').value;
+  var fSent=document.getElementById('fSent').value;
+  var returnUrl='./fieldiq-visits-map.html?mapLat='+encodeURIComponent(c.lat)+'&mapLng='+encodeURIComponent(c.lng)+'&mapZoom='+encodeURIComponent(z)+'&mapVisitId='+encodeURIComponent(visitId)+'&fPeriod='+encodeURIComponent(fPeriod)+'&fTerr='+encodeURIComponent(fTerr)+'&fRep='+encodeURIComponent(fRep)+'&fSent='+encodeURIComponent(fSent);
+  window.location.href='./fieldiq-visit-history.html?visitId='+encodeURIComponent(visitId)+'&source=map&returnTo='+encodeURIComponent(returnUrl);
+}
 function renderMarkers(visits){
   markers.clearLayers();
+  markersByVisitId={};
   var p=0,n=0,neg=0,shown=0;
   visits.forEach(function(v){
     var f=v.fields;
@@ -274,11 +286,10 @@ function renderMarkers(visits){
       '<div class="pr"><span class="pl">Time</span><span class="pv">'+formatTime(v.createdTime)+'</span></div>'+
       '<div class="pr"><span class="pl">Territory</span><span class="pv">'+(f['Territory']||'—')+'</span></div>'+
       '<div class="pr"><span class="pl">Type</span><span class="pv">'+(f['Visit Type']||'—')+'</span></div>'+
-      '<div style="margin-top:8px"><a href="./fieldiq-visit-history.html?visitId='+encodeURIComponent(v.id)+'&source=map&returnTo='+encodeURIComponent('./fieldiq-visits-map.html')+'" style="display:block;text-align:center;background:#2f8fff;color:#fff;font-weight:800;font-size:11.5px;padding:7px 0;border-radius:8px;text-decoration:none">View Visit</a></div>';
-    markers.addLayer(
-      L.marker([f.Latitude,f.Longitude],{icon:makeIcon(getColor(sent))})
-       .bindPopup(popup,{maxWidth:280})
-    );
+      '<div style="margin-top:8px"><a href="#" onclick="goToVisit(\''+encodeURIComponent(v.id)+'\');return false;" style="display:block;text-align:center;background:#2f8fff;color:#fff;font-weight:800;font-size:11.5px;padding:7px 0;border-radius:8px;text-decoration:none">View Visit</a></div>';
+    var _marker=L.marker([f.Latitude,f.Longitude],{icon:makeIcon(getColor(sent))}).bindPopup(popup,{maxWidth:280});
+    markersByVisitId[v.id]=_marker;
+    markers.addLayer(_marker);
   });
   document.getElementById('sCount').textContent=shown;
   document.getElementById('sPos').textContent=p;
@@ -351,8 +362,20 @@ async function loadVisits(){
       return;
     }
     populateFilters(allVisits);
-    document.getElementById('fPeriod').value='30';
+    var _restoreParams=new URLSearchParams(window.location.search);
+    var _mLat=_restoreParams.get('mapLat'),_mLng=_restoreParams.get('mapLng'),_mZoom=_restoreParams.get('mapZoom'),_mVisitId=_restoreParams.get('mapVisitId');
+    var _fPeriod=_restoreParams.get('fPeriod'),_fTerr=_restoreParams.get('fTerr'),_fRep=_restoreParams.get('fRep'),_fSent=_restoreParams.get('fSent');
+    document.getElementById('fPeriod').value=(_fPeriod!==null)?_fPeriod:'30';
+    if(_fTerr!==null)document.getElementById('fTerr').value=_fTerr;
+    if(_fRep!==null)document.getElementById('fRep').value=_fRep;
+    if(_fSent!==null)document.getElementById('fSent').value=_fSent;
     applyFilters();
+    if(_mLat&&_mLng&&_mZoom){
+      theMap.setView([parseFloat(_mLat),parseFloat(_mLng)],parseInt(_mZoom,10));
+      if(_mVisitId&&markersByVisitId[_mVisitId]){
+        markersByVisitId[_mVisitId].openPopup();
+      }
+    }
     document.getElementById('updated').textContent='Updated '+new Date().toLocaleTimeString();
     document.getElementById('loadingEl').style.display='none';
     setTimeout(function(){theMap.invalidateSize();},100);
