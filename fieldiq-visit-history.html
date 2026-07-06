@@ -706,27 +706,20 @@ async function loadHistory(){
       document.getElementById('countLabel').textContent='';return;  
     }  
     var _incomingParams=new URLSearchParams(window.location.search);
-    var _incomingTerritory=_incomingParams.get('territory');
     var endpoint=WORKER+'/get-visits';  
     if(currentUser.role!=='Manager'){
       endpoint=WORKER+'/get-visits?filterByUser='+encodeURIComponent(currentUser.userId);
-    }else{
-      // Territory only is server-filtered here — it's a constrained,
-      // six-value dropdown field, so it's always clean and safe to match
-      // exactly. Rep is intentionally NOT server-filtered: rep names are
-      // free text and this page's Dashboard-supplied value is normalized
-      // for display (trimmed/capitalized) before being put in the URL,
-      // which does not necessarily match the raw stored value in Airtable
-      // — an exact server-side match can silently return zero records.
-      // The existing client-side rep filter below (applyUrlParams() +
-      // applyFilters(), which reads ?rep= from the URL independently) was
-      // already stable before this fetch existed, so rep filtering is left
-      // exactly as it was: fetch everything, filter locally.
-      var _q=[];
-      if(_incomingTerritory)_q.push('territory='+encodeURIComponent(_incomingTerritory));
-      if(_q.length)endpoint+='?'+_q.join('&');
     }
-    var res=await fetch(endpoint);var data=await res.json();  
+    // Manager: always fetch the complete dataset, unfiltered by any URL
+    // param. Territory used to be server-filtered here, which permanently
+    // limited allRecordsRaw to whatever the arriving URL specified — no
+    // amount of client-side Reset/Apply could ever recover records that
+    // were never fetched in the first place. Rep was already correctly
+    // left as fetch-everything-then-filter-locally, for the same reason
+    // this now applies to territory too: applyUrlParams() + applyFilters()
+    // below already handle the initial drill-down state client-side,
+    // exactly as they already do for rep.
+    var res=await fetch(endpoint,{cache:'no-store'});var data=await res.json();  
     if(!res.ok)throw new Error(JSON.stringify(data));  
     allRecordsRaw=data.records||[];  
     if(currentUser.role==='Manager'){
