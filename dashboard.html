@@ -309,10 +309,13 @@ function getPeriodRange(period){
   return {start:null,end:null};
 }
 function buildVisitHistoryLink(overrides){
-  var params={rep:document.getElementById('filterRep').value,territory:document.getElementById('filterTerritory').value,priority:document.getElementById('filterPriority').value,period:document.getElementById('filterDate').value,source:'dashboard'};
+  var _repSelectEl=document.getElementById('filterRep');
+  var _rawRepValue=_repSelectEl.value;
+  var params={rep:_rawRepValue,territory:document.getElementById('filterTerritory').value,priority:document.getElementById('filterPriority').value,period:document.getElementById('filterDate').value,source:'dashboard'};
   for(var k in overrides){params[k]=overrides[k];}
   var qs=[];Object.keys(params).forEach(function(k){if(params[k])qs.push(k+'='+encodeURIComponent(params[k]));});
-  return 'fieldiq-visit-history.html'+(qs.length?'?'+qs.join('&'):'');
+  var _finalUrl='fieldiq-visit-history.html'+(qs.length?'?'+qs.join('&'):'');
+  return _finalUrl;
 }
 async function updatePriority(recordId,newPriority,cardEl){
   var btns=cardEl.querySelectorAll('.pbtn');btns.forEach(function(b){b.disabled=true;});
@@ -427,7 +430,7 @@ function renderDashboardSummary(agg){
   var topReps=agg.reps.slice(0,5);
   topReps.forEach(function(r){
     var ld=r.lastVisit?new Date(r.lastVisit).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'—';
-    repRows+='<tr><td><a href="'+buildVisitHistoryLink({rep:r.name,territory:''})+'" style="color:#0b1f3a;font-weight:700;text-decoration:none">'+r.name+' →</a></td><td style="color:#2f8fff;font-weight:800">'+r.count+'</td><td>'+ld+'</td><td><span class="activity-badge '+getBadgeClass(r.sentiment)+'">'+r.sentiment+'</span></td></tr>';
+    repRows+='<tr><td><a href="'+buildVisitHistoryLink({rep:r.name})+'" style="color:#0b1f3a;font-weight:700;text-decoration:none">'+r.name+' →</a></td><td style="color:#2f8fff;font-weight:800">'+r.count+'</td><td>'+ld+'</td><td><span class="activity-badge '+getBadgeClass(r.sentiment)+'">'+r.sentiment+'</span></td></tr>';
   });
   document.getElementById('repTable').innerHTML=repRows||'<tr><td colspan="4" class="empty">No rep data yet</td></tr>';
   var moreLinkEl=document.getElementById('repTableMoreLink');
@@ -439,7 +442,7 @@ function renderDashboardSummary(agg){
   var maxT=Math.max.apply(null,agg.territories.map(function(t){return t.count;}).concat([1]));var terrHtml='';
   agg.territories.forEach(function(t){
     var pw=Math.round(t.count/maxT*100);
-    terrHtml+='<a href="'+buildVisitHistoryLink({territory:t.name,rep:''})+'" style="text-decoration:none;color:inherit;display:block"><div class="territory-item"><div class="territory-header"><span class="territory-name">'+t.name+'</span><span class="territory-count">'+t.count+' visits</span></div><div class="territory-bar-bg"><div class="territory-bar-fill" style="width:'+pw+'%"></div></div></div></a>';
+    terrHtml+='<a href="'+buildVisitHistoryLink({territory:t.name})+'" style="text-decoration:none;color:inherit;display:block"><div class="territory-item"><div class="territory-header"><span class="territory-name">'+t.name+'</span><span class="territory-count">'+t.count+' visits</span></div><div class="territory-bar-bg"><div class="territory-bar-fill" style="width:'+pw+'%"></div></div></div></a>';
   });
   document.getElementById('territoryBars').innerHTML=terrHtml||'<div class="empty">No territory data yet</div>';
   var flatPriority=[].concat(agg.priorityReview.high,agg.priorityReview.medium,agg.priorityReview.low);
@@ -651,9 +654,26 @@ async function loadDashboard(){
     var res=await fetch(WORKER_URL+'/get-dashboard',{signal:_ctrl.signal});
     clearTimeout(_timer);
     var agg=await res.json();if(!res.ok)throw new Error(JSON.stringify(agg));
-    renderDashboardSummary(agg);
     populateRepFilterFromAgg(agg);
     document.getElementById('filterBar').style.display='block';
+    var _returnParams=new URLSearchParams(window.location.search);
+    var _hasReturnContext=!!(_returnParams.get('rep')||_returnParams.get('territory')||_returnParams.get('priority')||_returnParams.get('period'));
+    if(!_hasReturnContext){
+      // No return context — this is a genuinely fresh, direct visit.
+      // Render immediately, exactly as before. Nothing about this path changes.
+      renderDashboardSummary(agg);
+    }
+    // If return context exists, the unfiltered render above is deliberately
+    // skipped — restoreDashboardContext() below does the only render that
+    // happens, using the correctly-restored filter values from the start.
+    // This is the actual fix: the previous code rendered once immediately
+    // (unfiltered, while filterRep was still empty) and then rendered again
+    // moments later once restoreDashboardContext()'s own fetch resolved.
+    // Between those two renders, the DOM already showed clickable
+    // Territory/Rep links built from the empty filter state — a real
+    // window, not a hypothetical one, given the second render depends on
+    // a network round trip. Skipping the first render when return context
+    // exists removes that window entirely, rather than trying to narrow it.
     await restoreDashboardContext();
     loadWatchlist({
       rep:document.getElementById('filterRep').value,
