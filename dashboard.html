@@ -309,13 +309,10 @@ function getPeriodRange(period){
   return {start:null,end:null};
 }
 function buildVisitHistoryLink(overrides){
-  var _repSelectEl=document.getElementById('filterRep');
-  var _rawRepValue=_repSelectEl.value;
-  var params={rep:_rawRepValue,territory:document.getElementById('filterTerritory').value,priority:document.getElementById('filterPriority').value,period:document.getElementById('filterDate').value,source:'dashboard'};
+  var params={rep:document.getElementById('filterRep').value,territory:document.getElementById('filterTerritory').value,priority:document.getElementById('filterPriority').value,period:document.getElementById('filterDate').value,source:'dashboard'};
   for(var k in overrides){params[k]=overrides[k];}
   var qs=[];Object.keys(params).forEach(function(k){if(params[k])qs.push(k+'='+encodeURIComponent(params[k]));});
-  var _finalUrl='fieldiq-visit-history.html'+(qs.length?'?'+qs.join('&'):'');
-  return _finalUrl;
+  return 'fieldiq-visit-history.html'+(qs.length?'?'+qs.join('&'):'');
 }
 async function updatePriority(recordId,newPriority,cardEl){
   var btns=cardEl.querySelectorAll('.pbtn');btns.forEach(function(b){b.disabled=true;});
@@ -627,6 +624,17 @@ async function restoreDashboardContext(){
       document.getElementById('filterStatus').textContent='Failed to restore filters: '+err.message;
     }
   }
+}
+// Extracted from restoreDashboardContext() — this must not run until
+// loadWatchlist() has genuinely finished rendering, not just after
+// restoreDashboardContext()'s own fetch resolves. myWatchlist sits above
+// managementRadar in the DOM; if Watchlist's content arrives and grows
+// the page after this scroll already happened, everything below it
+// (including the just-scrolled-to Radar card) shifts downward, leaving
+// the viewport looking at whatever now occupies that same pixel
+// position — which is exactly the reported symptom. Called from
+// loadDashboard() only after loadWatchlist() is awaited.
+function scrollToRestoredRadarCard(){
   var lastCard=null;
   try{lastCard=sessionStorage.getItem('fieldiq_dashboard_lastRadarCard');sessionStorage.removeItem('fieldiq_dashboard_lastRadarCard');}catch(e){}
   if(lastCard!==null){
@@ -675,12 +683,13 @@ async function loadDashboard(){
     // a network round trip. Skipping the first render when return context
     // exists removes that window entirely, rather than trying to narrow it.
     await restoreDashboardContext();
-    loadWatchlist({
+    await loadWatchlist({
       rep:document.getElementById('filterRep').value,
       territory:document.getElementById('filterTerritory').value,
       priority:document.getElementById('filterPriority').value,
       period:document.getElementById('filterDate').value
     });
+    scrollToRestoredRadarCard();
   }catch(err){
     clearTimeout(_timer);
     var msg=(err.name==='AbortError')?'Request timed out — check your connection.':('Failed to load: '+err.message);
