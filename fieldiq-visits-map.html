@@ -121,6 +121,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   <select id="fSent"><option value="">All Sentiment</option><option value="positive">Positive</option><option value="neutral">Neutral</option><option value="negative">Negative</option></select>
   <button class="fbtn" onclick="applyFilters()">Apply</button>
   <button class="fbtn sec" onclick="resetFilters()">Reset</button>
+  <button class="fbtn sec" onclick="fitToResults()">Fit to Results</button>
 </div>
 <div class="stats">
   <div class="stat">Visits: <span id="sCount" style="color:#2f8fff">0</span></div>
@@ -169,6 +170,7 @@ var allVisits=[];
 var markers;
 var theMap;
 var markersByVisitId={};
+var currentFilteredVisits=[];
 
 theMap=L.map('map',{zoomControl:true}).setView([24.5,54.0],6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
@@ -256,6 +258,11 @@ function getDateCutoffs(period){
   return {start:null,end:null};
 }
 
+function fitToResults(){
+  var coords=currentFilteredVisits.filter(function(v){return v.fields.Latitude&&v.fields.Longitude;}).map(function(v){return [v.fields.Latitude,v.fields.Longitude];});
+  if(coords.length===0)return;
+  theMap.fitBounds(coords,{padding:[40,40]});
+}
 function goToVisit(visitId){
   var c=theMap.getCenter();
   var z=theMap.getZoom();
@@ -263,8 +270,9 @@ function goToVisit(visitId){
   var fTerr=document.getElementById('fTerr').value;
   var fRep=document.getElementById('fRep').value;
   var fSent=document.getElementById('fSent').value;
+  var mapVisitIds=currentFilteredVisits.filter(function(v){return v.fields.Latitude&&v.fields.Longitude;}).map(function(v){return v.id;});
   var returnUrl='./fieldiq-visits-map.html?mapLat='+encodeURIComponent(c.lat)+'&mapLng='+encodeURIComponent(c.lng)+'&mapZoom='+encodeURIComponent(z)+'&mapVisitId='+encodeURIComponent(visitId)+'&fPeriod='+encodeURIComponent(fPeriod)+'&fTerr='+encodeURIComponent(fTerr)+'&fRep='+encodeURIComponent(fRep)+'&fSent='+encodeURIComponent(fSent);
-  var navUrl='./fieldiq-visit-history.html?visitId='+encodeURIComponent(visitId)+'&source=map&returnTo='+encodeURIComponent(returnUrl);
+  var navUrl='./fieldiq-visit-history.html?visitId='+encodeURIComponent(visitId)+'&source=map&returnTo='+encodeURIComponent(returnUrl)+'&mapVisitList='+encodeURIComponent(mapVisitIds.join(','));
   window.location.href=navUrl;
 }
 function renderMarkers(visits){
@@ -336,6 +344,7 @@ function applyFilters(){
     }
     return true;
   });
+  currentFilteredVisits=filtered;
   renderMarkers(filtered);
 }
 
