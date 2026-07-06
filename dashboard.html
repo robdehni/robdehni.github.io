@@ -309,10 +309,13 @@ function getPeriodRange(period){
   return {start:null,end:null};
 }
 function buildVisitHistoryLink(overrides){
-  var params={rep:document.getElementById('filterRep').value,territory:document.getElementById('filterTerritory').value,priority:document.getElementById('filterPriority').value,period:document.getElementById('filterDate').value,source:'dashboard'};
+  var _repSelectEl=document.getElementById('filterRep');
+  var _rawRepValue=_repSelectEl.value;
+  var params={rep:_rawRepValue,territory:document.getElementById('filterTerritory').value,priority:document.getElementById('filterPriority').value,period:document.getElementById('filterDate').value,source:'dashboard'};
   for(var k in overrides){params[k]=overrides[k];}
   var qs=[];Object.keys(params).forEach(function(k){if(params[k])qs.push(k+'='+encodeURIComponent(params[k]));});
-  return 'fieldiq-visit-history.html'+(qs.length?'?'+qs.join('&'):'');
+  var _finalUrl='fieldiq-visit-history.html'+(qs.length?'?'+qs.join('&'):'');
+  return _finalUrl;
 }
 async function updatePriority(recordId,newPriority,cardEl){
   var btns=cardEl.querySelectorAll('.pbtn');btns.forEach(function(b){b.disabled=true;});
@@ -403,7 +406,14 @@ async function fetchDashboardAggregate(filters){
   if(filters&&filters.priority)q.push('priority='+encodeURIComponent(filters.priority));
   if(filters&&filters.period)q.push('period='+encodeURIComponent(filters.period));
   var url=WORKER_URL+'/get-dashboard'+(q.length?'?'+q.join('&'):'');
-  var res=await fetch(url);
+  var _fdaCtrl=new AbortController();
+  var _fdaTimer=setTimeout(function(){_fdaCtrl.abort();},15000);
+  var res;
+  try{
+    res=await fetch(url,{signal:_fdaCtrl.signal});
+  }finally{
+    clearTimeout(_fdaTimer);
+  }
   var agg=await res.json();
   if(!res.ok)throw new Error(JSON.stringify(agg));
   return agg;
@@ -655,6 +665,51 @@ function scrollToRestoredRadarCard(){
     }
   }
 }
+// Same pattern as scrollToRestoredRadarCard(), extended to Watchlist —
+// a separate function, not a modification of the Radar one. Called from
+// loadDashboard() alongside it, after loadWatchlist() has genuinely
+// finished rendering, for the identical reason: myWatchlist's own content
+// arriving late would otherwise shift anything already scrolled to.
+function scrollToRestoredWatchlistCard(){
+  var lastCard=null;
+  try{lastCard=sessionStorage.getItem('fieldiq_dashboard_lastWatchlistCard');sessionStorage.removeItem('fieldiq_dashboard_lastWatchlistCard');}catch(e){}
+  if(lastCard!==null){
+    var section=document.getElementById('myWatchlist');
+    if(section){
+      section.scrollIntoView({behavior:'smooth',block:'start'});
+      var cards=section.querySelectorAll('[data-watchlist-account]');
+      for(var i=0;i<cards.length;i++){
+        if(cards[i].getAttribute('data-watchlist-account')===lastCard){
+          var cardDiv=cards[i].querySelector('.watchlist-card');
+          if(cardDiv){
+            cardDiv.classList.add('radar-card-highlighted');
+            (function(el){setTimeout(function(){el.classList.remove('radar-card-highlighted');},4000);})(cardDiv);
+          }
+          break;
+        }
+      }
+    }
+  }
+}
+// Same pattern again, extended to New Accounts.
+function scrollToRestoredNewAccountCard(){
+  var lastCard=null;
+  try{lastCard=sessionStorage.getItem('fieldiq_dashboard_lastNewAccountCard');sessionStorage.removeItem('fieldiq_dashboard_lastNewAccountCard');}catch(e){}
+  if(lastCard!==null){
+    var section=document.getElementById('newAccountsList');
+    if(section){
+      section.scrollIntoView({behavior:'smooth',block:'start'});
+      var cards=section.querySelectorAll('[data-newaccount-name]');
+      for(var i=0;i<cards.length;i++){
+        if(cards[i].getAttribute('data-newaccount-name')===lastCard){
+          cards[i].classList.add('radar-card-highlighted');
+          (function(el){setTimeout(function(){el.classList.remove('radar-card-highlighted');},4000);})(cards[i]);
+          break;
+        }
+      }
+    }
+  }
+}
 async function loadDashboard(){
   var _ctrl=new AbortController();
   var _timer=setTimeout(function(){_ctrl.abort();},15000);
@@ -690,6 +745,8 @@ async function loadDashboard(){
       period:document.getElementById('filterDate').value
     });
     scrollToRestoredRadarCard();
+    scrollToRestoredWatchlistCard();
+    scrollToRestoredNewAccountCard();
   }catch(err){
     clearTimeout(_timer);
     var msg=(err.name==='AbortError')?'Request timed out — check your connection.':('Failed to load: '+err.message);
@@ -704,6 +761,8 @@ async function loadDashboard(){
 // Intelligence scoring — watching an account never changes its AI score,
 // and AI never adds or removes watched accounts.
 async function loadWatchlist(filters){
+  var _wlCtrl=new AbortController();
+  var _wlTimer=setTimeout(function(){_wlCtrl.abort();},8000);
   try{
     var q=new URLSearchParams();
     if(filters){
@@ -713,11 +772,13 @@ async function loadWatchlist(filters){
       if(filters.period)q.set('period',filters.period);
     }
     var qs=q.toString();
-    var res=await fetch(WORKER_URL+'/get-watchlist'+(qs?('?'+qs):''));
+    var res=await fetch(WORKER_URL+'/get-watchlist'+(qs?('?'+qs):''),{signal:_wlCtrl.signal});
+    clearTimeout(_wlTimer);
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not load watchlist');
     renderWatchlistSection(data.records||[]);
   }catch(err){
+    clearTimeout(_wlTimer);
     console.error('Could not load watchlist:',err);
     document.getElementById('myWatchlist').innerHTML='<div class="empty">Could not load watchlist.</div>';
   }
@@ -728,8 +789,9 @@ function renderWatchlistSection(records){
   var html='<div class="watchlist-grid">';
   records.forEach(function(w){
     var link=w.visitId?buildVisitHistoryLink({visitId:w.visitId}):buildVisitHistoryLink({});
-    html+='<a href="'+link+'" style="text-decoration:none;color:inherit;display:block"><div class="watchlist-card">'+
-      '<div class="radar-card-header"><div class="radar-account">'+escapeHtml(w.accountName)+'</div>'+(w.territory?'<span class="activity-badge badge-territory">'+escapeHtml(w.territory)+'</span>':'')+'</div>'+
+    var safeName=escapeHtml(w.accountName);
+    html+='<a href="'+link+'" data-watchlist-account="'+safeName+'" onclick="try{sessionStorage.setItem(\'fieldiq_dashboard_lastWatchlistCard\',this.getAttribute(\'data-watchlist-account\'));}catch(e){}" style="text-decoration:none;color:inherit;display:block"><div class="watchlist-card">'+
+      '<div class="radar-card-header"><div class="radar-account">'+safeName+'</div>'+(w.territory?'<span class="activity-badge badge-territory">'+escapeHtml(w.territory)+'</span>':'')+'</div>'+
       '<div class="watchlist-meta">'+
         (w.lastRep?'<span class="meta-chip">Rep: '+escapeHtml(w.lastRep)+'</span>':'')+
         (w.priority?'<span class="meta-chip">Priority: '+escapeHtml(w.priority)+'</span>':'')+
@@ -763,7 +825,9 @@ function buildNewAccountsCard(records){
   if(newOnes.length===0){container.innerHTML='<div class="empty">No new accounts added recently</div>';return;}
   newOnes.forEach(function(r){
     var f=r.fields;var div=document.createElement('div');div.className='activity-item';
-    div.innerHTML='<a href="fieldiq-visit-history.html?visitId='+encodeURIComponent(r.id)+'" style="text-decoration:none;color:inherit;display:block"><div class="activity-header"><div class="activity-hospital">'+(f['Hospital Name']||'Unknown')+'</div><div class="activity-date">'+formatDate(f['Visit Date'])+'</div></div><div class="activity-meta">'+(f['Rep Name']?'<span class="activity-badge badge-rep">'+f['Rep Name']+'</span>':'')+(f['Territory']?'<span class="activity-badge badge-territory">'+f['Territory']+'</span>':'')+(f['City']?'<span class="activity-badge badge-territory">'+f['City']+'</span>':'')+'</div></a>';
+    var safeName=escapeHtml(f['Hospital Name']||'Unknown');
+    div.setAttribute('data-newaccount-name',safeName);
+    div.innerHTML='<a href="'+buildVisitHistoryLink({visitId:r.id})+'" onclick="try{sessionStorage.setItem(\'fieldiq_dashboard_lastNewAccountCard\',\''+safeName+'\');}catch(e){}" style="text-decoration:none;color:inherit;display:block"><div class="activity-header"><div class="activity-hospital">'+(f['Hospital Name']||'Unknown')+'</div><div class="activity-date">'+formatDate(f['Visit Date'])+'</div></div><div class="activity-meta">'+(f['Rep Name']?'<span class="activity-badge badge-rep">'+f['Rep Name']+'</span>':'')+(f['Territory']?'<span class="activity-badge badge-territory">'+f['Territory']+'</span>':'')+(f['City']?'<span class="activity-badge badge-territory">'+f['City']+'</span>':'')+'</div></a>';
     var btn=document.createElement('button');btn.className='pbtn-reviewed';btn.style.marginTop='8px';btn.textContent='✓ Mark Reviewed';btn.addEventListener('click',function(){markPendingReviewed(r.id,btn);});div.appendChild(btn);container.appendChild(div);
   });
 }
@@ -799,6 +863,11 @@ document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
     btn.classList.toggle('visible',(window.scrollY||document.documentElement.scrollTop)>500);
   },{passive:true});
 })();
+window.addEventListener('pageshow',function(event){
+  if(event.persisted){
+    window.location.reload();
+  }
+});
 </script>
 </body>
 </html>
