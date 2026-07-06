@@ -788,7 +788,7 @@ function renderWatchlistSection(records){
   if(!records.length){el.innerHTML='<div class="empty">No accounts on your watchlist yet. Star an account from Visit History to add it here.</div>';return;}
   var html='<div class="watchlist-grid">';
   records.forEach(function(w){
-    var link=w.visitId?buildVisitHistoryLink({visitId:w.visitId}):buildVisitHistoryLink({});
+    var link=buildVisitHistoryLink({visitId:w.visitId});
     var safeName=escapeHtml(w.accountName);
     var lastVisitText=w.lastVisit?('Last visit: '+formatDate(w.lastVisit)):'No linked visit yet';
     html+='<a href="'+link+'" data-watchlist-account="'+safeName+'" onclick="try{sessionStorage.setItem(\'fieldiq_dashboard_lastWatchlistCard\',this.getAttribute(\'data-watchlist-account\'));}catch(e){}" style="text-decoration:none;color:inherit;display:block"><div class="watchlist-card">'+
