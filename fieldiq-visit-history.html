@@ -239,7 +239,7 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
     homeBtn.href='./dashboard.html'+(dashQ2.length?'?'+dashQ2.join('&'):'');
     homeBtn.textContent='← Back to Dashboard';
   }else if(source==='map'){
-    homeBtn.href='./fieldiq-visits-map.html';
+    homeBtn.href=returnTo||'./fieldiq-visits-map.html';
     homeBtn.textContent='← Back to Territory Map';
   }else{
     var role=localStorage.getItem('fieldiq_user_role');
