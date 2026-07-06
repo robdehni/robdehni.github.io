@@ -246,10 +246,16 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
   }else if(source==='map'){
     homeBtn.href=returnTo||'./fieldiq-visits-map.html';
     homeBtn.textContent='← Back to Territory Map';
-    var mapVisitListRaw=params.get('mapVisitList');
+    var mapVisitList=null;
+    try{
+      var _stored=sessionStorage.getItem('fieldiq_map_visit_list');
+      if(_stored){
+        var _parsed=JSON.parse(_stored);
+        if(Array.isArray(_parsed))mapVisitList=_parsed;
+      }
+    }catch(e){}
     var currentVisitId=params.get('visitId');
-    if(mapVisitListRaw&&currentVisitId){
-      var mapVisitList=mapVisitListRaw.split(',').filter(function(x){return x;});
+    if(mapVisitList&&currentVisitId){
       var curIdx=mapVisitList.indexOf(currentVisitId);
       if(curIdx>-1&&mapVisitList.length>1){
         document.getElementById('mapProgress').textContent='Visit '+(curIdx+1)+' of '+mapVisitList.length;
@@ -262,7 +268,7 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
           var returnParams=qIdx>-1?new URLSearchParams(baseReturnTo.substring(qIdx+1)):new URLSearchParams();
           returnParams.set('mapVisitId',mapVisitList[idx]);
           var rebuiltReturnTo=returnPath+'?'+returnParams.toString();
-          return './fieldiq-visit-history.html?visitId='+encodeURIComponent(mapVisitList[idx])+'&source=map&returnTo='+encodeURIComponent(rebuiltReturnTo)+'&mapVisitList='+encodeURIComponent(mapVisitListRaw);
+          return './fieldiq-visit-history.html?visitId='+encodeURIComponent(mapVisitList[idx])+'&source=map&returnTo='+encodeURIComponent(rebuiltReturnTo);
         }
         if(curIdx>0){
           prevBtn.href=_mapNavHref(curIdx-1);
