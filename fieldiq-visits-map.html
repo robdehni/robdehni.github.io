@@ -259,9 +259,18 @@ function getDateCutoffs(period){
 }
 
 function fitToResults(){
-  var coords=currentFilteredVisits.filter(function(v){return v.fields.Latitude&&v.fields.Longitude;}).map(function(v){return [v.fields.Latitude,v.fields.Longitude];});
+  var coords=currentFilteredVisits
+    .filter(function(v){return v.fields.Latitude&&v.fields.Longitude;})
+    .map(function(v){return [v.fields.Latitude,v.fields.Longitude];});
+
   if(coords.length===0)return;
-  theMap.fitBounds(coords,{padding:[40,40]});
+
+  if(coords.length===1){
+    theMap.setView(coords[0],11);
+    return;
+  }
+
+  theMap.fitBounds(coords,{padding:[40,40],maxZoom:11});
 }
 function goToVisit(visitId){
   var c=theMap.getCenter();
