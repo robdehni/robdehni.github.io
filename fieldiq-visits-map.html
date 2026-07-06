@@ -264,7 +264,8 @@ function goToVisit(visitId){
   var fRep=document.getElementById('fRep').value;
   var fSent=document.getElementById('fSent').value;
   var returnUrl='./fieldiq-visits-map.html?mapLat='+encodeURIComponent(c.lat)+'&mapLng='+encodeURIComponent(c.lng)+'&mapZoom='+encodeURIComponent(z)+'&mapVisitId='+encodeURIComponent(visitId)+'&fPeriod='+encodeURIComponent(fPeriod)+'&fTerr='+encodeURIComponent(fTerr)+'&fRep='+encodeURIComponent(fRep)+'&fSent='+encodeURIComponent(fSent);
-  window.location.href='./fieldiq-visit-history.html?visitId='+encodeURIComponent(visitId)+'&source=map&returnTo='+encodeURIComponent(returnUrl);
+  var navUrl='./fieldiq-visit-history.html?visitId='+encodeURIComponent(visitId)+'&source=map&returnTo='+encodeURIComponent(returnUrl);
+  window.location.href=navUrl;
 }
 function renderMarkers(visits){
   markers.clearLayers();
