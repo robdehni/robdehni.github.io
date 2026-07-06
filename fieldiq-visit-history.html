@@ -802,6 +802,11 @@ document.getElementById('repSearch').addEventListener('input',function(){
     btn.classList.toggle('visible',(window.scrollY||document.documentElement.scrollTop)>500);
   },{passive:true});
 })();
+window.addEventListener('pageshow',function(event){
+  if(event.persisted){
+    window.location.reload();
+  }
+});
 </script>
 </body>  
 </html>
