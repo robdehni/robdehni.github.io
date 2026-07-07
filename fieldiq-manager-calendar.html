@@ -190,6 +190,7 @@ var cameFromOperations=false;
 // these params are present, the defaults above (today's date, no filter)
 // are used exactly as before.
 var _restoredDayFromReturn=false;
+var _restoredActionId=null;
 (function(){
   var params=new URLSearchParams(window.location.search);
   var y=parseInt(params.get('calYear'),10);
@@ -200,6 +201,7 @@ var _restoredDayFromReturn=false;
   if(d){selectedDayISO=d;_restoredDayFromReturn=true;}
   var r=params.get('calRep');
   if(r)selectedRepFilter=r;
+  _restoredActionId=params.get('actionId')||null;
 })();
 
 document.getElementById('repName').textContent='All reps';
@@ -312,8 +314,12 @@ async function loadCalendar(){
     if(_restoredDayFromReturn){
       _restoredDayFromReturn=false;
       setTimeout(function(){
-        var panel=document.getElementById('calDayPanel');
-        if(panel)panel.scrollIntoView({behavior:'smooth',block:'start'});
+        var target=_restoredActionId?document.getElementById('cal-action-'+_restoredActionId):null;
+        if(!target)target=document.getElementById('calDayPanel');
+        if(target){
+          var _targetTop=target.getBoundingClientRect().top+(window.pageYOffset||document.documentElement.scrollTop||0);
+          window.scrollTo({top:_targetTop,behavior:'smooth'});
+        }
       },50);
     }
 
@@ -462,7 +468,7 @@ function renderDayPanel(isoDate,dayActions){
     var visitType=f['Visit Type']||'';
     var priority=f['Priority']||'';
 
-    html+='<div class="cal-action-item" onclick="openActionPopupById(\''+r.id+'\')">';
+    html+='<div class="cal-action-item" id="cal-action-'+r.id+'" onclick="openActionPopupById(\''+r.id+'\')">';
     html+='<div class="cal-action-account">'+escapeHtml(account)+
       '<span class="rep-pill">'+escapeHtml(rep)+'</span>'+
       (time?'<span class="time-pill">'+escapeHtml(time)+'</span>':'')+
