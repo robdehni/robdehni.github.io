@@ -735,21 +735,21 @@ function focusOnAction(actionId){
   var f=rec.fields||{};
   var key=getAccountName(f)+'||'+getAssignedRepName(f);
   var sk=safeKeyFor(key);
-  var cardEl=document.getElementById('account-card-'+sk);
-  if(cardEl){
-    var _targetTop=cardEl.getBoundingClientRect().top+(window.pageYOffset||document.documentElement.scrollTop||0);
-    window.scrollTo({top:_targetTop,behavior:'smooth'});
-  }
+  expanded[key]=true;
+  render();
   setTimeout(function(){
-    expanded[key]=true;
-    render();
+    var cardEl=document.getElementById('account-card-'+sk);
+    if(cardEl){
+      var _targetTop=cardEl.getBoundingClientRect().top+(window.pageYOffset||document.documentElement.scrollTop||0);
+      window.scrollTo({top:_targetTop,behavior:'smooth'});
+    }
     setTimeout(function(){
       var el=document.getElementById('action-'+actionId);
       if(!el)return;
       el.classList.add('highlighted');
       setTimeout(function(){el.classList.remove('highlighted');},4000);
-    },50);
-  },350);
+    },350);
+  },50);
 }
 
 async function sendReminder(actionId){
