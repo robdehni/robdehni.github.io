@@ -332,15 +332,22 @@ async function updatePriority(recordId,newPriority,cardEl){
 }
 async function markReviewed(recordId,btnEl){
   btnEl.disabled=true;btnEl.textContent='Saving...';
+  var _removedIdx=lastPriorityReviewFeed.findIndex(function(r){return r.id===recordId;});
+  var _removedRec=_removedIdx>-1?lastPriorityReviewFeed[_removedIdx]:null;
+  if(_removedRec){
+    lastPriorityReviewFeed=lastPriorityReviewFeed.filter(function(r){return r.id!==recordId;});
+    renderPrioritySection(lastPriorityReviewFeed);
+  }
   try{
     var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:recordId,reviewed:true})});
-    if(res.ok){
-      lastPriorityReviewFeed=lastPriorityReviewFeed.filter(function(r){return r.id!==recordId;});
-      renderPrioritySection(lastPriorityReviewFeed);
-      applyFilters();
+    if(!res.ok){
+      if(_removedRec){lastPriorityReviewFeed.push(_removedRec);renderPrioritySection(lastPriorityReviewFeed);}
+      btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Could not mark as reviewed. Please try again.');
     }
-    else{btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Could not mark as reviewed. Please try again.');}
-  }catch(err){btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Error: '+err.message);}
+  }catch(err){
+    if(_removedRec){lastPriorityReviewFeed.push(_removedRec);renderPrioritySection(lastPriorityReviewFeed);}
+    btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Error: '+err.message);
+  }
 }
 function makePriorityCard(record){
   var f=record.fields;var current=(f['Priority']||'Medium');var rep=f['Rep Name']||'Unknown';var date=formatDate(f['Visit Date']);
@@ -809,18 +816,32 @@ function renderWatchlistSection(records){
 }
 async function markPendingReviewed(recordId,btnEl){
   btnEl.disabled=true;btnEl.textContent='Saving...';
+  var _removedIdx=lastNewAccountsFeed.findIndex(function(r){return r.id===recordId;});
+  var _removedRec=_removedIdx>-1?lastNewAccountsFeed[_removedIdx]:null;
+  var _countEl=document.getElementById('kpiNewAccounts');
+  if(_removedRec){
+    lastNewAccountsFeed[_removedIdx].fields['Pending Review']=false;
+    buildNewAccountsCard(lastNewAccountsFeed);
+    if(_countEl){var n=parseInt(_countEl.textContent,10);if(!isNaN(n)&&n>0)_countEl.textContent=n-1;}
+  }
   try{
     var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:recordId,pendingReview:false})});
-    if(res.ok){
-      var idx=lastNewAccountsFeed.findIndex(function(r){return r.id===recordId;});
-      if(idx>-1)lastNewAccountsFeed[idx].fields['Pending Review']=false;
-      buildNewAccountsCard(lastNewAccountsFeed);
-      var countEl=document.getElementById('kpiNewAccounts');
-      if(countEl){var n=parseInt(countEl.textContent,10);if(!isNaN(n)&&n>0)countEl.textContent=n-1;}
-      applyFilters();
+    if(!res.ok){
+      if(_removedRec){
+        lastNewAccountsFeed[_removedIdx].fields['Pending Review']=true;
+        buildNewAccountsCard(lastNewAccountsFeed);
+        if(_countEl){var n2=parseInt(_countEl.textContent,10);if(!isNaN(n2))_countEl.textContent=n2+1;}
+      }
+      btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Could not mark as reviewed. Please try again.');
     }
-    else{btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Could not mark as reviewed. Please try again.');}
-  }catch(err){btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Error: '+err.message);}
+  }catch(err){
+    if(_removedRec){
+      lastNewAccountsFeed[_removedIdx].fields['Pending Review']=true;
+      buildNewAccountsCard(lastNewAccountsFeed);
+      if(_countEl){var n3=parseInt(_countEl.textContent,10);if(!isNaN(n3))_countEl.textContent=n3+1;}
+    }
+    btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Error: '+err.message);
+  }
 }
 function buildNewAccountsCard(records){
   var newOnes=records.filter(function(r){var f=r.fields;var isNew=f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1';var stillPending=isReviewed(f['Pending Review']);return isNew&&stillPending;});
