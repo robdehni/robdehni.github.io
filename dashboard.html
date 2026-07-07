@@ -397,8 +397,11 @@ function normalizeTerritory(raw){
   return t;
 }
 // Fetches /get-dashboard with the given filter values (all optional).
-// No caching — every call is a genuine, fresh server-side aggregation, so
-// Mark Reviewed / priority changes are always reflected on next fetch.
+// Any filtered call (rep/territory/priority/period) always computes fresh
+// server-side — only a fully unfiltered request may be served from the
+// Worker's own 60-second cache. Mark Reviewed / priority changes made
+// while filters are active are therefore always reflected immediately;
+// an unfiltered view could lag by up to 60 seconds behind a change.
 async function fetchDashboardAggregate(filters){
   var q=[];
   if(filters&&filters.rep)q.push('rep='+encodeURIComponent(filters.rep));
@@ -642,20 +645,19 @@ async function restoreDashboardContext(){
 // the page after this scroll already happened, everything below it
 // (including the just-scrolled-to Radar card) shifts downward, leaving
 // the viewport looking at whatever now occupies that same pixel
-// position — which is exactly the reported symptom. Called from
-// loadDashboard() only after loadWatchlist() is awaited.
+// position. Called from loadDashboard() only after loadWatchlist() is awaited.
 function scrollToRestoredRadarCard(){
   var lastCard=null;
   try{lastCard=sessionStorage.getItem('fieldiq_dashboard_lastRadarCard');sessionStorage.removeItem('fieldiq_dashboard_lastRadarCard');}catch(e){}
   if(lastCard!==null){
     var radarSection=document.getElementById('managementRadar');
     if(radarSection){
-      radarSection.scrollIntoView({behavior:'smooth',block:'start'});
       var cards=radarSection.querySelectorAll('[data-radar-account]');
       for(var i=0;i<cards.length;i++){
         if(cards[i].getAttribute('data-radar-account')===lastCard){
           var cardDiv=cards[i].querySelector('.radar-card');
           if(cardDiv){
+            cardDiv.scrollIntoView({behavior:'smooth',block:'center'});
             cardDiv.classList.add('radar-card-highlighted');
             (function(el){setTimeout(function(){el.classList.remove('radar-card-highlighted');},4000);})(cardDiv);
           }
@@ -676,12 +678,12 @@ function scrollToRestoredWatchlistCard(){
   if(lastCard!==null){
     var section=document.getElementById('myWatchlist');
     if(section){
-      section.scrollIntoView({behavior:'smooth',block:'start'});
       var cards=section.querySelectorAll('[data-watchlist-account]');
       for(var i=0;i<cards.length;i++){
         if(cards[i].getAttribute('data-watchlist-account')===lastCard){
           var cardDiv=cards[i].querySelector('.watchlist-card');
           if(cardDiv){
+            cardDiv.scrollIntoView({behavior:'smooth',block:'center'});
             cardDiv.classList.add('radar-card-highlighted');
             (function(el){setTimeout(function(){el.classList.remove('radar-card-highlighted');},4000);})(cardDiv);
           }
@@ -698,10 +700,10 @@ function scrollToRestoredNewAccountCard(){
   if(lastCard!==null){
     var section=document.getElementById('newAccountsList');
     if(section){
-      section.scrollIntoView({behavior:'smooth',block:'start'});
       var cards=section.querySelectorAll('[data-newaccount-name]');
       for(var i=0;i<cards.length;i++){
         if(cards[i].getAttribute('data-newaccount-name')===lastCard){
+          cards[i].scrollIntoView({behavior:'smooth',block:'center'});
           cards[i].classList.add('radar-card-highlighted');
           (function(el){setTimeout(function(){el.classList.remove('radar-card-highlighted');},4000);})(cards[i]);
           break;
@@ -722,21 +724,15 @@ async function loadDashboard(){
     var _returnParams=new URLSearchParams(window.location.search);
     var _hasReturnContext=!!(_returnParams.get('rep')||_returnParams.get('territory')||_returnParams.get('priority')||_returnParams.get('period'));
     if(!_hasReturnContext){
-      // No return context — this is a genuinely fresh, direct visit.
-      // Render immediately, exactly as before. Nothing about this path changes.
+      // No return context — a fresh, direct visit. Render immediately.
       renderDashboardSummary(agg);
     }
-    // If return context exists, the unfiltered render above is deliberately
-    // skipped — restoreDashboardContext() below does the only render that
-    // happens, using the correctly-restored filter values from the start.
-    // This is the actual fix: the previous code rendered once immediately
-    // (unfiltered, while filterRep was still empty) and then rendered again
-    // moments later once restoreDashboardContext()'s own fetch resolved.
-    // Between those two renders, the DOM already showed clickable
-    // Territory/Rep links built from the empty filter state — a real
-    // window, not a hypothetical one, given the second render depends on
-    // a network round trip. Skipping the first render when return context
-    // exists removes that window entirely, rather than trying to narrow it.
+    // With return context, the render above is skipped: restoreDashboardContext()
+    // below performs the only render, using the correctly-restored filter
+    // values from the start. Rendering unfiltered first and correcting it
+    // moments later (once restoreDashboardContext()'s own fetch resolves)
+    // would briefly expose clickable Territory/Rep links built from an
+    // empty filter state.
     await restoreDashboardContext();
     await loadWatchlist({
       rep:document.getElementById('filterRep').value,
@@ -754,9 +750,13 @@ async function loadDashboard(){
   }
 }
 // ── My Watchlist ──────────────────────────────────────────────────────────
-// Fetched separately from the main dashboard aggregate and never awaited
-// inline in loadDashboard() — a failure or delay here must never affect
-// Priority Review, New Accounts, or Management Radar loading. Manually
+// Awaited by loadDashboard() — specifically so the return-scroll functions
+// (Radar/Watchlist/New Account) only run after Watchlist has genuinely
+// finished rendering, since myWatchlist sits above those sections in the
+// DOM and its content arriving late would otherwise shift anything already
+// scrolled to. A failure or delay here still can't affect Priority Review,
+// New Accounts, or Management Radar — that protection comes from this
+// function's own try/catch below, not from being unawaited. Manually
 // curated, Account-level, entirely independent of AI Strategic
 // Intelligence scoring — watching an account never changes its AI score,
 // and AI never adds or removes watched accounts.
@@ -788,19 +788,21 @@ function renderWatchlistSection(records){
   if(!records.length){el.innerHTML='<div class="empty">No accounts on your watchlist yet. Star an account from Visit History to add it here.</div>';return;}
   var html='<div class="watchlist-grid">';
   records.forEach(function(w){
-    if(!w.visitId)return;
-    var link=buildVisitHistoryLink({visitId:w.visitId});
     var safeName=escapeHtml(w.accountName);
     var lastVisitText=w.lastVisit?('Last visit: '+formatDate(w.lastVisit)):'No linked visit yet';
-    html+='<a href="'+link+'" data-watchlist-account="'+safeName+'" onclick="try{sessionStorage.setItem(\'fieldiq_dashboard_lastWatchlistCard\',this.getAttribute(\'data-watchlist-account\'));}catch(e){}" style="text-decoration:none;color:inherit;display:block"><div class="watchlist-card">'+
-      '<div class="radar-card-header"><div class="radar-account">'+safeName+'</div>'+(w.territory?'<span class="activity-badge badge-territory">'+escapeHtml(w.territory)+'</span>':'')+'</div>'+
+    var cardInner='<div class="radar-card-header"><div class="radar-account">'+safeName+'</div>'+(w.territory?'<span class="activity-badge badge-territory">'+escapeHtml(w.territory)+'</span>':'')+'</div>'+
       '<div class="watchlist-meta">'+
         (w.lastRep?'<span class="meta-chip">Rep: '+escapeHtml(w.lastRep)+'</span>':'')+
         (w.priority?'<span class="meta-chip">Priority: '+escapeHtml(w.priority)+'</span>':'')+
         '<span class="meta-chip">Open actions: '+w.openActionCount+'</span>'+
       '</div>'+
-      '<div class="radar-date">'+lastVisitText+'</div>'+
-    '</div></a>';
+      '<div class="radar-date">'+lastVisitText+'</div>';
+    if(w.visitId){
+      var link=buildVisitHistoryLink({visitId:w.visitId});
+      html+='<a href="'+link+'" data-watchlist-account="'+safeName+'" onclick="try{sessionStorage.setItem(\'fieldiq_dashboard_lastWatchlistCard\',this.getAttribute(\'data-watchlist-account\'));}catch(e){}" style="text-decoration:none;color:inherit;display:block"><div class="watchlist-card">'+cardInner+'</div></a>';
+    }else{
+      html+='<div class="watchlist-card" style="opacity:0.6;cursor:default">'+cardInner+'</div>';
+    }
   });
   html+='</div>';
   el.innerHTML=html;
