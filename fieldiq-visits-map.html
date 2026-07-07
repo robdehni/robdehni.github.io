@@ -363,6 +363,7 @@ function resetFilters(){
   document.getElementById('fTerr').value='';
   document.getElementById('fRep').value='';
   document.getElementById('fSent').value='';
+  try{history.replaceState(null,'',window.location.pathname);}catch(e){}
   applyFilters();
 }
 
