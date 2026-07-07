@@ -632,7 +632,11 @@ function resetFilters(){
 function applyUrlParams(){  
   var params=new URLSearchParams(window.location.search);  
   var rep=params.get('rep');var terr=params.get('territory');var priority=params.get('priority');var period=params.get('period');targetVisitId=params.get('visitId');  
-  if(rep)document.getElementById('filterRep').value=rep;  
+  if(rep){
+    rep=rep.trim();
+    rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
+    document.getElementById('filterRep').value=rep;
+  }
   if(terr)document.getElementById('filterTerritory').value=terr;  
   if(priority)document.getElementById('filterPriority').value=priority;  
   if(period)document.getElementById('filterPeriod').value=period;  
