@@ -259,7 +259,7 @@ function readableError(x){
 }
 function fetchJson(url,ms){
   return Promise.race([
-    fetch(url,{cache:'no-store'}).then(function(r){
+    fetch(url).then(function(r){
       return r.text().then(function(t){
         var d={};
         try{d=t?JSON.parse(t):{};}catch(e){throw new Error('Worker returned invalid JSON: '+t.slice(0,200));}
@@ -595,7 +595,7 @@ function render(){
     keyMap[sk]=key;
     var isExp=!!expanded[key];
 
-    html+='<div class="account-card '+(isExp?'expanded':'')+'">';
+    html+='<div class="account-card '+(isExp?'expanded':'')+'" id="account-card-'+sk+'">';
     html+='<div class="account-top">';
     html+='<div><div class="account-name">'+escapeHtml(account)+'</div>';
     html+='<div class="account-meta">Rep: '+escapeHtml(rep)+(due?' · Next due '+escapeHtml(formatDate(due)):'')+'</div></div>';
@@ -734,15 +734,21 @@ function focusOnAction(actionId){
   if(!rec)return;
   var f=rec.fields||{};
   var key=getAccountName(f)+'||'+getAssignedRepName(f);
-  expanded[key]=true;
-  render();
+  var sk=safeKeyFor(key);
+  var cardEl=document.getElementById('account-card-'+sk);
+  if(cardEl){
+    cardEl.scrollIntoView({behavior:'smooth',block:'start'});
+  }
   setTimeout(function(){
-    var el=document.getElementById('action-'+actionId);
-    if(!el)return;
-    el.classList.add('highlighted');
-    el.scrollIntoView({behavior:'smooth',block:'start'});
-    setTimeout(function(){el.classList.remove('highlighted');},4000);
-  },50);
+    expanded[key]=true;
+    render();
+    setTimeout(function(){
+      var el=document.getElementById('action-'+actionId);
+      if(!el)return;
+      el.classList.add('highlighted');
+      setTimeout(function(){el.classList.remove('highlighted');},4000);
+    },50);
+  },350);
 }
 
 async function sendReminder(actionId){
