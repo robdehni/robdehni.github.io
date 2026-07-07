@@ -360,6 +360,12 @@ async function completeAction(actionId){
     btn.disabled=true;
     btn.innerHTML='Completing...';
   }
+  var _removedIdx=actions.findIndex(function(r){return r.id===actionId;});
+  var _removedRec=_removedIdx>-1?actions[_removedIdx]:null;
+  if(_removedRec){
+    actions=actions.filter(function(r){return r.id!==actionId;});
+    render();
+  }
   try{
     var res=await fetch(WORKER+'/complete-action',{
       method:'POST',
@@ -368,11 +374,6 @@ async function completeAction(actionId){
     });
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not complete action');
-    // Immediate local removal — independent of any cache. The navigation
-    // below (calendar-return or reload) is only for full consistency
-    // afterward, not for making the action itself disappear.
-    actions=actions.filter(function(r){return r.id!==actionId;});
-    render();
     showToast('Action completed.');
     var _rp=new URLSearchParams(window.location.search);
     if(_rp.get('returnTo')==='calendar'){
@@ -384,14 +385,17 @@ async function completeAction(actionId){
       if(_cd)_cq.push('calDay='+encodeURIComponent(_cd));
       if(_cq.length)_cu+='?'+_cq.join('&');
       setTimeout(function(){window.location.href=_cu;},400);
-    }else{
-      setTimeout(function(){window.location.reload();},400);
     }
   }catch(err){
-    if(btn){
-      btn.disabled=false;
-      btn.innerHTML='<i data-lucide="check"></i> Complete';
-      lucide.createIcons({el:btn});
+    if(_removedRec){
+      actions.push(_removedRec);
+      render();
+    }
+    var _btnAfter=document.getElementById('btn-'+actionId);
+    if(_btnAfter){
+      _btnAfter.disabled=false;
+      _btnAfter.innerHTML='<i data-lucide="check"></i> Complete';
+      lucide.createIcons({el:_btnAfter});
     }
     alert('Could not complete action: '+err.message);
   }
@@ -405,6 +409,12 @@ async function dismissAction(actionId){
     btn.disabled=true;
     btn.innerHTML='Dismissing...';
   }
+  var _removedIdx=actions.findIndex(function(r){return r.id===actionId;});
+  var _removedRec=_removedIdx>-1?actions[_removedIdx]:null;
+  if(_removedRec){
+    actions=actions.filter(function(r){return r.id!==actionId;});
+    render();
+  }
   try{
     var res=await fetch(WORKER+'/dismiss-action',{
       method:'POST',
@@ -413,8 +423,6 @@ async function dismissAction(actionId){
     });
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not dismiss action');
-    actions=actions.filter(function(r){return r.id!==actionId;});
-    render();
     showToast('Action dismissed.');
     var _rp=new URLSearchParams(window.location.search);
     if(_rp.get('returnTo')==='calendar'){
@@ -426,14 +434,16 @@ async function dismissAction(actionId){
       if(_cd)_cq.push('calDay='+encodeURIComponent(_cd));
       if(_cq.length)_cu+='?'+_cq.join('&');
       setTimeout(function(){window.location.href=_cu;},400);
-    }else{
-      setTimeout(function(){window.location.reload();},400);
     }
   }catch(err){
-    if(btn){
-      btn.disabled=false;
-      btn.innerHTML='<i data-lucide="x"></i> Dismiss';
-      lucide.createIcons({el:btn});
+    if(_removedRec){
+      actions.push(_removedRec);
+      render();
+    }
+    var _btnAfter=document.getElementById('dbtn-'+actionId);
+    if(_btnAfter){
+      _btnAfter.disabled=false;
+      _btnAfter.innerHTML='Dismiss';
     }
     alert('Could not dismiss action: '+err.message);
   }
