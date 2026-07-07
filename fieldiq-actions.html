@@ -409,7 +409,7 @@ async function loadActions(pendingScroll){
   document.getElementById('content').innerHTML='<div class="loading"><div class="spinner"></div>Loading manager actions...</div>';
   try{
     var results=await Promise.all([
-      fetchJson(WORKER+'/get-actions?role=Manager&status=Open',8000),
+      fetchJson(WORKER+'/get-actions?role=Manager&status=Open',15000),
       fetchJson(WORKER+'/get-actions?role=Manager&status=Completed',5000).catch(function(){return {records:[]};}),
       fetchJson(WORKER+'/get-actions?role=Manager&status=Dismissed',5000).catch(function(e){console.error('Failed to load Dismissed actions:',e);return {records:[]};}),
       loadUsersBestEffort()
