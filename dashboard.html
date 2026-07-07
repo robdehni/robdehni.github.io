@@ -413,7 +413,7 @@ async function fetchDashboardAggregate(filters){
   var _fdaTimer=setTimeout(function(){_fdaCtrl.abort();},15000);
   var res;
   try{
-    res=await fetch(url,{signal:_fdaCtrl.signal});
+    res=await fetch(url,{signal:_fdaCtrl.signal,cache:'no-store'});
   }finally{
     clearTimeout(_fdaTimer);
   }
