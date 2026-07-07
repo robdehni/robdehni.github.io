@@ -689,7 +689,7 @@ function expandAndScrollToVisit(recordId){
   if(_stickyBar&&_stickyBar.style.display==='flex'){
     card.style.scrollMarginTop=(_stickyBar.offsetHeight+12)+'px';
   }
-  card.scrollIntoView({behavior:'smooth',block:'center'});  
+  card.scrollIntoView({behavior:'smooth',block:'start'});  
 }  
   
 var currentUser=null;  
