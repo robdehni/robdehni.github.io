@@ -737,7 +737,8 @@ function focusOnAction(actionId){
   var sk=safeKeyFor(key);
   var cardEl=document.getElementById('account-card-'+sk);
   if(cardEl){
-    cardEl.scrollIntoView({behavior:'smooth',block:'start'});
+    var _targetTop=cardEl.getBoundingClientRect().top+(window.pageYOffset||document.documentElement.scrollTop||0);
+    window.scrollTo({top:_targetTop,behavior:'smooth'});
   }
   setTimeout(function(){
     expanded[key]=true;
