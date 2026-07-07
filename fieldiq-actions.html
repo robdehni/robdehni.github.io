@@ -791,7 +791,11 @@ async function sendReminder(actionId){
     }
 
     showToast('Reminder sent to '+getAssignedRepName(actionFields)+'.');
-    await loadActions(null);
+    if(data.action&&data.action.fields){
+      actionRecord.fields['Reminder Count']=data.action.fields['Reminder Count'];
+      actionRecord.fields['Last Reminder Sent At']=data.action.fields['Last Reminder Sent At'];
+    }
+    render();
 
   }catch(err){
     alert('Reminder failed: '+readableError(err.message||err));
