@@ -189,6 +189,7 @@ var cameFromOperations=false;
 // month/day/rep instead of resetting to today. Purely additive — if none of
 // these params are present, the defaults above (today's date, no filter)
 // are used exactly as before.
+var _restoredDayFromReturn=false;
 (function(){
   var params=new URLSearchParams(window.location.search);
   var y=parseInt(params.get('calYear'),10);
@@ -196,7 +197,7 @@ var cameFromOperations=false;
   if(!isNaN(y))viewYear=y;
   if(!isNaN(m)&&m>=0&&m<=11)viewMonth=m;
   var d=params.get('calDay');
-  if(d)selectedDayISO=d;
+  if(d){selectedDayISO=d;_restoredDayFromReturn=true;}
   var r=params.get('calRep');
   if(r)selectedRepFilter=r;
 })();
@@ -307,6 +308,14 @@ async function loadCalendar(){
 
     buildRepFilterOptions();
     applyRepFilterAndRender();
+
+    if(_restoredDayFromReturn){
+      _restoredDayFromReturn=false;
+      setTimeout(function(){
+        var panel=document.getElementById('calDayPanel');
+        if(panel)panel.scrollIntoView({behavior:'smooth',block:'start'});
+      },50);
+    }
 
   }catch(err){
     content.innerHTML='<div class="error-box">Could not load manager calendar.<br>'+escapeHtml(err.message)+'<br><button class="retry-btn" onclick="loadCalendar()">Retry</button></div>';
@@ -440,7 +449,7 @@ function render(){
 
 function renderDayPanel(isoDate,dayActions){
   var label=formatDayLabel(isoDate);
-  var html='<div class="cal-day-panel">';
+  var html='<div class="cal-day-panel" id="calDayPanel">';
   html+='<div class="cal-panel-header">'+escapeHtml(label)+' &mdash; '+dayActions.length+' action'+(dayActions.length!==1?'s':'')+'</div>';
 
   dayActions.forEach(function(r){
