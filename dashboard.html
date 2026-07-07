@@ -319,16 +319,22 @@ function buildVisitHistoryLink(overrides){
 }
 async function updatePriority(recordId,newPriority,cardEl){
   var btns=cardEl.querySelectorAll('.pbtn');btns.forEach(function(b){b.disabled=true;});
+  var rec=lastPriorityReviewFeed.find(function(r){return r.id===recordId;});
+  var _oldPriority=rec?rec.fields['Priority']:null;
+  if(rec){
+    rec.fields['Priority']=newPriority;
+    renderPrioritySection(lastPriorityReviewFeed);
+  }
   try{
     var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:recordId,priority:newPriority})});
-    if(res.ok){
-      var rec=lastPriorityReviewFeed.find(function(r){return r.id===recordId;});
-      if(rec)rec.fields['Priority']=newPriority;
-      renderPrioritySection(lastPriorityReviewFeed);
-      applyFilters();
+    if(!res.ok){
+      if(rec){rec.fields['Priority']=_oldPriority;renderPrioritySection(lastPriorityReviewFeed);}
+      alert('Could not update priority. Please try again.');
     }
-    else{btns.forEach(function(b){b.disabled=false;});alert('Could not update priority. Please try again.');}
-  }catch(err){btns.forEach(function(b){b.disabled=false;});alert('Error: '+err.message);}
+  }catch(err){
+    if(rec){rec.fields['Priority']=_oldPriority;renderPrioritySection(lastPriorityReviewFeed);}
+    alert('Error: '+err.message);
+  }
 }
 async function markReviewed(recordId,btnEl){
   btnEl.disabled=true;btnEl.textContent='Saving...';
