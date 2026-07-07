@@ -342,15 +342,20 @@ function render(){
 async function loadActions(){
   var content=document.getElementById('content');
   content.innerHTML='<div class="loading"><div class="spinner"></div>Loading actions...</div>';
+  var _ctrl=new AbortController();
+  var _timer=setTimeout(function(){_ctrl.abort();},15000);
   try{
     var url=WORKER+'/get-actions?userId='+encodeURIComponent(currentUserId)+'&role='+encodeURIComponent(currentUserRole)+'&status=Open';
-    var res=await fetch(url,{cache:'no-store'});
+    var res=await fetch(url,{cache:'no-store',signal:_ctrl.signal});
+    clearTimeout(_timer);
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not load actions');
     actions=data.records||[];
     render();
   }catch(err){
-    content.innerHTML='<div class="error-box">Could not load open actions.<br>'+escapeHtml(err.message)+'<br><button class="retry-btn" onclick="loadActions()">Retry</button></div>';
+    clearTimeout(_timer);
+    var msg=(err.name==='AbortError')?'Request timed out — check your connection.':err.message;
+    content.innerHTML='<div class="error-box">Could not load open actions.<br>'+escapeHtml(msg)+'<br><button class="retry-btn" onclick="loadActions()">Retry</button></div>';
   }
 }
 
