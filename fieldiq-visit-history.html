@@ -115,6 +115,12 @@ box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color
 .thread-card-action{flex-shrink:0}
 .thread-card-status{font-size:11px;font-weight:700;color:#8a9bb3}
 .thread-action-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:9px;padding:10px;font-size:12.5px;font-weight:800;cursor:pointer}
+.thread-nav-row{display:flex;gap:8px;margin-top:8px}
+.thread-nav-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:9px;padding:11px 8px;font-size:12px;font-weight:800;cursor:pointer;text-align:center;white-space:nowrap}
+@media(max-width:480px){
+.thread-nav-row{flex-direction:column}
+.thread-nav-btn{width:100%}
+}
 .thread-action-btn [data-lucide]{width:14px;height:14px}
 .thread-action-btn-small{width:auto;padding:6px 12px;font-size:11.5px}
 .thread-nav-highlight{box-shadow:0 0 0 3px rgba(47,143,255,0.35);transition:box-shadow 0.3s ease}
@@ -485,21 +491,61 @@ function loadActionsForVisit(detailEl,visitRecordId){
 // member (a normal visit no Log Update has joined yet), so old and
 // never-updated visits are visually unchanged.
 var _threadToggleCounter=0;
+// Builds the Previous / Original / Next navigation row for a visit's
+// position within its own thread. members is already sorted ascending by
+// Visit Date (the Worker's own query does this). Shared by both the
+// original and every follow-up, so the button set is always correct for
+// wherever the current visit sits — first, middle, or last.
+function renderThreadNavRow(members,currentId){
+  var idx=members.findIndex(function(m){return m.id===currentId;});
+  if(idx===-1)return'';
+  var isFirst=idx===0;
+  var isLast=idx===members.length-1;
+  var prevId=isFirst?null:members[idx-1].id;
+  var nextId=isLast?null:members[idx+1].id;
+  var originalId=members[0].id;
+  var btns='';
+  if(prevId){
+    btns+='<button type="button" class="thread-nav-btn" onclick="event.stopPropagation();expandAndScrollToVisit(\''+prevId+'\');">⬅ Previous Visit</button>';
+  }
+  if(!isFirst){
+    btns+='<button type="button" class="thread-nav-btn" onclick="event.stopPropagation();expandAndScrollToVisit(\''+originalId+'\');">⬆ Original Visit</button>';
+  }
+  if(nextId){
+    btns+='<button type="button" class="thread-nav-btn" onclick="event.stopPropagation();expandAndScrollToVisit(\''+nextId+'\');">➡ Next Visit</button>';
+  }
+  if(!btns)return'';
+  return '<div class="thread-nav-row">'+btns+'</div>';
+}
 function loadThreadForVisit(detailEl,record){
   var existing=detailEl.querySelector('.visit-thread-section');
   if(existing)existing.remove();
   var threadId=(record.fields||{})['Visit Thread ID']||record.id;
   var isOriginal=threadId===record.id;
   if(!isOriginal){
-    // This record is itself a follow-up — the original's id is already
-    // known from its own field, no fetch required to show this.
+    // This record is itself a follow-up. Guaranteed, immediate fallback
+    // first — the original's id is already known from its own field, no
+    // fetch required for this minimal case. Upgraded to the full
+    // Previous/Original/Next row below once the thread fetch resolves.
     var linkContainer=document.createElement('div');
     linkContainer.className='report-section visit-thread-section';
     linkContainer.innerHTML='<h4>Part of Visit Timeline</h4>'+
-      '<button type="button" class="thread-action-btn" onclick="event.stopPropagation();expandAndScrollToVisit(\''+threadId+'\');">'+
-        '⬆ View Original Visit'+
-      '</button>';
+      '<div class="thread-nav-row"><button type="button" class="thread-nav-btn" onclick="event.stopPropagation();expandAndScrollToVisit(\''+threadId+'\');">⬆ Original Visit</button></div>';
     detailEl.appendChild(linkContainer);
+    fetch(WORKER+'/get-visit-thread?threadId='+encodeURIComponent(threadId))
+      .then(function(res){return res.json();})
+      .then(function(data){
+        var members=data.records||[];
+        if(members.length<=1)return;
+        var navHtml=renderThreadNavRow(members,record.id);
+        if(!navHtml)return;
+        var stillPresent=detailEl.contains(linkContainer);
+        if(stillPresent)linkContainer.innerHTML='<h4>Part of Visit Timeline</h4>'+navHtml;
+      })
+      .catch(function(err){
+        console.error('Could not load visit thread:',err);
+        // linkContainer (already appended above) remains visible — never nothing.
+      });
     return;
   }
   // This record is the original. Show a guaranteed, immediate indicator
@@ -541,11 +587,13 @@ function loadThreadForVisit(detailEl,record){
           '<div class="thread-card-action">'+actionHtml+'</div>'+
         '</div>';
       });
+      var navHtml=renderThreadNavRow(members,record.id);
       container.innerHTML='<button type="button" class="thread-toggle-btn" id="'+toggleId+'-btn" onclick="event.stopPropagation();toggleThreadList(\''+toggleId+'\');">'+
           '📋 View Timeline ('+members.length+' Visit'+(members.length===1?'':'s')+')'+
           '<span id="'+toggleId+'-arrow" class="thread-toggle-arrow">▸</span>'+
         '</button>'+
-        '<div id="'+toggleId+'-list" class="thread-list" style="display:none">'+cardsHtml+'</div>';
+        '<div id="'+toggleId+'-list" class="thread-list" style="display:none">'+cardsHtml+'</div>'+
+        navHtml;
       detailEl.appendChild(container);
     })
     .catch(function(err){
