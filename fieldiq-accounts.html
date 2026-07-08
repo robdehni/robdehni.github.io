@@ -212,10 +212,10 @@ var currentAccountUpdates=[];
 function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
 function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function truncate(text,len){var t=String(text||'');if(t.length<=len)return t;return t.slice(0,len).trim()+'…';}
-var TERRITORY_ORDER=['UAE','KSA','Qatar','Kuwait','Bahrain','Oman','Unassigned'];
+var TERRITORY_ORDER=['UAE','Saudi Arabia','Qatar','Kuwait','Bahrain','Oman','Unassigned'];
 function getCanonicalTerritory(raw){
   var t=(raw||'').trim();if(!t)return'Unassigned';var tu=t.toUpperCase();
-  if(tu.indexOf('SAUDI ARABIA')===0||tu==='KSA')return'KSA';if(tu==='UAE')return'UAE';if(tu==='QATAR')return'Qatar';if(tu==='KUWAIT')return'Kuwait';if(tu==='BAHRAIN')return'Bahrain';if(tu==='OMAN')return'Oman';return'Unassigned';
+  if(tu.indexOf('SAUDI ARABIA')===0)return'Saudi Arabia';if(tu==='UAE')return'UAE';if(tu==='QATAR')return'Qatar';if(tu==='KUWAIT')return'Kuwait';if(tu==='BAHRAIN')return'Bahrain';if(tu==='OMAN')return'Oman';return'Unassigned';
 }
 async function loadDirectory(){
   try{
