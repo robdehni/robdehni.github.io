@@ -195,7 +195,7 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:5px;font-weight:600;text
     <select class="filter-select" id="filterRep"><option value="">All Reps</option></select>
     <select class="filter-select" id="filterTerritory">
       <option value="">All Territories</option>
-      <option>UAE</option><option>KSA</option><option>Qatar</option>
+      <option>UAE</option><option>Saudi Arabia</option><option>Qatar</option>
       <option>Kuwait</option><option>Bahrain</option><option>Oman</option>
     </select>
   </div>
@@ -391,17 +391,17 @@ function renderPrioritySection(records){
 // getCanonicalTerritory(): that function collapses any unrecognized value
 // into "Unassigned", which would hide a genuinely new/different territory
 // by merging it with blank records. This version only fixes the proven
-// issue — the "Saudi Arabia" vs "KSA" split that function's own logic
-// proves exists in real visit data — and otherwise preserves any other
-// distinct territory value untouched, just trimmed. Used consistently by
-// every function on this page that groups or filters by Territory, so
-// Territory Coverage counts, CSV export, and the Rep Review Report all
-// agree with each other.
+// issue — Saudi region variants ("Saudi Arabia - Riyadh" etc.) not
+// collapsing to one value — and otherwise preserves any other distinct
+// territory value untouched, just trimmed. Used consistently by every
+// function on this page that groups or filters by Territory, so Territory
+// Coverage counts, CSV export, and the Rep Review Report all agree with
+// each other.
 function normalizeTerritory(raw){
   var t=(raw||'').trim();
   if(!t)return'Unknown';
   var tu=t.toUpperCase();
-  if(tu.indexOf('SAUDI ARABIA')===0||tu==='KSA')return'KSA';
+  if(tu.indexOf('SAUDI ARABIA')===0)return'Saudi Arabia';
   if(tu==='UAE')return'UAE';
   if(tu==='QATAR')return'Qatar';
   if(tu==='KUWAIT')return'Kuwait';
