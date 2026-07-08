@@ -690,10 +690,12 @@ function expandAndScrollToVisit(recordId){
     if(toggle)toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
   }  
   var _stickyBar=document.getElementById('mapNavControls');
+  var _stickyOffset=0;
   if(_stickyBar&&_stickyBar.style.display==='flex'){
-    card.style.scrollMarginTop=(_stickyBar.offsetHeight+12)+'px';
+    _stickyOffset=_stickyBar.offsetHeight+12;
   }
-  card.scrollIntoView({behavior:'smooth',block:'start'});  
+  var _targetTop=card.getBoundingClientRect().top+(window.pageYOffset||document.documentElement.scrollTop||0)-_stickyOffset;
+  window.scrollTo({top:_targetTop,behavior:'smooth'});
 }  
   
 var currentUser=null;  
