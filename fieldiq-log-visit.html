@@ -137,7 +137,7 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
 <div class="fields">
   <div class="field field-full">
     <label>Territory</label>
-    <select id="territory"><option value="">Select territory first</option><option>UAE</option><option>KSA</option><option>Qatar</option><option>Kuwait</option><option>Bahrain</option><option>Oman</option></select>
+    <select id="territory"><option value="">Select territory first</option><option>UAE</option><option>Saudi Arabia</option><option>Qatar</option><option>Kuwait</option><option>Bahrain</option><option>Oman</option></select>
   </div>
   <div class="field field-full" id="accountBlock" style="opacity:0.5;pointer-events:none">
     <label>Account</label>
@@ -263,7 +263,7 @@ newAccountNameInput.addEventListener('input',function(){
 function showList(query){
   if(!accountsLoaded){hospitalList.classList.add('open');return;}
   hospitalList.innerHTML='';var q=query.toLowerCase().trim();var selTerr=territorySelect.value.trim().toUpperCase();
-  var inTerritory=ACCOUNTS.filter(function(a){var at=a.territory.trim().toUpperCase();if(selTerr==='KSA')return at.indexOf('SAUDI ARABIA')===0;return at===selTerr;});
+  var inTerritory=ACCOUNTS.filter(function(a){var at=a.territory.trim().toUpperCase();if(selTerr==='SAUDI ARABIA')return at.indexOf('SAUDI ARABIA')===0;return at===selTerr;});
   var filtered=(q.length===0?inTerritory.slice(0,50):inTerritory.filter(function(a){return a.name.toLowerCase().indexOf(q)>-1;})).slice(0,50);
   filtered.forEach(function(a){var div=document.createElement('div');div.className='hospital-option';div.textContent=a.name+(a.territory?' — '+a.territory:'');div.addEventListener('click',function(){hospitalInput.value=a.name;selectedAccountId=a.id;hospitalList.classList.remove('open');updateMicAvailability();});hospitalList.appendChild(div);});
   hospitalList.classList.add('open');
@@ -464,6 +464,21 @@ document.getElementById('discardRecordingLink').addEventListener('click',functio
 var prefillSourceRef='';
 var prefillAccountTerritory='';
 var prefillVisitThreadId='';
+// Matches the dropdown's exact option values (UAE/Saudi Arabia/Qatar/Kuwait/
+// Bahrain/Oman) against a raw Airtable territory value that may be
+// differently cased, phrased, or formatted (e.g. "Saudi Arabia - Riyadh").
+// Same canonical mapping already used in worker.js and fieldiq-accounts.html.
+function normalizeTerritoryForDropdown(raw){
+  var t=(raw||'').trim();if(!t)return'';
+  var tu=t.toUpperCase();
+  if(tu.indexOf('SAUDI ARABIA')===0)return'Saudi Arabia';
+  if(tu==='UAE')return'UAE';
+  if(tu==='QATAR')return'Qatar';
+  if(tu==='KUWAIT')return'Kuwait';
+  if(tu==='BAHRAIN')return'Bahrain';
+  if(tu==='OMAN')return'Oman';
+  return t;
+}
 
 (function(){
   try{
@@ -513,18 +528,27 @@ async function applyPrefillFromURL(){
           }catch(e){}
         }
         if(resolvedTerritory){
+          // Normalize the raw Airtable value to the dropdown's canonical
+          // form — same mapping used consistently in the Worker and
+          // Account Directory. Any value beginning with "Saudi Arabia"
+          // (regardless of region suffix) collapses to exactly "Saudi
+          // Arabia" — this is Airtable's own naming, not a renamed or
+          // invented value.
+          var normalizedTerritory=normalizeTerritoryForDropdown(resolvedTerritory);
           var tSelect=document.getElementById('territory');
           for(var j=0;j<tSelect.options.length;j++){
-            if(tSelect.options[j].value===resolvedTerritory){tSelect.selectedIndex=j;break;}
+            if(tSelect.options[j].value===normalizedTerritory){tSelect.selectedIndex=j;break;}
           }
-          prefillAccountTerritory=resolvedTerritory;
+          if(tSelect.value)prefillAccountTerritory=tSelect.value;
         }
         // Update Mode — arrived from Calendar's "Log Update" link for a
         // specific existing follow-up (sourceRef present). Lock only when
-        // territory was actually resolved above — locking a blank dropdown
-        // left the page permanently unusable (mic never activates), which
-        // was the actual regression, not the locking behavior itself.
-        if(prefillSourceRef&&resolvedTerritory){
+        // the dropdown itself actually holds a selected value — checking
+        // the raw resolvedTerritory string here was the actual bug: a
+        // value that failed to match any option (e.g. unnormalized raw
+        // Airtable text) still passed this check as truthy, locking an
+        // empty, unusable dropdown.
+        if(prefillSourceRef&&territorySelect.value){
           territorySelect.disabled=true;
           hospitalInput.disabled=true;
           hospitalInput.placeholder=match.name;
