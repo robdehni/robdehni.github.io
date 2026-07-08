@@ -1,166 +1,101 @@
-<!DOCTYPE html>  <html lang="en">  
-<head>  
-<meta charset="UTF-8">  
-<meta name="viewport" content="width=device-width, initial-scale=1.0">  
-<title>FieldIQ — Visit History</title>  
-<script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js" defer></script>  
-<style>  
-*{margin:0;padding:0;box-sizing:border-box}  
-body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px 18px 40px;overflow-x:hidden}  
-.container{max-width:780px;margin:0 auto;width:100%}  /* ── Brand block — matches fieldiq.html reference ── */
-.topbar{margin-bottom:8px}
-.topbar-brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldIQ — Log Visit</title>
+<script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js" defer></script>
+<style>
+[data-lucide]{display:inline-block;vertical-align:middle;stroke-width:2}
+.mic-btn [data-lucide]{width:36px;height:36px}
+.tick [data-lucide]{width:48px;height:48px;stroke:#1fa861}
+.edit-notice [data-lucide]{width:14px;height:14px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px}
+.container{max-width:600px;margin:0 auto}
+.header{margin-bottom:20px;padding-top:12px}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
 .brand-cloud{font-size:26px;line-height:1}
-.page-kind{font-size:10px;font-weight:800;letter-spacing:1.3px;color:#0d9488;text-transform:uppercase;margin-bottom:2px}
 .brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
 .brand-text h1 span{color:#2f8fff}
 .brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
-.topbar-sub{color:#7a8aa3;font-size:12.5px;margin-top:2px;font-weight:600}
-
-.home-btn{
-display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
-text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:18px;border:1px solid #e3ebf5;
-box-shadow:0 2px 8px rgba(11,31,58,0.05);
-}
+p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text-transform:none;letter-spacing:normal}
+.home-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;box-shadow:0 2px 8px rgba(11,31,58,0.05);}
 .home-btn:hover{border-color:#2f8fff}
-
-.filter-bar{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:16px;margin-bottom:18px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
-.filter-bar h3{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:12px}
-.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.filter-select{
-width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;
-font-size:12.5px;outline:none;font-weight:600;
-}
-.filter-select:focus{border-color:#2f8fff}
-.filter-btns{display:flex;gap:8px}
-.fbtn-apply{flex:1;padding:11px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:10px;font-size:12.5px;font-weight:800;cursor:pointer;box-shadow:0 6px 16px rgba(47,143,255,0.3)}
-.fbtn-reset{flex:1;padding:11px;background:#fff;color:#7a8aa3;border:1.5px solid #e3ebf5;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer}
-.filter-active{font-size:10.5px;color:#2f8fff;margin-top:8px;text-align:center;min-height:14px;font-weight:700}
-
-.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px}
-.stat-pill{
-background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px 14px;font-size:11.5px;
-color:#7a8aa3;text-align:center;font-weight:700;box-shadow:0 4px 14px rgba(11,31,58,0.05);
-}
-.stat-pill span{display:block;font-size:26px;font-weight:800;color:#2f8fff;margin-bottom:4px}
-
-.count-label{font-size:12px;color:#aab8cc;margin-bottom:14px;text-align:center;font-weight:600}
-
-.visit-card{
-background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:18px;margin-bottom:12px;
-box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color 0.15s;
-}
-.visit-card.new-account{border-color:#bfe0ff;background:#f3f9ff}
-.visit-card.expanded{border-color:#2f8fff}
-.visit-card.command-centre-highlight{border-color:#2f8fff;box-shadow:0 0 0 3px rgba(47,143,255,0.18);position:relative}
-.visit-card.command-centre-highlight::before{
-  content:'Opened from Command Centre';position:absolute;top:-9px;left:14px;background:#2f8fff;color:#fff;
-  font-size:9.5px;font-weight:800;letter-spacing:0.3px;text-transform:uppercase;padding:2px 9px;border-radius:999px;
-}
-.visit-card.rep-actions-highlight{border-color:#2f8fff;box-shadow:0 0 0 3px rgba(47,143,255,0.18);position:relative}
-.visit-card.rep-actions-highlight::before{
-  content:'Opened from Open Actions';position:absolute;top:-9px;left:14px;background:#2f8fff;color:#fff;
-  font-size:9.5px;font-weight:800;letter-spacing:0.3px;text-transform:uppercase;padding:2px 9px;border-radius:999px;
-}
-.visit-card.map-highlight{border-color:#2f8fff;box-shadow:0 0 0 3px rgba(47,143,255,0.18);position:relative}
-.visit-card.map-highlight::before{
-  content:'Opened from Territory Map';position:absolute;top:-9px;left:14px;background:#2f8fff;color:#fff;
-  font-size:9.5px;font-weight:800;letter-spacing:0.3px;text-transform:uppercase;padding:2px 9px;border-radius:999px;
-}
-.visit-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:10px}
-.visit-account{font-size:15px;font-weight:800;color:#0b1f3a;flex:1}
-.visit-date{font-size:11.5px;color:#aab8cc;white-space:nowrap;font-weight:700}
-.visit-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
-.badge{font-size:10.5px;padding:4px 11px;border-radius:8px;font-weight:700}
-.badge-territory{background:#eef3f9;color:#5b6b85}
-.badge-type{background:#eef3f9;color:#5b6b85}
-.badge-high{background:#ffe5e8;color:#e0344a}
-.badge-medium{background:#fff3e0;color:#d98a1c}
-.badge-low{background:#e3f8ea;color:#1fa861}
-.badge-new{background:#eaf3ff;color:#2f8fff}
-.visit-summary{font-size:12.5px;color:#7a8aa3;line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid #eef3f9}
-.visit-card.expanded .visit-summary{display:none}
-
-.visit-toggle{font-size:11px;color:#2f8fff;font-weight:700;margin-top:10px;text-align:center;user-select:none}
-.visit-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid #eef3f9}
-.visit-detail.open{display:block}
-.visit-detail .report-section{margin:10px 0}
-.avf-list{display:flex;flex-direction:column;gap:6px}
-.avf-item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f8fbff;border:1px solid #e3ebf5;border-radius:10px;padding:8px 11px}
-.avf-text{font-size:12.5px;color:#3d4f6b;font-weight:500;line-height:1.4}
-.avf-badge{flex-shrink:0;font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.3px}
-.avf-badge-completed{background:#e1f5ea;color:#1f8a52;border:1px solid #bfe9d0}
-.avf-badge-dismissed{background:#eceef1;color:#6b7280;border:1px solid #dde1e6}
-.avf-badge-pending{background:#eaf3ff;color:#2f8fff;border:1px solid #cfe3ff}
-.visit-watch-row{margin:2px 0 8px}
-.watch-star{border:none;background:none;color:#c8d0dc;font-size:17px;line-height:1;cursor:pointer;padding:0;margin-right:6px;flex-shrink:0;align-self:flex-start;margin-top:1px}
-.watch-star.watching{color:#f0a400}
-.watch-star:disabled{opacity:.5;cursor:not-allowed}
-.watch-star-unresolved{color:#c8d0dc;opacity:.6}
-.review-row{margin:0 0 14px}
-.mark-reviewed-btn{background:#2f8fff;color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:12.5px;font-weight:700;cursor:pointer}
-.mark-reviewed-btn:disabled{opacity:.6;cursor:not-allowed}
-.reviewed-badge{display:inline-block;background:#e3f8ea;color:#1fa861;border-radius:999px;padding:6px 14px;font-size:12px;font-weight:800}
-.visit-detail .report-section:first-child{margin-top:0}
-.visit-detail .report-section h4{color:#2f8fff;font-size:10.5px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;font-weight:800}
-.visit-detail .report-section p{color:#3d4f6b;font-size:13px;line-height:1.65}
-.thread-toggle-btn{display:flex;align-items:center;gap:7px;width:100%;background:#eaf3ff;border:1px solid #d3e6ff;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:800;color:#1f6fe0;cursor:pointer;text-align:left}
-.thread-toggle-btn [data-lucide]{width:15px;height:15px}
-.thread-toggle-arrow{margin-left:auto;font-size:11px}
-.thread-list{margin-top:8px;display:flex;flex-direction:column;gap:6px}
-.thread-card{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e3ebf5;border-radius:10px;padding:10px 12px}
-.thread-card-current{background:#f8fbff;border-color:#cfe3ff}
-.thread-card-label{font-size:12.5px;font-weight:800;color:#0b1f3a;white-space:nowrap}
-.thread-card-meta{flex:1;font-size:11.5px;color:#7a8aa3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.thread-card-action{flex-shrink:0}
-.thread-card-status{font-size:11px;font-weight:700;color:#8a9bb3}
-.thread-action-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:9px;padding:10px;font-size:12.5px;font-weight:800;cursor:pointer}
-.thread-nav-row{display:flex;gap:8px;margin-top:8px}
-.thread-nav-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:9px;padding:11px 8px;font-size:12px;font-weight:800;cursor:pointer;text-align:center;white-space:nowrap}
-@media(max-width:480px){
-.thread-nav-row{flex-direction:column}
-.thread-nav-btn{width:100%}
-}
-.thread-action-btn [data-lucide]{width:14px;height:14px}
-.thread-action-btn-small{width:auto;padding:6px 12px;font-size:11.5px}
-.thread-nav-highlight{box-shadow:0 0 0 3px rgba(47,143,255,0.35);transition:box-shadow 0.3s ease}
-
-.loading{text-align:center;padding:60px 20px;color:#aab8cc;font-weight:600}
-.spinner{width:36px;height:36px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.field{display:flex;flex-direction:column}
+.field label{font-size:11px;color:#8a9bb3;margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
+.field input,.field select{width:100%;padding:11px;background:#fff;border:1.5px solid #dde8f5;border-radius:8px;color:#0b1f3a;font-size:14px;outline:none}
+.field input:focus,.field select:focus{border-color:#2f8fff}
+.field select option{background:#fff;color:#0b1f3a}
+.field-full{grid-column:1/-1}
+.hospital-wrapper{position:relative}
+.hospital-list{display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:#fff;border:1.5px solid #dde8f5;border-radius:8px;max-height:200px;overflow-y:auto;z-index:999;box-shadow:0 6px 18px rgba(11,31,58,0.08)}
+.hospital-list.open{display:block}
+.hospital-option{padding:10px 11px;font-size:13px;color:#3d4f6b;cursor:pointer;border-bottom:1px solid #eef3fa}
+.hospital-option:last-child{border-bottom:none}
+.hospital-option:hover,.hospital-option:active{background:#eaf3ff;color:#2f8fff}
+.not-listed-check{display:flex;align-items:center;gap:8px;margin-top:8px;margin-bottom:4px;cursor:pointer}
+.not-listed-check input[type="checkbox"]{width:16px;height:16px;accent-color:#2f8fff;cursor:pointer;flex-shrink:0}
+.not-listed-check span{font-size:13px;color:#7a8aa3}
+.new-account-fields{display:none;grid-column:1/-1;background:#eaf3ff;border:1px solid #cfe3ff;border-radius:10px;padding:14px;margin-top:4px}
+.new-account-fields.visible{display:block}
+.new-account-fields .field{margin-bottom:10px}
+.new-account-fields .field:last-child{margin-bottom:0}
+.new-account-badge{display:inline-block;background:#2f8fff22;color:#1f6fe0;border:1px solid #2f8fff33;border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
+.mic-section{text-align:center;margin:20px 0 12px}
+.mic-btn{width:88px;height:88px;border-radius:50%;border:3px solid #2f8fff;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:36px;transition:border-color 0.2s,background 0.2s;box-shadow:0 4px 14px rgba(47,143,255,0.15)}
+.mic-btn.recording{border-color:#e0445b;background:#fdecef}
+.mic-btn:disabled{opacity:0.4;cursor:not-allowed;border-color:#c7d3e3}
+.validation-message{display:none;background:#fff3e0;border:1px solid #ffe5b3;border-radius:8px;padding:10px 14px;font-size:13px;color:#7a6000;margin-bottom:12px;text-align:center}
+.status{color:#7a8aa3;font-size:13px;min-height:18px;margin-bottom:8px}
+.status.active{color:#e0445b}
+.status.transcribing{color:#d98a2b}
+.status.done{color:#1faa6b}
+.recording-indicator{display:none;text-align:center;margin:8px 0}
+.recording-indicator.visible{display:block}
+.recording-timer{font-size:28px;font-weight:700;color:#e0445b;letter-spacing:2px;margin:4px 0}
+audio{width:100%;border-radius:8px;margin:8px 0;display:none}
+.transcript-box{background:#fff;border:1.5px solid #dde8f5;border-radius:10px;padding:14px;min-height:110px;margin:12px 0;font-size:14px;line-height:1.7;color:#3d4f6b;width:100%;resize:vertical;font-family:-apple-system,sans-serif}
+.transcript-box:focus{border-color:#2f8fff;outline:none}
+.btn{width:100%;padding:14px;border-radius:10px;border:none;font-size:15px;font-weight:700;cursor:pointer;margin:5px 0;transition:all 0.2s}
+.btn-primary{background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;box-shadow:0 6px 16px rgba(47,143,255,0.3)}
+.btn-primary:hover{background:#1f6fe0}
+.btn-secondary{background:#fff;color:#7a8aa3;border:1.5px solid #dde8f5}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+.success-card{background:#eafaf0;border:1px solid #b6e8c8;border-radius:16px;padding:20px;margin:14px 0;display:none}
+.success-card .tick{font-size:32px;text-align:center;margin-bottom:10px}
+.success-card h3{color:#1faa6b;font-size:16px;text-align:center;margin-bottom:16px}
+.report-section{margin:12px 0}
+.report-section h4{color:#2f8fff;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e3ebf5;font-weight:800}
+.report-section p{color:#3d4f6b;font-size:13px;line-height:1.7}
+.priority-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-top:4px}
+.priority-high{background:#ffe1e5;color:#c43048;border:1px solid #ffc4cc}
+.priority-medium{background:#fff0d9;color:#b9711f;border:1px solid #ffdca6}
+.priority-low{background:#e1f5ea;color:#1f8a52;border:1px solid #bfe8d2}
+.processing-overlay{text-align:center;padding:30px;display:none}
+.spinner{width:40px;height:40px;border:3px solid #e3ebf5;border-top:3px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;color:#aab8cc;font-size:13.5px;padding:40px 20px;font-weight:600}
+.processing-overlay p{color:#7a8aa3;font-size:14px}
+.edit-notice{background:#fff8e1;border:1px solid #ffe066;border-radius:8px;padding:10px 14px;font-size:13px;color:#7a6000;margin-bottom:4px;display:none}
+.edit-notice.visible{display:block}
+.mic-btn.recording [data-lucide]{width:36px;height:36px;color:#e0445b}
+.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:32px;padding-bottom:8px}
 
-.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:24px}
-
-@media(min-width:768px){
-.container{max-width:900px}
-.visit-card{padding:22px 24px}
-.visit-account{font-size:16.5px}
-.stat-pill{padding:22px}
-.stat-pill span{font-size:32px}
-}
-@media(min-width:1100px){
-.container{max-width:1100px}
-body{padding:32px 40px 60px}
-}
-.visit-card{width:100%;overflow-wrap:break-word;word-break:break-word}
-.visit-summary{white-space:normal;overflow-wrap:break-word;word-break:break-word}
-.visit-account{overflow-wrap:break-word;word-break:break-word}
-[data-lucide]{display:inline-block;vertical-align:middle;stroke-width:1.8}
-.visit-toggle [data-lucide]{width:12px;height:12px}
-
-.photo-evidence{margin:10px 0;padding-top:10px;border-top:1px solid #eef3f9}
-.photo-evidence h4{color:#2f8fff;font-size:10.5px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;font-weight:800}
-.photo-evidence-grid{display:flex;gap:8px;flex-wrap:wrap}
-.photo-evidence-thumb{display:block;width:88px;height:88px;object-fit:cover;border-radius:8px;border:1px solid #dde8f5;cursor:pointer;transition:opacity 0.15s}
-.photo-evidence-thumb:hover{opacity:0.82}
-.photo-evidence-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#2f8fff;font-weight:700;text-decoration:none;padding:7px 11px;background:#eaf3ff;border-radius:8px;border:1px solid #cfe4ff}
-.photo-evidence-link:hover{background:#d5eaff}
-
-.photo-modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(11,31,58,0.92);z-index:9999;align-items:center;justify-content:center;padding:20px}
-.photo-modal-overlay.open{display:flex}
-.photo-modal-img{max-width:100%;max-height:90vh;border-radius:10px;object-fit:contain}
-.photo-modal-close{position:absolute;top:18px;right:18px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;border:none;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+/* ── Visit Evidence / Photo section ── */
+.photo-section{margin:12px 0;background:#fff;border:1.5px solid #dde8f5;border-radius:10px;padding:14px}
+.photo-section-label{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-bottom:10px;display:block}
+.photo-btns{display:flex;gap:8px;margin-bottom:10px}
+.photo-btn{flex:1;padding:10px;border-radius:8px;border:1.5px dashed #dde8f5;background:#f8fbff;color:#2f8fff;font-size:12.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:border-color 0.15s,background 0.15s}
+.photo-btn:hover:not(:disabled){border-color:#2f8fff;background:#eaf3ff}
+.photo-btn:disabled{opacity:0.4;cursor:not-allowed}
+.photo-btn [data-lucide]{width:16px;height:16px}
+.photo-previews{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.photo-preview-item{position:relative;width:80px;height:80px;flex-shrink:0}
+.photo-preview-item img{width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #dde8f5;display:block}
+.photo-preview-remove{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#e0445b;color:#fff;border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1;padding:0}
+.photo-count-label{font-size:11px;color:#8a9bb3;margin-top:8px}
+.photo-uploading{font-size:12px;color:#d98a2b;margin-top:4px;display:none}
 .back-to-top{
   position:fixed;right:18px;bottom:24px;width:44px;height:44px;border-radius:50%;
   background:#2f8fff;color:#fff;border:none;box-shadow:0 6px 16px rgba(47,143,255,0.35);
@@ -168,525 +103,372 @@ body{padding:32px 40px 60px}
   font-size:20px;font-weight:900;line-height:1;
 }
 .back-to-top.visible{display:flex}
-p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text-transform:none;letter-spacing:normal}
 </style>
-
   <!-- PWA v1 -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#2f8fff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="FieldIQ">
   <link rel="apple-touch-icon" href="/icon-180.png">
-</head>  
-<body>  
-  <div id="mapNavControls" style="display:none;position:fixed;top:0;left:0;right:0;z-index:800;background:#fff;border-bottom:1px solid #e3ebf5;box-shadow:0 2px 10px rgba(11,31,58,0.06);align-items:center;justify-content:center;gap:14px;padding:11px 16px">
-    <a href="#" id="mapPrevBtn" class="home-btn" style="padding:8px 14px;font-size:13px">← Previous</a>
-    <span id="mapProgress" style="font-size:12.5px;color:#7a8aa3;font-weight:700;white-space:nowrap"></span>
-    <a href="#" id="mapNextBtn" class="home-btn" style="padding:8px 14px;font-size:13px">Next →</a>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="brand">
+    <span class="brand-cloud">☁️</span>
+    <div class="brand-text">
+      <h1>Field<span>IQ</span></h1>
+      <p>Territory Intelligence Platform</p>
+    </div>
   </div>
-<div class="container">  <div class="topbar">  
-  <div class="topbar-brand">  
-    <span class="brand-cloud">☁️</span>  
-    <div class="brand-text">  
-      <div class="page-kind">VISIT HISTORY</div>
-      <h1>Field<span>IQ</span></h1>  
-      <p>Territory Intelligence Platform</p>  
-      <p class="page-subtitle">Every customer interaction, in chronological order.</p>  
-    </div>  
-  </div>  
-  <p class="topbar-sub" id="lastUpdated">Loading...</p>  
-</div>  <a href="./index.html" id="homeBtn" class="home-btn">← Home</a>
+  <p class="page-subtitle">Speak naturally. AI structures the report for you.</p>
+</div>
 
-<div id="filterBar" class="filter-bar" style="display:none">  
-  <h3>Manager Filters</h3>  
-  <div class="filter-row">  
-    <select class="filter-select" id="filterRep">  
-      <option value="">All Reps</option>  
-    </select>  
-    <select class="filter-select" id="filterTerritory">  
-      <option value="">All Territories</option>  
-      <option>UAE</option><option>Saudi Arabia</option><option>Qatar</option>  
-      <option>Kuwait</option><option>Bahrain</option><option>Oman</option>  
-    </select>  
-  </div>  
-  <div class="filter-row">  
-    <select class="filter-select" id="filterPriority">  
-      <option value="">All Priorities</option>  
-      <option>High</option><option>Medium</option><option>Low</option>  
-    </select>  
-    <select class="filter-select" id="filterPeriod">  
-      <option value="">All Time</option>  
-      <option value="thisWeek">This Week</option>  
-      <option value="lastWeek">Last Week</option>  
-      <option value="thisMonth">This Month</option>  
-      <option value="lastMonth">Last Month</option>  
-      <option value="30">Last 30 Days</option>  
-      <option value="90">Last 90 Days</option>  
-    </select>  
-  </div>  
-  <div class="filter-btns">  
-    <button class="fbtn-apply" onclick="applyFilters()">Apply Filters</button>  
-    <button class="fbtn-reset" onclick="resetFilters()">Reset</button>  
-  </div>  
-  <div class="filter-active" id="filterStatus"></div>  
-</div>  <div class="stats-row">  
-  <div class="stat-pill"><span id="statTotal">—</span>My Visits</div>  
-  <div class="stat-pill"><span id="statThisWeek">—</span>This Week</div>  
-  <div class="stat-pill"><span id="statNewAccounts">—</span>New Accounts</div>  
-</div>  <div id="repSearchBox" style="display:none;margin-bottom:10px"><input type="search" id="repSearch" placeholder="Search accounts…" autocomplete="off" autocorrect="off" autocapitalize="off" style="width:100%;padding:11px 14px;background:#fff;border:1.5px solid #e3ebf5;border-radius:12px;color:#0b1f3a;font-size:14px;outline:none;font-weight:600;box-shadow:0 2px 8px rgba(11,31,58,0.04)"></div>  <div id="countLabel" class="count-label"></div>  
-<div id="visitList"><div class="loading"><div class="spinner"></div>Loading visits...</div></div>  <div class="footer">FieldIQ v2.1 · 2026</div>  
-</div>  <div class="photo-modal-overlay" id="photoModalOverlay" onclick="if(event.target===this)closePhotoModal()">
-  <button class="photo-modal-close" onclick="closePhotoModal()" aria-label="Close photo">&times;</button>
-  <img class="photo-modal-img" id="photoModalImg" src="" alt="Visit evidence photo">
-</div>  <script>  
-var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';  
-  
-(function(){  
-  var params=new URLSearchParams(window.location.search);
-  var source=params.get('source');
-  var returnTo=params.get('returnTo');
-  var homeBtn=document.getElementById('homeBtn');
-  if(source==='manager-actions'||source==='open-actions'||source==='rep-actions'||returnTo==='./fieldiq-actions.html'){
-    homeBtn.href=returnTo||'./fieldiq-actions.html';
-    homeBtn.textContent='← Back to Open Actions';
-  }else if(source==='manager-home'){
-    homeBtn.href='./fieldiq.html';
-    homeBtn.textContent='← Back to Manager Home';
-  }else if(source==='operations'){
-    homeBtn.href='./fieldiq-operations.html';
-    homeBtn.textContent='← Back to Operations';
-  }else if(source==='dashboard'){
-    var dashQ2=[];
-    ['rep','territory','priority','period'].forEach(function(k){
-      var v=params.get(k);
-      if(v)dashQ2.push(k+'='+encodeURIComponent(v));
-    });
-    homeBtn.href='./dashboard.html'+(dashQ2.length?'?'+dashQ2.join('&'):'');
-    homeBtn.textContent='← Back to Dashboard';
-  }else if(source==='map'){
-    homeBtn.href=returnTo||'./fieldiq-visits-map.html';
-    homeBtn.textContent='← Back to Territory Map';
-    var mapVisitList=null;
-    try{
-      var _stored=sessionStorage.getItem('fieldiq_map_visit_list');
-      if(_stored){
-        var _parsed=JSON.parse(_stored);
-        if(Array.isArray(_parsed))mapVisitList=_parsed;
-      }
-    }catch(e){}
-    var currentVisitId=params.get('visitId');
-    if(mapVisitList&&currentVisitId){
-      var curIdx=mapVisitList.indexOf(currentVisitId);
-      if(curIdx>-1&&mapVisitList.length>1){
-        document.getElementById('mapProgress').textContent='Visit '+(curIdx+1)+' of '+mapVisitList.length;
-        var prevBtn=document.getElementById('mapPrevBtn');
-        var nextBtn=document.getElementById('mapNextBtn');
-        function _mapNavHref(idx){
-          var baseReturnTo=returnTo||'./fieldiq-visits-map.html';
-          var qIdx=baseReturnTo.indexOf('?');
-          var returnPath=qIdx>-1?baseReturnTo.substring(0,qIdx):baseReturnTo;
-          var returnParams=qIdx>-1?new URLSearchParams(baseReturnTo.substring(qIdx+1)):new URLSearchParams();
-          returnParams.set('mapVisitId',mapVisitList[idx]);
-          var rebuiltReturnTo=returnPath+'?'+returnParams.toString();
-          return './fieldiq-visit-history.html?visitId='+encodeURIComponent(mapVisitList[idx])+'&source=map&returnTo='+encodeURIComponent(rebuiltReturnTo);
-        }
-        if(curIdx>0){
-          prevBtn.href=_mapNavHref(curIdx-1);
-        }else{
-          prevBtn.style.visibility='hidden';
-        }
-        if(curIdx<mapVisitList.length-1){
-          nextBtn.href=_mapNavHref(curIdx+1);
-        }else{
-          nextBtn.style.visibility='hidden';
-        }
-        document.getElementById('mapNavControls').style.display='flex';
-        var _navBarEl=document.getElementById('mapNavControls');
-        document.body.style.paddingTop=(_navBarEl.offsetHeight+16)+'px';
-      }
-    }
+<a href="./index.html" id="homeBtn" class="home-btn">← Home</a>
+<script>
+(function(){
+  var role=localStorage.getItem('fieldiq_user_role');
+  var btn=document.getElementById('homeBtn');
+  if(btn){btn.href=(role==='Manager')?'./fieldiq.html':'./index.html';btn.textContent=(role==='Manager')?'← Manager Home':'← Home';}
+})();
+</script>
+
+<div class="fields">
+  <div class="field field-full">
+    <label>Territory</label>
+    <select id="territory"><option value="">Select territory first</option><option>UAE</option><option>Saudi Arabia</option><option>Qatar</option><option>Kuwait</option><option>Bahrain</option><option>Oman</option></select>
+  </div>
+  <div class="field field-full" id="accountBlock" style="opacity:0.5;pointer-events:none">
+    <label>Account</label>
+    <div class="hospital-wrapper">
+      <input type="text" id="hospital" placeholder="Select a territory first" autocomplete="off" disabled>
+      <div class="hospital-list" id="hospitalList"></div>
+    </div>
+    <label class="not-listed-check"><input type="checkbox" id="notListedCheck" disabled><span>Account not listed</span></label>
+    <div class="new-account-fields" id="newAccountFields">
+      <div class="new-account-badge">New Account</div>
+      <div class="field"><label>Account Name *</label><input type="text" id="newAccountName" placeholder="Enter account name"></div>
+      <div id="duplicateWarning" style="display:none;background:#fff3e0;border:1px solid #ffe5b3;border-radius:8px;padding:10px 12px;font-size:12px;color:#7a6000;margin-bottom:10px"></div>
+      <div class="field"><label>City *</label><input type="text" id="newAccountCity" placeholder="e.g. Dubai, Riyadh, Doha"></div>
+      <div class="field"><label>Primary Contact Name *</label><input type="text" id="newContactName" placeholder="e.g. Dr. Ahmed Al-Farsi"></div>
+      <div class="field"><label>Contact Role / Title *</label><input type="text" id="newContactRole" placeholder="e.g. Cardiologist, Project Manager, Independent Consultant, Buyer, Owner"></div>
+      <div class="field"><label>Telephone *</label><input type="tel" id="newContactPhone" placeholder="e.g. +971 50 123 4567"></div>
+      <div class="field"><label>Email (optional)</label><input type="email" id="newContactEmail" placeholder="e.g. ahmed@hospital.com"></div>
+    </div>
+  </div>
+  <div class="field"><label>Visit Date</label><input type="date" id="visitDate"></div>
+  <div class="field"><label>Visit Type</label><select id="visitType"><option value="">Select type</option><option>In-person</option><option>Virtual</option><option>Phone</option></select></div>
+</div>
+
+<div id="identityBar" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e3ebf5;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#7a8aa3;box-shadow:0 4px 14px rgba(11,31,58,0.05)"></div>
+<div class="validation-message" id="validationMessage"></div>
+<div class="mic-section">
+  <button class="mic-btn" id="micBtn"><i data-lucide="mic"></i></button>
+  <div class="status" id="status">Tap mic to start recording</div>
+  <div class="recording-indicator" id="recordingIndicator"><div class="recording-timer" id="recordingTimer">0:00</div></div>
+  <div id="autoStopChoice" style="display:none;margin:10px 0;padding:12px;border:1px solid #e3ebf5;border-radius:12px;background:#fff">
+    <div style="display:flex;gap:8px">
+      <button type="button" id="autoStopTranscribeBtn" class="btn btn-primary" style="flex:1">Transcribe Recording</button>
+      <button type="button" id="autoStopDiscardBtn" class="btn btn-secondary" style="flex:1">Discard Recording</button>
+    </div>
+  </div>
+  <audio id="audioPlayer" controls></audio>
+</div>
+<div style="position:relative">
+  <div class="edit-notice" id="editNotice"><i data-lucide="pencil"></i> <strong>Review your transcript.</strong> Tap to correct any mistakes before processing. <a href="#" id="discardRecordingLink" style="margin-left:8px;color:#c43048;font-weight:700;text-decoration:underline">Discard Recording</a></div>
+  <textarea class="transcript-box" id="transcriptText" placeholder="Your speech will appear here automatically after recording... tap to edit before processing."></textarea>
+  <div style="font-size:11px;color:#555;text-align:right;margin-top:-8px;margin-bottom:8px;">Tap to edit before processing</div>
+</div>
+
+<!-- Visit Evidence: photo section. Max 2 photos, compressed before upload. -->
+<div class="photo-section" id="photoSection">
+  <span class="photo-section-label">Visit Evidence — Photos (optional, max 2)</span>
+  <div class="photo-btns">
+    <button type="button" class="photo-btn" id="photoCameraBtn">
+      <i data-lucide="camera"></i> Camera
+    </button>
+    <button type="button" class="photo-btn" id="photoGalleryBtn">
+      <i data-lucide="image"></i> Gallery
+    </button>
+  </div>
+  <!-- Hidden file inputs -->
+  <input type="file" id="photoCameraInput" accept="image/*" capture="environment" style="display:none">
+  <input type="file" id="photoGalleryInput" accept="image/*" style="display:none">
+  <div class="photo-previews" id="photoPreviews"></div>
+  <div class="photo-count-label" id="photoCountLabel"></div>
+  <div class="photo-uploading" id="photoUploading">Uploading photos...</div>
+</div>
+
+<button class="btn btn-primary" id="submitBtn">Process Visit Log</button>
+<button class="btn btn-secondary" id="clearBtn">Clear</button>
+<div class="processing-overlay" id="processingOverlay"><div class="spinner"></div><p id="processingText">Analysing your visit...</p></div>
+<div class="success-card" id="successCard"><div class="tick"><i data-lucide="check-circle"></i></div><h3>Visit Logged Successfully</h3><div id="reportContent"></div><button class="btn btn-primary" style="margin-top:16px" onclick="location.reload()">Log Another Visit</button></div>
+
+<div class="footer">FieldIQ v2.1 · 2026</div>
+</div>
+
+<script>
+var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+window.onerror=function(msg){document.getElementById('status').textContent='Error: '+msg;};
+var currentUserId=localStorage.getItem('fieldiq_user_id');
+var currentUserName=localStorage.getItem('fieldiq_user_name');
+var currentUserRole=localStorage.getItem('fieldiq_user_role');
+if(!currentUserId||!currentUserName){
+  window.location.href='./index.html';
+  throw new Error('No identity locked — redirecting to home.');
+}
+document.getElementById('identityBar').innerHTML='Logging visit as <strong style="color:#00d4ff">'+currentUserName+'</strong> ('+(currentUserRole||'Sales Rep')+')';
+var notListedCheck=document.getElementById('notListedCheck');var newAccountFields=document.getElementById('newAccountFields');var hospitalInput=document.getElementById('hospital');var hospitalList=document.getElementById('hospitalList');var territorySelect=document.getElementById('territory');var accountBlock=document.getElementById('accountBlock');
+notListedCheck.addEventListener('change',function(){if(this.checked){newAccountFields.classList.add('visible');hospitalInput.value='';selectedAccountId=null;hospitalList.classList.remove('open');hospitalInput.style.display='none';}else{newAccountFields.classList.remove('visible');hospitalInput.style.display='';duplicateWarningEl.style.display='none';}updateMicAvailability();});
+
+territorySelect.addEventListener('change',function(){
+  var keepPrefilledAccount = selectedAccountId && prefillAccountTerritory && this.value===prefillAccountTerritory;
+  if(!keepPrefilledAccount){
+    selectedAccountId=null;hospitalInput.value='';notListedCheck.checked=false;newAccountFields.classList.remove('visible');hospitalInput.style.display='';hospitalList.classList.remove('open');
+  }
+  if(this.value){accountBlock.style.opacity='1';accountBlock.style.pointerEvents='auto';hospitalInput.disabled=false;notListedCheck.disabled=false;hospitalInput.placeholder='Search '+this.value+' accounts...';}
+  else{accountBlock.style.opacity='0.5';accountBlock.style.pointerEvents='none';hospitalInput.disabled=true;notListedCheck.disabled=true;hospitalInput.placeholder='Select a territory first';}
+  updateMicAvailability();
+});
+
+var ACCOUNTS=[];var accountsLoaded=false;var selectedAccountId=null;
+
+function loadAccounts(){
+  hospitalList.innerHTML='<div class="hospital-option" style="color:#7a8aa3">Loading accounts...</div>';hospitalList.classList.add('open');
+  var controller=new AbortController();var timeoutId=setTimeout(function(){controller.abort();},8000);
+  fetch(WORKER+'/get-accounts',{signal:controller.signal,cache:'no-store'}).then(function(r){return r.json();}).then(function(data){
+    clearTimeout(timeoutId);var records=data.records||[];
+    ACCOUNTS=records.map(function(r){return {id:r.id,name:(r.fields&&r.fields['Account Name'])||'',territory:(r.fields&&r.fields['Territory'])||''};}).filter(function(a){return a.name;});
+    applyPrefillFromURL();
+    accountsLoaded=true;if(document.activeElement===hospitalInput){showList(hospitalInput.value);}else{hospitalList.classList.remove('open');}
+  }).catch(function(){
+    clearTimeout(timeoutId);accountsLoaded=false;
+    hospitalList.innerHTML='<div class="hospital-option" style="color:#e0445b">Couldn\'t load accounts — tap to retry</div>';
+    hospitalList.querySelector('.hospital-option').addEventListener('click',function(){loadAccounts();});
+  });
+}
+loadAccounts();
+
+function findPossibleDuplicates(name){var q=name.trim().toLowerCase();if(q.length<3)return[];return ACCOUNTS.filter(function(a){var n=a.name.trim().toLowerCase();return n.indexOf(q)>-1||q.indexOf(n)>-1;});}
+
+var newAccountNameInput=document.getElementById('newAccountName');var duplicateWarningEl=document.getElementById('duplicateWarning');
+newAccountNameInput.addEventListener('input',function(){
+  var matches=findPossibleDuplicates(this.value);
+  if(matches.length>0){var names=matches.slice(0,3).map(function(m){return m.name;}).join(', ');duplicateWarningEl.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> This already exists: <strong>'+names+'</strong>. Please use Account Search instead of adding it as new.';duplicateWarningEl.style.display='block';}
+  else{duplicateWarningEl.style.display='none';}
+  updateMicAvailability();
+});
+
+function showList(query){
+  if(!accountsLoaded){hospitalList.classList.add('open');return;}
+  hospitalList.innerHTML='';var q=query.toLowerCase().trim();var selTerr=territorySelect.value.trim().toUpperCase();
+  var inTerritory=ACCOUNTS.filter(function(a){var at=a.territory.trim().toUpperCase();if(selTerr==='SAUDI ARABIA')return at.indexOf('SAUDI ARABIA')===0;return at===selTerr;});
+  var filtered=(q.length===0?inTerritory.slice(0,50):inTerritory.filter(function(a){return a.name.toLowerCase().indexOf(q)>-1;})).slice(0,50);
+  filtered.forEach(function(a){var div=document.createElement('div');div.className='hospital-option';div.textContent=a.name+(a.territory?' — '+a.territory:'');div.addEventListener('click',function(){hospitalInput.value=a.name;selectedAccountId=a.id;hospitalList.classList.remove('open');updateMicAvailability();});hospitalList.appendChild(div);});
+  hospitalList.classList.add('open');
+}
+hospitalInput.addEventListener('input',function(){selectedAccountId=null;showList(this.value);updateMicAvailability();});
+hospitalInput.addEventListener('focus',function(){showList(this.value);});
+document.addEventListener('click',function(e){if(!e.target.closest('.hospital-wrapper'))hospitalList.classList.remove('open');});
+document.getElementById('visitDate').value=new Date().toISOString().split('T')[0];
+document.getElementById('visitDate').addEventListener('change',function(){updateMicAvailability();});
+document.getElementById('visitType').addEventListener('change',function(){updateMicAvailability();});
+var mediaRecorder=null,chunks=[],seconds=0,timerInterval=null,streamRef=null,isRecording=false,autoStopTimeout=null,wasAutoStopped=false,pendingAutoStopBlob=null;
+var micBtn=document.getElementById('micBtn');var statusEl=document.getElementById('status');var transcriptText=document.getElementById('transcriptText');var audioPlayer=document.getElementById('audioPlayer');var submitBtn=document.getElementById('submitBtn');var successCard=document.getElementById('successCard');var processingOverlay=document.getElementById('processingOverlay');
+var validationMessageEl=document.getElementById('validationMessage');
+function getMissingFields(){var missing=[];if(!territorySelect.value)missing.push('Territory');var newAccountNameVal=notListedCheck.checked?document.getElementById('newAccountName').value.trim():'';var isDuplicateNewAccount=notListedCheck.checked&&newAccountNameVal.length>0&&findPossibleDuplicates(newAccountNameVal).length>0;var accountOk=!!selectedAccountId||(notListedCheck.checked&&newAccountNameVal.length>0&&!isDuplicateNewAccount);if(!accountOk)missing.push(isDuplicateNewAccount?'Account (duplicate)':'Account');if(!document.getElementById('visitDate').value)missing.push('Visit Date');if(!document.getElementById('visitType').value)missing.push('Visit Type');if(!currentUserId||!currentUserName)missing.push('Rep Identity');return missing;}
+function updateMicAvailability(){var missing=getMissingFields();if(missing.length>0){micBtn.disabled=true;if(validationMessageEl){if(missing.indexOf('Account (duplicate)')>-1){validationMessageEl.textContent='This account already exists. Please select it from Account Search instead of adding it as new.';}else{validationMessageEl.textContent='Complete required fields to start recording: '+missing.join(', ');}validationMessageEl.style.display='block';}}else{micBtn.disabled=false;if(validationMessageEl){validationMessageEl.style.display='none';}}}
+updateMicAvailability();
+micBtn.addEventListener('click',function(){if(!isRecording)startRecording();else stopRecording();});
+function proceedToTranscribe(blob){
+  statusEl.className='status transcribing';statusEl.textContent='Transcribing visit...';
+  var fd=new FormData();fd.append('file',blob,'visit.webm');fd.append('model','whisper-1');
+  fetch(WORKER+'/transcribe',{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(d){var t=d.text||d.transcript||'';if(t){transcriptText.value=t;statusEl.className='status done';statusEl.textContent='Transcript ready. Edit if needed then process.';document.getElementById('editNotice').className='edit-notice visible';micBtn.disabled=true;}else{statusEl.className='status';statusEl.textContent='Transcription failed. Type notes manually.';}}).catch(function(){statusEl.className='status';statusEl.textContent='Transcription error — type notes manually.';});
+}
+async function startRecording(){
+  try{isRecording=true;chunks=[];seconds=0;wasAutoStopped=false;document.getElementById('recordingTimer').textContent='0:00';transcriptText.value='';audioPlayer.style.display='none';successCard.style.display='none';statusEl.className='status active';
+  streamRef=await navigator.mediaDevices.getUserMedia({audio:true});mediaRecorder=new MediaRecorder(streamRef);
+  mediaRecorder.ondataavailable=function(e){if(e.data&&e.data.size>0)chunks.push(e.data);};
+  mediaRecorder.onstop=function(){isRecording=false;var blob=new Blob(chunks,{type:'audio/webm'});audioPlayer.src=URL.createObjectURL(blob);audioPlayer.style.display='block';micBtn.className='mic-btn';micBtn.innerHTML='<i data-lucide="mic"></i>';lucide.createIcons({el:micBtn});document.getElementById('recordingIndicator').className='recording-indicator';if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});
+  if(wasAutoStopped){
+    statusEl.className='status';statusEl.textContent='Maximum recording time reached (10 minutes). Please review your recording before continuing.';
+    pendingAutoStopBlob=blob;
+    document.getElementById('autoStopChoice').style.display='block';
   }else{
-    var role=localStorage.getItem('fieldiq_user_role');
-    if(role==='Manager'){
-      var dashQ=[];
-      ['rep','territory','priority','period'].forEach(function(k){
-        var v=params.get(k);
-        if(v)dashQ.push(k+'='+encodeURIComponent(v));
-      });
-      homeBtn.href='./dashboard.html'+(dashQ.length?'?'+dashQ.join('&'):'');
-      homeBtn.textContent='← Back to Dashboard';
-    }else{
-      homeBtn.href='./index.html';
-    }
+    proceedToTranscribe(blob);
   }
-})();  
-  
-function formatDate(d){  
-  if(!d)return'—';  
-  return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});  
-}  
-  
-function getPriorityClass(p){  
-  if(!p)return'badge-medium';  
-  p=p.toLowerCase();  
-  if(p==='high')return'badge-high';  
-  if(p==='low')return'badge-low';  
-  return'badge-medium';  
-}  
-  
-function truncateSummary(text,n){  
-  if(!text)return'';  
-  var i=text.indexOf('VISIT SUMMARY');  
-  var raw=(i>-1?text.substring(i+13):text).trim();  
-  if(raw.length<=n)return raw;  
-  var cut=raw.substring(0,n);  
-  var lastPeriod=cut.lastIndexOf('. ');  
-  if(lastPeriod>n*0.5){return cut.substring(0,lastPeriod+1).trim();}  
-  var lastSpace=cut.lastIndexOf(' ');  
-  if(lastSpace>-1){return cut.substring(0,lastSpace).trim()+'...';}  
-  return cut.trim()+'...';  
-}  
-  
-function parseFullReport(text){  
-  var sections={summary:'',contacts:'',outcomes:'',nextSteps:'',signals:'',sentiment:''};  
-  var lines=(text||'').split('\n'),current='';  
-  for(var i=0;i<lines.length;i++){  
-    var l=lines[i].trim();  
-    if(l.match(/VISIT SUMMARY/i))current='summary';  
-    else if(l.match(/KEY CONTACTS/i))current='contacts';  
-    else if(l.match(/OUTCOMES/i))current='outcomes';  
-    else if(l.match(/NEXT STEPS/i))current='nextSteps';  
-    else if(l.match(/OPPORTUNITY/i))current='signals';  
-    else if(l.match(/SENTIMENT/i))current='sentiment';  
-    else if(l.match(/PRIORITY/i))current='';  
-    else if(l&&current)sections[current]+=(sections[current]?'\n':'')+l;  
-  }  
-  return sections;  
-}  
-  
-function renderPhotoEvidence(urlsField,visitId){
-  if(!urlsField||!String(urlsField).trim())return'';
-  var urls=String(urlsField).split('\n').map(function(u){return u.trim();}).filter(function(u){return u.length>4;}).slice(0,2);
-  if(!urls.length)return'';
-  var html='<div class="photo-evidence"><h4>Visit Evidence</h4><div class="photo-evidence-grid">';
-  urls.forEach(function(url){
-    html+='<img class="photo-evidence-thumb" src="'+url+'" alt="Visit photo" loading="lazy" onclick="event.stopPropagation();openPhotoModal(\''+url.replace(/'/g,"\\'")+'\',\''+String(visitId||'').replace(/'/g,"\\'")+'\')">';
-  });
-  html+='</div></div>';
-  return html;
+  };
+  mediaRecorder.start();timerInterval=setInterval(function(){seconds++;var m=Math.floor(seconds/60),s=seconds%60;document.getElementById('recordingTimer').textContent=m+':'+(s<10?'0':'')+s;},1000);autoStopTimeout=setTimeout(function(){wasAutoStopped=true;stopRecording();},600000);
+  micBtn.className='mic-btn recording';micBtn.innerHTML='<i data-lucide="square"></i>';lucide.createIcons({el:micBtn});document.getElementById('recordingIndicator').className='recording-indicator visible';statusEl.textContent='Recording... tap mic to stop';
+  }catch(e){isRecording=false;statusEl.textContent='Mic error: '+e.message;}
 }
-function openPhotoModal(url,visitId){
-  try{
-    sessionStorage.setItem('fieldiq_return_visitId',visitId||'');
-    sessionStorage.setItem('fieldiq_return_scroll',String(window.scrollY||0));
-  }catch(e){}
-  document.getElementById('photoModalImg').src=url;
-  document.getElementById('photoModalOverlay').classList.add('open');
+function discardRecordingOnly(){
+  transcriptText.disabled=false;
+  document.getElementById('autoStopChoice').style.display='none';
+  clearTimeout(autoStopTimeout);clearInterval(timerInterval);
+  isRecording=false;wasAutoStopped=false;pendingAutoStopBlob=null;chunks=[];seconds=0;
+  transcriptText.value='';
+  audioPlayer.style.display='none';audioPlayer.src='';
+  document.getElementById('recordingTimer').textContent='0:00';
+  document.getElementById('recordingIndicator').className='recording-indicator';
+  document.getElementById('editNotice').className='edit-notice';
+  statusEl.className='status';statusEl.textContent='Tap mic to start recording';
+  micBtn.className='mic-btn';micBtn.innerHTML='<i data-lucide="mic"></i>';lucide.createIcons({el:micBtn});
+  if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});streamRef=null;mediaRecorder=null;
+  updateMicAvailability();
 }
-function closePhotoModal(){
-  document.getElementById('photoModalOverlay').classList.remove('open');
-  document.getElementById('photoModalImg').src='';
-  try{sessionStorage.removeItem('fieldiq_return_visitId');sessionStorage.removeItem('fieldiq_return_scroll');}catch(e){}
-}
-function restoreReturnStateIfAny(){
-  try{
-    var vid=sessionStorage.getItem('fieldiq_return_visitId');
-    if(vid){
-      expandAndScrollToVisit(vid);
-      sessionStorage.removeItem('fieldiq_return_visitId');
-      sessionStorage.removeItem('fieldiq_return_scroll');
-    }
-  }catch(e){}
-}  
-function renderReviewButton(f, recordId){
-  if(!currentUser||currentUser.role!=='Manager')return'';
-  var qualifies=(f['Priority']==='High'||f['Outcome']==='Negative');
-  if(!qualifies)return'';
-  if(f['Reviewed']===true){
-    return '<div class="review-row"><span class="reviewed-badge">Reviewed ✓</span></div>';
-  }
-  return '<div class="review-row"><button class="mark-reviewed-btn" id="reviewBtn-'+recordId+'" onclick="event.stopPropagation();markVisitReviewed(\''+recordId+'\',this)">✓ Mark as Reviewed</button></div>';
-}
-function markVisitReviewed(recordId,btnEl){
-  btnEl.disabled=true;
-  btnEl.textContent='Saving…';
-  fetch(WORKER+'/update-visit',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({recordId:recordId,reviewed:true})
-  }).then(function(res){
-    if(!res.ok)throw new Error('Request failed');
-    var rec=sortedRecords.find(function(r){return r.id===recordId;});
-    if(rec)rec.fields['Reviewed']=true;
-    var wrapper=btnEl.parentElement;
-    wrapper.innerHTML='<span class="reviewed-badge">Reviewed ✓</span>';
-  }).catch(function(err){
-    console.error('Could not mark visit reviewed:',err);
-    btnEl.disabled=false;
-    btnEl.textContent='✓ Mark as Reviewed';
-    alert('Could not save right now. Please try again.');
-  });
-}
-function renderFullReport(text){  
-  if(!text)return'<div class="report-section"><p>No additional details available.</p></div>';  
-  var s=parseFullReport(text),html='';  
-  if(s.summary)html+='<div class="report-section"><h4>Visit Summary</h4><p>'+escapeHtmlLocal(s.summary).replace(/\n/g,'<br>')+'</p></div>';  
-  if(s.contacts)html+='<div class="report-section"><h4>Key Contacts</h4><p>'+escapeHtmlLocal(s.contacts).replace(/\n/g,'<br>')+'</p></div>';  
-  if(s.outcomes)html+='<div class="report-section"><h4>Outcomes & Decisions</h4><p>'+escapeHtmlLocal(s.outcomes).replace(/\n/g,'<br>')+'</p></div>';  
-  if(s.nextSteps)html+='<div class="report-section"><h4>Next Steps</h4><p>'+escapeHtmlLocal(s.nextSteps).replace(/\n/g,'<br>')+'</p></div>';  
-  if(s.signals)html+='<div class="report-section"><h4>Opportunity Signals</h4><p>'+escapeHtmlLocal(s.signals).replace(/\n/g,'<br>')+'</p></div>';  
-  if(s.sentiment)html+='<div class="report-section"><h4>Sentiment</h4><p>'+escapeHtmlLocal(s.sentiment).replace(/\n/g,'<br>')+'</p></div>';  
-  return html||'<div class="report-section"><p>'+escapeHtmlLocal(text)+'</p></div>';  
-}  
+function stopRecording(){clearTimeout(autoStopTimeout);clearInterval(timerInterval);document.getElementById('recordingIndicator').className='recording-indicator';if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}
 
-// ── Actions from this Visit ──────────────────────────────────────────────
-// New, additive block shown beneath the existing AI Summary / Next Steps —
-// that content is never modified. Shows each action linked to this specific
-// visit (via the Source Visit field) with its true current status. No
-// inline matching or guessing against the AI-generated text — this is a
-// separate, honest list sourced directly from Open Actions records.
-function escapeHtmlLocal(str){
-  return String(str||'').replace(/[&<>"']/g,function(m){
-    return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
+// ── Visit Evidence / Photo capture ──────────────────────────────────────────
+var pendingPhotos = [];   // [{blob, previewUrl}, ...] — max 2
+var MAX_PHOTOS = 2;
+var PHOTO_MAX_WIDTH = 1600;
+var PHOTO_QUALITY = 0.8;
+
+function compressImage(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onerror = function() { reject(new Error('FileReader failed')); };
+    reader.onload = function(e) {
+      var img = new Image();
+      img.onerror = function() { reject(new Error('Image load failed')); };
+      img.onload = function() {
+        try {
+          var w = img.width, h = img.height;
+          if (w > PHOTO_MAX_WIDTH) { h = Math.round(h * PHOTO_MAX_WIDTH / w); w = PHOTO_MAX_WIDTH; }
+          var canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          canvas.toBlob(function(blob) {
+            if (blob) { resolve(blob); } else { reject(new Error('toBlob returned null')); }
+          }, 'image/jpeg', PHOTO_QUALITY);
+        } catch(e) { reject(e); }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   });
 }
-function renderActionsFromVisitList(records){
-  if(!records.length)return '<p style="color:#8a9bb3;font-size:12px;margin:0">No actions linked to this visit.</p>';
-  return '<div class="avf-list">'+records.map(function(r){
-    var f=r.fields||{};
-    var text=f['Action Text']||'';
-    var status=String(f['Status']||'Open').toLowerCase();
-    var isDismissed=status==='dismissed';
-    var isCompleted=status==='completed';
-    var badgeClass=isDismissed?'avf-badge-dismissed':(isCompleted?'avf-badge-completed':'avf-badge-pending');
-    var badgeText=isDismissed?'Dismissed':(isCompleted?'Completed':'Pending');
-    return '<div class="avf-item"><span class="avf-text">'+escapeHtmlLocal(text)+'</span><span class="avf-badge '+badgeClass+'">'+badgeText+'</span></div>';
-  }).join('')+'</div>';
-}
-// Fetches and appends the Actions-from-this-Visit block to an already-
-// rendered detail panel. Called after the existing synchronous AI report
-// content, so it never delays or blocks that rendering. Fails gracefully —
-// a fetch error or an empty result both produce a calm, honest message,
-// never a raw error shown to the user.
-function loadActionsForVisit(detailEl,visitRecordId){
-  var container=document.createElement('div');
-  container.className='report-section';
-  container.innerHTML='<h4>Actions from this Visit</h4><p style="color:#8a9bb3;font-size:12px;margin:0">Loading actions...</p>';
-  detailEl.appendChild(container);
-  fetch(WORKER+'/get-actions?visitId='+encodeURIComponent(visitRecordId))
-    .then(function(res){return res.json();})
-    .then(function(data){
-      container.innerHTML='<h4>Actions from this Visit</h4>'+renderActionsFromVisitList(data.records||[]);
-    })
-    .catch(function(err){
-      console.error('Could not load actions for this visit:',err);
-      container.innerHTML='<h4>Actions from this Visit</h4><p style="color:#8a9bb3;font-size:12px;margin:0">Could not load actions for this visit.</p>';
-    });
-}  
-// Visit Thread — every visit in the same thread (original and every
-// follow-up alike) shows the identical full list: every member, in
-// chronological order, the current one marked "(currently viewing)",
-// every other one a clickable button calling the existing
-// expandAndScrollToVisit() — no new navigation, same one used everywhere
-// else in this app. Renders nothing if the thread has only one member (a
-// normal visit no Log Update has joined yet).
-var _threadToggleCounter=0;
-function renderThreadCards(members,threadId,currentId){
-  var html='';var followUpNum=0;
-  members.forEach(function(m){
-    var mf=m.fields||{};
-    var isCurrent=m.id===currentId;
-    var isOrig=m.id===threadId;
-    var label=isOrig?'Original Visit':('Follow-up '+(++followUpNum));
-    var dateStr=mf['Visit Date']?formatDate(mf['Visit Date']):'';
-    var snippet=truncateSummary(mf['AI Summary']||mf['Meeting Notes']||'',70).replace(/^[:\s]+/,'');
-    var actionHtml=isCurrent
-      ? '<span class="thread-card-status">Currently viewing</span>'
-      : '<button type="button" class="thread-action-btn thread-action-btn-small" onclick="event.stopPropagation();expandAndScrollToVisit(\''+m.id+'\');">Open</button>';
-    html+='<div class="thread-card'+(isCurrent?' thread-card-current':'')+'">'+
-      '<div class="thread-card-label">'+label+'</div>'+
-      '<div class="thread-card-meta">'+(dateStr?escapeHtml(dateStr):'')+(dateStr&&snippet?' · ':'')+escapeHtml(snippet)+'</div>'+
-      '<div class="thread-card-action">'+actionHtml+'</div>'+
-    '</div>';
+
+function renderPhotoPreviews() {
+  var container = document.getElementById('photoPreviews');
+  var label = document.getElementById('photoCountLabel');
+  container.innerHTML = '';
+  pendingPhotos.forEach(function(p, idx) {
+    var item = document.createElement('div');
+    item.className = 'photo-preview-item';
+    var img = document.createElement('img');
+    img.src = p.previewUrl;
+    var removeBtn = document.createElement('button');
+    removeBtn.className = 'photo-preview-remove';
+    removeBtn.textContent = '×';
+    removeBtn.setAttribute('type', 'button');
+    removeBtn.addEventListener('click', (function(i) { return function() {
+      URL.revokeObjectURL(pendingPhotos[i].previewUrl);
+      pendingPhotos.splice(i, 1);
+      renderPhotoPreviews();
+    }; })(idx));
+    item.appendChild(img); item.appendChild(removeBtn);
+    container.appendChild(item);
   });
-  return html;
+  var atLimit = pendingPhotos.length >= MAX_PHOTOS;
+  document.getElementById('photoCameraBtn').disabled = atLimit;
+  document.getElementById('photoGalleryBtn').disabled = atLimit;
+  if (pendingPhotos.length > 0) {
+    var rem = MAX_PHOTOS - pendingPhotos.length;
+    label.textContent = pendingPhotos.length + ' photo' + (pendingPhotos.length > 1 ? 's' : '') + ' added' + (rem > 0 ? ' · ' + rem + ' more allowed' : ' · limit reached');
+  } else {
+    label.textContent = '';
+  }
 }
-function loadThreadForVisit(detailEl,record){
-  var existing=detailEl.querySelector('.visit-thread-section');
-  if(existing)existing.remove();
-  var threadId=(record.fields||{})['Visit Thread ID']||record.id;
-  // Guaranteed, immediate fallback — shown before the fetch below
-  // resolves, so the section never depends entirely on a network call
-  // succeeding. Upgraded to the full thread list once the fetch returns.
-  var fallback=document.createElement('div');
-  fallback.className='report-section visit-thread-section';
-  fallback.innerHTML='<div class="thread-card thread-card-current"><div class="thread-card-label">'+(threadId===record.id?'Original Visit':'This Visit')+'</div><div class="thread-card-action"><span class="thread-card-status">Currently viewing</span></div></div>';
-  detailEl.appendChild(fallback);
-  fetch(WORKER+'/get-visit-thread?threadId='+encodeURIComponent(threadId))
-    .then(function(res){return res.json();})
-    .then(function(data){
-      var members=data.records||[];
-      if(members.length<=1)return;
-      var stillPresent=detailEl.contains(fallback);
-      if(stillPresent)fallback.remove();
-      _threadToggleCounter++;
-      var toggleId='thread-toggle-'+_threadToggleCounter;
-      var container=document.createElement('div');
-      container.className='report-section visit-thread-section';
-      var cardsHtml=renderThreadCards(members,threadId,record.id);
-      container.innerHTML='<button type="button" class="thread-toggle-btn" id="'+toggleId+'-btn" onclick="event.stopPropagation();toggleThreadList(\''+toggleId+'\');">'+
-          '📋 Thread ('+members.length+' Visit'+(members.length===1?'':'s')+')'+
-          '<span id="'+toggleId+'-arrow" class="thread-toggle-arrow">▸</span>'+
-        '</button>'+
-        '<div id="'+toggleId+'-list" class="thread-list" style="display:none">'+cardsHtml+'</div>';
-      detailEl.appendChild(container);
-    })
-    .catch(function(err){
-      console.error('Could not load visit thread:',err);
-      // fallback (already appended above) remains visible — never nothing.
-    });
+
+async function handlePhotoFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  if (pendingPhotos.length >= MAX_PHOTOS) return;
+  try {
+    var blob = await compressImage(file);
+    var previewUrl = URL.createObjectURL(blob);
+    pendingPhotos.push({ blob: blob, previewUrl: previewUrl });
+    renderPhotoPreviews();
+  } catch(e) {
+    console.warn('Image compression failed:', e);
+    alert('Could not process this photo. Please try a different image.');
+  }
 }
-function toggleThreadList(toggleId){
-  var list=document.getElementById(toggleId+'-list');
-  var arrow=document.getElementById(toggleId+'-arrow');
-  if(!list)return;
-  var isOpen=list.style.display!=='none';
-  list.style.display=isOpen?'none':'block';
-  if(arrow)arrow.textContent=isOpen?'▸':'▾';
-}
-  
-var sortedRecords=[];  
-var allRecordsRaw=[];  
-var watchedAccountIds={};
-var accountIdByName={};
-var targetVisitId=null;  
-  
-function renderVisits(records){  
-  var today=new Date();today.setHours(0,0,0,0);  
-  var weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);  
-  var thisWeek=0,newAccounts=0;  
-  var sorted=records.slice().sort(function(a,b){  
-    var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);  
-    var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);  
-    return db-da;  
-  });  
-  sortedRecords=sorted;  
-  sorted.forEach(function(r){  
-    var f=r.fields;var vDate=f['Visit Date']?new Date(f['Visit Date']):null;  
-    if(vDate&&vDate>=weekAgo)thisWeek++;  
-    if(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1')newAccounts++;  
-  });  
-  document.getElementById('statTotal').textContent=records.length;  
-  document.getElementById('statThisWeek').textContent=thisWeek;  
-  document.getElementById('statNewAccounts').textContent=newAccounts;  
-  document.getElementById('countLabel').textContent='Showing '+sorted.length+' visit'+(sorted.length!==1?'s':'')+', most recent first';  
-  if(sorted.length===0){document.getElementById('visitList').innerHTML='<div class="empty">No visits logged yet.</div>';return;}  
-  var html='';  
-  sorted.forEach(function(r,idx){  
-    var f=r.fields;var priority=f['Priority']||'Medium';  
-    var isNew=(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1');  
-    var summary=truncateSummary(f['AI Summary']||f['Meeting Notes']||'',180);  
-    var linkedAccountId=(f['Account']&&f['Account'][0])?f['Account'][0]:null;
-    if(!linkedAccountId){
-      var normalizedName=String(f['Hospital Name']||'').trim().toLowerCase();
-      if(normalizedName&&accountIdByName[normalizedName])linkedAccountId=accountIdByName[normalizedName];
-    }
-    var starHtml='';
-    if(currentUser.role==='Manager'){
-      if(linkedAccountId){
-        var isWatched=!!watchedAccountIds[linkedAccountId];
-        starHtml='<button class="watch-star'+(isWatched?' watching':'')+'" onclick="event.stopPropagation();toggleWatch(\''+linkedAccountId+'\',this)" data-account-id="'+linkedAccountId+'" aria-label="'+(isWatched?'Remove from watchlist':'Add to watchlist')+'" title="'+(isWatched?'Watching — tap to remove':'Tap to watch this account')+'">'+(isWatched?'⭐':'☆')+'</button>';
-      }else{
-        starHtml='<button class="watch-star watch-star-unresolved" disabled aria-label="Account not linked — cannot watch" title="This visit is not linked to an account record yet, so it cannot be watched.">☆</button>';
+
+async function uploadPendingPhotos(tempId) {
+  var urls = [];
+  for (var i = 0; i < pendingPhotos.length; i++) {
+    try {
+      var blob = pendingPhotos[i].blob;
+      if (!blob) continue;
+      var fd = new FormData();
+      fd.append('photo', blob, 'photo.jpg');
+      fd.append('visitId', String(tempId));
+      var res = await fetch(WORKER + '/upload-photo', { method: 'POST', body: fd });
+      var data = await res.json();
+      if (res.ok && data.url) {
+        urls.push(data.url);
+      } else {
+        var errMsg = (data && data.error) ? data.error : ('HTTP ' + res.status);
+        console.warn('[FieldIQ Photo] Upload failed:', res.status, JSON.stringify(data));
+        alert('Photo ' + (i + 1) + ' failed to upload:\n' + errMsg + '\n\nThe visit will still save without this photo.');
       }
+    } catch (e) {
+      console.warn('[FieldIQ Photo] Upload exception:', e.message);
+      alert('Photo ' + (i + 1) + ' upload error:\n' + e.message + '\n\nThe visit will still save without this photo.');
     }
-    html+=  
-      '<div class="visit-card'+(isNew?' new-account':'')+'" data-idx="'+idx+'" data-id="'+r.id+'">'+  
-        '<div class="visit-header">'+  
-          starHtml+
-          '<div class="visit-account">'+(f['Hospital Name']||'Unknown Account')+'</div>'+  
-          '<div class="visit-date">'+formatDate(f['Visit Date'])+'</div>'+  
-        '</div>'+  
-        '<div class="visit-meta">'+  
-          (f['Territory']?'<span class="badge badge-territory">'+f['Territory']+'</span>':'')+  
-          (f['Visit Type']?'<span class="badge badge-type">'+f['Visit Type']+'</span>':'')+  
-          '<span class="badge '+getPriorityClass(priority)+'">'+priority+'</span>'+  
-          (f['Rep Name']?'<span class="badge badge-territory">'+f['Rep Name']+'</span>':'')+  
-          (isNew?'<span class="badge badge-new">New Account</span>':'')+  
-        '</div>'+  
-        (summary?'<div class="visit-summary">'+summary+'</div>':'')+  
-        '<div class="visit-toggle"><i data-lucide="chevron-down"></i> Tap to view full report</div>'+  
-        '<div class="visit-detail" id="detail-'+idx+'"></div>'+  
-      '</div>';  
-  });  
-  document.getElementById('visitList').innerHTML=html;lucide.createIcons();  
-  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();  
-}  
-  
-// ── Watch / Unwatch Account ──────────────────────────────────────────────
-// Instant, optimistic toggle — same pattern already proven for Dismiss and
-// Mark Reviewed elsewhere in this app. Watching is Account-level, resolved
-// via the visit's linked Account field; every other card for the same
-// Account updates too, so the toggle state never contradicts itself across
-// cards for the same account on screen at once.
-function toggleWatch(accountId,btnEl){
-  var isWatching=btnEl.classList.contains('watching');
-  btnEl.disabled=true;
-  var endpoint=isWatching?'/unwatch-account':'/watch-account';
-  fetch(WORKER+endpoint,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({accountId:accountId})
-  }).then(function(res){
-    if(!res.ok)throw new Error('Request failed');
-    watchedAccountIds[accountId]=!isWatching;
-    document.querySelectorAll('.watch-star[data-account-id="'+accountId+'"]').forEach(function(b){
-      var nowWatching=!isWatching;
-      b.classList.toggle('watching',nowWatching);
-      b.textContent=nowWatching?'⭐':'☆';
-      b.setAttribute('aria-label',nowWatching?'Remove from watchlist':'Add to watchlist');
-      b.setAttribute('title',nowWatching?'Watching — tap to remove':'Tap to watch this account');
-      b.disabled=false;
-    });
-  }).catch(function(err){
-    console.error('Could not update watch status:',err);
-    btnEl.disabled=false;
-    alert('Could not update watch status. Please try again.');
-  });
+  }
+  return urls;
 }
 
-document.getElementById('visitList').addEventListener('click',function(e){  
-  var card=e.target.closest('.visit-card');if(!card)return;  
-  var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');  
-  if(!detail)return;  
-  var isOpen=detail.classList.contains('open');  
-  if(isOpen){  
-    detail.classList.remove('open');card.classList.remove('expanded');  
-    toggle.innerHTML='<i data-lucide="chevron-down"></i> Tap to view full report';lucide.createIcons({el:toggle});  
-  }else{  
-    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderReviewButton(f,sortedRecords[idx].id)+renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}
-    loadThreadForVisit(detail,sortedRecords[idx]);
-    detail.classList.add('open');card.classList.add('expanded');  
-    toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
-  }  
-});  
-  
-function populateRepFilter(records){  
-  var reps={};records.forEach(function(r){var rep=r.fields['Rep Name']||'';if(rep){rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();reps[rep]=1;}});  
-  var sel=document.getElementById('filterRep');while(sel.options.length>1)sel.remove(1);  
-  Object.keys(reps).sort().forEach(function(r){var o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});  
-}  
-  
-function getPeriodRange(period){  
-  var now=new Date();var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());var dayOfWeek=today.getDay();var diffToMonday=(dayOfWeek===0?6:dayOfWeek-1);var thisMonday=new Date(today);thisMonday.setDate(today.getDate()-diffToMonday);  
-  if(period==='thisWeek'){return {start:thisMonday,end:null};}  
-  if(period==='lastWeek'){var lastMonday=new Date(thisMonday);lastMonday.setDate(thisMonday.getDate()-7);var lastSunday=new Date(thisMonday);lastSunday.setDate(thisMonday.getDate()-1);lastSunday.setHours(23,59,59,999);return {start:lastMonday,end:lastSunday};}  
-  if(period==='thisMonth'){return {start:new Date(now.getFullYear(),now.getMonth(),1),end:null};}  
-  if(period==='lastMonth'){var lm=new Date(now.getFullYear(),now.getMonth()-1,1);var lmEnd=new Date(now.getFullYear(),now.getMonth(),0);lmEnd.setHours(23,59,59,999);return {start:lm,end:lmEnd};}  
-  return {start:null,end:null};  
-}  
-  
-function normalizeTerritoryForFilter(raw){
+document.getElementById('photoCameraBtn').addEventListener('click', function() {
+  document.getElementById('photoCameraInput').click();
+});
+document.getElementById('photoGalleryBtn').addEventListener('click', function() {
+  document.getElementById('photoGalleryInput').click();
+});
+document.getElementById('photoCameraInput').addEventListener('change', function() {
+  if (this.files && this.files[0]) handlePhotoFile(this.files[0]);
+  this.value = '';
+});
+document.getElementById('photoGalleryInput').addEventListener('change', function() {
+  if (this.files && this.files[0]) handlePhotoFile(this.files[0]);
+  this.value = '';
+});
+// ────────────────────────────────────────────────────────────────────────────
+
+document.getElementById('clearBtn').addEventListener('click',function(){
+  transcriptText.disabled=false;
+  document.getElementById('autoStopChoice').style.display='none';
+  isRecording=false;transcriptText.value='';audioPlayer.style.display='none';audioPlayer.src='';successCard.style.display='none';processingOverlay.style.display='none';statusEl.textContent='Tap mic to start recording';statusEl.className='status';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';micBtn.className='mic-btn';micBtn.innerHTML='<i data-lucide="mic"></i>';lucide.createIcons({el:micBtn});document.getElementById('recordingIndicator').className='recording-indicator';clearTimeout(autoStopTimeout);clearInterval(timerInterval);seconds=0;document.getElementById('recordingTimer').textContent='0:00';if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});streamRef=null;mediaRecorder=null;document.getElementById('editNotice').className='edit-notice';notListedCheck.checked=false;newAccountFields.classList.remove('visible');hospitalInput.style.display='';document.getElementById('newAccountName').value='';document.getElementById('newAccountCity').value='';document.getElementById('newContactName').value='';document.getElementById('newContactRole').value='';document.getElementById('newContactPhone').value='';document.getElementById('newContactEmail').value='';selectedAccountId=null;hospitalInput.value='';territorySelect.value='';document.getElementById('visitType').value='';accountBlock.style.opacity='0.5';accountBlock.style.pointerEvents='none';hospitalInput.disabled=true;notListedCheck.disabled=true;hospitalInput.placeholder='Select a territory first';duplicateWarningEl.style.display='none';
+  pendingPhotos.forEach(function(p){URL.revokeObjectURL(p.previewUrl);});
+  pendingPhotos=[];renderPhotoPreviews();
+  document.getElementById('photoUploading').style.display='none';
+  updateMicAvailability();
+});
+
+document.getElementById('autoStopTranscribeBtn').addEventListener('click',function(){
+  document.getElementById('autoStopChoice').style.display='none';
+  proceedToTranscribe(pendingAutoStopBlob);
+});
+document.getElementById('autoStopDiscardBtn').addEventListener('click',function(){
+  discardRecordingOnly();
+});
+document.getElementById('discardRecordingLink').addEventListener('click',function(e){
+  e.preventDefault();
+  discardRecordingOnly();
+});
+
+var prefillSourceRef='';
+var prefillAccountTerritory='';
+var prefillVisitThreadId=''; // holds the raw source visit id when arriving from a Log Update — sent as sourceVisitId; the Worker resolves the actual thread id at save time
+// Matches the dropdown's exact option values (UAE/Saudi Arabia/Qatar/Kuwait/
+// Bahrain/Oman) against a raw Airtable territory value that may be
+// differently cased, phrased, or formatted (e.g. "Saudi Arabia - Riyadh").
+// Same canonical mapping already used in worker.js and fieldiq-accounts.html.
+function normalizeTerritoryForDropdown(raw){
   var t=(raw||'').trim();if(!t)return'';
   var tu=t.toUpperCase();
   if(tu.indexOf('SAUDI ARABIA')===0)return'Saudi Arabia';
@@ -697,200 +479,235 @@ function normalizeTerritoryForFilter(raw){
   if(tu==='OMAN')return'Oman';
   return t;
 }
-function getFilteredRecords(){  
-  var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var priority=document.getElementById('filterPriority').value;var period=document.getElementById('filterPeriod').value;  
-  var cutoff=null;var range={start:null,end:null};  
-  if(period==='30'||period==='90'){cutoff=new Date(Date.now()-parseInt(period)*24*60*60*1000);}else if(period){range=getPeriodRange(period);}  
-  return allRecordsRaw.filter(function(r){  
-    var f=r.fields;var repName=(f['Rep Name']||'').trim();repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();  
-    if(rep&&repName!==rep)return false;if(terr&&normalizeTerritoryForFilter(f['Territory'])!==terr)return false;if(priority&&f['Priority']!==priority)return false;  
-    if(cutoff&&f['Visit Date']&&new Date(f['Visit Date'])<cutoff)return false;  
-    if(range.start||range.end){if(!f['Visit Date'])return false;var vDate=new Date(f['Visit Date']);if(range.start&&vDate<range.start)return false;if(range.end&&vDate>range.end)return false;}  
-    return true;  
-  });  
-}  
-  
-function applyFilters(){  
-  var filtered=getFilteredRecords();var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var priority=document.getElementById('filterPriority').value;var period=document.getElementById('filterPeriod').value;  
-  var searchBox=document.getElementById('repSearch');var q=searchBox?searchBox.value.trim().toLowerCase():'';
-  if(q){
-    filtered=filtered.filter(function(r){
-      var f=r.fields;
-      return ['Hospital Name','AI Summary','Meeting Notes','Action Items'].some(function(key){
-        var v=f[key];return v&&String(v).toLowerCase().indexOf(q)>-1;
-      });
-    });
-  }
-  var periodLabels={thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};  
-  var parts=[];if(rep)parts.push('Rep: '+rep);if(terr)parts.push('Territory: '+terr);if(priority)parts.push('Priority: '+priority);if(period)parts.push(periodLabels[period]||period);if(q)parts.push('Search: "'+q+'"');
-  document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+filtered.length+' visits)':'';  
-  renderVisits(filtered);  
-}  
-  
-function resetFilters(){  
-  document.getElementById('filterRep').value='';document.getElementById('filterTerritory').value='';document.getElementById('filterPriority').value='';document.getElementById('filterPeriod').value='';document.getElementById('filterStatus').textContent='';  
-  renderVisits(allRecordsRaw);  
-}  
-  
-function applyUrlParams(){  
-  var params=new URLSearchParams(window.location.search);  
-  var rep=params.get('rep');var terr=params.get('territory');var priority=params.get('priority');var period=params.get('period');targetVisitId=params.get('visitId');  
-  if(rep){
-    rep=rep.trim();
-    rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
-    document.getElementById('filterRep').value=rep;
-  }
-  if(terr)document.getElementById('filterTerritory').value=terr;  
-  if(priority)document.getElementById('filterPriority').value=priority;  
-  if(period)document.getElementById('filterPeriod').value=period;  
-}  
-  
-function expandAndScrollToVisit(recordId){  
-  if(!recordId)return;  
-  var card=document.querySelector('.visit-card[data-id="'+recordId+'"]');if(!card)return;  
-  var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');  
-  // Command Centre / Open Actions context marker — purely in-memory, a
-  // plain DOM class with no storage backing it at all. Manager sources
-  // (manager-home, manager-actions) keep the original "Opened from
-  // Command Centre" treatment, unchanged. The Rep's own Open Actions
-  // source gets its own correct wording instead of incorrectly reusing
-  // the Manager's ribbon text. Loading Visit History normally, or from
-  // any other source, never applies either.
-  var _srcParams=new URLSearchParams(window.location.search);
-  if(_srcParams.get('source')==='manager-home'||_srcParams.get('source')==='manager-actions'){
-    card.classList.add('command-centre-highlight');
-  }else if(_srcParams.get('source')==='rep-actions'){
-    card.classList.add('rep-actions-highlight');
-  }else if(_srcParams.get('source')==='map'){
-    card.classList.add('map-highlight');
-  }
-  // Defensive correction: ensure this specific card's header has the same
-  // watch star every other card gets, using the identical construction as
-  // the main render loop — not a variant. Self-healing, idempotent: only
-  // acts if the star is actually missing and should be present.
-  if(idx!==null&&sortedRecords[idx]){
-    var hf=sortedRecords[idx].fields||{};
-    var hLinkedAccountId=(hf['Account']&&hf['Account'][0])?hf['Account'][0]:null;
-    if(!hLinkedAccountId){
-      var hNormalizedName=String(hf['Hospital Name']||'').trim().toLowerCase();
-      if(hNormalizedName&&accountIdByName[hNormalizedName])hLinkedAccountId=accountIdByName[hNormalizedName];
-    }
-    var header=card.querySelector('.visit-header');
-    if(header&&currentUser.role==='Manager'&&!header.querySelector('.watch-star')){
-      var hStarHtml;
-      if(hLinkedAccountId){
-        var hIsWatched=!!watchedAccountIds[hLinkedAccountId];
-        hStarHtml='<button class="watch-star'+(hIsWatched?' watching':'')+'" onclick="event.stopPropagation();toggleWatch(\''+hLinkedAccountId+'\',this)" data-account-id="'+hLinkedAccountId+'" aria-label="'+(hIsWatched?'Remove from watchlist':'Add to watchlist')+'" title="'+(hIsWatched?'Watching — tap to remove':'Tap to watch this account')+'">'+(hIsWatched?'⭐':'☆')+'</button>';
-      }else{
-        hStarHtml='<button class="watch-star watch-star-unresolved" disabled aria-label="Account not linked — cannot watch" title="This visit is not linked to an account record yet, so it cannot be watched.">☆</button>';
+
+(function(){
+  try{
+    var params=new URLSearchParams(window.location.search);
+    if(params.get('account')){
+      var homeBtn=document.getElementById('homeBtn');
+      if(homeBtn){
+        var calYear=params.get('calYear');
+        var calMonth=params.get('calMonth');
+        var calDay=params.get('calDay');
+        var calUrl='./fieldiq-calendar.html';
+        var calParams=[];
+        if(calYear)calParams.push('calYear='+encodeURIComponent(calYear));
+        if(calMonth)calParams.push('calMonth='+encodeURIComponent(calMonth));
+        if(calDay)calParams.push('calDay='+encodeURIComponent(calDay));
+        if(calParams.length)calUrl+='?'+calParams.join('&');
+        homeBtn.href=calUrl;
+        homeBtn.textContent='← Back to Calendar';
       }
-      header.insertAdjacentHTML('afterbegin',hStarHtml);
     }
-  }
-  if(detail&&!detail.classList.contains('open')){  
-    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderReviewButton(f,sortedRecords[idx].id)+renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}
-    loadThreadForVisit(detail,sortedRecords[idx]);
-    detail.classList.add('open');card.classList.add('expanded');  
-    if(toggle)toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
-  }  
-  var _stickyBar=document.getElementById('mapNavControls');
-  var _stickyOffset=0;
-  if(_stickyBar&&_stickyBar.style.display==='flex'){
-    _stickyOffset=_stickyBar.offsetHeight+12;
-  }
-  var _targetTop=card.getBoundingClientRect().top+(window.pageYOffset||document.documentElement.scrollTop||0)-_stickyOffset;
-  window.scrollTo({top:_targetTop,behavior:'smooth'});
-  card.classList.add('thread-nav-highlight');
-  setTimeout(function(){card.classList.remove('thread-nav-highlight');},1700);
-}  
-  
-var currentUser=null;  
-  
-async function loadCurrentUser(){  
-  var userId=localStorage.getItem('fieldiq_user_id');var userName=localStorage.getItem('fieldiq_user_name');var userRole=localStorage.getItem('fieldiq_user_role');  
-  if(userId&&userName&&userRole){currentUser={userId:userId,name:userName,role:userRole};}  
-}  
-  
-async function loadHistory(){  
-  try{  
-    if(!currentUser){  
-      document.getElementById('visitList').innerHTML='<div class="empty">Please select your name on the Home screen before viewing Visit History.<br><br><a href="./index.html" style="display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:12px;box-shadow:0 6px 16px rgba(47,143,255,0.3)">Return Home</a></div>';  
-      document.getElementById('countLabel').textContent='';return;  
-    }  
-    var _incomingParams=new URLSearchParams(window.location.search);
-    var endpoint=WORKER+'/get-visits';  
-    if(currentUser.role!=='Manager'){
-      endpoint=WORKER+'/get-visits?filterByUser='+encodeURIComponent(currentUser.userId);
+  }catch(e){}
+})();
+
+async function applyPrefillFromURL(){
+  try{
+    var params=new URLSearchParams(window.location.search);
+    var accountParam=params.get('account');
+    var visitIdParam=params.get('visitId')||'';
+    prefillSourceRef=params.get('sourceRef')||'';
+    prefillVisitThreadId=visitIdParam;
+    if(accountParam&&ACCOUNTS.length){
+      var match=ACCOUNTS.find(function(a){return a.name.trim().toLowerCase()===accountParam.trim().toLowerCase();});
+      if(match){
+        selectedAccountId=match.id;
+        hospitalInput.value=match.name;
+        var resolvedTerritory=match.territory||'';
+        // The visit's own Territory is more authoritative than the
+        // Account record's — an Account can have Territory blank even
+        // when every one of its visits correctly recorded one. Only
+        // attempted when arriving from Calendar's Log Update link with a
+        // resolvable visitId.
+        if(visitIdParam){
+          try{
+            var vRes=await fetch(WORKER+'/get-visit-territory?visitId='+encodeURIComponent(visitIdParam));
+            var vData=await vRes.json();
+            if(vData&&vData.territory)resolvedTerritory=vData.territory;
+          }catch(e){}
+        }
+        if(resolvedTerritory){
+          // Normalize the raw Airtable value to the dropdown's canonical
+          // form — same mapping used consistently in the Worker and
+          // Account Directory. Any value beginning with "Saudi Arabia"
+          // (regardless of region suffix) collapses to exactly "Saudi
+          // Arabia" — this is Airtable's own naming, not a renamed or
+          // invented value.
+          var normalizedTerritory=normalizeTerritoryForDropdown(resolvedTerritory);
+          var tSelect=document.getElementById('territory');
+          for(var j=0;j<tSelect.options.length;j++){
+            if(tSelect.options[j].value===normalizedTerritory){tSelect.selectedIndex=j;break;}
+          }
+          if(tSelect.value)prefillAccountTerritory=tSelect.value;
+        }
+        // Update Mode — arrived from Calendar's "Log Update" link for a
+        // specific existing follow-up (sourceRef present). Lock only when
+        // the dropdown itself actually holds a selected value — checking
+        // the raw resolvedTerritory string here was the actual bug: a
+        // value that failed to match any option (e.g. unnormalized raw
+        // Airtable text) still passed this check as truthy, locking an
+        // empty, unusable dropdown.
+        if(prefillSourceRef&&territorySelect.value){
+          territorySelect.disabled=true;
+          hospitalInput.disabled=true;
+          hospitalInput.placeholder=match.name;
+          accountBlock.style.opacity='1';
+          accountBlock.style.pointerEvents='none';
+          accountBlock.style.cursor='not-allowed';
+        }
+      }
     }
-    // Manager: always fetch the complete dataset, unfiltered by any URL
-    // param. Territory used to be server-filtered here, which permanently
-    // limited allRecordsRaw to whatever the arriving URL specified — no
-    // amount of client-side Reset/Apply could ever recover records that
-    // were never fetched in the first place. Rep was already correctly
-    // left as fetch-everything-then-filter-locally, for the same reason
-    // this now applies to territory too: applyUrlParams() + applyFilters()
-    // below already handle the initial drill-down state client-side,
-    // exactly as they already do for rep.
-    var res=await fetch(endpoint,{cache:'no-store'});var data=await res.json();  
-    if(!res.ok)throw new Error(JSON.stringify(data));  
-    allRecordsRaw=data.records||[];  
-    if(currentUser.role==='Manager'){
+    updateMicAvailability();
+  }catch(e){}
+}
+
+function parseReport(text){var sections={summary:'',contacts:'',outcomes:'',nextSteps:'',signals:'',sentiment:'',priority:'',suggestedDate:''};var lines=text.split('\n'),current='';for(var i=0;i<lines.length;i++){var l=lines[i].trim();if(l.match(/VISIT SUMMARY/i))current='summary';else if(l.match(/KEY CONTACTS/i))current='contacts';else if(l.match(/OUTCOMES/i))current='outcomes';else if(l.match(/NEXT STEPS/i))current='nextSteps';else if(l.match(/OPPORTUNITY/i))current='signals';else if(l.match(/SENTIMENT/i))current='sentiment';else if(l.match(/SUGGESTED NEXT DATE/i))current='suggestedDate';else if(l.match(/PRIORITY/i))current='priority';else if(l&&current)sections[current]+=(sections[current]?'\n':'')+l;}return sections;}
+function getOutcome(sentiment){sentiment=(sentiment||'').toLowerCase();if(sentiment.includes('positive'))return'Positive';if(sentiment.includes('negative'))return'Negative';return'Neutral';}
+function extractPriority(text){text=(text||'').toLowerCase();if(text.includes('high'))return'High';if(text.includes('medium'))return'Medium';if(text.includes('low'))return'Low';return'Medium';}
+function getPriorityClass(t){t=t.toLowerCase();if(t.indexOf('high')>-1)return'priority-high';if(t.indexOf('medium')>-1)return'priority-medium';return'priority-low';}
+function escapeHtml(str){
+  return String(str||'').replace(/[&<>"']/g,function(m){
+    return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
+  });
+}
+function renderReport(text){var s=parseReport(text),html='';if(s.summary)html+='<div class="report-section"><h4>Visit Summary</h4><p>'+escapeHtml(s.summary).replace(/\n/g,'<br>')+'</p></div>';if(s.contacts)html+='<div class="report-section"><h4>Key Contacts</h4><p>'+escapeHtml(s.contacts).replace(/\n/g,'<br>')+'</p></div>';if(s.outcomes)html+='<div class="report-section"><h4>Outcomes & Decisions</h4><p>'+escapeHtml(s.outcomes).replace(/\n/g,'<br>')+'</p></div>';if(s.nextSteps)html+='<div class="report-section"><h4>Next Steps</h4><p>'+escapeHtml(s.nextSteps).replace(/\n/g,'<br>')+'</p></div>';if(s.signals)html+='<div class="report-section"><h4>Opportunity Signals</h4><p>'+escapeHtml(s.signals).replace(/\n/g,'<br>')+'</p></div>';if(s.sentiment)html+='<div class="report-section"><h4>Sentiment</h4><p>'+escapeHtml(s.sentiment).replace(/\n/g,'<br>')+'</p></div>';if(s.priority)html+='<div class="report-section"><h4>Priority</h4><span class="priority-badge '+getPriorityClass(s.priority)+'">'+escapeHtml(s.priority.replace(/\*\*/g,'').trim())+'</span></div>';return html||'<div class="report-section"><p>'+escapeHtml(text)+'</p></div>';}
+
+submitBtn.addEventListener('click',async function(){
+  var transcript=transcriptText.value.trim();if(!transcript||transcript.length<3){alert('Please record a visit first.');return;}
+  if(!territorySelect.value){alert('Please select a territory first.');return;}
+  var repName=currentUserName;var userRole=currentUserRole||'Sales Rep';var userId=currentUserId;
+  var isNewAccount=notListedCheck.checked;var hospitalName='';var newAccountCity='';var newContactName='',newContactPhone='',newContactEmail='',newContactRole='';
+  if(isNewAccount){
+    var newName=document.getElementById('newAccountName').value.trim();if(!newName){alert('Please enter the account name.');return;}
+    var dupMatches=findPossibleDuplicates(newName);
+    if(dupMatches.length>0){var matchNames=dupMatches.slice(0,3).map(function(m){return m.name;}).join(', ');alert('"'+newName+'" already exists as: '+matchNames+'.\n\nPlease use Account Search to select the existing account instead of adding it as new.');return;}
+    hospitalName=newName;newAccountCity=document.getElementById('newAccountCity').value.trim();newContactName=document.getElementById('newContactName').value.trim();newContactRole=document.getElementById('newContactRole').value.trim();newContactPhone=document.getElementById('newContactPhone').value.trim();newContactEmail=document.getElementById('newContactEmail').value.trim();
+    if(!newAccountCity){alert('Please enter the city.');return;}if(!newContactName){alert('Please enter the primary contact\'s name.');return;}if(!newContactRole){alert('Please enter the contact role or title.');return;}if(!newContactPhone){alert('Please enter the primary contact\'s telephone number.');return;}
+  }else{hospitalName=hospitalInput.value.trim();if(!hospitalName){alert('Please select an account from the list, or check "Account not listed" to add a new one.');return;}if(!selectedAccountId){alert('Please select the account from the dropdown list so it links correctly.');return;}}
+  submitBtn.disabled=true;submitBtn.textContent='Processing...';processingOverlay.style.display='block';successCard.style.display='none';
+  document.getElementById('editNotice').className='edit-notice';
+  audioPlayer.style.display='none';
+  transcriptText.disabled=true;
+  var latitude=null,longitude=null,accuracy=null;
+  await new Promise(function(resolve){if(!navigator.geolocation){resolve();return;}navigator.geolocation.getCurrentPosition(function(pos){latitude=pos.coords.latitude;longitude=pos.coords.longitude;accuracy=Math.round(pos.coords.accuracy);resolve();},function(){resolve();},{timeout:12000,enableHighAccuracy:true,maximumAge:0});});
+  try{
+    var priorContext='';
+    var accountIdForContext=isNewAccount?null:selectedAccountId;
+    if(accountIdForContext){
       try{
-        var wlRes=await fetch(WORKER+'/get-watchlist');
-        var wlData=await wlRes.json();
-        watchedAccountIds={};
-        (wlData.records||[]).forEach(function(w){watchedAccountIds[w.id]=true;});
-      }catch(e){watchedAccountIds={};}
-      try{
-        var accRes=await fetch(WORKER+'/get-accounts');
-        var accData=await accRes.json();
-        accountIdByName={};
-        (accData.records||[]).forEach(function(a){
-          var name=String((a.fields||{})['Account Name']||'').trim().toLowerCase();
-          if(name)accountIdByName[name]=a.id;
+        var priorVisitsRes=await fetch(WORKER+'/get-visits',{cache:'no-store'});
+        var priorVisitsData=await priorVisitsRes.json();
+        var priorVisits=(priorVisitsData.records||[]).filter(function(v){
+          var acc=v.fields&&v.fields['Account'];
+          return Array.isArray(acc)&&acc.indexOf(accountIdForContext)>-1;
+        }).sort(function(a,b){
+          return String(b.fields['Visit Date']||'').localeCompare(String(a.fields['Visit Date']||''));
         });
-      }catch(e){accountIdByName={};}
+        if(prefillSourceRef){
+          var referenced=priorVisits.find(function(v){return v.id===prefillSourceRef;});
+          if(referenced){priorVisits=[referenced].concat(priorVisits.filter(function(v){return v.id!==referenced.id;}));}
+        }
+        if(priorVisits.length){
+          var prior=priorVisits[0].fields;
+          priorContext='\n\nCONTEXT FROM PREVIOUS VISIT (for reference only — do not repeat, only reason about what has changed):\nPrevious visit date: '+(prior['Visit Date']||'unknown')+'\nPrevious summary: '+(prior['AI Summary']||'')+'\nPrevious next steps: '+(prior['Action Items']||'')+'\n';
+        }
+      }catch(e){}
     }
-    if(currentUser.role==='Manager'){  
-      populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';  
-      document.getElementById('repSearchBox').style.display='block';document.getElementById('repSearch').setAttribute('placeholder','Search accounts…');
-      applyUrlParams();applyFilters();  
-      if(targetVisitId){expandAndScrollToVisit(targetVisitId);}else{restoreReturnStateIfAny();}  
-    }else{  
-      document.getElementById('repSearchBox').style.display='block';  
-      targetVisitId=new URLSearchParams(window.location.search).get('visitId');  
-      renderVisits(allRecordsRaw);  
-      if(targetVisitId){expandAndScrollToVisit(targetVisitId);}else{restoreReturnStateIfAny();}  
-    }  
-  }catch(err){console.error('Visit History failed to load:',err);document.getElementById('visitList').innerHTML='<div class="empty">Could not load your visits. Please try again.</div>';}  
-}  
-  
-loadCurrentUser().then(function(){loadHistory();});  
-</script>  <script>
-var _repSearchTimer;
-document.getElementById('repSearch').addEventListener('input',function(){
-  clearTimeout(_repSearchTimer);
-  _repSearchTimer=setTimeout(function(){
-    if(currentUser&&currentUser.role==='Manager'){applyFilters();return;}
-    var q=document.getElementById('repSearch').value.trim().toLowerCase();
-    if(!q){renderVisits(allRecordsRaw);return;}
-    var filtered=allRecordsRaw.filter(function(r){
-      var f=r.fields;
-      return ['Hospital Name','AI Summary','Meeting Notes','Action Items'].some(function(key){
-        var v=f[key];return v&&String(v).toLowerCase().indexOf(q)>-1;
+    var promptInstructions='You are an executive leadership panel reviewing a field interaction report — not a sales report, a field intelligence report. FieldIQ is a Field Intelligence Platform used across many industries and many field-based roles: Sales Representatives, Trainers, Product Specialists, Technical Engineers, Customer Success Managers, Service Engineers, Consultants, Project Managers, Territory Managers, and other field-based roles not yet named. Do not assume a sales role or a specific industry — read the transcript first and let it tell you who was speaking and what kind of interaction this was. The transcript below may be in English, Arabic, mixed Arabic-English, or a regional dialect. Understand the full meaning regardless of language or dialect used.\n\nAnalyse the conversation through every relevant business lens, including but not limited to: Sales and Commercial, Customer Success, Training and Education, Technical Support, Operations, Logistics and Supply Chain, Marketing, Finance, Procurement, Legal, Regulatory and Compliance, Service, Project Delivery, Territory Management, Executive Risk, and Business Growth. You are detecting business signals, not keywords. Report only what is genuinely present in the transcript — do not force a lens onto a visit just because it is on this list, and do not pad the report with categories that have no real signal. A purely technical visit should produce a technical report. A purely training visit should produce a training report. If pricing, logistics, regulatory, finance, legal, or other concerns are mentioned even briefly inside an otherwise single-purpose visit, capture that signal too — never let the dominant theme of a visit cause a real but minor detail to be dropped.\n\nNever replace a specific request with a generic phrase. If the transcript mentions a quotation, list price, price, proposal, demo, sample, registration, delivery date, stock or capacity issue, contract, purchase order, discount, training, technical specification, or any other concrete deliverable, name that exact item clearly. For example, if training was requested, write "Arrange training," not "Follow up." If samples were requested, write "Send samples," not "Provide information." Never substitute a specific, concrete request with a vague phrase like "follow up" or "provide information."\n\nReport evidence, not inference. Never infer customer intent, buying intent, procurement intent, urgency, decision readiness, budget, authority, or any other business conclusion unless it was explicitly stated or is directly supported by the transcript. Prefer factual wording over interpretive wording — for example, write "Customer requested a quotation, list price, and samples," not "Customer is showing strong buying intent." When uncertain whether something was implied, report only the fact that was actually said rather than the conclusion you might draw from it. This applies across the entire report, regardless of whether the visit is sales, training, technical, service, operations, regulatory, legal, finance, logistics, marketing, or any other field role.\n\nStructure the intelligence into a concise English report with these exact sections:\n\nVISIT SUMMARY\nKEY CONTACTS MET\nOUTCOMES & DECISIONS\nNEXT STEPS\nOPPORTUNITY SIGNALS\nSENTIMENT\nPRIORITY LEVEL (respond with exactly one word: High, Medium, or Low)\nSUGGESTED NEXT DATE (respond with a specific date if the speaker clearly mentioned a new meeting date, otherwise respond with exactly: None)\n\nVISIT SUMMARY should open by naming the primary nature of the interaction in one phrase — for example a sales visit, a technical support call, a training session, or a service escalation — so a manager scanning the report instantly understands what kind of interaction this was, before reading the detail.\n\nNEXT STEPS must list only the actual agreed actions stated in the transcript, written as specific, named commitments — for example "Send quotation to [name/role]" and "Arrange training for [name/role]" as separate lines, never merged or softened into "Follow up with customer." Do not invent actions that were not discussed. Do not exaggerate the outcome of the visit. Preserve the meaning exactly as the field user described it — if nothing concrete was agreed, say so plainly rather than manufacturing a next step.\n\nOUTCOMES & DECISIONS should capture whatever genuinely matters from this specific interaction — commercial, technical, training, operational, regulatory, financial, legal, or service-relevant — never restricted to only one business function.\n\nFor PRIORITY LEVEL, classify based on:\n- High: a concrete deliverable was requested (quotation, proposal, contract, technical evaluation, training), a decision maker committed to a next step, or a risk, complaint, competency gap, or escalation needs management attention before the next visit\n- Medium: a next step is needed, the interaction was constructive, a return visit was requested, or the relationship or capability is developing\n- Low: informational interaction, no concrete request or risk identified, long-term monitoring only\n\nOutput the report in professional English only.'+priorContext+'\n\nTranscript:\n'+transcript;
+    var aiRes=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,messages:[{role:'user',content:promptInstructions}]})});
+    var aiData=await aiRes.json();
+    if(!aiRes.ok||!aiData.content||!aiData.content[0]||!aiData.content[0].text){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';transcriptText.disabled=false;alert('AI processing failed, so nothing was saved — no account, no contact, no visit.\n\nPlease try again.\n\n'+JSON.stringify(aiData));return;}
+    var result=aiData.content[0].text;var parsed=parseReport(result);var priority=extractPriority(parsed.priority);
+    var visitDate=document.getElementById('visitDate').value;var territory=document.getElementById('territory').value;var visitType=document.getElementById('visitType').value;
+    var newAccountId=null;
+    if(isNewAccount){
+      document.getElementById('processingText').textContent='Creating account...';
+      var accPayload={'Account Name':hospitalName,'Territory':territory,'City':newAccountCity,'Created By':userId};
+      var accRes=await fetch(WORKER+'/save-account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(accPayload)});
+      var accData=await accRes.json();
+      if(!accRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';transcriptText.disabled=false;console.error('Account creation failed:',accData);alert('Could not create the new account. Nothing was saved — please try again.');return;}
+      newAccountId=accData.id;ACCOUNTS.push({id:newAccountId,name:hospitalName,territory:territory});
+      if(newContactName){
+        document.getElementById('processingText').textContent='Saving contact...';
+        var contactPayload={'Contact Name':newContactName,'Account Role':newContactRole,'Mobile':newContactPhone,'Email':newContactEmail,'Status':'Current','Accounts':[newAccountId],'Added By':userId};
+        var contactRes=await fetch(WORKER+'/save-contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(contactPayload)});
+        var contactData=await contactRes.json();
+        if(!contactRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';transcriptText.disabled=false;alert('The account "'+hospitalName+'" was created successfully, but saving the contact failed. The visit has NOT been saved yet.\n\nSubmit again — this time search for "'+hospitalName+'" instead of using "Account not listed," since it already exists now.\n\n'+JSON.stringify(contactData));return;}
+      }
+      document.getElementById('processingText').textContent='Saving visit...';
+    }
+
+    var photoUrls = [];
+    if (pendingPhotos.length > 0) {
+      document.getElementById('processingText').textContent = 'Uploading photos...';
+      document.getElementById('photoUploading').style.display = 'block';
+      var tempId = 'visit-' + Date.now();
+      photoUrls = await uploadPendingPhotos(tempId);
+      document.getElementById('photoUploading').style.display = 'none';
+      document.getElementById('processingText').textContent = 'Saving visit...';
+    }
+
+    var savePayload={'Hospital Name':hospitalName,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Rep Name':repName,'User ID':userId,'User Role':userRole,'Display Name':repName,'Raw Transcript':transcript,'AI Summary':result,'Outcome':getOutcome(parsed.sentiment),'Meeting Notes':parsed.summary,'Action Items':parsed.nextSteps,'Priority':priority,'Latitude':latitude,'Longitude':longitude,'Accuracy':accuracy,'New Account':isNewAccount,'Pending Review':isNewAccount};
+    if(!isNewAccount&&selectedAccountId){savePayload['Account']=[selectedAccountId];}
+    if(isNewAccount&&newAccountId){savePayload['Account']=[newAccountId];}
+    if(prefillVisitThreadId){savePayload['sourceVisitId']=prefillVisitThreadId;}
+    if(prefillSourceRef){savePayload['sourceActionId']=prefillSourceRef;}
+    if (photoUrls.length > 0) {
+      savePayload['Photo URLs'] = photoUrls.join('\n');
+    }
+
+    var saveRes=await fetch(WORKER+'/save-visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(savePayload)});
+    var saveData=await saveRes.json();
+    if(!saveRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';transcriptText.disabled=false;if(isNewAccount){alert('The account'+(newContactName?' and contact were':' was')+' created successfully, but the visit itself failed to save.\n\nSubmit again — this time search for "'+hospitalName+'" instead of using "Account not listed," since it already exists now.\n\nSave error '+saveRes.status+': '+JSON.stringify(saveData));}else{alert('Save error '+saveRes.status+': '+JSON.stringify(saveData));}return;}
+    try{
+      await fetch(WORKER+'/save-actions',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          visitRecordId:saveData.id,
+          accountId:isNewAccount?newAccountId:selectedAccountId,
+          accountName:hospitalName,
+          userId:userId,
+          assignedRepRecordId:localStorage.getItem('fieldiq_user_record_id')||'',
+          actionText:parsed.nextSteps
+        })
       });
-    });
-    renderVisits(filtered);
-  },150);
+    }catch(e){
+      console.warn('Open Actions save failed:',e);
+    }
+
+    if(prefillSourceRef){
+      try{
+        fetch(WORKER+'/update-action',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            actionId:prefillSourceRef,
+            lastUpdatedBy:repName,
+            lastUpdatedDate:new Date().toISOString(),
+            lastVisitRecordId:saveData.id,
+            managerNotification:true,
+            managerNotificationViewed:false
+          })
+        }).catch(function(e){console.warn('Rep Activity notification failed:',e);});
+      }catch(e){console.warn('Rep Activity notification failed:',e);}
+    }
+
+    processingOverlay.style.display='none';successCard.style.display='block';submitBtn.textContent='Success';document.getElementById('reportContent').innerHTML=renderReport(result);
+    var suggestedDateText=(parsed.suggestedDate||'').trim();
+    if(suggestedDateText&&suggestedDateText.toLowerCase()!=='none'){
+      var dateNoticeEl=document.createElement('div');
+      dateNoticeEl.style.cssText='margin-top:14px;padding:13px 16px;background:#eaf3ff;border:1.5px solid #b8d8ff;border-radius:12px;font-size:13px;color:#0b1f3a;font-weight:600';
+      dateNoticeEl.innerHTML='\ud83d\udcc5 AI detected a possible new date: <strong>'+suggestedDateText.replace(/</g,'&lt;')+'</strong>. <a href="./fieldiq-calendar.html" style="color:#2f8fff;font-weight:800;text-decoration:none">Open Calendar to reschedule \u2192</a>';
+      document.getElementById('reportContent').appendChild(dateNoticeEl);
+    }
+  }catch(err){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';transcriptText.disabled=false;alert('Error: '+err.message);}
 });
+document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).catch(function(){});}</script>
 <script>
-// Back-to-top floating button — purely cosmetic, self-contained. Created
-// entirely via JS so no existing HTML/IDs/layout are touched. Appears only
-// after scrolling past 500px, scrolls smoothly to top on click. Does not
-// interact with navigation, actions, reminders, photo modal, or any
-// business logic.
 (function(){
   var btn=document.createElement('button');
   btn.type='button';
@@ -907,11 +724,6 @@ document.getElementById('repSearch').addEventListener('input',function(){
     btn.classList.toggle('visible',(window.scrollY||document.documentElement.scrollTop)>500);
   },{passive:true});
 })();
-window.addEventListener('pageshow',function(event){
-  if(event.persisted){
-    window.location.reload();
-  }
-});
 </script>
-</body>  
+</body>
 </html>
