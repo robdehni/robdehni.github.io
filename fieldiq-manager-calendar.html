@@ -258,7 +258,11 @@ function normalizeActionRecord(r){
       'Status':getStatus(f),
       'Reminder Count':getField(f,['Reminder Count'],0),
       'Rep Name':getAssignedRepName(f),
-      'Rep Key':getAssignedRepKey(f)
+      'Rep Key':getAssignedRepKey(f),
+      'Source Visit':f['Source Visit']||[],
+      'Visit':f['Visit']||[],
+      'Field Visit':f['Field Visit']||[],
+      'Visit Record':f['Visit Record']||[]
     },
     raw:r
   };
@@ -478,6 +482,9 @@ function renderDayPanel(isoDate,dayActions){
       '</div>';
     html+='<div class="cal-action-text">'+escapeHtml(action||'Open action')+'</div>';
     html+='<a class="cal-action-link" href="'+managerActionsHref(r.id)+'" onclick="event.stopPropagation()">→ Open in Manager Actions</a>';
+    var linkedVisitArr=f['Source Visit']||f['Visit']||f['Field Visit']||f['Visit Record']||[];
+    var linkedVisitId=Array.isArray(linkedVisitArr)&&linkedVisitArr.length?linkedVisitArr[0]:(typeof linkedVisitArr==='string'?linkedVisitArr:'');
+    html+=' &nbsp;&middot;&nbsp; <a class="cal-action-link" href="./fieldiq-log-visit.html?account='+encodeURIComponent(account)+'&sourceRef='+encodeURIComponent(r.id)+(linkedVisitId?'&visitId='+encodeURIComponent(linkedVisitId):'')+'&calYear='+viewYear+'&calMonth='+viewMonth+'&calDay='+encodeURIComponent(isoDate)+'" onclick="event.stopPropagation()">🎙️ Log Update</a>';
     html+='</div>';
   });
 
