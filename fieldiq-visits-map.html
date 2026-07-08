@@ -316,11 +316,27 @@ function renderMarkers(visits){
   document.getElementById('sNeg').textContent=neg;
 }
 
+// Same canonical mapping already used consistently in worker.js,
+// fieldiq-accounts.html, and fieldiq-log-visit.html — any territory
+// beginning with "Saudi Arabia" (regardless of region suffix) collapses
+// to the single canonical "KSA", matching the Airtable Territories
+// table's own renamed record.
+function normalizeTerritoryForMap(raw){
+  var t=(raw||'').trim();if(!t)return'';
+  var tu=t.toUpperCase();
+  if(tu.indexOf('SAUDI ARABIA')===0||tu==='KSA')return'KSA';
+  if(tu==='UAE')return'UAE';
+  if(tu==='QATAR')return'Qatar';
+  if(tu==='KUWAIT')return'Kuwait';
+  if(tu==='BAHRAIN')return'Bahrain';
+  if(tu==='OMAN')return'Oman';
+  return t;
+}
 function populateFilters(visits){
   var t={},r={};
   visits.forEach(function(v){
     var f=v.fields;
-    if(f.Territory)t[f.Territory]=1;
+    if(f.Territory)t[normalizeTerritoryForMap(f.Territory)]=1;
     if(f['Rep Name'])r[f['Rep Name']]=1;
   });
   var ts=document.getElementById('fTerr');
@@ -343,7 +359,7 @@ function applyFilters(){
   var cutoffs=getDateCutoffs(period);
   var filtered=allVisits.filter(function(v){
     var f=v.fields;
-    if(t&&f.Territory!==t)return false;
+    if(t&&normalizeTerritoryForMap(f.Territory)!==t)return false;
     if(r&&f['Rep Name']!==r)return false;
     if(s&&getSent(f['AI Summary']||'')!==s)return false;
     if(cutoffs.start||cutoffs.end){
