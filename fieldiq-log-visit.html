@@ -463,6 +463,7 @@ document.getElementById('discardRecordingLink').addEventListener('click',functio
 
 var prefillSourceRef='';
 var prefillAccountTerritory='';
+var prefillVisitThreadId='';
 
 (function(){
   try{
@@ -508,6 +509,7 @@ async function applyPrefillFromURL(){
             var vRes=await fetch(WORKER+'/get-visit-territory?visitId='+encodeURIComponent(visitIdParam));
             var vData=await vRes.json();
             if(vData&&vData.territory)resolvedTerritory=vData.territory;
+            if(vData&&vData.visitThreadId)prefillVisitThreadId=vData.visitThreadId;
           }catch(e){}
         }
         if(resolvedTerritory){
@@ -625,6 +627,7 @@ submitBtn.addEventListener('click',async function(){
     var savePayload={'Hospital Name':hospitalName,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Rep Name':repName,'User ID':userId,'User Role':userRole,'Display Name':repName,'Raw Transcript':transcript,'AI Summary':result,'Outcome':getOutcome(parsed.sentiment),'Meeting Notes':parsed.summary,'Action Items':parsed.nextSteps,'Priority':priority,'Latitude':latitude,'Longitude':longitude,'Accuracy':accuracy,'New Account':isNewAccount,'Pending Review':isNewAccount};
     if(!isNewAccount&&selectedAccountId){savePayload['Account']=[selectedAccountId];}
     if(isNewAccount&&newAccountId){savePayload['Account']=[newAccountId];}
+    if(prefillVisitThreadId){savePayload['Visit Thread ID']=prefillVisitThreadId;}
     if (photoUrls.length > 0) {
       savePayload['Photo URLs'] = photoUrls.join('\n');
     }
