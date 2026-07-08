@@ -83,6 +83,16 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text
   font-size:20px;font-weight:900;line-height:1;
 }
 .back-to-top.visible{display:flex}
+.manager-notes-section{margin-top:4px;margin-bottom:10px}
+.manager-note-item{background:#f8fbff;border:1px solid #e3ebf5;border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.manager-note-item.unacknowledged{background:#fff4d6;border-color:#f5dfa0;box-shadow:0 0 0 2px rgba(163,106,0,0.08)}
+.manager-note-label{font-size:9.5px;font-weight:900;color:#a36a00;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.manager-note-item:not(.unacknowledged) .manager-note-label{color:#8a9bb3}
+.manager-note-text{font-size:13px;color:#263b59;line-height:1.5;font-weight:600;white-space:pre-wrap;margin-bottom:6px}
+.manager-note-meta{font-size:10px;color:#8a9bb3;font-weight:700;margin-bottom:8px}
+.manager-note-ack-btn{border:none;border-radius:8px;background:#2f8fff;color:#fff;padding:8px 12px;font-size:11.5px;font-weight:800;cursor:pointer}
+.manager-note-ack-btn:disabled{opacity:.55;cursor:not-allowed}
+.manager-note-acked{font-size:10.5px;font-weight:800;color:#1f8a52}
 </style>
   <!-- PWA v1 -->
   <link rel="manifest" href="/manifest.json">
@@ -153,6 +163,11 @@ function formatDate(value){
   if(!value)return '';
   try{return new Date(value+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
   catch(e){return value;}
+}
+function formatDateTime(v){
+  if(!v)return '';
+  try{return new Date(v).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
+  catch(e){return v;}
 }
 
 // Reused verbatim from the manager Open Actions page — same field-name
@@ -225,6 +240,87 @@ function reminderStrip(f){
   return '<div class="reminder-strip '+cls+'">'+label+'</div>';
 }
 
+// ─── Manager Notes (rep-side display) ──────────────────────────────────────
+// Reads from the existing /get-notes and /acknowledge-note endpoints only.
+// Does not touch Manager Notes saving, Visit History, Visit Threads, Log
+// Update, /save-visit, KPIs, Reputation, Calendar, or Dashboard. Notes are
+// fetched per action, after the action cards themselves have rendered, and
+// injected into the placeholder div already present in each card.
+async function loadNotesForAction(actionId){
+  var box=document.getElementById('notes-'+actionId);
+  if(!box)return;
+  try{
+    var res=await fetch(WORKER+'/get-notes?actionId='+encodeURIComponent(actionId),{cache:'no-store'});
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Could not load notes');
+    renderNotesForAction(actionId,data.records||[]);
+  }catch(err){
+    // Non-fatal — a rep's ability to see/complete/dismiss their action must
+    // never depend on this call succeeding. Silently leaves the section
+    // empty rather than showing an error box on every card.
+  }
+}
+
+function renderNotesForAction(actionId,records){
+  var box=document.getElementById('notes-'+actionId);
+  if(!box)return;
+  if(!records.length){
+    box.innerHTML='';
+    return;
+  }
+  var html='';
+  records.forEach(function(r){
+    var f=r.fields||{};
+    var acked=!!f['Acknowledged'];
+    html+='<div class="manager-note-item'+(acked?'':' unacknowledged')+'" id="note-'+r.id+'">';
+    html+='<div class="manager-note-label"><i data-lucide="message-circle"></i> Manager Note</div>';
+    html+='<div class="manager-note-text">'+escapeHtml(f['Notes']||'')+'</div>';
+    html+='<div class="manager-note-meta">'+escapeHtml(f['Created By']||'Manager')+' · '+escapeHtml(formatDateTime(f['Created Date']||''))+'</div>';
+    if(acked){
+      html+='<div class="manager-note-acked"><i data-lucide="check"></i> Acknowledged</div>';
+    }else{
+      html+='<button type="button" class="manager-note-ack-btn" data-ack-note-id="'+escapeHtml(r.id)+'">Acknowledge</button>';
+    }
+    html+='</div>';
+  });
+  box.innerHTML=html;
+  if(window.lucide)lucide.createIcons({el:box});
+}
+
+async function acknowledgeNote(noteId,btnEl){
+  if(btnEl){btnEl.disabled=true;btnEl.textContent='Acknowledging…';}
+  try{
+    var res=await fetch(WORKER+'/acknowledge-note',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({noteId:noteId})
+    });
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Could not acknowledge note');
+    var item=document.getElementById('note-'+noteId);
+    if(item){
+      item.classList.remove('unacknowledged');
+      var label=item.querySelector('.manager-note-label');
+      if(label)label.style.color='';
+      if(btnEl){
+        btnEl.outerHTML='<div class="manager-note-acked"><i data-lucide="check"></i> Acknowledged</div>';
+        if(window.lucide)lucide.createIcons({el:item});
+      }
+    }
+  }catch(err){
+    if(btnEl){btnEl.disabled=false;btnEl.textContent='Acknowledge';}
+    alert('Could not acknowledge note: '+err.message);
+  }
+}
+
+document.addEventListener('click',function(e){
+  var ackBtn=e.target.closest('[data-ack-note-id]');
+  if(ackBtn){
+    acknowledgeNote(ackBtn.getAttribute('data-ack-note-id'),ackBtn);
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
 function renderActionCard(r, account){
   var f=r.fields||{};
   var action=f['Action Text']||'';
@@ -249,6 +345,7 @@ function renderActionCard(r, account){
       reminderStrip(f)+
       '<div class="action-text">'+escapeHtml(action)+'</div>'+
       '<div class="meta-row">'+meta+'</div>'+
+      '<div class="manager-notes-section" id="notes-'+r.id+'"></div>'+
       (vHref?'<a class="view-visit-link" href="'+escapeHtml(vHref)+'"><i data-lucide="file-text"></i> View Visit</a>':'')+
       '<button class="complete-btn" onclick="completeAction(\''+r.id+'\')" id="btn-'+r.id+'">'+
         '<i data-lucide="check"></i> Complete'+
@@ -337,6 +434,12 @@ function render(){
 
   content.innerHTML=html;
   lucide.createIcons();
+
+  // Fire off note lookups for every rendered action, independently — one
+  // failing or slow request never blocks or delays another card's actions.
+  actions.forEach(function(r){
+    loadNotesForAction(r.id);
+  });
 }
 
 async function loadActions(){
