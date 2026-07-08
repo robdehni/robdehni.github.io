@@ -497,20 +497,29 @@ function loadThreadForVisit(detailEl,record){
     linkContainer.className='report-section visit-thread-section';
     linkContainer.innerHTML='<h4>Part of Visit Timeline</h4>'+
       '<button type="button" class="thread-action-btn" onclick="event.stopPropagation();expandAndScrollToVisit(\''+threadId+'\');">'+
-        '<i data-lucide="arrow-up-circle"></i> View Original Visit'+
+        '⬆ View Original Visit'+
       '</button>';
     detailEl.appendChild(linkContainer);
-    lucide.createIcons({el:linkContainer});
     return;
   }
-  // This record is the original — only show anything if genuine follow-ups
-  // exist. A thread of one (no updates logged yet) shows nothing, rather
-  // than a dead label with nothing to navigate to.
+  // This record is the original. Show a guaranteed, immediate indicator
+  // first — independent of the fetch below — matching the pre-redesign
+  // behaviour where the original always displayed something rather than
+  // depending entirely on a network call succeeding. If the fetch below
+  // finds genuine follow-ups, this gets replaced with the full timeline;
+  // if it doesn't (or fails), this stays as the visible result instead
+  // of nothing at all.
+  var fallback=document.createElement('div');
+  fallback.className='report-section visit-thread-section';
+  fallback.innerHTML='<div class="thread-card thread-card-current"><div class="thread-card-label">Original Visit</div><div class="thread-card-action"><span class="thread-card-status">Currently viewing</span></div></div>';
+  detailEl.appendChild(fallback);
   fetch(WORKER+'/get-visit-thread?threadId='+encodeURIComponent(threadId))
     .then(function(res){return res.json();})
     .then(function(data){
       var members=data.records||[];
       if(members.length<=1)return;
+      var stillPresent=detailEl.contains(fallback);
+      if(stillPresent)fallback.remove();
       _threadToggleCounter++;
       var toggleId='thread-toggle-'+_threadToggleCounter;
       var container=document.createElement('div');
@@ -533,15 +542,15 @@ function loadThreadForVisit(detailEl,record){
         '</div>';
       });
       container.innerHTML='<button type="button" class="thread-toggle-btn" id="'+toggleId+'-btn" onclick="event.stopPropagation();toggleThreadList(\''+toggleId+'\');">'+
-          '<i data-lucide="git-branch"></i> Visit Timeline · '+members.length+' visits'+
+          '📋 View Timeline ('+members.length+' Visit'+(members.length===1?'':'s')+')'+
           '<span id="'+toggleId+'-arrow" class="thread-toggle-arrow">▸</span>'+
         '</button>'+
         '<div id="'+toggleId+'-list" class="thread-list" style="display:none">'+cardsHtml+'</div>';
       detailEl.appendChild(container);
-      lucide.createIcons({el:container});
     })
     .catch(function(err){
       console.error('Could not load visit thread:',err);
+      // fallback (already appended above) remains visible — never nothing.
     });
 }
 function toggleThreadList(toggleId){
