@@ -190,7 +190,7 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text
     </select>  
     <select class="filter-select" id="filterTerritory">  
       <option value="">All Territories</option>  
-      <option>UAE</option><option>KSA</option><option>Qatar</option>  
+      <option>UAE</option><option>Saudi Arabia</option><option>Qatar</option>  
       <option>Kuwait</option><option>Bahrain</option><option>Oman</option>  
     </select>  
   </div>  
@@ -477,6 +477,11 @@ function loadActionsForVisit(detailEl,visitRecordId){
 // never-updated visits are visually unchanged.
 function loadThreadForVisit(detailEl,record){
   var threadId=(record.fields||{})['Visit Thread ID']||record.id;
+  var isOriginal=threadId===record.id;
+  var labelContainer=document.createElement('div');
+  labelContainer.className='report-section';
+  labelContainer.innerHTML='<h4>Visit Thread</h4><div class="thread-item thread-item-current"><strong>'+(isOriginal?'Original Visit':'Follow-up Update')+'</strong></div>';
+  detailEl.appendChild(labelContainer);
   fetch(WORKER+'/get-visit-thread?threadId='+encodeURIComponent(threadId))
     .then(function(res){return res.json();})
     .then(function(data){
@@ -484,16 +489,21 @@ function loadThreadForVisit(detailEl,record){
       if(members.length<=1)return;
       var container=document.createElement('div');
       container.className='report-section';
-      var itemsHtml=members.map(function(m){
+      var itemsHtml='';var followUpNum=0;
+      members.forEach(function(m){
         var mf=m.fields||{};
         var isCurrent=m.id===record.id;
-        var label=(m.id===threadId)?'Original Visit':'Update';
+        var isOrig=m.id===threadId;
+        var label;
+        if(isOrig){label='Original Visit';}
+        else{followUpNum++;label='Follow-up '+followUpNum;}
         var dateStr=mf['Visit Date']?formatDate(mf['Visit Date']):'';
         if(isCurrent){
-          return '<div class="thread-item thread-item-current"><strong>'+label+'</strong> · '+dateStr+' (currently viewing)</div>';
+          itemsHtml+='<div class="thread-item thread-item-current"><strong>'+label+'</strong> · '+dateStr+' (currently viewing)</div>';
+        }else{
+          itemsHtml+='<div class="thread-item"><a href="#" onclick="expandAndScrollToVisit(\''+m.id+'\');return false;"><strong>'+label+'</strong> · '+dateStr+'</a></div>';
         }
-        return '<div class="thread-item"><a href="#" onclick="expandAndScrollToVisit(\''+m.id+'\');return false;"><strong>'+label+'</strong> · '+dateStr+'</a></div>';
-      }).join('');
+      });
       container.innerHTML='<h4>Follow-up Activity</h4>'+itemsHtml;
       detailEl.appendChild(container);
     })
@@ -632,13 +642,24 @@ function getPeriodRange(period){
   return {start:null,end:null};  
 }  
   
+function normalizeTerritoryForFilter(raw){
+  var t=(raw||'').trim();if(!t)return'';
+  var tu=t.toUpperCase();
+  if(tu.indexOf('SAUDI ARABIA')===0)return'Saudi Arabia';
+  if(tu==='UAE')return'UAE';
+  if(tu==='QATAR')return'Qatar';
+  if(tu==='KUWAIT')return'Kuwait';
+  if(tu==='BAHRAIN')return'Bahrain';
+  if(tu==='OMAN')return'Oman';
+  return t;
+}
 function getFilteredRecords(){  
   var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var priority=document.getElementById('filterPriority').value;var period=document.getElementById('filterPeriod').value;  
   var cutoff=null;var range={start:null,end:null};  
   if(period==='30'||period==='90'){cutoff=new Date(Date.now()-parseInt(period)*24*60*60*1000);}else if(period){range=getPeriodRange(period);}  
   return allRecordsRaw.filter(function(r){  
     var f=r.fields;var repName=(f['Rep Name']||'').trim();repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();  
-    if(rep&&repName!==rep)return false;if(terr&&f['Territory']!==terr)return false;if(priority&&f['Priority']!==priority)return false;  
+    if(rep&&repName!==rep)return false;if(terr&&normalizeTerritoryForFilter(f['Territory'])!==terr)return false;if(priority&&f['Priority']!==priority)return false;  
     if(cutoff&&f['Visit Date']&&new Date(f['Visit Date'])<cutoff)return false;  
     if(range.start||range.end){if(!f['Visit Date'])return false;var vDate=new Date(f['Visit Date']);if(range.start&&vDate<range.start)return false;if(range.end&&vDate>range.end)return false;}  
     return true;  
