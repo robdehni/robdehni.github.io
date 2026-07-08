@@ -486,13 +486,15 @@ function loadActionsForVisit(detailEl,visitRecordId){
 // never-updated visits are visually unchanged.
 var _threadToggleCounter=0;
 function loadThreadForVisit(detailEl,record){
+  var existing=detailEl.querySelector('.visit-thread-section');
+  if(existing)existing.remove();
   var threadId=(record.fields||{})['Visit Thread ID']||record.id;
   var isOriginal=threadId===record.id;
   if(!isOriginal){
     // This record is itself a follow-up — the original's id is already
     // known from its own field, no fetch required to show this.
     var linkContainer=document.createElement('div');
-    linkContainer.className='report-section';
+    linkContainer.className='report-section visit-thread-section';
     linkContainer.innerHTML='<h4>Part of Visit Timeline</h4>'+
       '<button type="button" class="thread-action-btn" onclick="event.stopPropagation();expandAndScrollToVisit(\''+threadId+'\');">'+
         '<i data-lucide="arrow-up-circle"></i> View Original Visit'+
@@ -512,7 +514,7 @@ function loadThreadForVisit(detailEl,record){
       _threadToggleCounter++;
       var toggleId='thread-toggle-'+_threadToggleCounter;
       var container=document.createElement('div');
-      container.className='report-section';
+      container.className='report-section visit-thread-section';
       var cardsHtml='';var followUpNum=0;
       members.forEach(function(m){
         var mf=m.fields||{};
@@ -660,7 +662,8 @@ document.getElementById('visitList').addEventListener('click',function(e){
     detail.classList.remove('open');card.classList.remove('expanded');  
     toggle.innerHTML='<i data-lucide="chevron-down"></i> Tap to view full report';lucide.createIcons({el:toggle});  
   }else{  
-    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderReviewButton(f,sortedRecords[idx].id)+renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);loadThreadForVisit(detail,sortedRecords[idx]);}  
+    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderReviewButton(f,sortedRecords[idx].id)+renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}
+    loadThreadForVisit(detail,sortedRecords[idx]);
     detail.classList.add('open');card.classList.add('expanded');  
     toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
   }  
@@ -783,7 +786,8 @@ function expandAndScrollToVisit(recordId){
     }
   }
   if(detail&&!detail.classList.contains('open')){  
-    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderReviewButton(f,sortedRecords[idx].id)+renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);loadThreadForVisit(detail,sortedRecords[idx]);}  
+    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderReviewButton(f,sortedRecords[idx].id)+renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}
+    loadThreadForVisit(detail,sortedRecords[idx]);
     detail.classList.add('open');card.classList.add('expanded');  
     if(toggle)toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
   }  
