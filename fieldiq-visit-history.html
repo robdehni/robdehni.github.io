@@ -104,6 +104,11 @@ box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color
 .visit-detail .report-section:first-child{margin-top:0}
 .visit-detail .report-section h4{color:#2f8fff;font-size:10.5px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;font-weight:800}
 .visit-detail .report-section p{color:#3d4f6b;font-size:13px;line-height:1.65}
+.thread-item{font-size:13px;color:#3d4f6b;padding:6px 0;border-bottom:1px solid #f0f4f9}
+.thread-item:last-child{border-bottom:none}
+.thread-item a{color:#2f8fff;text-decoration:none;font-weight:600}
+.thread-item a:hover{text-decoration:underline}
+.thread-item-current{color:#8a9bb3;font-style:italic}
 
 .loading{text-align:center;padding:60px 20px;color:#aab8cc;font-weight:600}
 .spinner{width:36px;height:36px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
@@ -463,6 +468,40 @@ function loadActionsForVisit(detailEl,visitRecordId){
       container.innerHTML='<h4>Actions from this Visit</h4><p style="color:#8a9bb3;font-size:12px;margin:0">Could not load actions for this visit.</p>';
     });
 }  
+// Follow-up Activity — shows the full Visit Thread (original visit plus
+// every Log Update that joined it) in chronological order, each entry
+// clickable via the existing expandAndScrollToVisit(), reusing the exact
+// same navigation already proven for Open Actions/Watchlist/Territory Map
+// — no new page, no reload. Renders nothing if the thread has only one
+// member (a normal visit no Log Update has joined yet), so old and
+// never-updated visits are visually unchanged.
+function loadThreadForVisit(detailEl,record){
+  var threadId=(record.fields||{})['Visit Thread ID'];
+  if(!threadId)return;
+  fetch(WORKER+'/get-visit-thread?threadId='+encodeURIComponent(threadId))
+    .then(function(res){return res.json();})
+    .then(function(data){
+      var members=data.records||[];
+      if(members.length<=1)return;
+      var container=document.createElement('div');
+      container.className='report-section';
+      var itemsHtml=members.map(function(m){
+        var mf=m.fields||{};
+        var isCurrent=m.id===record.id;
+        var label=(m.id===threadId)?'Original Visit':'Update';
+        var dateStr=mf['Visit Date']?formatDate(mf['Visit Date']):'';
+        if(isCurrent){
+          return '<div class="thread-item thread-item-current"><strong>'+label+'</strong> · '+dateStr+' (currently viewing)</div>';
+        }
+        return '<div class="thread-item"><a href="#" onclick="expandAndScrollToVisit(\''+m.id+'\');return false;"><strong>'+label+'</strong> · '+dateStr+'</a></div>';
+      }).join('');
+      container.innerHTML='<h4>Follow-up Activity</h4>'+itemsHtml;
+      detailEl.appendChild(container);
+    })
+    .catch(function(err){
+      console.error('Could not load visit thread:',err);
+    });
+}
   
 var sortedRecords=[];  
 var allRecordsRaw=[];  
@@ -573,7 +612,7 @@ document.getElementById('visitList').addEventListener('click',function(e){
     detail.classList.remove('open');card.classList.remove('expanded');  
     toggle.innerHTML='<i data-lucide="chevron-down"></i> Tap to view full report';lucide.createIcons({el:toggle});  
   }else{  
-    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderReviewButton(f,sortedRecords[idx].id)+renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}  
+    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderReviewButton(f,sortedRecords[idx].id)+renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);loadThreadForVisit(detail,sortedRecords[idx]);}  
     detail.classList.add('open');card.classList.add('expanded');  
     toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
   }  
@@ -685,7 +724,7 @@ function expandAndScrollToVisit(recordId){
     }
   }
   if(detail&&!detail.classList.contains('open')){  
-    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderReviewButton(f,sortedRecords[idx].id)+renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}  
+    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderReviewButton(f,sortedRecords[idx].id)+renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);loadThreadForVisit(detail,sortedRecords[idx]);}  
     detail.classList.add('open');card.classList.add('expanded');  
     if(toggle)toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
   }  
