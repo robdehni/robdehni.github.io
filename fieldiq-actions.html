@@ -203,6 +203,7 @@ var calReturn=null;
       if(calReturn.calDay)q.push('calDay='+encodeURIComponent(calReturn.calDay));
       if(calReturn.calRep)q.push('calRep='+encodeURIComponent(calReturn.calRep));
       if(calReturn.from)q.push('from='+encodeURIComponent(calReturn.from));
+      if(targetActionId)q.push('actionId='+encodeURIComponent(targetActionId));
       btn.href='./fieldiq-manager-calendar.html'+(q.length?'?'+q.join('&'):'');
       btn.textContent='← Back to Calendar';
 
@@ -560,6 +561,16 @@ function visitHref(action){
   q.push('source='+encodeURIComponent('manager-actions'));
   return url+(q.length?'?'+q.join('&'):'');
 }
+function logUpdateHref(action){
+  var f=action.fields||{};
+  var visitId=getVisitId(f);
+  var account=getAccountName(f);
+  var url='./fieldiq-log-visit.html';
+  var q=['sourceRef='+encodeURIComponent(action.id)];
+  if(visitId)q.push('visitId='+encodeURIComponent(visitId));
+  if(account)q.push('account='+encodeURIComponent(account));
+  return url+'?'+q.join('&');
+}
 
 function render(){
   updateCounts();
@@ -640,6 +651,7 @@ function render(){
 
       html+='<div class="row-actions">';
       html+='<a class="visit-btn" data-visit-link="1" href="'+escapeHtml(visitHref(r))+'"><i data-lucide="file-text"></i> View Visit</a>';
+      html+='<a class="visit-btn" href="'+escapeHtml(logUpdateHref(r))+'">🎙️ Log Update</a>';
       if(dismissed){
         html+='<button class="reminder-btn" disabled><i data-lucide="x"></i> Dismissed</button>';
       }else if(!complete){
