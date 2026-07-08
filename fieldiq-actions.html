@@ -91,6 +91,19 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text
   font-size:20px;font-weight:900;line-height:1;
 }
 .back-to-top.visible{display:flex}
+.note-modal-overlay{position:fixed;inset:0;background:rgba(11,31,58,0.45);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.note-modal-overlay.visible{display:flex}
+.note-modal{background:#fff;border-radius:18px;padding:20px;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(11,31,58,0.25)}
+.note-modal h3{font-size:16px;font-weight:900;color:#0b1f3a;margin-bottom:4px}
+.note-modal-sub{font-size:12px;color:#8a9bb3;font-weight:700;margin-bottom:12px}
+.note-textarea{width:100%;min-height:90px;border:1.5px solid #dde8f5;border-radius:12px;padding:12px;font-size:14px;font-family:inherit;color:#0b1f3a;resize:vertical;outline:none;margin-bottom:12px}
+.note-modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.note-save-btn{border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff}
+.note-save-btn:disabled{opacity:.55;cursor:not-allowed}
+.note-cancel-btn{border:1.5px solid #e3ebf5;background:#fff;color:#7a8aa3;border-radius:12px;padding:12px;font-size:14px;font-weight:900;cursor:pointer}
+.note-existing{margin-top:14px;border-top:1px solid #e3ebf5;padding-top:12px;max-height:160px;overflow-y:auto}
+.note-existing-item{background:#f8fbff;border:1px solid #e3ebf5;border-radius:10px;padding:9px 10px;margin-bottom:8px;font-size:12.5px;color:#263b59;font-weight:650}
+.note-existing-meta{font-size:10px;color:#8a9bb3;font-weight:800;margin-top:4px}
 </style>
   <!-- PWA v1 -->
   <link rel="manifest" href="/manifest.json">
@@ -144,6 +157,19 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text
 </div>
 
 <div class="toast" id="toast">Reminder sent.</div>
+
+<div class="note-modal-overlay" id="noteModalOverlay">
+  <div class="note-modal">
+    <h3>Manager Note</h3>
+    <p class="note-modal-sub">Coaching for the rep on this action. Not a customer visit — never affects Visit History, Visit Threads, KPIs, or Reputation.</p>
+    <textarea class="note-textarea" id="noteTextarea" placeholder="e.g. Good job on this visit. Don't forget the pricing brochure next time."></textarea>
+    <div class="note-modal-actions">
+      <button type="button" class="note-cancel-btn" id="noteCancelBtn">Cancel</button>
+      <button type="button" class="note-save-btn" id="noteSaveBtn">Save Note</button>
+    </div>
+    <div class="note-existing" id="noteExisting"></div>
+  </div>
+</div>
 
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
@@ -351,6 +377,59 @@ function showToast(msg){
   t.textContent=msg||'Done.';
   t.className='toast visible';
   setTimeout(function(){t.className='toast';},1800);
+}
+
+var noteModalActionId=null;
+function openNoteModal(actionId){
+  noteModalActionId=actionId;
+  document.getElementById('noteTextarea').value='';
+  document.getElementById('noteExisting').innerHTML='<div style="font-size:11px;color:#8a9bb3;font-weight:700;">Loading notes…</div>';
+  document.getElementById('noteModalOverlay').classList.add('visible');
+  loadExistingNotes(actionId);
+}
+function closeNoteModal(){
+  document.getElementById('noteModalOverlay').classList.remove('visible');
+  noteModalActionId=null;
+}
+async function loadExistingNotes(actionId){
+  try{
+    var d=await fetchJson(WORKER+'/get-notes?actionId='+encodeURIComponent(actionId),6000);
+    var records=d.records||[];
+    var box=document.getElementById('noteExisting');
+    if(!records.length){box.innerHTML='<div style="font-size:11px;color:#8a9bb3;font-weight:700;">No notes yet on this action.</div>';return;}
+    var html='';
+    records.forEach(function(r){
+      var f=r.fields||{};
+      html+='<div class="note-existing-item">'+escapeHtml(f['Notes']||'')+
+        '<div class="note-existing-meta">'+escapeHtml(f['Created By']||'Manager')+' · '+escapeHtml(formatDateTime(f['Created Date']||''))+
+        (f['Acknowledged']?' · Acknowledged':' · Not yet seen')+'</div></div>';
+    });
+    box.innerHTML=html;
+  }catch(e){
+    document.getElementById('noteExisting').innerHTML='<div style="font-size:11px;color:#8a9bb3;font-weight:700;">Could not load existing notes.</div>';
+  }
+}
+async function submitNote(){
+  if(!noteModalActionId)return;
+  var text=document.getElementById('noteTextarea').value.trim();
+  if(!text){alert('Enter a note first.');return;}
+  var btn=document.getElementById('noteSaveBtn');
+  btn.disabled=true;btn.textContent='Saving…';
+  try{
+    var res=await fetch(WORKER+'/save-note',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({actionId:noteModalActionId,commentText:text,createdBy:currentUserName})
+    });
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Could not save note');
+    showToast('Note saved.');
+    closeNoteModal();
+  }catch(err){
+    alert('Could not save note: '+err.message);
+  }finally{
+    btn.disabled=false;btn.textContent='Save Note';
+  }
 }
 
 // ─── STATE PERSISTENCE ──────────────────────────────────────────────────────
@@ -651,7 +730,11 @@ function render(){
 
       html+='<div class="row-actions">';
       html+='<a class="visit-btn" data-visit-link="1" href="'+escapeHtml(visitHref(r))+'"><i data-lucide="file-text"></i> View Visit</a>';
-      html+='<a class="visit-btn" href="'+escapeHtml(logUpdateHref(r))+'">🎙️ Log Update</a>';
+      if(isOwner){
+        html+='<a class="visit-btn" href="'+escapeHtml(logUpdateHref(r))+'">🎙️ Log Update</a>';
+      }else{
+        html+='<button type="button" class="visit-btn" data-note-action-id="'+escapeHtml(r.id)+'">💬 Add Note</button>';
+      }
       if(dismissed){
         html+='<button class="reminder-btn" disabled><i data-lucide="x"></i> Dismissed</button>';
       }else if(!complete){
@@ -833,6 +916,12 @@ document.addEventListener('click',function(e){
     sendReminder(rem.getAttribute('data-reminder-id'));
     return;
   }
+
+  var noteBtn=e.target.closest('[data-note-action-id]');
+  if(noteBtn){
+    openNoteModal(noteBtn.getAttribute('data-note-action-id'));
+    return;
+  }
 });
 
 function bindStaticEvents(){
@@ -853,6 +942,11 @@ function bindStaticEvents(){
       render();
     });
   }
+
+  var noteCancel=document.getElementById('noteCancelBtn');
+  if(noteCancel)noteCancel.addEventListener('click',closeNoteModal);
+  var noteSave=document.getElementById('noteSaveBtn');
+  if(noteSave)noteSave.addEventListener('click',submitNote);
 }
 
 document.addEventListener('DOMContentLoaded',function(){
