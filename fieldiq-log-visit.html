@@ -463,7 +463,7 @@ document.getElementById('discardRecordingLink').addEventListener('click',functio
 
 var prefillSourceRef='';
 var prefillAccountTerritory='';
-var prefillVisitThreadId='';
+var prefillVisitThreadId=''; // holds the raw source visit id when arriving from a Log Update — sent as sourceVisitId; the Worker resolves the actual thread id at save time
 // Matches the dropdown's exact option values (UAE/Saudi Arabia/Qatar/Kuwait/
 // Bahrain/Oman) against a raw Airtable territory value that may be
 // differently cased, phrased, or formatted (e.g. "Saudi Arabia - Riyadh").
@@ -508,6 +508,7 @@ async function applyPrefillFromURL(){
     var accountParam=params.get('account');
     var visitIdParam=params.get('visitId')||'';
     prefillSourceRef=params.get('sourceRef')||'';
+    prefillVisitThreadId=visitIdParam;
     if(accountParam&&ACCOUNTS.length){
       var match=ACCOUNTS.find(function(a){return a.name.trim().toLowerCase()===accountParam.trim().toLowerCase();});
       if(match){
@@ -524,7 +525,6 @@ async function applyPrefillFromURL(){
             var vRes=await fetch(WORKER+'/get-visit-territory?visitId='+encodeURIComponent(visitIdParam));
             var vData=await vRes.json();
             if(vData&&vData.territory)resolvedTerritory=vData.territory;
-            if(vData&&vData.visitThreadId)prefillVisitThreadId=vData.visitThreadId;
           }catch(e){}
         }
         if(resolvedTerritory){
@@ -651,7 +651,7 @@ submitBtn.addEventListener('click',async function(){
     var savePayload={'Hospital Name':hospitalName,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Rep Name':repName,'User ID':userId,'User Role':userRole,'Display Name':repName,'Raw Transcript':transcript,'AI Summary':result,'Outcome':getOutcome(parsed.sentiment),'Meeting Notes':parsed.summary,'Action Items':parsed.nextSteps,'Priority':priority,'Latitude':latitude,'Longitude':longitude,'Accuracy':accuracy,'New Account':isNewAccount,'Pending Review':isNewAccount};
     if(!isNewAccount&&selectedAccountId){savePayload['Account']=[selectedAccountId];}
     if(isNewAccount&&newAccountId){savePayload['Account']=[newAccountId];}
-    if(prefillVisitThreadId){savePayload['Visit Thread ID']=prefillVisitThreadId;}
+    if(prefillVisitThreadId){savePayload['sourceVisitId']=prefillVisitThreadId;}
     if (photoUrls.length > 0) {
       savePayload['Photo URLs'] = photoUrls.join('\n');
     }
