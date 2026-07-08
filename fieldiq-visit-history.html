@@ -104,11 +104,19 @@ box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color
 .visit-detail .report-section:first-child{margin-top:0}
 .visit-detail .report-section h4{color:#2f8fff;font-size:10.5px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;font-weight:800}
 .visit-detail .report-section p{color:#3d4f6b;font-size:13px;line-height:1.65}
-.thread-item{font-size:13px;color:#3d4f6b;padding:6px 0;border-bottom:1px solid #f0f4f9}
-.thread-item:last-child{border-bottom:none}
-.thread-item a{color:#2f8fff;text-decoration:none;font-weight:600}
-.thread-item a:hover{text-decoration:underline}
-.thread-item-current{color:#8a9bb3;font-style:italic}
+.thread-toggle-btn{display:flex;align-items:center;gap:7px;width:100%;background:#eaf3ff;border:1px solid #d3e6ff;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:800;color:#1f6fe0;cursor:pointer;text-align:left}
+.thread-toggle-btn [data-lucide]{width:15px;height:15px}
+.thread-toggle-arrow{margin-left:auto;font-size:11px}
+.thread-list{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.thread-card{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e3ebf5;border-radius:10px;padding:10px 12px}
+.thread-card-current{background:#f8fbff;border-color:#cfe3ff}
+.thread-card-label{font-size:12.5px;font-weight:800;color:#0b1f3a;white-space:nowrap}
+.thread-card-meta{flex:1;font-size:11.5px;color:#7a8aa3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.thread-card-action{flex-shrink:0}
+.thread-card-status{font-size:11px;font-weight:700;color:#8a9bb3}
+.thread-action-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:9px;padding:10px;font-size:12.5px;font-weight:800;cursor:pointer}
+.thread-action-btn [data-lucide]{width:14px;height:14px}
+.thread-action-btn-small{width:auto;padding:6px 12px;font-size:11.5px}
 .thread-nav-highlight{box-shadow:0 0 0 3px rgba(47,143,255,0.35);transition:box-shadow 0.3s ease}
 
 .loading{text-align:center;padding:60px 20px;color:#aab8cc;font-weight:600}
@@ -485,8 +493,12 @@ function loadThreadForVisit(detailEl,record){
     // known from its own field, no fetch required to show this.
     var linkContainer=document.createElement('div');
     linkContainer.className='report-section';
-    linkContainer.innerHTML='<h4>Visit Thread</h4><a href="#" class="thread-view-original" onclick="event.stopPropagation();expandAndScrollToVisit(\''+threadId+'\');return false;">View Original Visit</a>';
+    linkContainer.innerHTML='<h4>Part of Visit Timeline</h4>'+
+      '<button type="button" class="thread-action-btn" onclick="event.stopPropagation();expandAndScrollToVisit(\''+threadId+'\');">'+
+        '<i data-lucide="arrow-up-circle"></i> View Original Visit'+
+      '</button>';
     detailEl.appendChild(linkContainer);
+    lucide.createIcons({el:linkContainer});
     return;
   }
   // This record is the original — only show anything if genuine follow-ups
@@ -501,25 +513,30 @@ function loadThreadForVisit(detailEl,record){
       var toggleId='thread-toggle-'+_threadToggleCounter;
       var container=document.createElement('div');
       container.className='report-section';
-      var itemsHtml='';var followUpNum=0;
+      var cardsHtml='';var followUpNum=0;
       members.forEach(function(m){
         var mf=m.fields||{};
         var isCurrent=m.id===record.id;
         var isOrig=m.id===threadId;
-        var label;
-        if(isOrig){label='Original Visit';}
-        else{followUpNum++;label='Follow-up '+followUpNum;}
+        var label=isOrig?'Original Visit':('Follow-up '+(++followUpNum));
         var dateStr=mf['Visit Date']?formatDate(mf['Visit Date']):'';
-        if(isCurrent){
-          itemsHtml+='<div class="thread-item thread-item-current"><strong>'+label+'</strong> · '+dateStr+' (currently viewing)</div>';
-        }else{
-          itemsHtml+='<div class="thread-item"><a href="#" onclick="event.stopPropagation();expandAndScrollToVisit(\''+m.id+'\');return false;"><strong>'+label+'</strong> · '+dateStr+'</a></div>';
-        }
+        var snippet=truncateSummary(mf['AI Summary']||mf['Meeting Notes']||'',70).replace(/^[:\s]+/,'');
+        var actionHtml=isCurrent
+          ? '<span class="thread-card-status">Currently viewing</span>'
+          : '<button type="button" class="thread-action-btn thread-action-btn-small" onclick="event.stopPropagation();expandAndScrollToVisit(\''+m.id+'\');">Open</button>';
+        cardsHtml+='<div class="thread-card'+(isCurrent?' thread-card-current':'')+'">'+
+          '<div class="thread-card-label">'+label+'</div>'+
+          '<div class="thread-card-meta">'+(dateStr?escapeHtml(dateStr):'')+(dateStr&&snippet?' · ':'')+escapeHtml(snippet)+'</div>'+
+          '<div class="thread-card-action">'+actionHtml+'</div>'+
+        '</div>';
       });
-      container.innerHTML='<h4>Visit Thread</h4>'+
-        '<a href="#" class="thread-toggle-btn" id="'+toggleId+'-btn" onclick="event.stopPropagation();toggleThreadList(\''+toggleId+'\');return false;">Thread ('+members.length+' visits) <span id="'+toggleId+'-arrow">▸</span></a>'+
-        '<div id="'+toggleId+'-list" class="thread-list" style="display:none">'+itemsHtml+'</div>';
+      container.innerHTML='<button type="button" class="thread-toggle-btn" id="'+toggleId+'-btn" onclick="event.stopPropagation();toggleThreadList(\''+toggleId+'\');">'+
+          '<i data-lucide="git-branch"></i> Visit Timeline · '+members.length+' visits'+
+          '<span id="'+toggleId+'-arrow" class="thread-toggle-arrow">▸</span>'+
+        '</button>'+
+        '<div id="'+toggleId+'-list" class="thread-list" style="display:none">'+cardsHtml+'</div>';
       detailEl.appendChild(container);
+      lucide.createIcons({el:container});
     })
     .catch(function(err){
       console.error('Could not load visit thread:',err);
