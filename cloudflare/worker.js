@@ -1076,6 +1076,37 @@ export default {
       }
     }
 
+    // GET /get-account-updates
+    // Returns Account Updates for a single account, newest first. Filters
+    // by Account Name (text) rather than the Account linked-record field —
+    // ARRAYJOIN() on a linked-record field returns display names, not
+    // record IDs, so FIND()-based matching against a passed-in record ID
+    // would silently never match (same limitation already documented for
+    // /get-actions and /get-watchlist elsewhere in this file). Not cached
+    // for this account-specific case, matching the same reasoning already
+    // used for visitId-specific /get-actions requests.
+    if (req.method === "GET" && url.pathname === "/get-account-updates") {
+      try {
+        const accountName = url.searchParams.get("accountName") || "";
+        if (!accountName) return json({ error: "accountName required" }, 400);
+        const params = new URLSearchParams();
+        params.append("pageSize", "50");
+        params.append("filterByFormula", `{Account Name}="${safeFormula(accountName)}"`);
+        params.append("sort[0][field]", "Created Date");
+        params.append("sort[0][direction]", "desc");
+        let allRecords = [], offset = null;
+        do {
+          if (offset) params.set("offset", offset);
+          const response = await airtableFetch(`https://api.airtable.com/v0/${BASE_ID}/Account%20Updates?${params.toString()}`, { method: "GET", headers: airtableHeaders() });
+          const data = await response.json();
+          if (!response.ok) return json(data, response.status);
+          allRecords = allRecords.concat(data.records || []);
+          offset = data.offset || null;
+        } while (offset);
+        return json({ records: allRecords });
+      } catch (err) { return json({ error: err.message }, 500); }
+    }
+
     if (req.method !== "POST" && req.method !== "PATCH") {
       return new Response("Method not allowed", { status: 405, headers: h });
     }
@@ -1620,6 +1651,36 @@ export default {
         const contactData = await req.json();
         const response = await airtableFetch(`https://api.airtable.com/v0/${BASE_ID}/Contacts%20Name`, { method: "POST", headers: airtableHeaders(), body: JSON.stringify({ fields: contactData }) });
         const data = await response.json();
+        return json(data, response.status);
+      } catch (err) { return json({ error: err.message }, 500); }
+    }
+
+    // POST /save-account-update
+    // A lightweight, timestamped note recording an interim change to an
+    // account between visits — never a replacement for a Visit, never
+    // touches the Visits table, never modifies an AI visit report. Stored
+    // in a separate "Account Updates" table, linked to the Account.
+    if (url.pathname === "/save-account-update") {
+      if (!(await checkRateLimit("save-account-update", req))) return json({ error: "Too many requests. Please wait a moment and try again." }, 429);
+      try {
+        const body = await req.json();
+        const { accountId, accountName, updateText, createdBy, createdByUserId } = body;
+        if (!accountId || !accountName || !updateText) {
+          return json({ error: "accountId, accountName and updateText required" }, 400);
+        }
+        const fields = {
+          "Account": [accountId],
+          "Account Name": accountName,
+          "Update Text": updateText,
+          "Created Date": new Date().toISOString()
+        };
+        if (createdBy) fields["Created By"] = createdBy;
+        if (createdByUserId) fields["Created By User ID"] = createdByUserId;
+        const response = await airtableFetch(`https://api.airtable.com/v0/${BASE_ID}/Account%20Updates`, { method: "POST", headers: airtableHeaders(), body: JSON.stringify({ fields }) });
+        const data = await response.json();
+        if (response.ok) {
+          ctx.waitUntil(cache.delete(new Request(new URL("/get-account-updates?accountName=" + encodeURIComponent(accountName), req.url).toString())));
+        }
         return json(data, response.status);
       } catch (err) { return json({ error: err.message }, 500); }
     }
