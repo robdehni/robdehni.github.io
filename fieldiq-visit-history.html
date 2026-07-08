@@ -505,7 +505,7 @@ function renderThreadCards(members,threadId,currentId){
       : '<button type="button" class="thread-action-btn thread-action-btn-small" onclick="event.stopPropagation();expandAndScrollToVisit(\''+m.id+'\');">Open</button>';
     html+='<div class="thread-card'+(isCurrent?' thread-card-current':'')+'">'+
       '<div class="thread-card-label">'+label+'</div>'+
-      '<div class="thread-card-meta">'+(dateStr?escapeHtml(dateStr):'')+(dateStr&&snippet?' · ':'')+escapeHtml(snippet)+'</div>'+
+      '<div class="thread-card-meta">'+(dateStr?escapeHtmlLocal(dateStr):'')+(dateStr&&snippet?' · ':'')+escapeHtmlLocal(snippet)+'</div>'+
       '<div class="thread-card-action">'+actionHtml+'</div>'+
     '</div>';
   });
