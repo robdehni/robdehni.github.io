@@ -476,8 +476,7 @@ function loadActionsForVisit(detailEl,visitRecordId){
 // member (a normal visit no Log Update has joined yet), so old and
 // never-updated visits are visually unchanged.
 function loadThreadForVisit(detailEl,record){
-  var threadId=(record.fields||{})['Visit Thread ID'];
-  if(!threadId)return;
+  var threadId=(record.fields||{})['Visit Thread ID']||record.id;
   fetch(WORKER+'/get-visit-thread?threadId='+encodeURIComponent(threadId))
     .then(function(res){return res.json();})
     .then(function(data){
