@@ -86,6 +86,8 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
 .pill-negative{background:#c4304822;color:#c43048;border:1px solid #c4304844}
 
 .empty{text-align:center;color:#aab8cc;font-size:13px;padding:20px}
+.expand-toggle{color:#2f8fff;font-weight:700;font-size:11.5px;text-decoration:none;white-space:nowrap}
+.expand-toggle:hover{text-decoration:underline}
 
 .timeline-btn{background:#eaf3ff;border:1px solid #cfe3ff;border-radius:10px;color:#1f6fe0;font-size:12px;font-weight:700;padding:8px 14px;cursor:pointer;width:100%;text-align:left;margin-top:10px}
 .timeline-container{display:none;margin-top:10px;border-top:1px solid #e3ebf5;padding-top:10px}
@@ -176,7 +178,24 @@ var allRecords=[];var accountMap={};
 function getSentiment(s){if(!s)return'unknown';s=s.toLowerCase();var i=s.indexOf('sentiment');if(i>-1){var t=s.substring(i,i+120);if(t.indexOf('positive')>-1)return'positive';if(t.indexOf('negative')>-1)return'negative';if(t.indexOf('neutral')>-1)return'neutral';}if(s.indexOf('positive')>-1)return'positive';if(s.indexOf('negative')>-1)return'negative';if(s.indexOf('neutral')>-1)return'neutral';return'unknown';}
 function extractMentions(text,keywords){var found=[];if(!text)return found;var lower=text.toLowerCase();keywords.forEach(function(k){if(lower.indexOf(k.toLowerCase())>-1)found.push(k);});return found;}
 function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
-function truncate(t,n){if(!t)return'';return t.length>n?t.substring(0,n)+'...':t;}
+var _expandCounter=0;
+function truncate(t,n){
+  if(!t)return'';
+  if(t.length<=n)return t;
+  _expandCounter++;
+  var id='exp-'+_expandCounter;
+  var preview=t.substring(0,n)+'...';
+  return '<span id="'+id+'-preview">'+preview+' <a href="#" class="expand-toggle" onclick="toggleTruncated(\''+id+'\');return false;">Show more</a></span>'+
+         '<span id="'+id+'-full" style="display:none">'+t+' <a href="#" class="expand-toggle" onclick="toggleTruncated(\''+id+'\');return false;">Show less</a></span>';
+}
+function toggleTruncated(id){
+  var preview=document.getElementById(id+'-preview');
+  var full=document.getElementById(id+'-full');
+  if(!preview||!full)return;
+  var showingFull=full.style.display!=='none';
+  preview.style.display=showingFull?'':'none';
+  full.style.display=showingFull?'none':'';
+}
 function buildAccountMap(records){
   accountMap={};
   records.forEach(function(r){var f=r.fields;var hospital=f['Hospital Name']||'Unknown';if(!accountMap[hospital]){accountMap[hospital]={name:hospital,visits:[],actionItems:[],outcomes:[],priorities:[],sentiments:[],reps:{},territory:f['Territory']||'',lastVisit:null};}
@@ -195,7 +214,7 @@ function renderAccountCard(acc){
 function renderTimeline(hospitalName){
   var visits=allRecords.filter(function(r){return(r.fields['Hospital Name']||'').toLowerCase()===hospitalName.toLowerCase();}).sort(function(a,b){var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);return db-da;});
   if(visits.length===0)return'<div class="empty">No visits recorded yet.</div>';
-  return visits.map(function(r){var f=r.fields;var p=f['Priority']||'Medium';var pc=p.toLowerCase()==='high'?'tl-high':p.toLowerCase()==='low'?'tl-low':'tl-medium';var summary='';if(f['AI Summary']){var i=f['AI Summary'].indexOf('VISIT SUMMARY');summary=i>-1?f['AI Summary'].substring(i+13,i+160).trim():f['AI Summary'].substring(0,160);if(summary.length===160)summary+='...';}
+  return visits.map(function(r){var f=r.fields;var p=f['Priority']||'Medium';var pc=p.toLowerCase()==='high'?'tl-high':p.toLowerCase()==='low'?'tl-low':'tl-medium';var summaryFull='';if(f['AI Summary']){var i=f['AI Summary'].indexOf('VISIT SUMMARY');summaryFull=i>-1?f['AI Summary'].substring(i+13).trim():f['AI Summary'];}var summary=summaryFull?truncate(summaryFull,160):'';
   return'<div class="timeline-entry"><div class="timeline-date">'+formatDate(f['Visit Date'])+'</div><div class="timeline-meta">'+(f['Rep Name']?'<span class="tl-badge tl-rep">'+f['Rep Name']+'</span>':'')+(f['Visit Type']?'<span class="tl-badge tl-type">'+f['Visit Type']+'</span>':'')+'<span class="tl-badge '+pc+'">'+p+'</span></div>'+(summary?'<div class="timeline-summary">'+summary+'</div>':'')+'</div>';}).join('');
 }
 function doSearch(query){
@@ -237,7 +256,7 @@ function toggleTimeline(btn){
 }
 function attachTimelineListeners(){document.querySelectorAll('.timeline-btn').forEach(function(btn){btn.addEventListener('click',function(){toggleTimeline(btn);});});}
 async function loadInsights(){
-  try{var res=await fetch(WORKER+'/get-visits');var data=await res.json();if(!res.ok)throw new Error(JSON.stringify(data));buildInsights(data.records||[]);}
+  try{var res=await fetch(WORKER+'/get-visits',{cache:'no-store'});var data=await res.json();if(!res.ok)throw new Error(JSON.stringify(data));buildInsights(data.records||[]);}
   catch(err){document.getElementById('loadingEl').textContent='Failed to load: '+err.message;}
 }
 loadInsights();
