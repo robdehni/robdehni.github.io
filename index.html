@@ -162,6 +162,26 @@ var pendingUser=null;
 var allUsers=[];
 var lastUserId=localStorage.getItem('fieldiq_last_user_id')||'';
 
+// Territory on the Users table may be a linked-record field, which the
+// Airtable API returns as an array of raw record IDs (e.g.
+// ["rec3SrvviZjYjxcqh"]) rather than a resolved name — not a plain text
+// value. Displaying that ID would leak an internal database identifier.
+// This never attempts to resolve the real territory name (that would
+// require a separate fetch against a Territories table — out of scope
+// for this file); it only ever guarantees a raw record ID is never shown.
+// If Territory can't be safely displayed, the UI simply omits it — same
+// fallback already used everywhere else in this file for a missing value.
+function isAirtableRecordId(val){
+  return typeof val==='string' && /^rec[a-zA-Z0-9]{14,}$/.test(val);
+}
+function safeTerritoryDisplay(raw){
+  var val=raw;
+  if(Array.isArray(val))val=val.length?val[0]:'';
+  if(typeof val!=='string')val='';
+  if(isAirtableRecordId(val))return '';
+  return val;
+}
+
 function escapeHtml(str){
   return String(str||'').replace(/[&<>"']/g,function(m){
     return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
@@ -342,7 +362,7 @@ function loadUsers(){
           id: f['User ID']||'',
           name: f['Display Name']||f['User ID']||'Unknown',
           role: f['Role']||'Sales Rep',
-          territory: f['Territory']||'',
+          territory: safeTerritoryDisplay(f['Territory']),
           pin: f['PIN']||'',
           recordId: r.id
         };
