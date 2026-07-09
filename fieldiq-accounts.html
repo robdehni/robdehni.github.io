@@ -372,11 +372,19 @@ function gotoTimeline(itemId){
     // to the panel, not the viewport. Works identically whether the panel
     // holds 1 visit or many. Falls back to window.scrollTo only if the
     // panel element can't be found, so behaviour never silently breaks.
+    // Offset by the sticky .detail-header's actual rendered height (queried
+    // live, not hardcoded, since it can vary) plus a small gap, so the
+    // target card lands flush just below the header rather than partially
+    // hidden underneath it. Clamped to 0 so a card near the very top of the
+    // panel never scrolls to a negative position.
     var panel=document.querySelector('.detail-panel');
     if(panel){
+      var headerEl=panel.querySelector('.detail-header');
+      var headerOffset=headerEl?headerEl.getBoundingClientRect().height:0;
       var panelRect=panel.getBoundingClientRect();
       var elRect=el.getBoundingClientRect();
-      var targetScrollTop=panel.scrollTop+(elRect.top-panelRect.top);
+      var targetScrollTop=panel.scrollTop+(elRect.top-panelRect.top)-headerOffset-10;
+      if(targetScrollTop<0)targetScrollTop=0;
       panel.scrollTo({top:targetScrollTop,behavior:'smooth'});
     }else{
       var _targetTop=el.getBoundingClientRect().top+(window.pageYOffset||document.documentElement.scrollTop||0);
