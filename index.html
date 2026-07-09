@@ -567,7 +567,6 @@ if (localStorage.getItem('fieldiq_user_role') === 'Manager') {
   throw new Error('Manager redirected to portal');
 }
 renderIdentity();
-renderModules();
 </script>
 <script>document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});</script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).catch(function(){});}</script>
