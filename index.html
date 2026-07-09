@@ -55,32 +55,41 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
 .footer{margin-top:32px;text-align:center;color:#aab8cc;font-size:11px;font-weight:600}
 
-/* ── Identity / PIN components — unchanged ── */
-.user-locked{
-  width:100%;max-width:380px;display:flex;align-items:center;justify-content:space-between;
-  background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px 18px;margin-bottom:18px;
-  box-shadow:0 4px 14px rgba(11,31,58,0.05);
-}
-.user-locked-info{display:flex;align-items:center;gap:10px}
-.user-locked-avatar{font-size:20px}
-.user-locked-name{font-size:14.5px;font-weight:700;color:#0b1f3a}
-.user-locked-role{font-size:11px;color:#8a9bb3;margin-top:2px;font-weight:600}
-.switch-user-btn{font-size:11px;color:#2f8fff;background:none;border:none;cursor:pointer;text-decoration:underline;padding:4px;font-weight:600}
-.switch-user-btn:hover{color:#1f6fe0}
+/* ── Sign-in welcome copy ── */
+.signin-welcome{width:100%;max-width:380px;margin-bottom:16px}
+.signin-welcome h2{font-size:19px;font-weight:800;color:#0b1f3a;letter-spacing:-0.3px;margin-bottom:4px}
+.signin-welcome p{font-size:13px;color:#7a8aa3;font-weight:600;line-height:1.5}
 
-.user-select-box{width:100%;max-width:380px;margin-bottom:16px}
-.user-select-box label{font-size:11px;color:#8a9bb3;margin-bottom:8px;display:block;text-transform:uppercase;letter-spacing:0.6px;font-weight:700}
-.user-select-box select{
-  width:100%;padding:14px;background:#fff;border:1.5px solid #dde8f5;border-radius:14px;color:#0b1f3a;
-  font-size:15px;outline:none;font-weight:600;box-shadow:0 4px 14px rgba(11,31,58,0.05);
+/* ── User search ── */
+.user-search-box{width:100%;max-width:380px;margin-bottom:12px}
+.user-search-box input{
+  width:100%;padding:13px 16px;background:#fff;border:1.5px solid #dde8f5;border-radius:14px;
+  font-size:14px;font-weight:600;color:#0b1f3a;outline:none;box-shadow:0 4px 14px rgba(11,31,58,0.05);
 }
-.user-select-box select:focus{border-color:#2f8fff}
+.user-search-box input:focus{border-color:#2f8fff}
+
+/* ── User list (replaces native <select> — larger tap targets) ── */
+.user-list{width:100%;max-width:380px;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:360px;overflow-y:auto;padding-right:2px}
+.user-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1.5px solid #e3ebf5;
+  border-radius:14px;padding:14px 16px;cursor:pointer;text-align:left;width:100%;box-shadow:0 2px 8px rgba(11,31,58,0.04);
+  font-family:inherit;
+}
+.user-row:active{transform:scale(0.98)}
+.user-row.last-used{border-color:#2f8fff;background:#f4f9ff}
+.user-row-name{font-size:14.5px;font-weight:800;color:#0b1f3a}
+.user-row-meta{font-size:11.5px;color:#8a9bb3;font-weight:600;margin-top:2px}
+.user-row-tag{font-size:9.5px;font-weight:800;color:#2f8fff;background:#eaf3ff;border-radius:999px;padding:3px 9px;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0;white-space:nowrap}
+.user-list-empty{font-size:12.5px;color:#8a9bb3;font-weight:600;text-align:center;padding:20px 4px}
+.user-list-retry-btn{margin-top:10px;border:none;background:#2f8fff;color:#fff;padding:10px 18px;border-radius:10px;font-weight:800;font-size:12.5px;cursor:pointer;display:block;margin-left:auto;margin-right:auto}
 
 .pin-box{
   width:100%;max-width:380px;margin-bottom:16px;background:#fff;border:1px solid #e3ebf5;
   border-radius:16px;padding:18px;box-shadow:0 4px 14px rgba(11,31,58,0.05);
 }
 .pin-box label{font-size:11px;color:#8a9bb3;margin-bottom:10px;display:block;text-transform:uppercase;letter-spacing:0.6px;font-weight:700}
+.pin-box-userline{font-size:13px;font-weight:700;color:#0b1f3a;margin-bottom:12px}
+.pin-box-userline span{color:#8a9bb3;font-weight:600}
 .pin-box input{
   width:100%;padding:16px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:12px;color:#0b1f3a;
   font-size:20px;letter-spacing:6px;text-align:center;outline:none;font-weight:700;
@@ -94,6 +103,21 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .pin-error{color:#e0344a;font-size:12px;margin-top:10px;text-align:center;display:none;font-weight:600}
 .pin-error.visible{display:block}
 .pin-cancel{font-size:12px;color:#8a9bb3;text-align:center;margin-top:12px;display:block;cursor:pointer;text-decoration:underline;font-weight:600}
+
+/* ── Post-PIN-success confirmation bar — NOT a login bypass. Only ever
+   shown after a PIN has actually been entered correctly during this page
+   load; never rendered from localStorage alone on a fresh visit. ── */
+.user-locked{
+  width:100%;max-width:380px;display:flex;align-items:center;justify-content:space-between;
+  background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:14px 18px;margin-bottom:18px;
+  box-shadow:0 4px 14px rgba(11,31,58,0.05);
+}
+.user-locked-info{display:flex;align-items:center;gap:10px}
+.user-locked-avatar{font-size:20px}
+.user-locked-name{font-size:14.5px;font-weight:700;color:#0b1f3a}
+.user-locked-role{font-size:11px;color:#8a9bb3;margin-top:2px;font-weight:600}
+.switch-user-btn{font-size:11px;color:#2f8fff;background:none;border:none;cursor:pointer;text-decoration:underline;padding:4px;font-weight:600}
+.switch-user-btn:hover{color:#1f6fe0}
 
 /* ── Manager reminder notifications ── */
 .notif-panel{background:#ffe1e5;border:1px solid #f5c2c8;border-radius:16px;padding:14px 16px;margin-bottom:10px}
@@ -135,6 +159,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 var pendingUser=null;
+var allUsers=[];
+var lastUserId=localStorage.getItem('fieldiq_last_user_id')||'';
 
 function escapeHtml(str){
   return String(str||'').replace(/[&<>"']/g,function(m){
@@ -142,59 +168,106 @@ function escapeHtml(str){
   });
 }
 
-function switchUser(){
-  localStorage.removeItem('fieldiq_user_id');
-  localStorage.removeItem('fieldiq_user_name');
-  localStorage.removeItem('fieldiq_user_role');
-  localStorage.removeItem('fieldiq_user_record_id');
-  pendingUser=null;
-  location.reload();
-}
-
+// ── Identity / sign-in ──────────────────────────────────────────────────────
+// Always shows the profile picker + PIN — never bypasses PIN entry from a
+// saved localStorage identity. The last-selected user (fieldiq_last_user_id,
+// the one new convenience key added by this change) is used only to
+// highlight that profile in the list and pre-open the PIN box for it,
+// reducing taps without ever skipping PIN verification itself.
 function renderIdentity(){
   var section=document.getElementById('identitySection');
-  var savedId=localStorage.getItem('fieldiq_user_id');
-  var savedName=localStorage.getItem('fieldiq_user_name');
-  var savedRole=localStorage.getItem('fieldiq_user_role');
+  section.innerHTML=
+    '<div class="signin-welcome">'+
+      '<h2>Welcome back to FieldIQ</h2>'+
+      '<p>Select your profile and enter your PIN to continue.</p>'+
+    '</div>'+
+    '<div class="user-search-box">'+
+      '<input type="search" id="userSearchInput" placeholder="Search your name…" autocomplete="off" autocorrect="off" autocapitalize="off">'+
+    '</div>'+
+    '<div class="user-list" id="userListBox"><div class="user-list-empty">Loading FieldIQ profiles…</div></div>'+
+    '<div id="pinSection"></div>';
 
-  if(savedId && savedName){
-    section.innerHTML=
-      '<div class="user-locked">'+
-        '<div class="user-locked-info">'+
-          '<div class="user-locked-avatar">👤</div>'+
-          '<div>'+
-            '<div class="user-locked-name">'+savedName+'</div>'+
-            '<div class="user-locked-role">'+(savedRole||'Sales Rep')+'</div>'+
-          '</div>'+
-        '</div>'+
-        '<button class="switch-user-btn" onclick="switchUser()">Switch User</button>'+
-      '</div>';
-  } else {
-    section.innerHTML=
-      '<div class="user-select-box">'+
-        '<label>Who are you?</label>'+
-        '<select id="homeUserSelect"><option value="">Loading users...</option></select>'+
-      '</div>'+
-      '<div id="pinSection"></div>';
-    loadUsers();
-  }
+  document.getElementById('userSearchInput').addEventListener('input',function(e){
+    var q=e.target.value.trim().toLowerCase();
+    if(!q){renderUserList(allUsers);return;}
+    var filtered=allUsers.filter(function(u){
+      return (u.name||'').toLowerCase().indexOf(q)>-1 ||
+             (u.role||'').toLowerCase().indexOf(q)>-1 ||
+             (u.territory||'').toLowerCase().indexOf(q)>-1;
+    });
+    renderUserList(filtered);
+  });
+
+  loadUsers();
 }
 
-function showPinBox(opt){
-  pendingUser={
-    id: opt.value,
-    name: opt.getAttribute('data-name')||opt.value,
-    role: opt.getAttribute('data-role')||'Sales Rep',
-    pin: opt.getAttribute('data-pin')||'',
-    recordId: opt.getAttribute('data-record-id')||''
-  };
+// Renders the confirmation bar after a successful PIN entry. This is purely
+// a "here's who's signed in this session" indicator — it is only ever
+// called from checkPin() after a correct PIN, never from stored
+// localStorage identity on page load, so it can never be used to skip PIN
+// entry on a future visit.
+function renderSignedInBar(u){
+  var section=document.getElementById('identitySection');
+  var metaLine=[u.role];
+  if(u.territory)metaLine.push(u.territory);
+  section.innerHTML=
+    '<div class="user-locked">'+
+      '<div class="user-locked-info">'+
+        '<div class="user-locked-avatar">👤</div>'+
+        '<div>'+
+          '<div class="user-locked-name">'+escapeHtml(u.name)+'</div>'+
+          '<div class="user-locked-role">'+escapeHtml(metaLine.join(' · '))+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<button class="switch-user-btn" id="notYouBtn">Not you?</button>'+
+    '</div>';
+  document.getElementById('notYouBtn').addEventListener('click',function(){
+    localStorage.removeItem('fieldiq_user_id');
+    localStorage.removeItem('fieldiq_user_name');
+    localStorage.removeItem('fieldiq_user_role');
+    localStorage.removeItem('fieldiq_user_record_id');
+    location.reload();
+  });
+}
+
+function renderUserList(list){
+  var listBox=document.getElementById('userListBox');
+  if(!list.length){
+    listBox.innerHTML='<div class="user-list-empty">No matching profiles.</div>';
+    return;
+  }
+  listBox.innerHTML=list.map(function(u){
+    var meta=[u.role];
+    if(u.territory)meta.push(u.territory);
+    var isLast=(u.id && u.id===lastUserId);
+    return '<button type="button" class="user-row'+(isLast?' last-used':'')+'" data-user-id="'+escapeHtml(u.id)+'">'+
+      '<div>'+
+        '<div class="user-row-name">'+escapeHtml(u.name)+'</div>'+
+        '<div class="user-row-meta">'+escapeHtml(meta.join(' · '))+'</div>'+
+      '</div>'+
+      (isLast?'<span class="user-row-tag">Last used</span>':'')+
+    '</button>';
+  }).join('');
+  listBox.querySelectorAll('.user-row').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var u=allUsers.find(function(x){return x.id===btn.getAttribute('data-user-id');});
+      if(u)showPinBox(u);
+    });
+  });
+}
+
+function showPinBox(u){
+  pendingUser=u;
   var pinSection=document.getElementById('pinSection');
+  var metaLine=[u.role];
+  if(u.territory)metaLine.push(u.territory);
   pinSection.innerHTML=
     '<div class="pin-box">'+
-      '<label>Enter PIN for '+pendingUser.name+'</label>'+
+      '<label>Enter your 4-digit PIN</label>'+
+      '<div class="pin-box-userline">'+escapeHtml(u.name)+' <span>· '+escapeHtml(metaLine.join(' · '))+'</span></div>'+
       '<input type="password" id="pinInput" inputmode="numeric" maxlength="6" placeholder="••••">'+
       '<button class="pin-btn" id="pinSubmitBtn">Confirm</button>'+
-      '<div class="pin-error" id="pinError">Incorrect PIN. Please try again.</div>'+
+      '<div class="pin-error" id="pinError">PIN incorrect. Please try again.</div>'+
       '<span class="pin-cancel" id="pinCancel">Cancel</span>'+
     '</div>';
 
@@ -205,9 +278,11 @@ function showPinBox(opt){
   document.getElementById('pinCancel').addEventListener('click',function(){
     pendingUser=null;
     document.getElementById('pinSection').innerHTML='';
-    document.getElementById('homeUserSelect').value='';
   });
   document.getElementById('pinInput').focus();
+
+  var targetRow=document.querySelector('.user-row[data-user-id="'+u.id+'"]');
+  if(targetRow)targetRow.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function checkPin(){
@@ -215,16 +290,18 @@ function checkPin(){
   var errorEl=document.getElementById('pinError');
   if(!pendingUser){return;}
   if(entered && entered===String(pendingUser.pin)){
-    localStorage.setItem('fieldiq_user_id',pendingUser.id);
-    localStorage.setItem('fieldiq_user_name',pendingUser.name);
-    localStorage.setItem('fieldiq_user_role',pendingUser.role);
-    localStorage.setItem('fieldiq_user_record_id',pendingUser.recordId);
-    if(pendingUser.role==='Manager'){
+    var signedInUser=pendingUser;
+    localStorage.setItem('fieldiq_user_id',signedInUser.id);
+    localStorage.setItem('fieldiq_user_name',signedInUser.name);
+    localStorage.setItem('fieldiq_user_role',signedInUser.role);
+    localStorage.setItem('fieldiq_user_record_id',signedInUser.recordId);
+    localStorage.setItem('fieldiq_last_user_id',signedInUser.id);
+    if(signedInUser.role==='Manager'){
       window.location.href='./fieldiq.html';
       return;
     }
     pendingUser=null;
-    renderIdentity();
+    renderSignedInBar(signedInUser);
     renderModules();
   } else {
     errorEl.className='pin-error visible';
@@ -233,40 +310,58 @@ function checkPin(){
   }
 }
 
-async function loadUsers(){
-  try{
-    var res=await fetch(WORKER+'/get-users');
-    var data=await res.json();
-    var sel=document.getElementById('homeUserSelect');
-    if(!sel)return;
-    sel.innerHTML='<option value="">Select your name...</option>';
-    if(data.records){
-      data.records.forEach(function(r){
-        var f=r.fields;
-        if(f['Active?']===false)return;
-        var opt=document.createElement('option');
-        opt.value=f['User ID']||'';
-        opt.textContent=(f['Display Name']||f['User ID']||'Unknown');
-        opt.setAttribute('data-name',f['Display Name']||'');
-        opt.setAttribute('data-role',f['Role']||'Sales Rep');
-        opt.setAttribute('data-pin',f['PIN']||'');
-        opt.setAttribute('data-record-id',r.id);
-        sel.appendChild(opt);
-      });
-    }
-    sel.addEventListener('change',function(){
-      if(!sel.value){
-        document.getElementById('pinSection').innerHTML='';
-        return;
-      }
-      var selectedOpt=sel.options[sel.selectedIndex];
-      showPinBox(selectedOpt);
-    });
-  }catch(err){
-    var sel=document.getElementById('homeUserSelect');
-    if(sel)sel.innerHTML='<option value="">Could not load users</option>';
-  }
+// If the last-selected user is still present in the active user list,
+// pre-open their PIN box automatically — the "preselect" half of the
+// friction-reduction goal. PIN entry itself is still fully required;
+// this only saves the initial search/tap.
+function maybeAutoOpenLastUser(){
+  if(!lastUserId)return;
+  var u=allUsers.find(function(x){return x.id===lastUserId;});
+  if(u)showPinBox(u);
 }
+
+// get-users fetch — same endpoint, same fields, same Active? filter as
+// before. Adds a 7s timeout and a Retry action; neither existed in the
+// prior version of this file.
+function loadUsers(){
+  var listBox=document.getElementById('userListBox');
+  if(listBox)listBox.innerHTML='<div class="user-list-empty">Loading FieldIQ profiles…</div>';
+
+  var ctrl=new AbortController();
+  var timer=setTimeout(function(){ctrl.abort();},7000);
+
+  fetch(WORKER+'/get-users',{signal:ctrl.signal})
+    .then(function(res){return res.json();})
+    .then(function(data){
+      clearTimeout(timer);
+      allUsers=(data.records||[]).filter(function(r){
+        return r.fields['Active?']!==false;
+      }).map(function(r){
+        var f=r.fields||{};
+        return {
+          id: f['User ID']||'',
+          name: f['Display Name']||f['User ID']||'Unknown',
+          role: f['Role']||'Sales Rep',
+          territory: f['Territory']||'',
+          pin: f['PIN']||'',
+          recordId: r.id
+        };
+      });
+      renderUserList(allUsers);
+      maybeAutoOpenLastUser();
+    })
+    .catch(function(err){
+      clearTimeout(timer);
+      var box=document.getElementById('userListBox');
+      if(!box)return;
+      box.innerHTML='<div class="user-list-empty">Could not load profiles. Check connection and retry.'+
+        '<button type="button" class="user-list-retry-btn" id="userListRetryBtn">Retry</button></div>';
+      var retryBtn=document.getElementById('userListRetryBtn');
+      if(retryBtn)retryBtn.addEventListener('click',loadUsers);
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 async function updateOpenActionsBadge(){
   var badge=document.getElementById('openActionsBadge');
