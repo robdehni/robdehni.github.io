@@ -92,13 +92,6 @@ box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color
 .avf-badge-completed{background:#e1f5ea;color:#1f8a52;border:1px solid #bfe9d0}
 .avf-badge-dismissed{background:#eceef1;color:#6b7280;border:1px solid #dde1e6}
 .avf-badge-pending{background:#eaf3ff;color:#2f8fff;border:1px solid #cfe3ff}
-.avf-notes{margin-top:6px}
-.avf-note-item{background:#fff;border:1px solid #e3ebf5;border-radius:10px;padding:9px 11px;margin-top:6px}
-.avf-note-text{font-size:12px;color:#263b59;font-weight:600;line-height:1.5;margin-bottom:5px;white-space:pre-wrap}
-.avf-note-meta{font-size:10px;color:#8a9bb3;font-weight:700;margin-bottom:5px}
-.avf-note-status{font-size:10.5px;font-weight:800}
-.avf-note-status.acked{color:#1f8a52}
-.avf-note-status.not-acked{color:#a36a00}
 .visit-watch-row{margin:2px 0 8px}
 .watch-star{border:none;background:none;color:#c8d0dc;font-size:17px;line-height:1;cursor:pointer;padding:0;margin-right:6px;flex-shrink:0;align-self:flex-start;margin-top:1px}
 .watch-star.watching{color:#f0a400}
@@ -176,6 +169,13 @@ body{padding:32px 40px 60px}
 }
 .back-to-top.visible{display:flex}
 p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text-transform:none;letter-spacing:normal}
+.avf-notes{margin-top:8px;padding-top:8px;border-top:1px dashed #e3ebf5;display:flex;flex-direction:column;gap:6px}
+.avf-note-item{background:#fff;border:1px solid #e3ebf5;border-radius:9px;padding:8px 10px}
+.avf-note-text{font-size:12px;color:#263b59;font-weight:600;line-height:1.5;white-space:pre-wrap}
+.avf-note-meta{font-size:10px;color:#8a9bb3;font-weight:700;margin-top:4px}
+.avf-note-status{font-size:10.5px;font-weight:900;margin-top:4px}
+.avf-note-status.acked{color:#1f8a52}
+.avf-note-status.not-acked{color:#a36a00}
 </style>
 
   <!-- PWA v1 -->
@@ -429,8 +429,17 @@ function markVisitReviewed(recordId,btnEl){
     body:JSON.stringify({recordId:recordId,reviewed:true})
   }).then(function(res){
     if(!res.ok)throw new Error('Request failed');
+    // sortedRecords is rebuilt fresh from allRecordsRaw every time
+    // renderVisits() runs (applyFilters/resetFilters/search) — updating
+    // only sortedRecords here means that rebuild would silently revert
+    // this visit back to unreviewed, since it re-derives from the
+    // still-stale allRecordsRaw entry. Both must be updated so the
+    // Reviewed state survives any future re-render, not just the current
+    // one already on screen.
     var rec=sortedRecords.find(function(r){return r.id===recordId;});
     if(rec)rec.fields['Reviewed']=true;
+    var rawRec=allRecordsRaw.find(function(r){return r.id===recordId;});
+    if(rawRec)rawRec.fields['Reviewed']=true;
     var wrapper=btnEl.parentElement;
     wrapper.innerHTML='<span class="reviewed-badge">Reviewed ✓</span>';
   }).catch(function(err){
@@ -463,14 +472,46 @@ function escapeHtmlLocal(str){
     return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
   });
 }
-// Manager Notes archive (locked architecture): Manager Notes belong to an
-// Action for the lifetime of that Action. Once an Action reaches an end
-// state (Completed or Dismissed), Visit History displays the Action
-// together with its Manager Notes and acknowledgement history, read via
-// the existing /get-notes endpoint. Notes are never duplicated, never
-// re-parented, and read-only here — acknowledgement can only ever be set
-// from the rep's own Open Actions page. If an action has no notes, this
-// renders nothing additional for that action.
+// Manager Notes archive display — locked business rule: Manager Notes
+// belong to an Action for its lifetime. Once an Action reaches an end
+// state (Completed or Dismissed), Visit History displays it together with
+// its Manager Notes and acknowledgement history, read via the existing
+// /get-notes?actionId=X endpoint. Read-only here — nothing is written,
+// moved, duplicated, or re-parented. An action with no notes renders
+// nothing additional, exactly as before.
+function renderAvfNoteItems(records){
+  if(!records.length)return'';
+  var html='<div class="avf-notes">';
+  records.forEach(function(r){
+    var f=r.fields||{};
+    var acked=!!f['Acknowledged'];
+    html+='<div class="avf-note-item">'+
+      '<div class="avf-note-text">'+escapeHtmlLocal(f['Notes']||'')+'</div>'+
+      '<div class="avf-note-meta">'+escapeHtmlLocal(f['Created By']||'Manager')+' · '+escapeHtmlLocal(formatDateTimeLocal(f['Created Date']||''))+'</div>'+
+      '<div class="avf-note-status '+(acked?'acked':'not-acked')+'">'+(acked?'Acknowledged by rep':'Not yet acknowledged')+'</div>'+
+    '</div>';
+  });
+  html+='</div>';
+  return html;
+}
+// Fetches notes for a single completed/dismissed action and, if any exist,
+// appends them directly beneath that action's row in the already-rendered
+// Actions-from-this-Visit list. Fails silently — a note-lookup error never
+// disturbs the action list itself, which has already rendered successfully
+// by the time this runs.
+function loadNotesForAvfAction(actionId){
+  var box=document.getElementById('avf-notes-'+actionId);
+  if(!box)return;
+  fetch(WORKER+'/get-notes?actionId='+encodeURIComponent(actionId))
+    .then(function(res){return res.json();})
+    .then(function(data){
+      box.innerHTML=renderAvfNoteItems(data.records||[]);
+    })
+    .catch(function(err){
+      console.error('Could not load manager notes for action:',actionId,err);
+      // Leaves the placeholder empty — matches "if no notes, render nothing additional".
+    });
+}
 function renderActionsFromVisitList(records){
   if(!records.length)return '<p style="color:#8a9bb3;font-size:12px;margin:0">No actions linked to this visit.</p>';
   return '<div class="avf-list">'+records.map(function(r){
@@ -482,40 +523,11 @@ function renderActionsFromVisitList(records){
     var isEndState=isDismissed||isCompleted;
     var badgeClass=isDismissed?'avf-badge-dismissed':(isCompleted?'avf-badge-completed':'avf-badge-pending');
     var badgeText=isDismissed?'Dismissed':(isCompleted?'Completed':'Pending');
-    var notesPlaceholder=isEndState?'<div class="avf-notes" id="avf-notes-'+r.id+'"></div>':'';
-    return '<div class="avf-item">'+
-        '<span class="avf-text">'+escapeHtmlLocal(text)+'</span>'+
-        '<span class="avf-badge '+badgeClass+'">'+badgeText+'</span>'+
-      '</div>'+notesPlaceholder;
+    return '<div class="avf-item-wrap">'+
+        '<div class="avf-item"><span class="avf-text">'+escapeHtmlLocal(text)+'</span><span class="avf-badge '+badgeClass+'">'+badgeText+'</span></div>'+
+        (isEndState?'<div class="avf-notes" id="avf-notes-'+r.id+'"></div>':'')+
+      '</div>';
   }).join('')+'</div>';
-}
-function renderNotesForVisitAction(actionId,records){
-  var box=document.getElementById('avf-notes-'+actionId);
-  if(!box)return;
-  if(!records.length){box.innerHTML='';return;}
-  var html='';
-  records.forEach(function(r){
-    var f=r.fields||{};
-    var acked=!!f['Acknowledged'];
-    html+='<div class="avf-note-item">'+
-      '<div class="avf-note-text">'+escapeHtmlLocal(f['Notes']||'')+'</div>'+
-      '<div class="avf-note-meta">'+escapeHtmlLocal(f['Created By']||'Manager')+' · '+escapeHtmlLocal(formatDateTimeLocal(f['Created Date']||''))+'</div>'+
-      '<div class="avf-note-status '+(acked?'acked':'not-acked')+'">'+(acked?'Acknowledged by rep':'Not yet acknowledged')+'</div>'+
-    '</div>';
-  });
-  box.innerHTML=html;
-}
-function loadNotesForVisitAction(actionId){
-  fetch(WORKER+'/get-notes?actionId='+encodeURIComponent(actionId))
-    .then(function(res){return res.json();})
-    .then(function(data){
-      renderNotesForVisitAction(actionId,data.records||[]);
-    })
-    .catch(function(err){
-      console.error('Could not load manager notes for action:',err);
-      // Non-fatal — the placeholder is simply left empty rather than
-      // showing an error inside an already-completed action's record.
-    });
 }
 // Fetches and appends the Actions-from-this-Visit block to an already-
 // rendered detail panel. Called after the existing synchronous AI report
@@ -534,7 +546,7 @@ function loadActionsForVisit(detailEl,visitRecordId){
       container.innerHTML='<h4>Actions from this Visit</h4>'+renderActionsFromVisitList(records);
       records.forEach(function(r){
         var status=String((r.fields||{})['Status']||'Open').toLowerCase();
-        if(status==='completed'||status==='dismissed')loadNotesForVisitAction(r.id);
+        if(status==='completed'||status==='dismissed')loadNotesForAvfAction(r.id);
       });
     })
     .catch(function(err){
