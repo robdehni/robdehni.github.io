@@ -319,12 +319,14 @@ function renderMarkers(visits){
 // Same canonical mapping already used consistently in worker.js,
 // fieldiq-accounts.html, and fieldiq-log-visit.html — any territory
 // beginning with "Saudi Arabia" (regardless of region suffix) collapses
-// to the single canonical "KSA", matching the Airtable Territories
-// table's own renamed record.
+// to the single canonical "Saudi Arabia", matching Airtable's own actual
+// stored value. This file previously output "KSA" here, which does not
+// exist anywhere in Airtable's data — the one page in the app that had
+// not yet been brought in line with the rename applied everywhere else.
 function normalizeTerritoryForMap(raw){
   var t=(raw||'').trim();if(!t)return'';
   var tu=t.toUpperCase();
-  if(tu.indexOf('SAUDI ARABIA')===0||tu==='KSA')return'KSA';
+  if(tu.indexOf('SAUDI ARABIA')===0||tu==='KSA')return'Saudi Arabia';
   if(tu==='UAE')return'UAE';
   if(tu==='QATAR')return'Qatar';
   if(tu==='KUWAIT')return'Kuwait';
