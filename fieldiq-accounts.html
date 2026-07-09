@@ -140,7 +140,20 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
 }
 .back-to-top.visible{display:flex}
 
-/* ── Intelligence sections (main directory page) ── */
+/* ── Summary stat cards (compact, not lists) ── */
+.summary-stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.summary-stat-card{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:14px;box-shadow:0 3px 10px rgba(11,31,58,0.04);cursor:pointer;transition:border-color 0.15s}
+.summary-stat-card:hover{border-color:#bcd8ff}
+.summary-stat-value{font-size:24px;font-weight:800;color:#0b1f3a;line-height:1}
+.summary-stat-label{font-size:10.5px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-top:5px}
+.summary-stat-card.summary-stat-alert .summary-stat-value{color:#c43048}
+.summary-stat-card.summary-stat-good .summary-stat-value{color:#1a9c53}
+
+/* ── Filter chips ── */
+.filter-chips-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
+.filter-chip{flex-shrink:0;background:#fff;border:1.5px solid #e3ebf5;color:#5b6b85;font-size:12px;font-weight:800;padding:9px 15px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.filter-chip.active{background:#2f8fff;border-color:#2f8fff;color:#fff}
+.filter-chip:not(.active):hover{border-color:#bcd8ff}
 .intel-section{margin-bottom:22px}
 .intel-section-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:0 2px}
 .intel-section-icon{font-size:15px;line-height:1}
@@ -229,10 +242,12 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
 </div>
 <div id="loadingEl" class="loading"><div class="spinner"></div>Loading accounts...</div>
 <div id="directoryContent" style="display:none">
+  <div id="summaryStatsArea"></div>
   <div class="filter-bar">
     <h3>Search</h3>
     <input type="text" id="directorySearch" class="search-input" placeholder="Search account name...">
   </div>
+  <div id="filterChipsArea"></div>
   <div class="count-label" id="directoryCount">0 accounts</div>
   <div id="directoryList"></div>
 </div>
@@ -352,65 +367,112 @@ function renderFlatList(q){
   if(filtered.length===0){document.getElementById('directoryList').innerHTML='<div class="empty">No accounts match your search.</div>';return;}
   document.getElementById('directoryList').innerHTML=filtered.map(accountCardHtml).join('');lucide.createIcons();
 }
-function computeIntelligenceGroups(){
-  var needsAttention=[],recentlyActive=[],dormant=[];
+function computeAccountBuckets(){
+  // Buckets are independent lenses on the same data, not a mutually
+  // exclusive partition — an account can be both "Active" and "Needs
+  // Attention" at once (visited recently but flagged), which is what a
+  // filter-chip system should do. "No Visits" and "Dormant" are split
+  // apart here specifically because they mean different things to a
+  // manager: never touched at all, versus was active and has gone quiet.
+  var needsAttention=[],active=[],dormant=[],noVisits=[];
   ACCOUNTS.forEach(function(a){
     var status=getAccountStatus(a);
     var flagged=a.matchedVisits.some(function(v){
       return String(v.priority).toLowerCase()==='high'||String(v.outcome).toLowerCase()==='negative';
     });
-    if(flagged){needsAttention.push(a);}
-    else if(status.label==='Active'){recentlyActive.push(a);}
-    else if(status.label==='Dormant'){dormant.push(a);}
-    // Accounts with status 'Needs Revisit' and no flags fall through to
-    // the territory view only — three overlapping top sections would
-    // undercut the "at a glance" goal this is meant to solve.
-  });
-  needsAttention.sort(function(x,y){var xd=x.lastVisit?x.lastVisit.getTime():0,yd=y.lastVisit?y.lastVisit.getTime():0;return yd-xd;});
-  recentlyActive.sort(function(x,y){var xd=x.lastVisit?x.lastVisit.getTime():0,yd=y.lastVisit?y.lastVisit.getTime():0;return yd-xd;});
-  dormant.sort(function(x,y){return x.name.localeCompare(y.name);});
-  return{needsAttention:needsAttention,recentlyActive:recentlyActive,dormant:dormant};
-}
-// Recently Active / Dormant are capped so the top of the page stays a real
-// glance, not another long list — nothing is removed, the full set remains
-// exactly as before in the territory accordions directly below, and each
-// capped section links straight down to them.
-var INTEL_SECTION_CAP=6;
-function intelSectionHtml(key,icon,title,accounts,cap){
-  var shown=cap?accounts.slice(0,cap):accounts;
-  var remaining=accounts.length-shown.length;
-  var html='<div class="intel-section'+(key==='needs-attention'?' needs-attention':'')+'">';
-  html+='<div class="intel-section-header"><span class="intel-section-icon">'+icon+'</span><span class="intel-section-title">'+title+'</span><span class="intel-section-count">('+accounts.length+')</span></div>';
-  if(!accounts.length){
-    html+='<div class="intel-empty">Nothing here right now.</div>';
-  }else{
-    html+=shown.map(accountCardHtml).join('');
-    if(remaining>0){
-      html+='<a class="intel-view-all" onclick="document.getElementById(\'territorySectionAnchor\').scrollIntoView({behavior:\'smooth\'})">+'+remaining+' more — view all in territories below ↓</a>';
+    if(flagged)needsAttention.push(a);
+    if(status.label==='Active')active.push(a);
+    if(status.label==='Dormant'){
+      if(a.visitCount===0)noVisits.push(a);else dormant.push(a);
     }
+  });
+  return{needsAttention:needsAttention,active:active,dormant:dormant,noVisits:noVisits};
+}
+var activeAccountFilter='all';
+function setAccountFilter(key){
+  activeAccountFilter=key;
+  renderDirectoryHome();
+}
+function renderSummaryStats(buckets){
+  var total=ACCOUNTS.length;
+  return'<div class="summary-stats-row">'+
+    '<div class="summary-stat-card" onclick="setAccountFilter(\'all\')"><div class="summary-stat-value">'+total+'</div><div class="summary-stat-label">Total Accounts</div></div>'+
+    '<div class="summary-stat-card summary-stat-alert" onclick="setAccountFilter(\'needs-attention\')"><div class="summary-stat-value">'+buckets.needsAttention.length+'</div><div class="summary-stat-label">Needs Attention</div></div>'+
+    '<div class="summary-stat-card summary-stat-good" onclick="setAccountFilter(\'active\')"><div class="summary-stat-value">'+buckets.active.length+'</div><div class="summary-stat-label">Recently Active</div></div>'+
+    '<div class="summary-stat-card" onclick="setAccountFilter(\'dormant\')"><div class="summary-stat-value">'+(buckets.dormant.length+buckets.noVisits.length)+'</div><div class="summary-stat-label">Dormant / No Visits</div></div>'+
+  '</div>';
+}
+function renderFilterChips(){
+  var chips=[['all','All'],['needs-attention','Needs Attention'],['active','Recently Active'],['dormant','Dormant'],['no-visits','No Visits']];
+  return'<div class="filter-chips-row">'+chips.map(function(c){
+    return'<button type="button" class="filter-chip'+(activeAccountFilter===c[0]?' active':'')+'" onclick="setAccountFilter(\''+c[0]+'\')">'+c[1]+'</button>';
+  }).join('')+'</div>';
+}
+// Territory account cards are NOT built into the DOM up front — only the
+// header rows (name + count) render immediately. The actual account cards
+// for a given territory are built once, the first time that territory is
+// expanded, then cached so re-collapsing/re-expanding never rebuilds them.
+// This is what makes the page viable at real scale (hundreds to
+// thousands of accounts), not just visually hiding a giant pre-rendered
+// DOM behind CSS.
+var _territoryAccountsCache={};
+function toggleTerritory(headerEl){
+  var body=headerEl.nextElementSibling;
+  if(!body.getAttribute('data-rendered')){
+    var territoryName=headerEl.getAttribute('data-territory');
+    var accs=_territoryAccountsCache[territoryName]||[];
+    body.innerHTML=accs.map(accountCardHtml).join('');
+    body.setAttribute('data-rendered','1');
+    lucide.createIcons({el:body});
   }
-  html+='</div>';
-  return html;
+  body.classList.toggle('open');
+  headerEl.querySelector('.territory-chevron').classList.toggle('rotated');
 }
 function renderDirectoryHome(){
-  var total=ACCOUNTS.length;document.getElementById('directoryCount').textContent=total+' account'+(total!==1?'s':'');
-  if(total===0){document.getElementById('directoryList').innerHTML='<div class="empty">No accounts found.</div>';return;}
-  var groups=computeIntelligenceGroups();
+  var total=ACCOUNTS.length;
+  var buckets=computeAccountBuckets();
+  document.getElementById('summaryStatsArea').innerHTML=renderSummaryStats(buckets);
+  document.getElementById('filterChipsArea').innerHTML=renderFilterChips();
+
+  if(total===0){
+    document.getElementById('directoryCount').textContent='0 accounts';
+    document.getElementById('directoryList').innerHTML='<div class="empty">No accounts found.</div>';
+    return;
+  }
+
   var html='';
-  html+=intelSectionHtml('needs-attention','⚠️','Needs Attention',groups.needsAttention,null);
-  html+=intelSectionHtml('recently-active','🟢','Recently Active',groups.recentlyActive,INTEL_SECTION_CAP);
-  html+=intelSectionHtml('dormant','⚪','Dormant / No Visits Logged',groups.dormant,INTEL_SECTION_CAP);
+  // Only render a flat account list when a filter other than "All" is
+  // active — this is the entire fix: the default view never dumps a
+  // list, it only ever shows counts, search, chips, and the collapsed
+  // territory structure below.
+  if(activeAccountFilter!=='all'){
+    var bucketMap={'needs-attention':buckets.needsAttention,'active':buckets.active,'dormant':buckets.dormant,'no-visits':buckets.noVisits};
+    var filtered=(bucketMap[activeAccountFilter]||[]).slice().sort(function(a,b){return a.name.localeCompare(b.name);});
+    document.getElementById('directoryCount').textContent=filtered.length+' account'+(filtered.length!==1?'s':'');
+    if(!filtered.length){
+      html+='<div class="intel-empty">No accounts match this filter.</div>';
+    }else{
+      html+=filtered.map(accountCardHtml).join('');
+    }
+  }else{
+    document.getElementById('directoryCount').textContent=total+' account'+(total!==1?'s':'');
+  }
+
+  // Territory structure — always present, always collapsed by default,
+  // regardless of which filter chip is active. This is the permanent
+  // browsing method, not a fallback shown only sometimes.
   html+='<div class="intel-section" id="territorySectionAnchor"><div class="intel-section-header"><span class="intel-section-icon">📍</span><span class="intel-section-title">All Accounts by Territory</span></div>';
   var grouped={};ACCOUNTS.forEach(function(a){var key=a.canonicalTerritory;if(!grouped[key])grouped[key]=[];grouped[key].push(a);});
   TERRITORY_ORDER.forEach(function(territoryName){
     var accs=grouped[territoryName];if(!accs||accs.length===0)return;
     accs.sort(function(a,b){return a.name.localeCompare(b.name);});
+    _territoryAccountsCache[territoryName]=accs;
     html+='<div class="territory-group">'+
-      '<div class="territory-header" onclick="toggleTerritory(this)">'+
+      '<div class="territory-header" data-territory="'+escapeHtml(territoryName)+'" onclick="toggleTerritory(this)">'+
         '<div><div class="territory-name">'+territoryName+'</div><div class="territory-count">'+accs.length+' account'+(accs.length!==1?'s':'')+'</div></div>'+
         '<div class="territory-chevron"><i data-lucide="chevron-down"></i></div>'+
       '</div>'+
-      '<div class="territory-accounts">'+accs.map(accountCardHtml).join('')+'</div>'+
+      '<div class="territory-accounts"></div>'+
     '</div>';
   });
   html+='</div>';
@@ -419,7 +481,6 @@ function renderDirectoryHome(){
 function renderTerritoryGroups(){
   renderDirectoryHome();
 }
-function toggleTerritory(headerEl){headerEl.nextElementSibling.classList.toggle('open');headerEl.querySelector('.territory-chevron').classList.toggle('rotated');}
 var _searchTimer;document.getElementById('directorySearch').addEventListener('input',function(){clearTimeout(_searchTimer);_searchTimer=setTimeout(renderDirectory,200);});
 function priorityClass(p){var s=String(p).toLowerCase();if(s==='high')return'priority-high';if(s==='medium'||s==='med')return'priority-medium';return'priority-low';}
 function outcomeClass(o){var s=String(o).toLowerCase();if(s==='positive')return'outcome-positive';if(s==='negative')return'outcome-negative';return'outcome-neutral';}
