@@ -200,6 +200,7 @@ audio{width:100%;border-radius:8px;margin:8px 0;display:none}
   <div class="photo-uploading" id="photoUploading">Uploading photos...</div>
 </div>
 
+<div class="validation-message" id="gpsWarningMessage"></div>
 <button class="btn btn-primary" id="submitBtn">Process Visit Log</button>
 <button class="btn btn-secondary" id="clearBtn">Clear</button>
 <div class="processing-overlay" id="processingOverlay"><div class="spinner"></div><p id="processingText">Analysing your visit...</p></div>
@@ -220,6 +221,13 @@ if(!currentUserId||!currentUserName){
 }
 document.getElementById('identityBar').innerHTML='Logging visit as <strong style="color:#00d4ff">'+currentUserName+'</strong> ('+(currentUserRole||'Sales Rep')+')';
 var notListedCheck=document.getElementById('notListedCheck');var newAccountFields=document.getElementById('newAccountFields');var hospitalInput=document.getElementById('hospital');var hospitalList=document.getElementById('hospitalList');var territorySelect=document.getElementById('territory');var accountBlock=document.getElementById('accountBlock');
+// GPS accuracy gate — visits must not save coordinates that are missing or
+// worse than this threshold. 500m chosen as a reasonable field-visit
+// precision floor (single constant, easy to adjust if a different value is
+// agreed later). Does not block the visit save itself — only the
+// coordinates are omitted when accuracy fails this check, matching this
+// file's existing pattern for other optional/best-effort data (photos).
+var GPS_ACCURACY_THRESHOLD_METERS=500;
 notListedCheck.addEventListener('change',function(){if(this.checked){newAccountFields.classList.add('visible');hospitalInput.value='';selectedAccountId=null;hospitalList.classList.remove('open');hospitalInput.style.display='none';}else{newAccountFields.classList.remove('visible');hospitalInput.style.display='';duplicateWarningEl.style.display='none';}updateMicAvailability();});
 
 territorySelect.addEventListener('change',function(){
@@ -284,7 +292,7 @@ micBtn.addEventListener('click',function(){if(!isRecording)startRecording();else
 function proceedToTranscribe(blob){
   statusEl.className='status transcribing';statusEl.textContent='Transcribing visit...';
   var fd=new FormData();fd.append('file',blob,'visit.webm');fd.append('model','whisper-1');
-  fetch(WORKER+'/transcribe',{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(d){var t=d.text||d.transcript||'';if(t){transcriptText.value=t;statusEl.className='status done';statusEl.textContent='Transcript ready. Edit if needed then process.';document.getElementById('editNotice').className='edit-notice visible';micBtn.disabled=true;}else{statusEl.className='status';statusEl.textContent='Transcription failed. Type notes manually.';}}).catch(function(){statusEl.className='status';statusEl.textContent='Transcription error — type notes manually.';});
+  fetch(WORKER+'/transcribe',{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(d){var t=d.text||d.transcript||'';if(t){transcriptText.value=t;statusEl.className='status done';statusEl.textContent='Transcript ready. Edit if needed then process.';document.getElementById('editNotice').className='edit-notice visible';micBtn.disabled=true;}else{statusEl.className='status';statusEl.textContent='Transcription failed. Type notes manually.';updateMicAvailability();}}).catch(function(){statusEl.className='status';statusEl.textContent='Transcription error — type notes manually.';updateMicAvailability();});
 }
 async function startRecording(){
   try{isRecording=true;chunks=[];seconds=0;wasAutoStopped=false;document.getElementById('recordingTimer').textContent='0:00';transcriptText.value='';audioPlayer.style.display='none';successCard.style.display='none';statusEl.className='status active';
@@ -318,7 +326,18 @@ function discardRecordingOnly(){
   if(streamRef)streamRef.getTracks().forEach(function(t){t.stop();});streamRef=null;mediaRecorder=null;
   updateMicAvailability();
 }
-function stopRecording(){clearTimeout(autoStopTimeout);clearInterval(timerInterval);document.getElementById('recordingIndicator').className='recording-indicator';if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}
+// Fix: disable the mic button the instant Stop is triggered — before
+// mediaRecorder.stop() is even called — so a rep cannot tap again during
+// the async gap between tapping Stop and the recorder's onstop event
+// actually firing (which can take 1-2 seconds on some devices), nor during
+// the transcription request itself. Native button disabling also blocks
+// the click event at the browser level, not just via the isRecording flag.
+// Re-enabling is handled at each of the existing, already-intended points:
+// transcript ready (already explicitly disabled mic permanently, unchanged),
+// transcription failure/error (now calls updateMicAvailability(), matching
+// the pre-existing behaviour where the mic was never disabled on failure),
+// and Discard/Clear (already called updateMicAvailability(), unchanged).
+function stopRecording(){micBtn.disabled=true;clearTimeout(autoStopTimeout);clearInterval(timerInterval);document.getElementById('recordingIndicator').className='recording-indicator';if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}
 
 // ── Visit Evidence / Photo capture ──────────────────────────────────────────
 var pendingPhotos = [];   // [{blob, previewUrl}, ...] — max 2
@@ -446,6 +465,7 @@ document.getElementById('clearBtn').addEventListener('click',function(){
   pendingPhotos.forEach(function(p){URL.revokeObjectURL(p.previewUrl);});
   pendingPhotos=[];renderPhotoPreviews();
   document.getElementById('photoUploading').style.display='none';
+  document.getElementById('gpsWarningMessage').style.display='none';
   updateMicAvailability();
 });
 
@@ -591,6 +611,20 @@ submitBtn.addEventListener('click',async function(){
   transcriptText.disabled=true;
   var latitude=null,longitude=null,accuracy=null;
   await new Promise(function(resolve){if(!navigator.geolocation){resolve();return;}navigator.geolocation.getCurrentPosition(function(pos){latitude=pos.coords.latitude;longitude=pos.coords.longitude;accuracy=Math.round(pos.coords.accuracy);resolve();},function(){resolve();},{timeout:12000,enableHighAccuracy:true,maximumAge:0});});
+  // GPS accuracy gate — coordinates are only kept when accuracy was
+  // actually captured and is at or better than the threshold. Missing or
+  // degraded accuracy clears latitude/longitude/accuracy back to null so
+  // they are omitted from the save payload below (see savePayload
+  // construction) rather than saving a misleading pin location. This does
+  // not block the visit itself from saving — same non-blocking pattern
+  // already used for photo upload failures elsewhere in this file.
+  var gpsWarningEl=document.getElementById('gpsWarningMessage');
+  if(accuracy===null||accuracy>GPS_ACCURACY_THRESHOLD_METERS){
+    latitude=null;longitude=null;accuracy=null;
+    if(gpsWarningEl){gpsWarningEl.textContent='Location accuracy is weak. Please wait or retry before saving.';gpsWarningEl.style.display='block';}
+  }else if(gpsWarningEl){
+    gpsWarningEl.style.display='none';
+  }
   try{
     var priorContext='';
     var accountIdForContext=isNewAccount?null:selectedAccountId;
@@ -648,7 +682,8 @@ submitBtn.addEventListener('click',async function(){
       document.getElementById('processingText').textContent = 'Saving visit...';
     }
 
-    var savePayload={'Hospital Name':hospitalName,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Rep Name':repName,'User ID':userId,'User Role':userRole,'Display Name':repName,'Raw Transcript':transcript,'AI Summary':result,'Outcome':getOutcome(parsed.sentiment),'Meeting Notes':parsed.summary,'Action Items':parsed.nextSteps,'Priority':priority,'Latitude':latitude,'Longitude':longitude,'Accuracy':accuracy,'New Account':isNewAccount,'Pending Review':isNewAccount};
+    var savePayload={'Hospital Name':hospitalName,'Visit Date':visitDate,'Territory':territory,'Visit Type':visitType,'Rep Name':repName,'User ID':userId,'User Role':userRole,'Display Name':repName,'Raw Transcript':transcript,'AI Summary':result,'Outcome':getOutcome(parsed.sentiment),'Meeting Notes':parsed.summary,'Action Items':parsed.nextSteps,'Priority':priority,'New Account':isNewAccount,'Pending Review':isNewAccount};
+    if(latitude!==null&&longitude!==null){savePayload['Latitude']=latitude;savePayload['Longitude']=longitude;savePayload['Accuracy']=accuracy;}
     if(!isNewAccount&&selectedAccountId){savePayload['Account']=[selectedAccountId];}
     if(isNewAccount&&newAccountId){savePayload['Account']=[newAccountId];}
     if(prefillVisitThreadId){savePayload['sourceVisitId']=prefillVisitThreadId;}
