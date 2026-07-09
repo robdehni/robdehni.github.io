@@ -107,6 +107,10 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text
 .note-ack-status{font-size:10.5px;font-weight:900;margin-top:6px;display:inline-block}
 .note-ack-status.acked{color:#1f8a52}
 .note-ack-status.not-acked{color:#a36a00}
+.note-row-status{margin-top:8px}
+.note-status-pill{font-size:11px;font-weight:800;display:inline-block}
+.note-status-pill.acked{color:#1f8a52}
+.note-status-pill.not-acked{color:#a36a00}
 </style>
   <!-- PWA v1 -->
   <link rel="manifest" href="/manifest.json">
@@ -168,7 +172,7 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text
     <textarea class="note-textarea" id="noteTextarea" placeholder="e.g. Good job on this visit. Don't forget the pricing brochure next time."></textarea>
     <div class="note-modal-actions">
       <button type="button" class="note-cancel-btn" id="noteCancelBtn">Cancel</button>
-      <button type="button" class="note-save-btn" id="noteSaveBtn">Save Note</button>
+      <button type="button" class="note-save-btn" id="noteSaveBtn">Send Note</button>
     </div>
     <div class="note-existing" id="noteExisting"></div>
   </div>
@@ -383,9 +387,13 @@ function showToast(msg){
 }
 
 var noteModalActionId=null;
+var noteModalHasExistingNotes=false;
 function openNoteModal(actionId){
   noteModalActionId=actionId;
+  noteModalHasExistingNotes=false;
   document.getElementById('noteTextarea').value='';
+  document.getElementById('noteTextarea').placeholder="e.g. Good job on this visit. Don't forget the pricing brochure next time.";
+  document.getElementById('noteSaveBtn').textContent='Send Note';
   document.getElementById('noteExisting').innerHTML='<div style="font-size:11px;color:#8a9bb3;font-weight:700;">Loading notes…</div>';
   document.getElementById('noteModalOverlay').classList.add('visible');
   loadExistingNotes(actionId);
@@ -400,6 +408,9 @@ async function loadExistingNotes(actionId){
     var records=d.records||[];
     var box=document.getElementById('noteExisting');
     if(!records.length){box.innerHTML='<div style="font-size:11px;color:#8a9bb3;font-weight:700;">No notes yet on this action.</div>';return;}
+    noteModalHasExistingNotes=true;
+    document.getElementById('noteSaveBtn').textContent='Add Note';
+    document.getElementById('noteTextarea').placeholder='Add another coaching note...';
     var html='';
     records.forEach(function(r){
       var f=r.fields||{};
@@ -417,9 +428,9 @@ async function loadExistingNotes(actionId){
 async function submitNote(){
   if(!noteModalActionId)return;
   var text=document.getElementById('noteTextarea').value.trim();
-  if(!text){alert('Enter a note first.');return;}
+  if(!text){alert(noteModalHasExistingNotes?'Type another coaching note to add to this conversation.':'Enter a note first.');return;}
   var btn=document.getElementById('noteSaveBtn');
-  btn.disabled=true;btn.textContent='Saving…';
+  btn.disabled=true;btn.textContent='Sending…';
   try{
     var res=await fetch(WORKER+'/save-note',{
       method:'POST',
@@ -428,12 +439,13 @@ async function submitNote(){
     });
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not save note');
-    showToast('Note saved.');
+    showToast('Note sent.');
     closeNoteModal();
+    loadNoteStatusForRow(noteModalActionId);
   }catch(err){
     alert('Could not save note: '+err.message);
   }finally{
-    btn.disabled=false;btn.textContent='Save Note';
+    btn.disabled=false;btn.textContent=noteModalHasExistingNotes?'Add Note':'Send Note';
   }
 }
 
@@ -733,6 +745,10 @@ function render(){
       if(getDismissedAt(x))html+='<span class="meta">Dismissed: '+escapeHtml(formatDateTime(getDismissedAt(x)))+(x['Dismissed By']?' by '+escapeHtml(x['Dismissed By']):'')+'</span>';
       html+='</div>';
 
+      if(!isOwner){
+        html+='<div class="note-row-status" id="note-status-'+r.id+'"></div>';
+      }
+
       html+='<div class="row-actions">';
       html+='<a class="visit-btn" data-visit-link="1" href="'+escapeHtml(visitHref(r))+'"><i data-lucide="file-text"></i> View Visit</a>';
       if(isOwner){
@@ -764,6 +780,32 @@ function render(){
 
   content.innerHTML=html;
   if(window.lucide)lucide.createIcons();
+
+  // Row-level note status — read-only, uses the existing /get-notes
+  // endpoint only. One independent fetch per eligible row so a slow or
+  // failing lookup never blocks rendering or any other row's status.
+  list.forEach(function(r){
+    var x=r.fields||{};
+    var assignedRecId=(x['Assigned Rep']&&x['Assigned Rep'][0])?x['Assigned Rep'][0]:null;
+    var isOwner=(assignedRecId!==null&&assignedRecId===myOwnRecordId);
+    if(!isOwner)loadNoteStatusForRow(r.id);
+  });
+}
+
+async function loadNoteStatusForRow(actionId){
+  var box=document.getElementById('note-status-'+actionId);
+  if(!box)return;
+  try{
+    var d=await fetchJson(WORKER+'/get-notes?actionId='+encodeURIComponent(actionId),6000);
+    var records=d.records||[];
+    if(!records.length){box.innerHTML='';return;}
+    var allAcked=records.every(function(r){return !!(r.fields||{})['Acknowledged'];});
+    box.innerHTML=allAcked
+      ? '<span class="note-status-pill acked">🟢 Notes acknowledged</span>'
+      : '<span class="note-status-pill not-acked">🟠 Note awaiting rep acknowledgement</span>';
+  }catch(e){
+    // Non-fatal — leaves the badge blank rather than blocking the row.
+  }
 }
 
 // Owner-only actions — the Worker's /complete-action and /dismiss-action
