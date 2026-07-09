@@ -139,6 +139,66 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
   font-size:20px;font-weight:900;line-height:1;
 }
 .back-to-top.visible{display:flex}
+
+/* ── Intelligence sections (main directory page) ── */
+.intel-section{margin-bottom:22px}
+.intel-section-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:0 2px}
+.intel-section-icon{font-size:15px;line-height:1}
+.intel-section-title{font-size:12.5px;font-weight:800;color:#0b1f3a;text-transform:uppercase;letter-spacing:0.6px}
+.intel-section-count{font-size:11px;color:#8a9bb3;font-weight:700}
+.intel-section.needs-attention .intel-section-title{color:#c43048}
+.intel-view-all{font-size:11.5px;color:#2f8fff;font-weight:700;cursor:pointer;text-decoration:none;padding:8px 2px;display:inline-block}
+.intel-view-all:hover{text-decoration:underline}
+.intel-empty{font-size:12px;color:#aab8cc;font-weight:600;padding:12px 2px}
+.badge-priority-flag{background:#fdeceb;color:#d9483c}
+.badge-actions-flag{background:#eaf3ff;color:#2f8fff}
+.territory-section-anchor{scroll-margin-top:16px}
+
+/* ── Upgraded status hero (top summary card in modal) ── */
+.status-hero-top{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px 18px;box-shadow:0 4px 14px rgba(11,31,58,0.05);margin-bottom:14px}
+.status-hero-top-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.status-hero-status{font-size:11px;font-weight:800;padding:4px 12px;border-radius:999px}
+.status-hero-next{margin-top:10px;padding-top:10px;border-top:1px solid #f0f4f9}
+.status-hero-next-label{font-size:10px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px}
+.status-hero-next-text{font-size:12.5px;color:#0b1f3a;font-weight:700;line-height:1.5}
+
+/* ── Alert cards (Priority Attention) ── */
+.alert-card{display:flex;gap:12px;background:#fff;border:1px solid #f5d3d3;border-left:4px solid #d9483c;border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.alert-card.alert-card-priority{border-left-color:#c9871c;border-color:#f0e0bf}
+.alert-card-icon{font-size:16px;line-height:1.3;flex-shrink:0}
+.alert-card-body{flex:1;min-width:0}
+.alert-card-top{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#8a9bb3;font-weight:700;margin-bottom:4px}
+.alert-card-label{font-size:12.5px;font-weight:800;color:#0b1f3a;margin-bottom:6px}
+.alert-card-actions{display:flex;gap:8px;margin-top:8px}
+
+/* ── Task cards (Open Actions) ── */
+.task-card{display:flex;gap:12px;background:#fff;border:1px solid #e3ebf5;border-left:4px solid #2f8fff;border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.task-card-icon{font-size:16px;line-height:1.3;flex-shrink:0;color:#2f8fff}
+.task-card-body{flex:1;min-width:0}
+.task-card-top{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#8a9bb3;font-weight:700;margin-bottom:4px}
+.task-card-text{font-size:12.5px;color:#3a4a63;line-height:1.55}
+.task-card-actions{display:flex;gap:8px;margin-top:9px}
+
+/* ── Shared small pill buttons used inside cards ── */
+.card-btn{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:7px 12px;border-radius:8px;cursor:pointer;border:none;text-decoration:none;user-select:none}
+.card-btn-primary{background:#2f8fff;color:#fff}
+.card-btn-primary:hover{background:#1f6fe0}
+.card-btn-ghost{background:#f4f8fc;color:#5b6b85;border:1px solid #e3ebf5}
+.card-btn-ghost:hover{border-color:#bcd8ff;color:#2f8fff}
+
+/* ── Clean visit report rendering (replaces raw markdown) ── */
+.report-block{margin-bottom:10px}
+.report-block:last-child{margin-bottom:0}
+.report-block-title{font-size:9.5px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px}
+.report-block-text{font-size:12px;color:#3a4a63;line-height:1.6}
+.report-block-primary .report-block-title{color:#2f8fff}
+
+/* ── Visit cards (Timeline) ── */
+.visit-card-upgraded{background:#fff;border:1px solid #e3ebf5;border-radius:14px;padding:14px 16px;margin-bottom:10px}
+
+/* ── Account update button ── */
+.add-note-btn{display:inline-flex;align-items:center;gap:6px;background:#eaf3ff;color:#2f8fff;border:1px solid #cfe4ff;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:800;cursor:pointer;margin-top:10px}
+.add-note-btn:hover{background:#d5eaff}
 </style>
   <!-- PWA v1 -->
   <link rel="manifest" href="/manifest.json">
@@ -253,8 +313,21 @@ function getAccountStatus(a){
   if(daysSince<=ACCOUNT_STATUS_REVISIT_DAYS)return{label:'Needs Revisit',cls:'badge-status-revisit'};
   return{label:'Dormant',cls:'badge-status-dormant'};
 }
+function getAccountQuickStats(a){
+  var highPriorityCount=0,actionCount=0,lastRep='';
+  var sorted=a.matchedVisits.slice().sort(function(x,y){
+    var xd=x.date?x.date.getTime():0,yd=y.date?y.date.getTime():0;return yd-xd;
+  });
+  if(sorted.length)lastRep=sorted[0].rep;
+  a.matchedVisits.forEach(function(v){
+    if(String(v.priority).toLowerCase()==='high')highPriorityCount++;
+    if(v.actionItems&&String(v.actionItems).trim())actionCount++;
+  });
+  return{highPriorityCount:highPriorityCount,actionCount:actionCount,lastRep:lastRep};
+}
 function accountCardHtml(a){
   var status=getAccountStatus(a);
+  var stats=getAccountQuickStats(a);
   return'<div class="activity-item" onclick="openAccountDetail(\''+a.id+'\')">'+
     '<div class="activity-header"><div class="activity-hospital">'+escapeHtml(a.name)+'</div><div class="activity-chevron"><i data-lucide="chevron-right"></i></div></div>'+
     '<div class="activity-meta">'+
@@ -262,6 +335,9 @@ function accountCardHtml(a){
       (a.territory?'<span class="activity-badge badge-territory">'+escapeHtml(a.territory)+'</span>':'')+
       (a.city?'<span class="activity-badge badge-territory">'+escapeHtml(a.city)+'</span>':'')+
       '<span class="activity-badge badge-rep">'+a.visitCount+' visit'+(a.visitCount!==1?'s':'')+'</span>'+
+      (stats.lastRep?'<span class="activity-badge badge-rep">'+escapeHtml(stats.lastRep)+'</span>':'')+
+      (stats.highPriorityCount>0?'<span class="activity-badge badge-priority-flag">'+stats.highPriorityCount+' high priority</span>':'')+
+      (stats.actionCount>0?'<span class="activity-badge badge-actions-flag">'+stats.actionCount+' action'+(stats.actionCount!==1?'s':'')+'</span>':'')+
     '</div>'+
     '<div class="activity-summary">'+(a.lastVisit?'Last visit: '+formatDate(a.lastVisit):'No visits logged yet')+'</div>'+
   '</div>';
@@ -276,11 +352,56 @@ function renderFlatList(q){
   if(filtered.length===0){document.getElementById('directoryList').innerHTML='<div class="empty">No accounts match your search.</div>';return;}
   document.getElementById('directoryList').innerHTML=filtered.map(accountCardHtml).join('');lucide.createIcons();
 }
-function renderTerritoryGroups(){
+function computeIntelligenceGroups(){
+  var needsAttention=[],recentlyActive=[],dormant=[];
+  ACCOUNTS.forEach(function(a){
+    var status=getAccountStatus(a);
+    var flagged=a.matchedVisits.some(function(v){
+      return String(v.priority).toLowerCase()==='high'||String(v.outcome).toLowerCase()==='negative';
+    });
+    if(flagged){needsAttention.push(a);}
+    else if(status.label==='Active'){recentlyActive.push(a);}
+    else if(status.label==='Dormant'){dormant.push(a);}
+    // Accounts with status 'Needs Revisit' and no flags fall through to
+    // the territory view only — three overlapping top sections would
+    // undercut the "at a glance" goal this is meant to solve.
+  });
+  needsAttention.sort(function(x,y){var xd=x.lastVisit?x.lastVisit.getTime():0,yd=y.lastVisit?y.lastVisit.getTime():0;return yd-xd;});
+  recentlyActive.sort(function(x,y){var xd=x.lastVisit?x.lastVisit.getTime():0,yd=y.lastVisit?y.lastVisit.getTime():0;return yd-xd;});
+  dormant.sort(function(x,y){return x.name.localeCompare(y.name);});
+  return{needsAttention:needsAttention,recentlyActive:recentlyActive,dormant:dormant};
+}
+// Recently Active / Dormant are capped so the top of the page stays a real
+// glance, not another long list — nothing is removed, the full set remains
+// exactly as before in the territory accordions directly below, and each
+// capped section links straight down to them.
+var INTEL_SECTION_CAP=6;
+function intelSectionHtml(key,icon,title,accounts,cap){
+  var shown=cap?accounts.slice(0,cap):accounts;
+  var remaining=accounts.length-shown.length;
+  var html='<div class="intel-section'+(key==='needs-attention'?' needs-attention':'')+'">';
+  html+='<div class="intel-section-header"><span class="intel-section-icon">'+icon+'</span><span class="intel-section-title">'+title+'</span><span class="intel-section-count">('+accounts.length+')</span></div>';
+  if(!accounts.length){
+    html+='<div class="intel-empty">Nothing here right now.</div>';
+  }else{
+    html+=shown.map(accountCardHtml).join('');
+    if(remaining>0){
+      html+='<a class="intel-view-all" onclick="document.getElementById(\'territorySectionAnchor\').scrollIntoView({behavior:\'smooth\'})">+'+remaining+' more — view all in territories below ↓</a>';
+    }
+  }
+  html+='</div>';
+  return html;
+}
+function renderDirectoryHome(){
   var total=ACCOUNTS.length;document.getElementById('directoryCount').textContent=total+' account'+(total!==1?'s':'');
   if(total===0){document.getElementById('directoryList').innerHTML='<div class="empty">No accounts found.</div>';return;}
-  var grouped={};ACCOUNTS.forEach(function(a){var key=a.canonicalTerritory;if(!grouped[key])grouped[key]=[];grouped[key].push(a);});
+  var groups=computeIntelligenceGroups();
   var html='';
+  html+=intelSectionHtml('needs-attention','⚠️','Needs Attention',groups.needsAttention,null);
+  html+=intelSectionHtml('recently-active','🟢','Recently Active',groups.recentlyActive,INTEL_SECTION_CAP);
+  html+=intelSectionHtml('dormant','⚪','Dormant / No Visits Logged',groups.dormant,INTEL_SECTION_CAP);
+  html+='<div class="intel-section" id="territorySectionAnchor"><div class="intel-section-header"><span class="intel-section-icon">📍</span><span class="intel-section-title">All Accounts by Territory</span></div>';
+  var grouped={};ACCOUNTS.forEach(function(a){var key=a.canonicalTerritory;if(!grouped[key])grouped[key]=[];grouped[key].push(a);});
   TERRITORY_ORDER.forEach(function(territoryName){
     var accs=grouped[territoryName];if(!accs||accs.length===0)return;
     accs.sort(function(a,b){return a.name.localeCompare(b.name);});
@@ -292,7 +413,11 @@ function renderTerritoryGroups(){
       '<div class="territory-accounts">'+accs.map(accountCardHtml).join('')+'</div>'+
     '</div>';
   });
+  html+='</div>';
   document.getElementById('directoryList').innerHTML=html;lucide.createIcons();
+}
+function renderTerritoryGroups(){
+  renderDirectoryHome();
 }
 function toggleTerritory(headerEl){headerEl.nextElementSibling.classList.toggle('open');headerEl.querySelector('.territory-chevron').classList.toggle('rotated');}
 var _searchTimer;document.getElementById('directorySearch').addEventListener('input',function(){clearTimeout(_searchTimer);_searchTimer=setTimeout(renderDirectory,200);});
@@ -307,10 +432,66 @@ function computeTrend(allVisits,filterKey){
   if(cur.length===0)return{label:'No recent activity',cls:'trend-flat',arrow:'—'};if(prior.length===0)return{label:'New activity',cls:'trend-flat',arrow:'•'};
   var cs=score(cur),ps=score(prior);if(cs>ps)return{label:'Improving',cls:'trend-up',arrow:'↑'};if(cs<ps)return{label:'Declining',cls:'trend-down',arrow:'↓'};return{label:'Flat',cls:'trend-flat',arrow:'→'};
 }
+function stripMarkdownArtifacts(text){
+  return String(text||'')
+    .replace(/\*\*(.*?)\*\*/g,'$1')
+    .replace(/^#{1,6}\s*/gm,'')
+    .replace(/^-{2,}\s*$/gm,'')
+    .replace(/\n{3,}/g,'\n\n')
+    .trim();
+}
+function parseVisitReportSections(text){
+  var sections={summary:'',contacts:'',outcomes:'',nextSteps:'',signals:'',sentiment:''};
+  var lines=String(text||'').split('\n');
+  var current='';
+  for(var i=0;i<lines.length;i++){
+    var raw=lines[i].trim();
+    var label=raw.replace(/\*\*/g,'').replace(/^#{1,6}\s*/,'');
+    if(/VISIT SUMMARY/i.test(label))current='summary';
+    else if(/KEY CONTACTS/i.test(label))current='contacts';
+    else if(/OUTCOMES/i.test(label))current='outcomes';
+    else if(/NEXT STEPS/i.test(label))current='nextSteps';
+    else if(/OPPORTUNITY/i.test(label))current='signals';
+    else if(/SENTIMENT/i.test(label))current='sentiment';
+    else if(/PRIORITY/i.test(label))current='';
+    else if(/^-{2,}$/.test(raw)){/* separator line — skip */}
+    else if(raw&&current){
+      var cleaned=stripMarkdownArtifacts(raw);
+      if(cleaned)sections[current]+=(sections[current]?'\n':'')+cleaned;
+    }
+  }
+  return sections;
+}
+var REPORT_SECTION_ORDER=[['summary','Summary'],['contacts','Key Contacts'],['outcomes','Outcomes'],['nextSteps','Next Steps'],['signals','Opportunity Signals'],['sentiment','Sentiment']];
 function buildSummaryHtml(text){
-  var t=String(text);if(t.length<=140){return'<div class="intel-text">'+escapeHtml(t)+'</div>';}
-  var shortText=t.slice(0,140).trim()+'…';
-  return'<div class="summary-wrap"><div class="intel-text summary-short">'+escapeHtml(shortText)+'</div><div class="intel-text summary-full">'+escapeHtml(t)+'</div><span class="summary-toggle toggle-more" onclick="this.closest(\'.summary-wrap\').classList.add(\'expanded\')">Show more</span><span class="summary-toggle toggle-less" onclick="this.closest(\'.summary-wrap\').classList.remove(\'expanded\')">Show less</span></div>';
+  var raw=String(text||'').trim();
+  if(!raw)return'';
+  var s=parseVisitReportSections(raw);
+  var blocks=REPORT_SECTION_ORDER.filter(function(p){return s[p[0]];});
+  if(!blocks.length){
+    // No recognized section headers — still strip stray markdown so
+    // nothing raw ever reaches the screen, keep the original short/full
+    // toggle behaviour for long plain text.
+    var cleaned=stripMarkdownArtifacts(raw);
+    if(cleaned.length<=140)return'<div class="intel-text">'+escapeHtml(cleaned)+'</div>';
+    var shortPlain=cleaned.slice(0,140).trim()+'…';
+    return'<div class="summary-wrap"><div class="intel-text summary-short">'+escapeHtml(shortPlain)+'</div><div class="intel-text summary-full">'+escapeHtml(cleaned)+'</div><span class="summary-toggle toggle-more" onclick="this.closest(\'.summary-wrap\').classList.add(\'expanded\')">Show more</span><span class="summary-toggle toggle-less" onclick="this.closest(\'.summary-wrap\').classList.remove(\'expanded\')">Show less</span></div>';
+  }
+  var firstBlock=blocks[0];
+  var restBlocks=blocks.slice(1);
+  var firstText=s[firstBlock[0]];
+  var shortFirst=firstText.length>140?firstText.slice(0,140).trim()+'…':firstText;
+  var html='<div class="summary-wrap">';
+  html+='<div class="report-block report-block-primary summary-short"><div class="report-block-title">'+firstBlock[1]+'</div><div class="report-block-text">'+escapeHtml(shortFirst).replace(/\n/g,'<br>')+'</div></div>';
+  html+='<div class="summary-full">';
+  html+='<div class="report-block report-block-primary"><div class="report-block-title">'+firstBlock[1]+'</div><div class="report-block-text">'+escapeHtml(firstText).replace(/\n/g,'<br>')+'</div></div>';
+  restBlocks.forEach(function(p){
+    html+='<div class="report-block"><div class="report-block-title">'+p[1]+'</div><div class="report-block-text">'+escapeHtml(s[p[0]]).replace(/\n/g,'<br>')+'</div></div>';
+  });
+  html+='</div>';
+  html+='<span class="summary-toggle toggle-more" onclick="this.closest(\'.summary-wrap\').classList.add(\'expanded\')">Show more</span><span class="summary-toggle toggle-less" onclick="this.closest(\'.summary-wrap\').classList.remove(\'expanded\')">Show less</span>';
+  html+='</div>';
+  return html;
 }
 function openAccountDetail(id){currentDetailAccountId=id;currentDetailFilter='30';renderAccountDetail();document.getElementById('accountDetailOverlay').style.display='flex';document.body.style.overflow='hidden';loadAccountUpdates();}
 function loadAccountUpdates(){
@@ -358,7 +539,7 @@ function saveAccountUpdate(){
 function setDetailFilter(key){currentDetailFilter=key;renderAccountDetail();renderAccountUpdatesList();}
 function closeAccountDetail(){document.getElementById('accountDetailOverlay').style.display='none';document.body.style.overflow='';}
 function toggleSection(headerEl){headerEl.nextElementSibling.classList.toggle('open');headerEl.querySelector('.toggle-arrow').classList.toggle('rotated');}
-function toggleOA(id,btn){var el=document.getElementById(id);if(!el)return;var open=el.style.display!=='none';el.style.display=open?'none':'block';btn.textContent=open?'▸ Expand':'▴ Collapse';}
+function toggleOA(id,btn){var el=document.getElementById(id);if(!el)return;var open=el.style.display!=='none';el.style.display=open?'none':'block';btn.textContent=open?'View details':'Hide details';}
 function gotoTimeline(itemId){
   var body=document.getElementById('timeline-body');var toggle=document.getElementById('timeline-toggle');
   if(body&&!body.classList.contains('open')){if(toggle)toggleSection(toggle);}
@@ -411,29 +592,70 @@ function renderAccountDetail(){
   var mostActiveRep=null,mostActiveCount=0;Object.keys(allTimeRepCounts).forEach(function(r){if(allTimeRepCounts[r]>mostActiveCount){mostActiveCount=allTimeRepCounts[r];mostActiveRep=r;}});
   var periodRepCounts={};windowVisits.forEach(function(v){periodRepCounts[v.rep]=(periodRepCounts[v.rep]||0)+1;});
   var periodRepList=Object.keys(periodRepCounts).map(function(r){return{rep:r,count:periodRepCounts[r]};}).sort(function(a,b){return b.count-a.count;});
+  var accStatus=getAccountStatus(acc);
   var html='';
-  html+='<div class="detail-section"><div class="detail-section-title">Current Account Status</div><div class="status-hero"><div class="status-row"><span class="status-label">Last Visit</span><span class="status-value">'+(lastVisit&&lastVisit.date?formatDate(lastVisit.date):'—')+'</span></div><div class="status-row"><span class="status-label">Last Rep</span><span class="status-value">'+(lastVisit?escapeHtml(lastVisit.rep):'—')+'</span></div><div class="status-row"><span class="status-label">Current Sentiment</span><span class="status-value">'+(lastVisit&&lastVisit.outcome?'<span class="activity-badge '+outcomeClass(lastVisit.outcome)+'">'+escapeHtml(lastVisit.outcome)+'</span>':'—')+(trend?' <span class="'+trend.cls+'" style="font-size:11px;font-weight:800;margin-left:4px">'+trend.arrow+' '+trend.label+'</span>':'')+'</span></div><div class="status-row"><span class="status-label">Open Actions ('+filterLabel(currentDetailFilter)+')</span><span class="status-value">'+openActionsCount+'</span></div><div class="status-row"><span class="status-label">High Priority ('+filterLabel(currentDetailFilter)+')</span><span class="status-value">'+highPriorityCount+'</span></div><div class="status-row"><span class="status-label">Next Required Action</span><span class="status-value">'+(nextAction?escapeHtml(truncate(nextAction.actionItems,60)):'None recorded')+'</span></div></div></div>';
-  html+='<div class="detail-section"><div class="detail-section-title">Account Updates</div><div id="accountUpdatesList"><div class="detail-empty">Loading updates...</div></div><div id="accountUpdateFormWrap" style="display:none;margin-top:10px"><textarea id="accountUpdateText" placeholder="What changed since the last visit?" style="width:100%;min-height:70px;padding:10px;border:1px solid #e3ebf5;border-radius:10px;font-family:inherit;font-size:13px;resize:vertical"></textarea><div style="display:flex;gap:8px;margin-top:8px"><button class="filter-pill" style="flex:1;text-align:center" onclick="saveAccountUpdate()">Save</button><button class="filter-pill" style="flex:1;text-align:center" onclick="toggleAccountUpdateForm(false)">Cancel</button></div></div><button class="view-in-timeline" style="margin-top:10px" onclick="toggleAccountUpdateForm(true)">+ Add Account Update</button></div>';
+  html+='<div class="status-hero-top">'+
+    '<div class="status-hero-top-row"><span class="status-hero-status '+accStatus.cls+'">'+accStatus.label+'</span>'+(trend?'<span class="'+trend.cls+'" style="font-size:11px;font-weight:800">'+trend.arrow+' '+trend.label+'</span>':'')+'</div>'+
+    '<div class="status-row"><span class="status-label">Last Visit</span><span class="status-value">'+(lastVisit&&lastVisit.date?formatDate(lastVisit.date):'—')+'</span></div>'+
+    '<div class="status-row"><span class="status-label">Last Rep</span><span class="status-value">'+(lastVisit?escapeHtml(lastVisit.rep):'—')+'</span></div>'+
+    '<div class="status-row"><span class="status-label">Current Sentiment</span><span class="status-value">'+(lastVisit&&lastVisit.outcome?'<span class="activity-badge '+outcomeClass(lastVisit.outcome)+'">'+escapeHtml(lastVisit.outcome)+'</span>':'—')+'</span></div>'+
+    '<div class="status-row"><span class="status-label">Open Actions ('+filterLabel(currentDetailFilter)+')</span><span class="status-value">'+openActionsCount+'</span></div>'+
+    '<div class="status-row"><span class="status-label">High Priority ('+filterLabel(currentDetailFilter)+')</span><span class="status-value">'+highPriorityCount+'</span></div>'+
+    '<div class="status-hero-next"><div class="status-hero-next-label">Next Required Action</div><div class="status-hero-next-text">'+(nextAction?escapeHtml(truncate(nextAction.actionItems,90)):'None recorded')+'</div></div>'+
+  '</div>';
+  html+='<div class="detail-section"><div class="detail-section-title">Account Updates</div><div id="accountUpdatesList"><div class="detail-empty">Loading updates...</div></div><div id="accountUpdateFormWrap" style="display:none;margin-top:10px"><textarea id="accountUpdateText" placeholder="What changed since the last visit?" style="width:100%;min-height:70px;padding:10px;border:1px solid #e3ebf5;border-radius:10px;font-family:inherit;font-size:13px;resize:vertical"></textarea><div style="display:flex;gap:8px;margin-top:8px"><button class="filter-pill" style="flex:1;text-align:center" onclick="saveAccountUpdate()">Save</button><button class="filter-pill" style="flex:1;text-align:center" onclick="toggleAccountUpdateForm(false)">Cancel</button></div></div><button type="button" class="add-note-btn" onclick="toggleAccountUpdateForm(true)">+ Add note / contact update</button></div>';
   html+='<div class="detail-section"><div class="detail-section-title">Account Ownership</div><div class="ownership-grid"><div class="ownership-card"><div class="ownership-label">Most Active (All-Time)</div><div class="ownership-name">'+(mostActiveRep?escapeHtml(mostActiveRep):'—')+'</div><div class="ownership-sub">'+mostActiveCount+' visit'+(mostActiveCount!==1?'s':'')+'</div></div><div class="ownership-card"><div class="ownership-label">Most Recent</div><div class="ownership-name">'+(lastVisit?escapeHtml(lastVisit.rep):'—')+'</div><div class="ownership-sub">'+(lastVisit&&lastVisit.date?formatDate(lastVisit.date):'—')+'</div></div></div><div class="ownership-breakdown"><div class="ownership-label" style="margin-bottom:4px">Visits in '+filterLabel(currentDetailFilter)+'</div>'+(periodRepList.length===0?'<div style="font-size:11.5px;color:#aab8cc;font-weight:600">No visits in this period.</div>':periodRepList.map(function(r){return'<div class="ownership-bar-row"><span>'+escapeHtml(r.rep)+'</span><span>'+r.count+'</span></div>';}).join(''))+'</div></div>';
   html+='<div class="detail-section"><div class="detail-section-title">Activity Window</div><div class="filter-pills">'+['7','30','90','all'].map(function(k){return'<div class="filter-pill'+(currentDetailFilter===k?' active':'')+'" onclick="setDetailFilter(\''+k+'\')">'+filterLabel(k)+'</div>';}).join('')+'</div></div>';
   html+='<div class="detail-section"><div class="section-toggle" onclick="toggleSection(this)"><span class="detail-section-title" style="margin-bottom:0">Priority Attention ('+priorityAttnCount+')</span><span class="toggle-arrow"><i data-lucide="chevron-down"></i></span></div><div class="collapsible-content">';
   if(priorityAttnCount===0){html+='<div class="detail-empty">Nothing requires priority attention in '+filterLabel(currentDetailFilter).toLowerCase()+'.</div>';}
-  else{if(attnPriority.length){html+='<div class="attn-group"><div class="attn-group-title">High Priority ('+attnPriority.length+')</div>';attnPriority.forEach(function(v){html+='<div class="attn-item attn-priority"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div><span class="signal-badge badge-priority-high">High Priority</span><button class="view-in-timeline" onclick="gotoTimeline(\'tl-'+v.id+'\')">→ View visit</button></div>';});html+='</div>';}
-  if(attnNegative.length){html+='<div class="attn-group"><div class="attn-group-title">Negative Sentiment ('+attnNegative.length+')</div>';attnNegative.forEach(function(v){html+='<div class="attn-item"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div><span class="signal-badge badge-negative-outcome">Negative Outcome</span><button class="view-in-timeline" onclick="gotoTimeline(\'tl-'+v.id+'\')">→ View visit</button></div>';});html+='</div>';}}
+  else{
+    attnPriority.forEach(function(v){
+      html+='<div class="alert-card alert-card-priority"><span class="alert-card-icon">🔴</span><div class="alert-card-body">'+
+        '<div class="alert-card-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div>'+
+        '<div class="alert-card-label">High Priority Visit</div>'+
+        '<div class="alert-card-actions"><button type="button" class="card-btn card-btn-primary" onclick="gotoTimeline(\'tl-'+v.id+'\')">Open visit</button></div>'+
+      '</div></div>';
+    });
+    attnNegative.forEach(function(v){
+      html+='<div class="alert-card"><span class="alert-card-icon">🔴</span><div class="alert-card-body">'+
+        '<div class="alert-card-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div>'+
+        '<div class="alert-card-label">Negative Outcome</div>'+
+        '<div class="alert-card-actions"><button type="button" class="card-btn card-btn-primary" onclick="gotoTimeline(\'tl-'+v.id+'\')">Open visit</button></div>'+
+      '</div></div>';
+    });
+  }
   html+='</div></div>';
   html+='<div class="detail-section"><div class="section-toggle" onclick="toggleSection(this)"><span class="detail-section-title" style="margin-bottom:0">Open Actions ('+attnActions.length+')</span><span class="toggle-arrow"><i data-lucide="chevron-down"></i></span></div><div class="collapsible-content">';
   if(attnActions.length===0){html+='<div class="detail-empty">No open actions in '+filterLabel(currentDetailFilter).toLowerCase()+'.</div>';}
-  else{attnActions.forEach(function(v,idx){var aText=String(v.actionItems||'').trim();var firstLine=aText.split('\n')[0].trim();var headline=firstLine.length>70?firstLine.substring(0,70)+'…':firstLine;var needsExpand=aText.length>80||aText.indexOf('\n')>-1;var oid='oa-'+idx;html+='<div class="attn-item attn-action"><div class="attn-item-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div>'+(needsExpand?'<div class="oa-headline">'+escapeHtml(headline)+'</div><div class="oa-full" id="'+oid+'" style="display:none">'+escapeHtml(aText)+'</div><span class="oa-toggle" onclick="toggleOA(\''+oid+'\',this)">▸ Expand</span>':'<div class="attn-item-text">'+escapeHtml(aText)+'</div>')+'<button class="view-in-timeline" onclick="gotoTimeline(\'tl-'+v.id+'\')">→ View visit</button></div>';});}
+  else{
+    attnActions.forEach(function(v,idx){
+      var aText=String(v.actionItems||'').trim();
+      var firstLine=aText.split('\n')[0].trim();
+      var headline=firstLine.length>70?firstLine.substring(0,70)+'…':firstLine;
+      var needsExpand=aText.length>80||aText.indexOf('\n')>-1;
+      var oid='oa-'+idx;
+      html+='<div class="task-card"><span class="task-card-icon">✓</span><div class="task-card-body">'+
+        '<div class="task-card-top"><span>'+(v.date?formatDate(v.date):'—')+'</span><span>'+escapeHtml(v.rep)+'</span></div>'+
+        (needsExpand
+          ?'<div class="task-card-text">'+escapeHtml(headline)+'</div><div class="task-card-text oa-full" id="'+oid+'" style="display:none">'+escapeHtml(aText)+'</div>'
+          :'<div class="task-card-text">'+escapeHtml(aText)+'</div>')+
+        '<div class="task-card-actions">'+
+          (needsExpand?'<button type="button" class="card-btn card-btn-ghost" id="'+oid+'-btn" onclick="toggleOA(\''+oid+'\',this)">View details</button>':'')+
+          '<button type="button" class="card-btn card-btn-primary" onclick="gotoTimeline(\'tl-'+v.id+'\')">Open visit</button>'+
+        '</div>'+
+      '</div></div>';
+    });
+  }
   html+='</div></div>';
   html+='<div class="detail-section"><div class="section-toggle" id="timeline-toggle" onclick="toggleSection(this)"><span class="detail-section-title" style="margin-bottom:0">Timeline ('+windowVisits.length+')</span><span class="toggle-arrow"><i data-lucide="chevron-down"></i></span></div><div class="collapsible-content" id="timeline-body">';
   if(windowVisits.length===0){html+='<div class="detail-empty">No visits in this period.</div>';}
-  else{windowVisits.forEach(function(v){html+='<div class="timeline-item" id="tl-'+v.id+'"><div class="timeline-top"><div class="timeline-date">'+(v.date?formatDate(v.date):'—')+'</div><div class="timeline-badges">'+(v.priority?'<span class="activity-badge '+priorityClass(v.priority)+'">'+escapeHtml(v.priority)+'</span>':'')+(v.outcome?'<span class="activity-badge '+outcomeClass(v.outcome)+'">'+escapeHtml(v.outcome)+'</span>':'')+'</div></div><div class="timeline-meta">'+escapeHtml(v.rep)+(v.type?' · '+escapeHtml(v.type):'')+'</div>'+(v.aiSummary?buildSummaryHtml(v.aiSummary):'')+'</div>';});}
+  else{windowVisits.forEach(function(v){html+='<div class="visit-card-upgraded" id="tl-'+v.id+'"><div class="timeline-top"><div class="timeline-date">'+(v.date?formatDate(v.date):'—')+'</div><div class="timeline-badges">'+(v.priority?'<span class="activity-badge '+priorityClass(v.priority)+'">'+escapeHtml(v.priority)+'</span>':'')+(v.outcome?'<span class="activity-badge '+outcomeClass(v.outcome)+'">'+escapeHtml(v.outcome)+'</span>':'')+'</div></div><div class="timeline-meta">'+escapeHtml(v.rep)+(v.type?' · '+escapeHtml(v.type):'')+'</div>'+(v.aiSummary?buildSummaryHtml(v.aiSummary):'')+'</div>';});}
   html+='</div></div>';
   var discoveryVisit=allVisits.find(function(v){return v.newAccount;});
   html+='<div class="detail-section"><div class="section-toggle" onclick="var c=this.nextElementSibling;c.classList.toggle(\'open\');this.querySelector(\'.toggle-arrow\').classList.toggle(\'rotated\')"><span class="detail-section-title" style="margin-bottom:0">Full History ('+allVisits.length+' total visits)</span><span class="toggle-arrow"><i data-lucide="chevron-down"></i></span></div><div class="full-history-content">';
   if(discoveryVisit){var reviewStatus=discoveryVisit.reviewed?'Reviewed':(discoveryVisit.pendingReview?'Pending Review':'—');html+='<div class="discovery-mini"><b>Discovered</b> '+(discoveryVisit.date?formatDate(discoveryVisit.date):'—')+' by '+escapeHtml(discoveryVisit.rep)+' · Review status: '+reviewStatus+'</div>';}
   if(allVisits.length===0){html+='<div class="detail-empty">No visits logged yet.</div>';}
-  else{allVisits.forEach(function(v){html+='<div class="timeline-item"><div class="timeline-top"><div class="timeline-date">'+(v.date?formatDate(v.date):'—')+'</div><div class="timeline-badges">'+(v.priority?'<span class="activity-badge '+priorityClass(v.priority)+'">'+escapeHtml(v.priority)+'</span>':'')+(v.outcome?'<span class="activity-badge '+outcomeClass(v.outcome)+'">'+escapeHtml(v.outcome)+'</span>':'')+'</div></div><div class="timeline-meta">'+escapeHtml(v.rep)+(v.type?' · '+escapeHtml(v.type):'')+'</div>'+(v.aiSummary?buildSummaryHtml(v.aiSummary):'')+'</div>';});}
+  else{allVisits.forEach(function(v){html+='<div class="visit-card-upgraded"><div class="timeline-top"><div class="timeline-date">'+(v.date?formatDate(v.date):'—')+'</div><div class="timeline-badges">'+(v.priority?'<span class="activity-badge '+priorityClass(v.priority)+'">'+escapeHtml(v.priority)+'</span>':'')+(v.outcome?'<span class="activity-badge '+outcomeClass(v.outcome)+'">'+escapeHtml(v.outcome)+'</span>':'')+'</div></div><div class="timeline-meta">'+escapeHtml(v.rep)+(v.type?' · '+escapeHtml(v.type):'')+'</div>'+(v.aiSummary?buildSummaryHtml(v.aiSummary):'')+'</div>';});}
   html+='</div></div>';
   document.getElementById('detailBody').innerHTML=html;lucide.createIcons();
 }
