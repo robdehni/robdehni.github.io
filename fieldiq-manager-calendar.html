@@ -471,6 +471,11 @@ function renderDayPanel(isoDate,dayActions){
     var territory=f['Territory']||'';
     var visitType=f['Visit Type']||'';
     var priority=f['Priority']||'';
+    // Per-action ownership check — the manager may only Log Update against
+    // their own actions (Assigned Rep resolves to their own User ID). Every
+    // other rep's action must never expose this control here, regardless
+    // of which rep filter or "All reps" view is currently selected.
+    var canLogUpdate=(f['Rep Key']===currentUserId);
 
     html+='<div class="cal-action-item" id="cal-action-'+r.id+'" onclick="openActionPopupById(\''+r.id+'\')">';
     html+='<div class="cal-action-account">'+escapeHtml(account)+
@@ -482,9 +487,11 @@ function renderDayPanel(isoDate,dayActions){
       '</div>';
     html+='<div class="cal-action-text">'+escapeHtml(action||'Open action')+'</div>';
     html+='<a class="cal-action-link" href="'+managerActionsHref(r.id)+'" onclick="event.stopPropagation()">→ Open in Manager Actions</a>';
-    var linkedVisitArr=f['Source Visit']||f['Visit']||f['Field Visit']||f['Visit Record']||[];
-    var linkedVisitId=Array.isArray(linkedVisitArr)&&linkedVisitArr.length?linkedVisitArr[0]:(typeof linkedVisitArr==='string'?linkedVisitArr:'');
-    html+=' &nbsp;&middot;&nbsp; <a class="cal-action-link" href="./fieldiq-log-visit.html?account='+encodeURIComponent(account)+'&sourceRef='+encodeURIComponent(r.id)+(linkedVisitId?'&visitId='+encodeURIComponent(linkedVisitId):'')+'&calYear='+viewYear+'&calMonth='+viewMonth+'&calDay='+encodeURIComponent(isoDate)+'" onclick="event.stopPropagation()">🎙️ Log Update</a>';
+    if(canLogUpdate){
+      var linkedVisitArr=f['Source Visit']||f['Visit']||f['Field Visit']||f['Visit Record']||[];
+      var linkedVisitId=Array.isArray(linkedVisitArr)&&linkedVisitArr.length?linkedVisitArr[0]:(typeof linkedVisitArr==='string'?linkedVisitArr:'');
+      html+=' &nbsp;&middot;&nbsp; <a class="cal-action-link" href="./fieldiq-log-visit.html?account='+encodeURIComponent(account)+'&sourceRef='+encodeURIComponent(r.id)+(linkedVisitId?'&visitId='+encodeURIComponent(linkedVisitId):'')+'&calYear='+viewYear+'&calMonth='+viewMonth+'&calDay='+encodeURIComponent(isoDate)+'" onclick="event.stopPropagation()">🎙️ Log Update</a>';
+    }
     html+='</div>';
   });
 
