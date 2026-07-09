@@ -753,8 +753,10 @@ function render(){
       html+='<a class="visit-btn" data-visit-link="1" href="'+escapeHtml(visitHref(r))+'"><i data-lucide="file-text"></i> View Visit</a>';
       if(isOwner){
         html+='<a class="visit-btn" href="'+escapeHtml(logUpdateHref(r))+'">🎙️ Log Update</a>';
-      }else{
+      }else if(!complete&&!dismissed){
         html+='<button type="button" class="visit-btn" data-note-action-id="'+escapeHtml(r.id)+'">💬 Add Note</button>';
+      }else{
+        html+='<button type="button" class="visit-btn" disabled>💬 Notes closed</button>';
       }
       if(dismissed){
         html+='<button class="reminder-btn" disabled><i data-lucide="x"></i> Dismissed</button>';
