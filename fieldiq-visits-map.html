@@ -226,6 +226,22 @@ function trunc(t,n){
   return t.length>n?t.substring(0,n)+'...':t;
 }
 
+// A visit only counts as mappable when it has both coordinates AND, if an
+// Accuracy value was recorded for it, that accuracy is at or better than
+// this threshold — same 500m value already agreed for Log Visit's own save
+// gate. A visit with no Accuracy value at all (older records saved before
+// that field existed) is not excluded by this second check, since there is
+// no evidence either way for those — only a visit with a known, recorded,
+// poor accuracy is filtered out. This is what keeps a stale low-accuracy
+// pin (e.g. one that resolved somewhere like an airport) from rendering,
+// without deleting or modifying anything in Airtable.
+var MAP_GPS_ACCURACY_THRESHOLD_METERS=500;
+function hasValidMapCoordinates(f){
+  if(!f||!f.Latitude||!f.Longitude)return false;
+  if(f.Accuracy!=null&&f.Accuracy>MAP_GPS_ACCURACY_THRESHOLD_METERS)return false;
+  return true;
+}
+
 function getDateCutoffs(period){
   var now=new Date();
   var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -260,7 +276,7 @@ function getDateCutoffs(period){
 
 function fitToResults(){
   var coords=currentFilteredVisits
-    .filter(function(v){return v.fields.Latitude&&v.fields.Longitude;})
+    .filter(function(v){return hasValidMapCoordinates(v.fields);})
     .map(function(v){return [v.fields.Latitude,v.fields.Longitude];});
 
   if(coords.length===0)return;
@@ -279,7 +295,7 @@ function goToVisit(visitId){
   var fTerr=document.getElementById('fTerr').value;
   var fRep=document.getElementById('fRep').value;
   var fSent=document.getElementById('fSent').value;
-  var mapVisitIds=currentFilteredVisits.filter(function(v){return v.fields.Latitude&&v.fields.Longitude;}).map(function(v){return v.id;});
+  var mapVisitIds=currentFilteredVisits.filter(function(v){return hasValidMapCoordinates(v.fields);}).map(function(v){return v.id;});
   try{sessionStorage.setItem('fieldiq_map_visit_list',JSON.stringify(mapVisitIds));}catch(e){}
   var returnUrl='./fieldiq-visits-map.html?mapLat='+encodeURIComponent(c.lat)+'&mapLng='+encodeURIComponent(c.lng)+'&mapZoom='+encodeURIComponent(z)+'&mapVisitId='+encodeURIComponent(visitId)+'&fPeriod='+encodeURIComponent(fPeriod)+'&fTerr='+encodeURIComponent(fTerr)+'&fRep='+encodeURIComponent(fRep)+'&fSent='+encodeURIComponent(fSent);
   var navUrl='./fieldiq-visit-history.html?visitId='+encodeURIComponent(visitId)+'&source=map&rep='+encodeURIComponent(fRep)+'&territory='+encodeURIComponent(fTerr)+'&returnTo='+encodeURIComponent(returnUrl);
@@ -291,7 +307,7 @@ function renderMarkers(visits){
   var p=0,n=0,neg=0,shown=0;
   visits.forEach(function(v){
     var f=v.fields;
-    if(!f.Latitude||!f.Longitude)return;
+    if(!hasValidMapCoordinates(f))return;
     shown++;
     var sent=v._sent;
     if(sent==='positive')p++;
