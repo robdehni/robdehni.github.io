@@ -104,6 +104,9 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text
 .note-existing{margin-top:14px;border-top:1px solid #e3ebf5;padding-top:12px;max-height:160px;overflow-y:auto}
 .note-existing-item{background:#f8fbff;border:1px solid #e3ebf5;border-radius:10px;padding:9px 10px;margin-bottom:8px;font-size:12.5px;color:#263b59;font-weight:650}
 .note-existing-meta{font-size:10px;color:#8a9bb3;font-weight:800;margin-top:4px}
+.note-ack-status{font-size:10.5px;font-weight:900;margin-top:6px;display:inline-block}
+.note-ack-status.acked{color:#1f8a52}
+.note-ack-status.not-acked{color:#a36a00}
 </style>
   <!-- PWA v1 -->
   <link rel="manifest" href="/manifest.json">
@@ -400,9 +403,11 @@ async function loadExistingNotes(actionId){
     var html='';
     records.forEach(function(r){
       var f=r.fields||{};
+      var acked=!!f['Acknowledged'];
       html+='<div class="note-existing-item">'+escapeHtml(f['Notes']||'')+
-        '<div class="note-existing-meta">'+escapeHtml(f['Created By']||'Manager')+' · '+escapeHtml(formatDateTime(f['Created Date']||''))+
-        (f['Acknowledged']?' · Acknowledged':' · Not yet seen')+'</div></div>';
+        '<div class="note-existing-meta">'+escapeHtml(f['Created By']||'Manager')+' · '+escapeHtml(formatDateTime(f['Created Date']||''))+'</div>'+
+        '<div class="note-ack-status '+(acked?'acked':'not-acked')+'">'+(acked?'Acknowledged by rep':'Not yet acknowledged')+'</div>'+
+      '</div>';
     });
     box.innerHTML=html;
   }catch(e){
