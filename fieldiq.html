@@ -60,6 +60,14 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .ask-chip:hover:not(:disabled){border-color:#bcd8ff;background:#eef6ff}
 .ask-chip:disabled{opacity:.5;cursor:not-allowed}
 .ask-answer-box{margin-top:12px;background:#f4f9ff;border:1px solid #d3e6ff;border-radius:12px;padding:14px}
+.ask-sources{margin-top:12px;padding-top:12px;border-top:1px solid #d3e6ff}
+.ask-sources-label{font-size:9.5px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px}
+.ask-sources-row{display:flex;flex-wrap:wrap;gap:6px}
+.ask-source-btn{display:inline-block;font-size:11px;font-weight:800;padding:6px 11px;border-radius:8px;text-decoration:none;background:#fff;border:1px solid #cfe4ff;color:#2f6fd8}
+.ask-source-btn:hover{background:#eef6ff;border-color:#2f8fff}
+.ask-source-btn.visit{border-left:3px solid #2f8fff}
+.ask-source-btn.action{border-left:3px solid #c9871c}
+.ask-source-btn.account{border-left:3px solid #5b6b85}
 .ask-answer-question{font-size:11px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
 .ask-answer-text{font-size:13px;color:#0b1f3a;line-height:1.6;font-weight:600}
 .ask-loading{margin-top:12px;font-size:12.5px;color:#8a9bb3;font-weight:600;display:flex;align-items:center;gap:8px}
@@ -396,6 +404,22 @@ function renderHomeSummary(agg){
 // don't have that." Left out until real day-over-day data exists, rather
 // than asked and hoped the model declines correctly.
 var MANAGER_BRIEFING_QUESTION = "Give me a short daily briefing: top priorities today, accounts needing immediate attention, overdue follow-ups, high-risk customers, new business opportunities, and any reps who may need coaching based on their activity.";
+// Renders the typed sources array [{type,id,label,url}] as clickable
+// buttons beneath an answer. Shared by both the auto-briefing and the
+// chip-tap flow, so a source only ever renders one way. Every URL here
+// came from the Worker's own deterministic construction — nothing in
+// this function invents a link, it only displays what was returned.
+function renderSourcesHtml(sources){
+  if (!sources || !sources.length) return '';
+  var typeLabel = { visit: 'Open Visit', action: 'Open Action', account: 'View Account' };
+  var html = '<div class="ask-sources"><div class="ask-sources-label">Sources</div><div class="ask-sources-row">';
+  sources.forEach(function(s){
+    var btnLabel = (typeLabel[s.type] || 'Open') + (s.label ? ': ' + s.label : '');
+    html += '<a class="ask-source-btn ' + escapeHtmlHome(s.type || '') + '" href="' + escapeHtmlHome(s.url) + '" title="' + escapeHtmlHome(btnLabel) + '">' + escapeHtmlHome(typeLabel[s.type] || 'Open') + '</a>';
+  });
+  html += '</div></div>';
+  return html;
+}
 function loadManagerBriefing(){
   var area = document.getElementById('briefingArea');
   if (!area) return;
@@ -420,7 +444,7 @@ function loadManagerBriefing(){
         renderBriefingError();
         return;
       }
-      area.innerHTML = '<div class="ask-answer-box"><div class="ask-answer-text">' + escapeHtmlHome(result.data.answer) + '</div></div>';
+      area.innerHTML = '<div class="ask-answer-box"><div class="ask-answer-text">' + escapeHtmlHome(result.data.answer) + '</div>' + renderSourcesHtml(result.data.sources) + '</div>';
     })
     .catch(function(){ renderBriefingError(); });
 }
@@ -485,6 +509,7 @@ function askFieldIQ(question){
         '<div class="ask-answer-box">' +
           '<div class="ask-answer-question">' + escapeHtmlHome(question) + '</div>' +
           '<div class="ask-answer-text">' + escapeHtmlHome(result.data.answer) + '</div>' +
+          renderSourcesHtml(result.data.sources) +
         '</div>' +
         '<span class="ask-again-link" id="askAgainLink">Ask another question</span>';
       document.getElementById('askAgainLink').addEventListener('click', function(){
