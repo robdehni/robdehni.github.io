@@ -139,11 +139,22 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .rep-briefing-error{font-size:12.5px;color:#7a6000;background:#fff3e0;border:1px solid #ffe0a3;border-radius:10px;padding:10px 12px}
 .rep-briefing-retry{margin-top:8px;border:none;background:#2f8fff;color:#fff;padding:7px 13px;border-radius:8px;font-weight:800;font-size:11.5px;cursor:pointer}
 .rep-briefing-empty{font-size:12.5px;color:#aab8cc;font-weight:600;padding:6px 0}
-.rep-focus-row{display:flex;gap:8px;margin-bottom:12px}
-.rep-focus-stat{flex:1;text-align:center;background:#f8fbff;border:1px solid #e3ebf5;border-radius:12px;padding:12px 6px}
-.rep-focus-dot{font-size:14px;display:block;margin-bottom:4px}
-.rep-focus-count{font-size:20px;font-weight:800;color:#0b1f3a;display:block;line-height:1}
-.rep-focus-label{font-size:9.5px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-top:3px}
+.rep-coach-text{font-size:14px;color:#0b1f3a;font-weight:600;line-height:1.6;background:linear-gradient(135deg,#f4f9ff,#eef6ff);border:1px solid #d3e6ff;border-radius:14px;padding:14px 15px;margin-bottom:14px}
+.rep-priority-list{margin-bottom:12px}
+.rep-priority-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e3ebf5;border-left:3px solid #aab8cc;border-radius:10px;padding:10px 12px;margin-bottom:6px;text-decoration:none}
+.rep-priority-item:last-child{margin-bottom:0}
+.rep-priority-item.overdue{border-left-color:#c43048}
+.rep-priority-item.today{border-left-color:#c9871c}
+.rep-priority-item.upcoming{border-left-color:#2f8fff}
+.rep-priority-account{font-size:12.5px;font-weight:800;color:#0b1f3a;flex-shrink:0;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rep-priority-text{font-size:11.5px;color:#5b6b85;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rep-priority-arrow{color:#aab8cc;font-size:14px;flex-shrink:0}
+.rep-focus-row{display:flex;gap:6px;margin-bottom:10px}
+.rep-focus-stat{flex:1;text-align:center;background:#f8fbff;border:1px solid #edf2f8;border-radius:10px;padding:8px 4px}
+.rep-focus-dot{font-size:11px;display:block;margin-bottom:2px}
+.rep-focus-count{font-size:15px;font-weight:800;color:#5b6b85;display:block;line-height:1}
+.rep-focus-label{font-size:8.5px;color:#aab8cc;font-weight:800;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-top:2px}
+.rep-focus-week{font-size:10.5px;color:#8a9bb3;font-weight:700;text-align:center;margin-bottom:10px}
 .rep-focus-nudge{font-size:12px;color:#c43048;font-weight:700;margin-bottom:12px;text-align:center}
 .rep-focus-btn{display:block;text-align:center;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-size:13.5px;font-weight:800;padding:12px;border-radius:12px;text-decoration:none}
 </style>
@@ -537,28 +548,30 @@ async function viewAction(notifId,actionId){
 // links straight to the existing Open Actions page — no new destination
 // page, no duplicated logic for showing/completing/dismissing an action.
 function renderRepBriefingContent(data){
-  var dueToday = data.dueToday || [];
-  var overdue = data.overdue || [];
-  var otherOpen = data.otherOpen || [];
-  // Manager Notes are deliberately not rendered here — they belong
-  // inside Open Actions, attached to the specific action, since that's
-  // where a rep actually acts on them. Showing them twice (once here as
-  // a flat list, once again in context on Open Actions) would just be
-  // two copies of the same information to keep in sync. The endpoint
-  // still returns them (data.unacknowledgedNotes) in case a future
-  // Open Actions view wants the count; this page simply doesn't use it.
-
-  if (!dueToday.length && !overdue.length && !otherOpen.length) {
-    return '<div class="rep-briefing-empty">Nothing needs your attention right now. You\u2019re all caught up.</div>';
+  var html = '<div class="rep-coach-text">' + escapeHtml(data.briefing || '') + '</div>';
+  var topPriorities = data.topPriorities || [];
+  if (topPriorities.length) {
+    html += '<div class="rep-priority-list">';
+    topPriorities.forEach(function(p){
+      var reasonClass = p.reason === 'overdue' ? 'overdue' : (p.reason === 'due today' ? 'today' : 'upcoming');
+      html += '<a class="rep-priority-item ' + reasonClass + '" href="./fieldiq-open-actions.html?actionId=' + encodeURIComponent(p.actionId) + '">' +
+        '<div class="rep-priority-account">' + escapeHtml(p.accountName || 'Unknown Account') + '</div>' +
+        '<div class="rep-priority-text">' + escapeHtml(p.actionText || 'No detail recorded') + '</div>' +
+        '<div class="rep-priority-arrow">\u203a</div>' +
+      '</a>';
+    });
+    html += '</div>';
   }
-
-  var html = '<div class="rep-focus-row">';
-  html += '<div class="rep-focus-stat"><span class="rep-focus-dot overdue">\ud83d\udd34</span><span class="rep-focus-count">' + overdue.length + '</span><span class="rep-focus-label">Overdue</span></div>';
-  html += '<div class="rep-focus-stat"><span class="rep-focus-dot today">\ud83d\udfe1</span><span class="rep-focus-count">' + dueToday.length + '</span><span class="rep-focus-label">Due Today</span></div>';
-  html += '<div class="rep-focus-stat"><span class="rep-focus-dot new">\ud83d\udfe2</span><span class="rep-focus-count">' + otherOpen.length + '</span><span class="rep-focus-label">New</span></div>';
+  var overdueCount = data.overdueCount || 0;
+  var dueTodayCount = data.dueTodayCount || 0;
+  var otherOpenCount = data.otherOpenCount || 0;
+  html += '<div class="rep-focus-row">';
+  html += '<div class="rep-focus-stat"><span class="rep-focus-dot overdue">\ud83d\udd34</span><span class="rep-focus-count">' + overdueCount + '</span><span class="rep-focus-label">Overdue</span></div>';
+  html += '<div class="rep-focus-stat"><span class="rep-focus-dot today">\ud83d\udfe1</span><span class="rep-focus-count">' + dueTodayCount + '</span><span class="rep-focus-label">Due Today</span></div>';
+  html += '<div class="rep-focus-stat"><span class="rep-focus-dot new">\ud83d\udfe2</span><span class="rep-focus-count">' + otherOpenCount + '</span><span class="rep-focus-label">Upcoming</span></div>';
   html += '</div>';
-  if (overdue.length) {
-    html += '<div class="rep-focus-nudge">Start with the overdue action' + (overdue.length > 1 ? 's' : '') + '.</div>';
+  if (typeof data.completedThisWeek === 'number' && typeof data.totalThisWeek === 'number' && data.totalThisWeek > 0) {
+    html += '<div class="rep-focus-week">' + data.completedThisWeek + ' of ' + data.totalThisWeek + ' actions completed this week</div>';
   }
   html += '<a class="rep-focus-btn" href="./fieldiq-open-actions.html">Open Actions</a>';
   return html;
@@ -589,12 +602,12 @@ function loadRepBriefing(){
   if (!token) return;
   section.innerHTML =
     '<div class="rep-briefing-card">' +
-      '<div class="rep-briefing-header"><span class="rep-briefing-icon">\ud83d\udccb</span>' +
-        '<div><div class="rep-briefing-title">Today\u2019s Briefing</div><div class="rep-briefing-sub">What needs your attention right now</div></div>' +
+      '<div class="rep-briefing-header"><span class="rep-briefing-icon">\ud83e\udded</span>' +
+        '<div><div class="rep-briefing-title">Your Day, Prioritized</div><div class="rep-briefing-sub">What to focus on first</div></div>' +
       '</div>' +
-      '<div id="repBriefingBody"><div class="rep-briefing-loading"><div class="rep-briefing-spinner"></div>Loading your briefing\u2026</div></div>' +
+      '<div id="repBriefingBody"><div class="rep-briefing-loading"><div class="rep-briefing-spinner"></div>Preparing your briefing\u2026</div></div>' +
     '</div>';
-  fetch(WORKER + '/get-rep-briefing', { cache: 'no-store', headers: { 'Authorization': 'Bearer ' + token } })
+  fetch(WORKER + '/rep-daily-briefing', { cache: 'no-store', headers: { 'Authorization': 'Bearer ' + token } })
     .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, status: res.status, data: data }; }); })
     .then(function(result){
       // An expired/invalid session is not a "try again" situation — the
@@ -608,7 +621,7 @@ function loadRepBriefing(){
       }
       var body = document.getElementById('repBriefingBody');
       if (!body) return;
-      if (!result.ok) { renderRepBriefingError(); return; }
+      if (!result.ok || !result.data || !result.data.briefing) { renderRepBriefingError(); return; }
       body.innerHTML = renderRepBriefingContent(result.data);
     })
     .catch(function(){ renderRepBriefingError(); });
