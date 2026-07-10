@@ -141,7 +141,25 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 var currentUserId=localStorage.getItem('fieldiq_user_id');
 var currentUserName=localStorage.getItem('fieldiq_user_name');
 var currentUserRole=localStorage.getItem('fieldiq_user_role')||'Sales Rep';
+// Required by /complete-action and /dismiss-action's server-side identity
+// check — actionId is still sent in the body, but userId is not; the
+// Worker now derives who is making the request entirely from this token,
+// never from a client-supplied field.
+var currentSessionToken=localStorage.getItem('fieldiq_session_token');
 var actions=[];
+
+// Clears everything that represents an authenticated session. Preserves
+// fieldiq_last_user_id — that key only controls which profile is
+// preselected on index.html's next visit, it has never authenticated
+// anyone, so clearing it here would just be worse UX for no security
+// benefit. Same helper, same behavior, as index.html and fieldiq.html.
+function clearActiveSession(){
+  localStorage.removeItem('fieldiq_user_id');
+  localStorage.removeItem('fieldiq_user_name');
+  localStorage.removeItem('fieldiq_user_role');
+  localStorage.removeItem('fieldiq_user_record_id');
+  localStorage.removeItem('fieldiq_session_token');
+}
 
 if(!currentUserId||!currentUserName){
   window.location.href='./index.html';
@@ -477,9 +495,15 @@ async function completeAction(actionId){
   try{
     var res=await fetch(WORKER+'/complete-action',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({actionId:actionId,userId:currentUserId})
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
+      body:JSON.stringify({actionId:actionId})
     });
+    if(res.status===401||res.status===403){
+      clearActiveSession();
+      alert('Your session has expired. Please sign in again.');
+      window.location.href='./index.html';
+      return;
+    }
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not complete action');
     showToast('Action completed.');
@@ -526,9 +550,15 @@ async function dismissAction(actionId){
   try{
     var res=await fetch(WORKER+'/dismiss-action',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({actionId:actionId,userId:currentUserId})
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
+      body:JSON.stringify({actionId:actionId})
     });
+    if(res.status===401||res.status===403){
+      clearActiveSession();
+      alert('Your session has expired. Please sign in again.');
+      window.location.href='./index.html';
+      return;
+    }
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not dismiss action');
     showToast('Action dismissed.');
