@@ -127,6 +127,25 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .notif-body{font-size:12.5px;color:#3d4f6b;line-height:1.5;font-weight:500;margin-bottom:12px}
 .notif-action-btn{display:inline-flex;align-items:center;gap:6px;background:#c43048;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-size:12.5px;font-weight:800;cursor:pointer;text-decoration:none}
 .notif-action-btn:hover{background:#a82840}
+/* ── Rep Assistant: daily briefing ── */
+.rep-briefing-card{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:16px;margin-bottom:16px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.rep-briefing-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.rep-briefing-icon{font-size:20px;line-height:1}
+.rep-briefing-title{font-size:14px;font-weight:800;color:#0b1f3a}
+.rep-briefing-sub{font-size:11px;color:#8a9bb3;font-weight:600;margin-top:1px}
+.rep-briefing-loading{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#8a9bb3;font-weight:600}
+.rep-briefing-spinner{width:14px;height:14px;border:2px solid #eaf3ff;border-top:2px solid #2f8fff;border-radius:50%;animation:repBriefSpin .7s linear infinite}
+@keyframes repBriefSpin{to{transform:rotate(360deg)}}
+.rep-briefing-error{font-size:12.5px;color:#7a6000;background:#fff3e0;border:1px solid #ffe0a3;border-radius:10px;padding:10px 12px}
+.rep-briefing-retry{margin-top:8px;border:none;background:#2f8fff;color:#fff;padding:7px 13px;border-radius:8px;font-weight:800;font-size:11.5px;cursor:pointer}
+.rep-briefing-empty{font-size:12.5px;color:#aab8cc;font-weight:600;padding:6px 0}
+.rep-focus-row{display:flex;gap:8px;margin-bottom:12px}
+.rep-focus-stat{flex:1;text-align:center;background:#f8fbff;border:1px solid #e3ebf5;border-radius:12px;padding:12px 6px}
+.rep-focus-dot{font-size:14px;display:block;margin-bottom:4px}
+.rep-focus-count{font-size:20px;font-weight:800;color:#0b1f3a;display:block;line-height:1}
+.rep-focus-label{font-size:9.5px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-top:3px}
+.rep-focus-nudge{font-size:12px;color:#c43048;font-weight:700;margin-bottom:12px;text-align:center}
+.rep-focus-btn{display:block;text-align:center;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-size:13.5px;font-weight:800;padding:12px;border-radius:12px;text-decoration:none}
 </style>
   <!-- PWA v1 -->
   <link rel="manifest" href="/manifest.json">
@@ -148,6 +167,8 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 </div>
 
 <div id="identitySection" style="width:100%;max-width:380px"></div>
+
+<div id="repBriefingSection" style="width:100%;max-width:380px"></div>
 
 <!-- Notification banners injected here for rep users only -->
 <div id="notificationsSection" style="width:100%;max-width:380px"></div>
@@ -246,6 +267,7 @@ function renderSignedInBar(u){
     localStorage.removeItem('fieldiq_user_name');
     localStorage.removeItem('fieldiq_user_role');
     localStorage.removeItem('fieldiq_user_record_id');
+    localStorage.removeItem('fieldiq_session_token');
     location.reload();
   });
 }
@@ -308,26 +330,77 @@ function showPinBox(u){
 function checkPin(){
   var entered=document.getElementById('pinInput').value.trim();
   var errorEl=document.getElementById('pinError');
+  var submitBtn=document.getElementById('pinSubmitBtn');
   if(!pendingUser){return;}
-  if(entered && entered===String(pendingUser.pin)){
-    var signedInUser=pendingUser;
-    localStorage.setItem('fieldiq_user_id',signedInUser.id);
-    localStorage.setItem('fieldiq_user_name',signedInUser.name);
-    localStorage.setItem('fieldiq_user_role',signedInUser.role);
-    localStorage.setItem('fieldiq_user_record_id',signedInUser.recordId);
-    localStorage.setItem('fieldiq_last_user_id',signedInUser.id);
-    if(signedInUser.role==='Manager'){
-      window.location.href='./fieldiq.html';
-      return;
-    }
-    pendingUser=null;
-    renderSignedInBar(signedInUser);
-    renderModules();
-  } else {
+  if(!entered){
+    errorEl.textContent='PIN incorrect. Please try again.';
     errorEl.className='pin-error visible';
-    document.getElementById('pinInput').value='';
-    document.getElementById('pinInput').focus();
+    return;
   }
+  submitBtn.disabled=true;
+  submitBtn.textContent='Checking…';
+  errorEl.className='pin-error';
+  fetch(WORKER+'/login',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({userId:pendingUser.id,pin:entered})
+  })
+    .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, status: res.status, data: data }; }); })
+    .then(function(result){
+      submitBtn.disabled=false;
+      submitBtn.textContent='Confirm';
+      if(result.ok && result.data && result.data.token){
+        var signedInUser={
+          id: result.data.userId,
+          name: result.data.name,
+          role: result.data.role,
+          recordId: result.data.recordId
+        };
+        localStorage.setItem('fieldiq_user_id',signedInUser.id);
+        localStorage.setItem('fieldiq_user_name',signedInUser.name);
+        localStorage.setItem('fieldiq_user_role',signedInUser.role);
+        localStorage.setItem('fieldiq_user_record_id',signedInUser.recordId);
+        localStorage.setItem('fieldiq_last_user_id',signedInUser.id);
+        // The session token, not the PIN, is what now proves identity to
+        // /ask-fieldiq and /get-rep-briefing. Stored in localStorage on
+        // purpose: the token's own 12-hour expiry (enforced server-side
+        // on every verify) already bounds how long it's useful, so
+        // persisting it lets a rep stay signed in across reloads,
+        // navigation, and reopening the app within that window, rather
+        // than losing their session every time a tab closes.
+        localStorage.setItem('fieldiq_session_token', result.data.token);
+        if(signedInUser.role==='Manager'){
+          window.location.href='./fieldiq.html';
+          return;
+        }
+        pendingUser=null;
+        renderSignedInBar(signedInUser);
+        renderModules();
+        loadRepBriefing();
+        return;
+      }
+      // Not a success — distinguish WHY, so a server problem is never
+      // misreported as the user having typed the wrong PIN. A 401 really
+      // does mean the PIN was wrong; nothing else does.
+      if(result.status===401){
+        errorEl.textContent='PIN incorrect. Please try again.';
+      }else if(result.status===429){
+        errorEl.textContent=(result.data&&result.data.error)?result.data.error:'Too many attempts. Please wait a moment and try again.';
+      }else if(!result.ok){
+        errorEl.textContent='FieldIQ could not complete sign-in. Please try again.';
+      }else{
+        errorEl.textContent='FieldIQ returned an invalid sign-in response. Please try again.';
+      }
+      errorEl.className='pin-error visible';
+      document.getElementById('pinInput').value='';
+      document.getElementById('pinInput').focus();
+    })
+    .catch(function(){
+      submitBtn.disabled=false;
+      submitBtn.textContent='Confirm';
+      errorEl.textContent='Could not reach FieldIQ. Please check your connection and try again.';
+      errorEl.className='pin-error visible';
+    });
 }
 
 // If the last-selected user is still present in the active user list,
@@ -363,7 +436,6 @@ function loadUsers(){
           name: f['Display Name']||f['User ID']||'Unknown',
           role: f['Role']||'Sales Rep',
           territory: safeTerritoryDisplay(f['Territory']),
-          pin: f['PIN']||'',
           recordId: r.id
         };
       });
@@ -458,6 +530,89 @@ async function viewAction(notifId,actionId){
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+
+// ── Rep Assistant: daily briefing ────────────────────────────────────────
+// Fires once, right after a successful rep PIN login. Read-only: uses the
+// new /get-rep-briefing endpoint only, never writes anything. Every item
+// links straight to the existing Open Actions page — no new destination
+// page, no duplicated logic for showing/completing/dismissing an action.
+function renderRepBriefingContent(data){
+  var dueToday = data.dueToday || [];
+  var overdue = data.overdue || [];
+  var otherOpen = data.otherOpen || [];
+  // Manager Notes are deliberately not rendered here — they belong
+  // inside Open Actions, attached to the specific action, since that's
+  // where a rep actually acts on them. Showing them twice (once here as
+  // a flat list, once again in context on Open Actions) would just be
+  // two copies of the same information to keep in sync. The endpoint
+  // still returns them (data.unacknowledgedNotes) in case a future
+  // Open Actions view wants the count; this page simply doesn't use it.
+
+  if (!dueToday.length && !overdue.length && !otherOpen.length) {
+    return '<div class="rep-briefing-empty">Nothing needs your attention right now. You\u2019re all caught up.</div>';
+  }
+
+  var html = '<div class="rep-focus-row">';
+  html += '<div class="rep-focus-stat"><span class="rep-focus-dot overdue">\ud83d\udd34</span><span class="rep-focus-count">' + overdue.length + '</span><span class="rep-focus-label">Overdue</span></div>';
+  html += '<div class="rep-focus-stat"><span class="rep-focus-dot today">\ud83d\udfe1</span><span class="rep-focus-count">' + dueToday.length + '</span><span class="rep-focus-label">Due Today</span></div>';
+  html += '<div class="rep-focus-stat"><span class="rep-focus-dot new">\ud83d\udfe2</span><span class="rep-focus-count">' + otherOpen.length + '</span><span class="rep-focus-label">New</span></div>';
+  html += '</div>';
+  if (overdue.length) {
+    html += '<div class="rep-focus-nudge">Start with the overdue action' + (overdue.length > 1 ? 's' : '') + '.</div>';
+  }
+  html += '<a class="rep-focus-btn" href="./fieldiq-open-actions.html">Open Actions</a>';
+  return html;
+}
+// Clears everything that represents an authenticated session. Deliberately
+// preserves fieldiq_last_user_id — that key only controls which profile is
+// preselected/highlighted on the next visit, it has never been used to
+// authenticate anyone, so clearing it here would just be worse UX for no
+// security benefit.
+function clearActiveSession(){
+  localStorage.removeItem('fieldiq_user_id');
+  localStorage.removeItem('fieldiq_user_name');
+  localStorage.removeItem('fieldiq_user_role');
+  localStorage.removeItem('fieldiq_user_record_id');
+  localStorage.removeItem('fieldiq_session_token');
+}
+function renderRepBriefingError(){
+  var body = document.getElementById('repBriefingBody');
+  if (!body) return;
+  body.innerHTML = '<div class="rep-briefing-error">Could not load your briefing right now.<br><button type="button" class="rep-briefing-retry" id="repBriefingRetryBtn">Retry</button></div>';
+  var btn = document.getElementById('repBriefingRetryBtn');
+  if (btn) btn.addEventListener('click', loadRepBriefing);
+}
+function loadRepBriefing(){
+  var section = document.getElementById('repBriefingSection');
+  if (!section) return;
+  var token = localStorage.getItem('fieldiq_session_token');
+  if (!token) return;
+  section.innerHTML =
+    '<div class="rep-briefing-card">' +
+      '<div class="rep-briefing-header"><span class="rep-briefing-icon">\ud83d\udccb</span>' +
+        '<div><div class="rep-briefing-title">Today\u2019s Briefing</div><div class="rep-briefing-sub">What needs your attention right now</div></div>' +
+      '</div>' +
+      '<div id="repBriefingBody"><div class="rep-briefing-loading"><div class="rep-briefing-spinner"></div>Loading your briefing\u2026</div></div>' +
+    '</div>';
+  fetch(WORKER + '/get-rep-briefing', { cache: 'no-store', headers: { 'Authorization': 'Bearer ' + token } })
+    .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, status: res.status, data: data }; }); })
+    .then(function(result){
+      // An expired/invalid session is not a "try again" situation — the
+      // same dead token would just fail again. Clear it and put the rep
+      // back at the profile/PIN screen, same as any fresh visit.
+      if (result.status === 401 || result.status === 403) {
+        clearActiveSession();
+        section.innerHTML = '<div class="rep-briefing-card"><div class="rep-briefing-error">Your session has expired. Please sign in again.</div></div>';
+        renderIdentity();
+        return;
+      }
+      var body = document.getElementById('repBriefingBody');
+      if (!body) return;
+      if (!result.ok) { renderRepBriefingError(); return; }
+      body.innerHTML = renderRepBriefingContent(result.data);
+    })
+    .catch(function(){ renderRepBriefingError(); });
+}
 
 function renderModules(){
   var role=localStorage.getItem('fieldiq_user_role');
@@ -562,11 +717,63 @@ function renderModules(){
   }
 }
 
-if (localStorage.getItem('fieldiq_user_role') === 'Manager') {
-  window.location.href = './fieldiq.html';
-  throw new Error('Manager redirected to portal');
+// Real session restoration, not a localStorage shortcut. A saved
+// fieldiq_user_role or fieldiq_user_id is never trusted on its own — both
+// are editable in browser dev tools. If a token exists, it is confirmed
+// with the Worker via GET /validate-session before anything is restored;
+// only a server-verified valid token skips PIN re-entry. No token at all
+// (fresh visit, tab was previously closed past its 12-hour session, or
+// "Not you?"/Exit was used) goes straight to the normal picker/PIN screen,
+// with no network call wasted on nothing to validate.
+function startUp(){
+  var existingToken = localStorage.getItem('fieldiq_session_token');
+  if (!existingToken) {
+    renderIdentity();
+    return;
+  }
+  fetch(WORKER + '/validate-session', { headers: { 'Authorization': 'Bearer ' + existingToken } })
+    .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
+    .then(function(result){
+      if (!result.ok || !result.data || !result.data.valid) {
+        // Expired, tampered, or otherwise invalid — never restore access
+        // on a guess. Clear the dead session and show the real picker.
+        localStorage.removeItem('fieldiq_user_id');
+        localStorage.removeItem('fieldiq_user_name');
+        localStorage.removeItem('fieldiq_user_role');
+        localStorage.removeItem('fieldiq_user_record_id');
+        localStorage.removeItem('fieldiq_session_token');
+        renderIdentity();
+        return;
+      }
+      // Confirmed by the Worker, not assumed from whatever was already in
+      // localStorage — refresh the stored identity fields to match
+      // exactly what the verified token says.
+      var restoredUser = {
+        id: result.data.userId,
+        name: result.data.name,
+        role: result.data.role,
+        recordId: result.data.recordId
+      };
+      localStorage.setItem('fieldiq_user_id', restoredUser.id);
+      localStorage.setItem('fieldiq_user_name', restoredUser.name);
+      localStorage.setItem('fieldiq_user_role', restoredUser.role);
+      localStorage.setItem('fieldiq_user_record_id', restoredUser.recordId);
+      localStorage.setItem('fieldiq_last_user_id', restoredUser.id);
+      if (restoredUser.role === 'Manager') {
+        window.location.href = './fieldiq.html';
+        return;
+      }
+      renderSignedInBar(restoredUser);
+      renderModules();
+      loadRepBriefing();
+    })
+    .catch(function(){
+      // Network failure during validation — do not silently restore
+      // access on a guess. Show the real picker/PIN screen instead.
+      renderIdentity();
+    });
 }
-renderIdentity();
+startUp();
 </script>
 <script>document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});</script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).catch(function(){});}</script>
