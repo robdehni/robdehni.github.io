@@ -80,7 +80,7 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .ask-source-btn.action{border-left:3px solid #c9871c}
 .ask-source-btn.account{border-left:3px solid #5b6b85}
 .ask-answer-question{font-size:11px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
-.ask-answer-text{font-size:13px;color:#0b1f3a;line-height:1.6;font-weight:600}
+.ask-answer-text{font-size:13px;color:#0b1f3a;line-height:1.6;font-weight:600;white-space:pre-line}
 .ask-loading{margin-top:12px;font-size:12.5px;color:#8a9bb3;font-weight:600;display:flex;align-items:center;gap:8px}
 .ask-spinner{width:14px;height:14px;border:2px solid #d3e6ff;border-top:2px solid #2f8fff;border-radius:50%;animation:askSpin .7s linear infinite}
 @keyframes askSpin{to{transform:rotate(360deg)}}
@@ -222,11 +222,11 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
       </div>
       <div id="briefingArea"><div class="ask-loading"><div class="ask-spinner"></div>Generating your daily briefing…</div></div>
       <div class="ask-suggested-row" id="askSuggestedRow" style="margin-top:14px">
-        <button type="button" class="ask-chip" data-question="What needs my attention today?">What needs my attention today?</button>
-        <button type="button" class="ask-chip" data-question="Where is the business opportunity?">Where is the business opportunity?</button>
-        <button type="button" class="ask-chip" data-question="What is blocking progress?">What is blocking progress?</button>
-        <button type="button" class="ask-chip" data-question="What should I do next?">What should I do next?</button>
-        <button type="button" class="ask-chip" data-question="Summarize the highest-risk accounts.">Summarize the highest-risk accounts.</button>
+        <button type="button" class="ask-chip" data-question="What is my team working on?">What is my team working on?</button>
+        <button type="button" class="ask-chip" data-question="Where do my reps need my help?">Where do my reps need my help?</button>
+        <button type="button" class="ask-chip" data-question="What is blocking commercial progress?">What is blocking commercial progress?</button>
+        <button type="button" class="ask-chip" data-question="Which opportunities should we push?">Which opportunities should we push?</button>
+        <button type="button" class="ask-chip" data-question="Who needs coaching or recognition?">Who needs coaching or recognition?</button>
       </div>
       <div id="askAnswerArea"></div>
     </div>
