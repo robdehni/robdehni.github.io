@@ -60,10 +60,21 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .ask-chip:hover:not(:disabled){border-color:#bcd8ff;background:#eef6ff}
 .ask-chip:disabled{opacity:.5;cursor:not-allowed}
 .ask-answer-box{margin-top:12px;background:#f4f9ff;border:1px solid #d3e6ff;border-radius:12px;padding:14px}
+.mgr-topline{font-size:13.5px;color:#0b1f3a;font-weight:700;margin-bottom:14px;background:linear-gradient(135deg,#f4f9ff,#eef6ff);border:1px solid #d3e6ff;border-radius:12px;padding:12px 14px}
+.mgr-section{margin-bottom:14px}
+.mgr-section:last-of-type{margin-bottom:0}
+.mgr-section-title{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;color:#0b1f3a;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px}
+.mgr-section-icon{font-size:13px}
+.mgr-item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f8fbff;border:1px solid #edf2f8;border-radius:10px;padding:9px 12px;margin-bottom:5px;text-decoration:none}
+.mgr-item:last-child{margin-bottom:0}
+.mgr-item-link{cursor:pointer}
+.mgr-item-link:hover{border-color:#bcd8ff;background:#eef6ff}
+.mgr-item-text{font-size:12.5px;color:#0b1f3a;font-weight:600;flex:1}
+.mgr-item-nav{font-size:10.5px;color:#2f8fff;font-weight:800;flex-shrink:0;white-space:nowrap}
 .ask-sources{margin-top:12px;padding-top:12px;border-top:1px solid #d3e6ff}
 .ask-sources-label{font-size:9.5px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px}
-.ask-sources-row{display:flex;flex-wrap:wrap;gap:6px}
-.ask-source-btn{display:inline-block;font-size:11px;font-weight:800;padding:6px 11px;border-radius:8px;text-decoration:none;background:#fff;border:1px solid #cfe4ff;color:#2f6fd8}
+.ask-sources-row{display:flex;flex-direction:column;gap:6px}
+.ask-source-btn{display:block;font-size:11.5px;font-weight:700;padding:8px 12px;border-radius:8px;text-decoration:none;background:#fff;border:1px solid #cfe4ff;color:#2f6fd8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ask-source-btn:hover{background:#eef6ff;border-color:#2f8fff}
 .ask-source-btn.visit{border-left:3px solid #2f8fff}
 .ask-source-btn.action{border-left:3px solid #c9871c}
@@ -347,10 +358,23 @@ function renderHomeSummary(agg){
            evidence.indexOf('Follow-up due today') > -1;
   });
   var top = actionable.slice(0, 3);
-  if (!top.length) {
+  if (!top.length && priorityCount === 0) {
     panel.classList.add('all-clear');
     panelHead.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> All Clear';
     body.innerHTML = '<div class="summary-empty" style="padding:0 14px 14px">Nothing needs your attention right now.</div>';
+    return;
+  }
+  if (!top.length && priorityCount > 0) {
+    // Management Radar has nothing flagged, but unreviewed visits still
+    // exist — these are two genuinely different signals (account-level
+    // evidence vs. a raw visit count), and showing "All Clear" right next
+    // to a nonzero Priority number in the strip above was the actual bug:
+    // the same screen telling the manager two different things at once.
+    // This state is honest about which signal is nonzero instead of
+    // picking one to silently hide.
+    panel.classList.remove('all-clear');
+    panelHead.innerHTML = priorityCount + ' visit' + (priorityCount !== 1 ? 's' : '') + ' awaiting review';
+    body.innerHTML = '<a class="summary-empty" style="padding:0 14px 14px;display:block;text-decoration:none;color:#2f8fff;font-weight:700" href="https://fieldiq.biz/dashboard.html">No accounts are individually flagged, but ' + priorityCount + ' visit' + (priorityCount !== 1 ? 's are' : ' is') + ' still awaiting your review. View Dashboard \u203a</a>';
     return;
   }
   panel.classList.remove('all-clear');
@@ -411,13 +435,38 @@ var MANAGER_BRIEFING_QUESTION = "Give me a short daily briefing: top priorities 
 // this function invents a link, it only displays what was returned.
 function renderSourcesHtml(sources){
   if (!sources || !sources.length) return '';
-  var typeLabel = { visit: 'Open Visit', action: 'Open Action', account: 'View Account' };
+  var typeFallback = { visit: 'Open Visit', action: 'Open Action', account: 'View Account' };
   var html = '<div class="ask-sources"><div class="ask-sources-label">Sources</div><div class="ask-sources-row">';
   sources.forEach(function(s){
-    var btnLabel = (typeLabel[s.type] || 'Open') + (s.label ? ': ' + s.label : '');
-    html += '<a class="ask-source-btn ' + escapeHtmlHome(s.type || '') + '" href="' + escapeHtmlHome(s.url) + '" title="' + escapeHtmlHome(btnLabel) + '">' + escapeHtmlHome(typeLabel[s.type] || 'Open') + '</a>';
+    // The visible button text IS the specific label ("MediClinic — High
+    // Priority visit"), not a generic type name — a row of identical
+    // "Open Visit" buttons is meaningless on a phone with no hover.
+    var displayText = s.label || typeFallback[s.type] || 'Open';
+    html += '<a class="ask-source-btn ' + escapeHtmlHome(s.type || '') + '" href="' + escapeHtmlHome(s.url) + '">' + escapeHtmlHome(displayText) + '</a>';
   });
   html += '</div></div>';
+  return html;
+}
+// Renders the structured {greeting, topLine, sections, sources} shape —
+// same philosophy as the rep briefing: real data in short scannable
+// sections, each item with its own specific destination where one exists.
+function renderManagerBriefingContent(data){
+  var html = '<div class="mgr-topline">' + escapeHtmlHome(data.topLine || '') + '</div>';
+  var sections = data.sections || [];
+  sections.forEach(function(sec){
+    html += '<div class="mgr-section">';
+    html += '<div class="mgr-section-title"><span class="mgr-section-icon">' + escapeHtmlHome(sec.icon || '') + '</span>' + escapeHtmlHome(sec.title || '') + '</div>';
+    (sec.items || []).forEach(function(item){
+      var inner = '<div class="mgr-item-text">' + escapeHtmlHome(item.text || '') + '</div>' +
+        (item.nav ? '<div class="mgr-item-nav">' + escapeHtmlHome(item.nav.label) + ' \u203a</div>' : '');
+      if (item.nav && item.nav.url) {
+        html += '<a class="mgr-item mgr-item-link" href="' + escapeHtmlHome(item.nav.url) + '">' + inner + '</a>';
+      } else {
+        html += '<div class="mgr-item">' + inner + '</div>';
+      }
+    });
+    html += '</div>';
+  });
   return html;
 }
 function loadManagerBriefing(){
@@ -440,10 +489,15 @@ function loadManagerBriefing(){
         renderSignInAgainState('briefingArea');
         return;
       }
-      if (!result.ok || !result.data || !result.data.answer) {
-        renderBriefingError();
+      if (!result.ok || !result.data) { renderBriefingError(); return; }
+      if (result.data.sections) {
+        area.innerHTML = renderManagerBriefingContent(result.data) + renderSourcesHtml(result.data.sources);
         return;
       }
+      // Falls back to the original prose rendering if the Worker ever
+      // returns the older shape — keeps this page working even if the
+      // two sides of a deploy briefly disagree.
+      if (!result.data.answer) { renderBriefingError(); return; }
       area.innerHTML = '<div class="ask-answer-box"><div class="ask-answer-text">' + escapeHtmlHome(result.data.answer) + '</div>' + renderSourcesHtml(result.data.sources) + '</div>';
     })
     .catch(function(){ renderBriefingError(); });
