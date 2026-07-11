@@ -706,9 +706,14 @@ function toggleWatch(accountId,btnEl){
   var endpoint=isWatching?'/unwatch-account':'/watch-account';
   fetch(WORKER+endpoint,{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
     body:JSON.stringify({accountId:accountId})
   }).then(function(res){
+    if(res.status===401||res.status===403){
+      localStorage.removeItem('fieldiq_user_id');localStorage.removeItem('fieldiq_user_name');localStorage.removeItem('fieldiq_user_role');localStorage.removeItem('fieldiq_user_record_id');localStorage.removeItem('fieldiq_session_token');
+      window.location.href='./index.html';
+      throw new Error('session-expired');
+    }
     if(!res.ok)throw new Error('Request failed');
     watchedAccountIds[accountId]=!isWatching;
     document.querySelectorAll('.watch-star[data-account-id="'+accountId+'"]').forEach(function(b){
@@ -720,6 +725,7 @@ function toggleWatch(accountId,btnEl){
       b.disabled=false;
     });
   }).catch(function(err){
+    if(err&&err.message==='session-expired')return;
     console.error('Could not update watch status:',err);
     btnEl.disabled=false;
     alert('Could not update watch status. Please try again.');
@@ -875,7 +881,10 @@ function expandAndScrollToVisit(recordId){
   setTimeout(function(){card.classList.remove('thread-nav-highlight');},1700);
 }  
   
-var currentUser=null;  
+var currentUser=null;
+// Required by /get-visits, /get-watchlist, /get-accounts, which now reject
+// any request without a verified session token.
+var currentSessionToken=localStorage.getItem('fieldiq_session_token');  
   
 async function loadCurrentUser(){  
   var userId=localStorage.getItem('fieldiq_user_id');var userName=localStorage.getItem('fieldiq_user_name');var userRole=localStorage.getItem('fieldiq_user_role');  
@@ -902,18 +911,24 @@ async function loadHistory(){
     // this now applies to territory too: applyUrlParams() + applyFilters()
     // below already handle the initial drill-down state client-side,
     // exactly as they already do for rep.
-    var res=await fetch(endpoint,{cache:'no-store'});var data=await res.json();  
+    var res=await fetch(endpoint,{cache:'no-store',headers:{'Authorization':'Bearer '+currentSessionToken}});
+    if(res.status===401||res.status===403){
+      localStorage.removeItem('fieldiq_user_id');localStorage.removeItem('fieldiq_user_name');localStorage.removeItem('fieldiq_user_role');localStorage.removeItem('fieldiq_user_record_id');localStorage.removeItem('fieldiq_session_token');
+      window.location.href='./index.html';
+      return;
+    }
+    var data=await res.json();  
     if(!res.ok)throw new Error(JSON.stringify(data));  
     allRecordsRaw=data.records||[];  
     if(currentUser.role==='Manager'){
       try{
-        var wlRes=await fetch(WORKER+'/get-watchlist');
+        var wlRes=await fetch(WORKER+'/get-watchlist',{headers:{'Authorization':'Bearer '+currentSessionToken}});
         var wlData=await wlRes.json();
         watchedAccountIds={};
         (wlData.records||[]).forEach(function(w){watchedAccountIds[w.id]=true;});
       }catch(e){watchedAccountIds={};}
       try{
-        var accRes=await fetch(WORKER+'/get-accounts');
+        var accRes=await fetch(WORKER+'/get-accounts',{headers:{'Authorization':'Bearer '+currentSessionToken}});
         var accData=await accRes.json();
         accountIdByName={};
         (accData.records||[]).forEach(function(a){
