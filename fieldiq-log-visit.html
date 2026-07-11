@@ -215,9 +215,6 @@ window.onerror=function(msg){document.getElementById('status').textContent='Erro
 var currentUserId=localStorage.getItem('fieldiq_user_id');
 var currentUserName=localStorage.getItem('fieldiq_user_name');
 var currentUserRole=localStorage.getItem('fieldiq_user_role');
-// Required by /get-accounts and /get-visits, which now reject any request
-// without a verified session token.
-var currentSessionToken=localStorage.getItem('fieldiq_session_token');
 if(!currentUserId||!currentUserName){
   window.location.href='./index.html';
   throw new Error('No identity locked — redirecting to home.');
@@ -248,20 +245,12 @@ var ACCOUNTS=[];var accountsLoaded=false;var selectedAccountId=null;
 function loadAccounts(){
   hospitalList.innerHTML='<div class="hospital-option" style="color:#7a8aa3">Loading accounts...</div>';hospitalList.classList.add('open');
   var controller=new AbortController();var timeoutId=setTimeout(function(){controller.abort();},8000);
-  fetch(WORKER+'/get-accounts',{signal:controller.signal,cache:'no-store',headers:{'Authorization':'Bearer '+currentSessionToken}}).then(function(r){
-    if(r.status===401||r.status===403){
-      localStorage.removeItem('fieldiq_user_id');localStorage.removeItem('fieldiq_user_name');localStorage.removeItem('fieldiq_user_role');localStorage.removeItem('fieldiq_user_record_id');localStorage.removeItem('fieldiq_session_token');
-      window.location.href='./index.html';
-      return Promise.reject(new Error('session-expired'));
-    }
-    return r.json();
-  }).then(function(data){
+  fetch(WORKER+'/get-accounts',{signal:controller.signal,cache:'no-store'}).then(function(r){return r.json();}).then(function(data){
     clearTimeout(timeoutId);var records=data.records||[];
     ACCOUNTS=records.map(function(r){return {id:r.id,name:(r.fields&&r.fields['Account Name'])||'',territory:(r.fields&&r.fields['Territory'])||''};}).filter(function(a){return a.name;});
     applyPrefillFromURL();
     accountsLoaded=true;if(document.activeElement===hospitalInput){showList(hospitalInput.value);}else{hospitalList.classList.remove('open');}
-  }).catch(function(err){
-    if(err&&err.message==='session-expired')return;
+  }).catch(function(){
     clearTimeout(timeoutId);accountsLoaded=false;
     hospitalList.innerHTML='<div class="hospital-option" style="color:#e0445b">Couldn\'t load accounts — tap to retry</div>';
     hospitalList.querySelector('.hospital-option').addEventListener('click',function(){loadAccounts();});
@@ -641,7 +630,7 @@ submitBtn.addEventListener('click',async function(){
     var accountIdForContext=isNewAccount?null:selectedAccountId;
     if(accountIdForContext){
       try{
-        var priorVisitsRes=await fetch(WORKER+'/get-visits',{cache:'no-store',headers:{'Authorization':'Bearer '+currentSessionToken}});
+        var priorVisitsRes=await fetch(WORKER+'/get-visits',{cache:'no-store'});
         var priorVisitsData=await priorVisitsRes.json();
         var priorVisits=(priorVisitsData.records||[]).filter(function(v){
           var acc=v.fields&&v.fields['Account'];
@@ -669,14 +658,14 @@ submitBtn.addEventListener('click',async function(){
     if(isNewAccount){
       document.getElementById('processingText').textContent='Creating account...';
       var accPayload={'Account Name':hospitalName,'Territory':territory,'City':newAccountCity,'Created By':userId};
-      var accRes=await fetch(WORKER+'/save-account',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},body:JSON.stringify(accPayload)});
+      var accRes=await fetch(WORKER+'/save-account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(accPayload)});
       var accData=await accRes.json();
       if(!accRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';transcriptText.disabled=false;console.error('Account creation failed:',accData);alert('Could not create the new account. Nothing was saved — please try again.');return;}
       newAccountId=accData.id;ACCOUNTS.push({id:newAccountId,name:hospitalName,territory:territory});
       if(newContactName){
         document.getElementById('processingText').textContent='Saving contact...';
         var contactPayload={'Contact Name':newContactName,'Account Role':newContactRole,'Mobile':newContactPhone,'Email':newContactEmail,'Status':'Current','Accounts':[newAccountId],'Added By':userId};
-        var contactRes=await fetch(WORKER+'/save-contact',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},body:JSON.stringify(contactPayload)});
+        var contactRes=await fetch(WORKER+'/save-contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(contactPayload)});
         var contactData=await contactRes.json();
         if(!contactRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';transcriptText.disabled=false;alert('The account "'+hospitalName+'" was created successfully, but saving the contact failed. The visit has NOT been saved yet.\n\nSubmit again — this time search for "'+hospitalName+'" instead of using "Account not listed," since it already exists now.\n\n'+JSON.stringify(contactData));return;}
       }
@@ -703,17 +692,18 @@ submitBtn.addEventListener('click',async function(){
       savePayload['Photo URLs'] = photoUrls.join('\n');
     }
 
-    var saveRes=await fetch(WORKER+'/save-visit',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},body:JSON.stringify(savePayload)});
+    var saveRes=await fetch(WORKER+'/save-visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(savePayload)});
     var saveData=await saveRes.json();
     if(!saveRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';transcriptText.disabled=false;if(isNewAccount){alert('The account'+(newContactName?' and contact were':' was')+' created successfully, but the visit itself failed to save.\n\nSubmit again — this time search for "'+hospitalName+'" instead of using "Account not listed," since it already exists now.\n\nSave error '+saveRes.status+': '+JSON.stringify(saveData));}else{alert('Save error '+saveRes.status+': '+JSON.stringify(saveData));}return;}
     try{
       await fetch(WORKER+'/save-actions',{
         method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
+        headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
           visitRecordId:saveData.id,
           accountId:isNewAccount?newAccountId:selectedAccountId,
           accountName:hospitalName,
+          userId:userId,
           assignedRepRecordId:localStorage.getItem('fieldiq_user_record_id')||'',
           actionText:parsed.nextSteps
         })
