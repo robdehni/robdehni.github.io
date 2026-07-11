@@ -186,8 +186,6 @@ var currentUserId=localStorage.getItem('fieldiq_user_id');
 var myOwnRecordId=localStorage.getItem('fieldiq_user_record_id')||null;
 var currentUserName=localStorage.getItem('fieldiq_user_name');
 var currentUserRole=localStorage.getItem('fieldiq_user_role')||'';
-// Required by /send-reminder, which now requires a verified manager session.
-var currentSessionToken=localStorage.getItem('fieldiq_session_token');
 
 var openActions=[];
 var completedActions=[];
@@ -921,14 +919,9 @@ async function sendReminder(actionId){
 
     var res=await fetch(WORKER+'/send-reminder',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload)
     });
-    if(res.status===401||res.status===403){
-      localStorage.removeItem('fieldiq_user_id');localStorage.removeItem('fieldiq_user_name');localStorage.removeItem('fieldiq_user_role');localStorage.removeItem('fieldiq_user_record_id');localStorage.removeItem('fieldiq_session_token');
-      window.location.href='./index.html';
-      return;
-    }
 
     var text=await res.text();
     var data={};
