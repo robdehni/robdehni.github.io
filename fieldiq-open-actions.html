@@ -310,7 +310,7 @@ async function acknowledgeNote(noteId,btnEl){
   try{
     var res=await fetch(WORKER+'/acknowledge-note',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({noteId:noteId})
     });
     var data=await res.json();
