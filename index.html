@@ -523,13 +523,13 @@ async function loadNotifications(){
 
 // Mark notification read then navigate to the action card.
 async function viewAction(notifId,actionId){
-  var sessionToken=localStorage.getItem('fieldiq_session_token')||'';
+  var userId=localStorage.getItem('fieldiq_user_id')||'';
   // Fire mark-as-read without waiting — navigation is the priority.
   try{
     fetch(WORKER+'/mark-notification-read',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+sessionToken},
-      body:JSON.stringify({notificationId:notifId})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({notificationId:notifId,userId:userId})
     });
   }catch(e){}
   window.location.href='./fieldiq-open-actions.html?actionId='+encodeURIComponent(actionId);
