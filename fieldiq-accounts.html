@@ -268,6 +268,9 @@ var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
 var role=localStorage.getItem('fieldiq_user_role');
 var currentUserName=localStorage.getItem('fieldiq_user_name')||'';
 var currentUserId=localStorage.getItem('fieldiq_user_id')||'';
+// Required by /get-accounts and /get-visits, which now reject any request
+// without a verified session token.
+var currentSessionToken=localStorage.getItem('fieldiq_session_token');
 var ACCOUNTS=[];
 var currentDetailAccountId=null;
 var currentDetailFilter='30';
@@ -294,7 +297,13 @@ function getCanonicalTerritory(raw){
 }
 async function loadDirectory(){
   try{
-    var [accRes,visRes]=await Promise.all([fetch(WORKER_URL+'/get-accounts',{cache:'no-store'}),fetch(WORKER_URL+'/get-visits',{cache:'no-store'})]);
+    var _authHeaders={headers:{'Authorization':'Bearer '+currentSessionToken},cache:'no-store'};
+    var [accRes,visRes]=await Promise.all([fetch(WORKER_URL+'/get-accounts',_authHeaders),fetch(WORKER_URL+'/get-visits',_authHeaders)]);
+    if(accRes.status===401||accRes.status===403||visRes.status===401||visRes.status===403){
+      localStorage.removeItem('fieldiq_user_id');localStorage.removeItem('fieldiq_user_name');localStorage.removeItem('fieldiq_user_role');localStorage.removeItem('fieldiq_user_record_id');localStorage.removeItem('fieldiq_session_token');
+      window.location.href='./index.html';
+      return;
+    }
     var accData=await accRes.json();var visData=await visRes.json();
     if(!accRes.ok)throw new Error(JSON.stringify(accData));if(!visRes.ok)throw new Error(JSON.stringify(visData));
     var accountRecords=accData.records||[];var visitRecords=visData.records||[];
@@ -586,8 +595,8 @@ function saveAccountUpdate(){
   if(!text)return;
   fetch(WORKER_URL+'/save-account-update',{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({accountId:acc.id,accountName:acc.name,updateText:text,createdBy:currentUserName,createdByUserId:currentUserId})
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
+    body:JSON.stringify({accountId:acc.id,accountName:acc.name,updateText:text})
   })
     .then(function(r){return r.json();})
     .then(function(data){
