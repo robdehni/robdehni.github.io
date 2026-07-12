@@ -1,348 +1,766 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FieldIQ — Territory Map</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js" defer></script>
-<style>
-[data-lucide]{display:inline-block;vertical-align:middle;stroke-width:2}
-.access-denied-icon [data-lucide]{width:54px;height:54px;stroke:#d98a1c}
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;width:100%;overflow:hidden}
-body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:flex;flex-direction:column}
+<!DOCTYPE html>  <html lang="en">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  
+<title>FieldIQ — Visit History</title>  
+<script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js" defer></script>  
+<style>  
+*{margin:0;padding:0;box-sizing:border-box}  
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px 18px 40px;overflow-x:hidden}  
+.container{max-width:780px;margin:0 auto;width:100%}  /* ── Brand block — matches fieldiq.html reference ── */
+.topbar{margin-bottom:8px}
+.topbar-brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.brand-cloud{font-size:26px;line-height:1}
+.page-kind{font-size:10px;font-weight:800;letter-spacing:1.3px;color:#0d9488;text-transform:uppercase;margin-bottom:2px}
+.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
+.brand-text h1 span{color:#2f8fff}
+.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+.topbar-sub{color:#7a8aa3;font-size:12.5px;margin-top:2px;font-weight:600}
 
-/* ── Topbar: ☁️ cloud + Field/IQ treatment, white pill home button ── */
-.topbar{background:#fff;border-bottom:1px solid #e3ebf5;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(11,31,58,0.04)}
-.page-subtitle{color:#7a8aa3;font-size:11px;margin-top:2px;font-weight:600}
-.topbar-left{display:flex;align-items:center;gap:8px}
-.topbar-cloud{font-size:20px;line-height:1}
-.topbar h1{font-size:17px;color:#0b1f3a;font-weight:800;letter-spacing:-0.3px}
-.topbar h1 span{color:#2f8fff}
-
-/* ── Home button — white pill matching fieldiq.html ── */
 .home-btn{
-  display:inline-flex;align-items:center;gap:6px;color:#2f8fff;font-size:12px;font-weight:700;text-decoration:none;
-  padding:7px 14px;border-radius:30px;background:#fff;border:1px solid #e3ebf5;
-  box-shadow:0 2px 8px rgba(11,31,58,0.05);white-space:nowrap;
+display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;
+text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:18px;border:1px solid #e3ebf5;
+box-shadow:0 2px 8px rgba(11,31,58,0.05);
 }
 .home-btn:hover{border-color:#2f8fff}
 
-.filters{background:#fff;border-bottom:1px solid #e3ebf5;padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;align-items:center}
-.filters select{
-  background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;padding:8px 12px;
-  font-size:12.5px;outline:none;max-width:150px;font-weight:600;
+.filter-bar{background:#fff;border:1px solid #e3ebf5;border-radius:18px;padding:16px;margin-bottom:18px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.filter-bar h3{font-size:11px;color:#8a9bb3;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:12px}
+.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.filter-select{
+width:100%;padding:11px;background:#f4f8fc;border:1.5px solid #dde8f5;border-radius:10px;color:#0b1f3a;
+font-size:12.5px;outline:none;font-weight:600;
 }
-.filters select:focus{border-color:#2f8fff}
-.fbtn{
-  background:linear-gradient(135deg,#3d9bff,#1f6fe0);border:none;border-radius:10px;color:#fff;padding:9px 16px;
-  font-size:12.5px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(47,143,255,0.3);
+.filter-select:focus{border-color:#2f8fff}
+.filter-btns{display:flex;gap:8px}
+.fbtn-apply{flex:1;padding:11px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:10px;font-size:12.5px;font-weight:800;cursor:pointer;box-shadow:0 6px 16px rgba(47,143,255,0.3)}
+.fbtn-reset{flex:1;padding:11px;background:#fff;color:#7a8aa3;border:1.5px solid #e3ebf5;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer}
+.filter-active{font-size:10.5px;color:#2f8fff;margin-top:8px;text-align:center;min-height:14px;font-weight:700}
+
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px}
+.stat-pill{
+background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px 14px;font-size:11.5px;
+color:#7a8aa3;text-align:center;font-weight:700;box-shadow:0 4px 14px rgba(11,31,58,0.05);
 }
-.fbtn.sec{background:#fff;color:#7a8aa3;border:1.5px solid #e3ebf5;box-shadow:none}
+.stat-pill span{display:block;font-size:26px;font-weight:800;color:#2f8fff;margin-bottom:4px}
 
-.stats{background:#fff;border-bottom:1px solid #e3ebf5;padding:10px 18px;display:flex;gap:18px;flex-shrink:0;flex-wrap:wrap}
-.stat{font-size:12px;color:#7a8aa3;font-weight:600}
-.stat span{font-weight:800}
+.count-label{font-size:12px;color:#aab8cc;margin-bottom:14px;text-align:center;font-weight:600}
 
-#map{flex:1;min-height:0;width:100%}
-
-/* ── Legend — radius 16px matching reference standard ── */
-.legend{
-  position:absolute;bottom:16px;right:14px;background:#fff;border:1px solid #e3ebf5;border-radius:16px;
-  padding:14px;z-index:1000;font-size:12px;box-shadow:0 6px 18px rgba(11,31,58,0.12);
+.visit-card{
+background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:18px;margin-bottom:12px;
+box-shadow:0 4px 14px rgba(11,31,58,0.05);cursor:pointer;transition:border-color 0.15s;
 }
-.li{display:flex;align-items:center;gap:7px;margin:5px 0;color:#3a4a63;font-weight:600}
-.ld{width:11px;height:11px;border-radius:50%;flex-shrink:0}
-
-.overlay{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #e3ebf5;
-  border-radius:18px;padding:32px 40px;text-align:center;z-index:2000;min-width:240px;
-  box-shadow:0 12px 32px rgba(11,31,58,0.15);
+.visit-card.new-account{border-color:#bfe0ff;background:#f3f9ff}
+.visit-card.expanded{border-color:#2f8fff}
+.visit-card.command-centre-highlight{border-color:#2f8fff;box-shadow:0 0 0 3px rgba(47,143,255,0.18);position:relative}
+.visit-card.command-centre-highlight::before{
+  content:'Opened from Command Centre';position:absolute;top:-9px;left:14px;background:#2f8fff;color:#fff;
+  font-size:9.5px;font-weight:800;letter-spacing:0.3px;text-transform:uppercase;padding:2px 9px;border-radius:999px;
 }
+.visit-card.rep-actions-highlight{border-color:#2f8fff;box-shadow:0 0 0 3px rgba(47,143,255,0.18);position:relative}
+.visit-card.rep-actions-highlight::before{
+  content:'Opened from Open Actions';position:absolute;top:-9px;left:14px;background:#2f8fff;color:#fff;
+  font-size:9.5px;font-weight:800;letter-spacing:0.3px;text-transform:uppercase;padding:2px 9px;border-radius:999px;
+}
+.visit-card.map-highlight{border-color:#2f8fff;box-shadow:0 0 0 3px rgba(47,143,255,0.18);position:relative}
+.visit-card.map-highlight::before{
+  content:'Opened from Territory Map';position:absolute;top:-9px;left:14px;background:#2f8fff;color:#fff;
+  font-size:9.5px;font-weight:800;letter-spacing:0.3px;text-transform:uppercase;padding:2px 9px;border-radius:999px;
+}
+.visit-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:10px}
+.visit-account{font-size:15px;font-weight:800;color:#0b1f3a;flex:1}
+.visit-date{font-size:11.5px;color:#aab8cc;white-space:nowrap;font-weight:700}
+.visit-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.badge{font-size:10.5px;padding:4px 11px;border-radius:8px;font-weight:700}
+.badge-territory{background:#eef3f9;color:#5b6b85}
+.badge-type{background:#eef3f9;color:#5b6b85}
+.badge-high{background:#ffe5e8;color:#e0344a}
+.badge-medium{background:#fff3e0;color:#d98a1c}
+.badge-low{background:#e3f8ea;color:#1fa861}
+.badge-new{background:#eaf3ff;color:#2f8fff}
+.visit-summary{font-size:12.5px;color:#7a8aa3;line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid #eef3f9}
+.visit-card.expanded .visit-summary{display:none}
+
+.visit-toggle{font-size:11px;color:#2f8fff;font-weight:700;margin-top:10px;text-align:center;user-select:none}
+.visit-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid #eef3f9}
+.visit-detail.open{display:block}
+.visit-detail .report-section{margin:10px 0}
+.avf-list{display:flex;flex-direction:column;gap:6px}
+.avf-item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f8fbff;border:1px solid #e3ebf5;border-radius:10px;padding:8px 11px}
+.avf-text{font-size:12.5px;color:#3d4f6b;font-weight:500;line-height:1.4}
+.avf-badge{flex-shrink:0;font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.3px}
+.avf-badge-completed{background:#e1f5ea;color:#1f8a52;border:1px solid #bfe9d0}
+.avf-badge-dismissed{background:#eceef1;color:#6b7280;border:1px solid #dde1e6}
+.avf-badge-pending{background:#eaf3ff;color:#2f8fff;border:1px solid #cfe3ff}
+.visit-watch-row{margin:2px 0 8px}
+.watch-star{border:none;background:none;color:#c8d0dc;font-size:17px;line-height:1;cursor:pointer;padding:0;margin-right:6px;flex-shrink:0;align-self:flex-start;margin-top:1px}
+.watch-star.watching{color:#f0a400}
+.watch-star:disabled{opacity:.5;cursor:not-allowed}
+.watch-star-unresolved{color:#c8d0dc;opacity:.6}
+.review-row{margin:0 0 14px}
+.mark-reviewed-btn{background:#2f8fff;color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:12.5px;font-weight:700;cursor:pointer}
+.mark-reviewed-btn:disabled{opacity:.6;cursor:not-allowed}
+.reviewed-badge{display:inline-block;background:#e3f8ea;color:#1fa861;border-radius:999px;padding:6px 14px;font-size:12px;font-weight:800}
+.visit-detail .report-section:first-child{margin-top:0}
+.visit-detail .report-section h4{color:#2f8fff;font-size:10.5px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;font-weight:800}
+.visit-detail .report-section p{color:#3d4f6b;font-size:13px;line-height:1.65}
+.thread-toggle-btn{display:flex;align-items:center;gap:7px;width:100%;background:#eaf3ff;border:1px solid #d3e6ff;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:800;color:#1f6fe0;cursor:pointer;text-align:left}
+.thread-toggle-btn [data-lucide]{width:15px;height:15px}
+.thread-toggle-arrow{margin-left:auto;font-size:11px}
+.thread-list{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.thread-card{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e3ebf5;border-radius:10px;padding:10px 12px}
+.thread-card-current{background:#f8fbff;border-color:#cfe3ff}
+.thread-card-label{font-size:12.5px;font-weight:800;color:#0b1f3a;white-space:nowrap}
+.thread-card-meta{flex:1;font-size:11.5px;color:#7a8aa3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.thread-card-action{flex-shrink:0}
+.thread-card-status{font-size:11px;font-weight:700;color:#8a9bb3}
+.thread-action-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:9px;padding:10px;font-size:12.5px;font-weight:800;cursor:pointer}
+.thread-nav-row{display:flex;gap:8px;margin-top:8px}
+.thread-nav-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;border:none;border-radius:9px;padding:11px 8px;font-size:12px;font-weight:800;cursor:pointer;text-align:center;white-space:nowrap}
+@media(max-width:480px){
+.thread-nav-row{flex-direction:column}
+.thread-nav-btn{width:100%}
+}
+.thread-action-btn [data-lucide]{width:14px;height:14px}
+.thread-action-btn-small{width:auto;padding:6px 12px;font-size:11.5px}
+.thread-nav-highlight{box-shadow:0 0 0 3px rgba(47,143,255,0.35);transition:box-shadow 0.3s ease}
+
+.loading{text-align:center;padding:60px 20px;color:#aab8cc;font-weight:600}
 .spinner{width:36px;height:36px;border:4px solid #eaf3ff;border-top:4px solid #2f8fff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.overlay p{color:#7a8aa3;font-size:13.5px;font-weight:600}
-.err p{color:#e0344a}
+.empty{text-align:center;color:#aab8cc;font-size:13.5px;padding:40px 20px;font-weight:600}
 
-.access-denied{
-  position:absolute;top:0;left:0;right:0;bottom:0;background:#f4f8fc;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;z-index:3000;padding:24px;text-align:center;
-}
-.access-denied-icon{font-size:54px;margin-bottom:16px}
-.access-denied h2{font-size:20px;color:#0b1f3a;font-weight:800;margin-bottom:8px}
-.access-denied p{font-size:13.5px;color:#7a8aa3;font-weight:600;max-width:320px;line-height:1.6;margin-bottom:20px}
-.access-denied a{
-  display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;
-  text-decoration:none;padding:13px 28px;border-radius:14px;box-shadow:0 8px 20px rgba(47,143,255,0.32);font-size:14px;
-}
+.footer{text-align:center;color:#aab8cc;font-size:11px;font-weight:600;margin-top:24px}
 
-.leaflet-popup-content-wrapper{background:#fff;border:1px solid #e3ebf5;border-radius:14px;box-shadow:0 8px 24px rgba(11,31,58,0.18)}
-.leaflet-popup-content{color:#3a4a63;font-size:12.5px;line-height:1.6;margin:12px 16px;min-width:190px;max-width:260px}
-.leaflet-popup-tip{background:#fff}
-.ph{font-size:14.5px;font-weight:800;color:#0b1f3a;margin-bottom:6px}
-.pr{display:flex;justify-content:space-between;gap:8px;margin:3px 0;font-size:11.5px}
-.pl{color:#aab8cc;font-weight:600}.pv{color:#3a4a63;text-align:right;font-weight:700}
-.ps{display:inline-block;padding:3px 10px;border-radius:8px;font-size:10.5px;font-weight:800;margin:5px 0}
-.psum{margin-top:8px;padding-top:8px;border-top:1px solid #eef3f9;font-size:11.5px;color:#7a8aa3;line-height:1.5;max-height:70px;overflow-y:auto}
+@media(min-width:768px){
+.container{max-width:900px}
+.visit-card{padding:22px 24px}
+.visit-account{font-size:16.5px}
+.stat-pill{padding:22px}
+.stat-pill span{font-size:32px}
+}
+@media(min-width:1100px){
+.container{max-width:1100px}
+body{padding:32px 40px 60px}
+}
+.visit-card{width:100%;overflow-wrap:break-word;word-break:break-word}
+.visit-summary{white-space:normal;overflow-wrap:break-word;word-break:break-word}
+.visit-account{overflow-wrap:break-word;word-break:break-word}
+[data-lucide]{display:inline-block;vertical-align:middle;stroke-width:1.8}
+.visit-toggle [data-lucide]{width:12px;height:12px}
+
+.photo-evidence{margin:10px 0;padding-top:10px;border-top:1px solid #eef3f9}
+.photo-evidence h4{color:#2f8fff;font-size:10.5px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;font-weight:800}
+.photo-evidence-grid{display:flex;gap:8px;flex-wrap:wrap}
+.photo-evidence-thumb{display:block;width:88px;height:88px;object-fit:cover;border-radius:8px;border:1px solid #dde8f5;cursor:pointer;transition:opacity 0.15s}
+.photo-evidence-thumb:hover{opacity:0.82}
+.photo-evidence-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#2f8fff;font-weight:700;text-decoration:none;padding:7px 11px;background:#eaf3ff;border-radius:8px;border:1px solid #cfe4ff}
+.photo-evidence-link:hover{background:#d5eaff}
+
+.photo-modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(11,31,58,0.92);z-index:9999;align-items:center;justify-content:center;padding:20px}
+.photo-modal-overlay.open{display:flex}
+.photo-modal-img{max-width:100%;max-height:90vh;border-radius:10px;object-fit:contain}
+.photo-modal-close{position:absolute;top:18px;right:18px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;border:none;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.back-to-top{
+  position:fixed;right:18px;bottom:24px;width:44px;height:44px;border-radius:50%;
+  background:#2f8fff;color:#fff;border:none;box-shadow:0 6px 16px rgba(47,143,255,0.35);
+  display:none;align-items:center;justify-content:center;cursor:pointer;z-index:500;
+  font-size:20px;font-weight:900;line-height:1;
+}
+.back-to-top.visible{display:flex}
+p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text-transform:none;letter-spacing:normal}
+.avf-notes{margin-top:8px;padding-top:8px;border-top:1px dashed #e3ebf5;display:flex;flex-direction:column;gap:6px}
+.avf-note-item{background:#fff;border:1px solid #e3ebf5;border-radius:9px;padding:8px 10px}
+.avf-note-text{font-size:12px;color:#263b59;font-weight:600;line-height:1.5;white-space:pre-wrap}
+.avf-note-meta{font-size:10px;color:#8a9bb3;font-weight:700;margin-top:4px}
+.avf-note-status{font-size:10.5px;font-weight:900;margin-top:4px}
+.avf-note-status.acked{color:#1f8a52}
+.avf-note-status.not-acked{color:#a36a00}
 </style>
+
   <!-- PWA v1 -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#2f8fff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="FieldIQ">
   <link rel="apple-touch-icon" href="/icon-180.png">
-</head>
-<body>
-<div class="topbar">
-  <div class="topbar-left">
-    <span class="topbar-cloud">☁️</span>
-    <h1>Field<span>IQ</span> — Territory Map</h1>
-    <p class="page-subtitle">Visualise field activity, visit locations and territory coverage.</p>
+</head>  
+<body>  
+  <div id="mapNavControls" style="display:none;position:fixed;top:0;left:0;right:0;z-index:800;background:#fff;border-bottom:1px solid #e3ebf5;box-shadow:0 2px 10px rgba(11,31,58,0.06);align-items:center;justify-content:center;gap:14px;padding:11px 16px">
+    <a href="#" id="mapPrevBtn" class="home-btn" style="padding:8px 14px;font-size:13px">← Previous</a>
+    <span id="mapProgress" style="font-size:12.5px;color:#7a8aa3;font-weight:700;white-space:nowrap"></span>
+    <a href="#" id="mapNextBtn" class="home-btn" style="padding:8px 14px;font-size:13px">Next →</a>
   </div>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <span id="updated" style="color:#aab8cc;font-size:11.5px;font-weight:600">Loading...</span>
-    <a href="./index.html" id="topHomeBtn" class="home-btn">← Home</a>
-  </div>
-</div>
-<div class="filters">
-  <select id="fPeriod">
-    <option value="today">Today</option>
-    <option value="yesterday">Yesterday</option>
-    <option value="thisWeek">This Week</option>
-    <option value="7">Last 7 Days</option>
-    <option value="30" selected>Last 30 Days</option>
-    <option value="90">Last 90 Days</option>
-    <option value="">All Time</option>
-  </select>
-  <select id="fTerr"><option value="">All Territories</option></select>
-  <select id="fRep"><option value="">All Reps</option></select>
-  <select id="fSent"><option value="">All Sentiment</option><option value="positive">Positive</option><option value="neutral">Neutral</option><option value="negative">Negative</option></select>
-  <button class="fbtn" onclick="applyFilters()">Apply</button>
-  <button class="fbtn sec" onclick="resetFilters()">Reset</button>
-  <button class="fbtn sec" onclick="fitToResults()">Fit to Results</button>
-</div>
-<div class="stats">
-  <div class="stat">Visits: <span id="sCount" style="color:#2f8fff">0</span></div>
-  <div class="stat">Positive: <span id="sPos" style="color:#1fa861">0</span></div>
-  <div class="stat">Neutral: <span id="sNeu" style="color:#d98a1c">0</span></div>
-  <div class="stat">Negative: <span id="sNeg" style="color:#e0344a">0</span></div>
-</div>
-<div id="map"></div>
-<div class="legend">
-  <div class="li"><div class="ld" style="background:#1fa861"></div>Positive</div>
-  <div class="li"><div class="ld" style="background:#d98a1c"></div>Neutral</div>
-  <div class="li"><div class="ld" style="background:#e0344a"></div>Negative</div>
-  <div class="li"><div class="ld" style="background:#aab8cc"></div>Unknown</div>
-</div>
-<div class="overlay" id="loadingEl">
-  <div class="spinner"></div>
-  <p>Loading visits...</p>
-</div>
-<div class="overlay err" id="errorEl" style="display:none">
-  <p id="errorMsg">Could not load visits.</p>
-  <button class="fbtn" style="margin-top:12px" onclick="loadVisits()">Retry</button>
-</div>
-<div class="access-denied" id="accessDeniedEl" style="display:none">
-  <div class="access-denied-icon"><i data-lucide="lock"></i></div>
-  <h2>Manager Access Required</h2>
-  <p>The Territory Map shows GPS locations and visit data for all reps. This page is restricted to Manager accounts.</p>
-  <a href="./index.html" id="accessDeniedHomeBtn">Return Home</a>
-</div>
+<div class="container">  <div class="topbar">  
+  <div class="topbar-brand">  
+    <span class="brand-cloud">☁️</span>  
+    <div class="brand-text">  
+      <div class="page-kind">VISIT HISTORY</div>
+      <h1>Field<span>IQ</span></h1>  
+      <p>Territory Intelligence Platform</p>  
+      <p class="page-subtitle">Every customer interaction, in chronological order.</p>  
+    </div>  
+  </div>  
+  <p class="topbar-sub" id="lastUpdated">Loading...</p>  
+</div>  <a href="./index.html" id="homeBtn" class="home-btn">← Home</a>
 
-<script>
-var role = localStorage.getItem('fieldiq_user_role');
-var isManager = (role === 'Manager');
-
-document.getElementById('topHomeBtn').href = isManager ? './fieldiq.html' : './index.html';
-document.getElementById('topHomeBtn').textContent = isManager ? '← Manager Home' : '← Home';
-document.getElementById('accessDeniedHomeBtn').href = isManager ? './dashboard.html' : './index.html';
-
-if (!isManager) {
-  document.getElementById('loadingEl').style.display = 'none';
-  document.getElementById('accessDeniedEl').style.display = 'flex';
-  throw new Error('Access denied: Manager role required.');
-}
-
-var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
-var allVisits=[];
-var markers;
-var theMap;
-var markersByVisitId={};
-var currentFilteredVisits=[];
-
-theMap=L.map('map',{zoomControl:true}).setView([24.5,54.0],6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-  attribution:'© OpenStreetMap',maxZoom:18
-}).addTo(theMap);
-markers=L.layerGroup().addTo(theMap);
-
-setTimeout(function(){theMap.invalidateSize();},300);
-
-function formatDate(d){
-  if(!d)return'—';
-  return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-}
-
-function formatTime(t){
-  if(!t)return'—';
-  return new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-}
-
-function getSent(s){
-  if(!s)return'unknown';
-  s=s.toLowerCase();
-  var i=s.indexOf('sentiment');
-  if(i>-1){
-    var t=s.substring(i,i+120);
-    if(t.indexOf('positive')>-1)return'positive';
-    if(t.indexOf('negative')>-1)return'negative';
-    if(t.indexOf('neutral')>-1)return'neutral';
+<div id="filterBar" class="filter-bar" style="display:none">  
+  <h3>Manager Filters</h3>  
+  <div class="filter-row">  
+    <select class="filter-select" id="filterRep">  
+      <option value="">All Reps</option>  
+    </select>  
+    <select class="filter-select" id="filterTerritory">  
+      <option value="">All Territories</option>  
+      <option>UAE</option><option>Saudi Arabia</option><option>Qatar</option>  
+      <option>Kuwait</option><option>Bahrain</option><option>Oman</option>  
+    </select>  
+  </div>  
+  <div class="filter-row">  
+    <select class="filter-select" id="filterPriority">  
+      <option value="">All Priorities</option>  
+      <option>High</option><option>Medium</option><option>Low</option>  
+    </select>  
+    <select class="filter-select" id="filterPeriod">  
+      <option value="">All Time</option>  
+      <option value="thisWeek">This Week</option>  
+      <option value="lastWeek">Last Week</option>  
+      <option value="thisMonth">This Month</option>  
+      <option value="lastMonth">Last Month</option>  
+      <option value="30">Last 30 Days</option>  
+      <option value="90">Last 90 Days</option>  
+    </select>  
+  </div>  
+  <div class="filter-btns">  
+    <button class="fbtn-apply" onclick="applyFilters()">Apply Filters</button>  
+    <button class="fbtn-reset" onclick="resetFilters()">Reset</button>  
+  </div>  
+  <div class="filter-active" id="filterStatus"></div>  
+</div>  <div class="stats-row">  
+  <div class="stat-pill"><span id="statTotal">—</span>My Visits</div>  
+  <div class="stat-pill"><span id="statThisWeek">—</span>This Week</div>  
+  <div class="stat-pill"><span id="statNewAccounts">—</span>New Accounts</div>  
+</div>  <div id="repSearchBox" style="display:none;margin-bottom:10px"><input type="search" id="repSearch" placeholder="Search accounts…" autocomplete="off" autocorrect="off" autocapitalize="off" style="width:100%;padding:11px 14px;background:#fff;border:1.5px solid #e3ebf5;border-radius:12px;color:#0b1f3a;font-size:14px;outline:none;font-weight:600;box-shadow:0 2px 8px rgba(11,31,58,0.04)"></div>  <div id="countLabel" class="count-label"></div>  
+<div id="visitList"><div class="loading"><div class="spinner"></div>Loading visits...</div></div>  <div class="footer">FieldIQ v2.1 · 2026</div>  
+</div>  <div class="photo-modal-overlay" id="photoModalOverlay" onclick="if(event.target===this)closePhotoModal()">
+  <button class="photo-modal-close" onclick="closePhotoModal()" aria-label="Close photo">&times;</button>
+  <img class="photo-modal-img" id="photoModalImg" src="" alt="Visit evidence photo">
+</div>  <script>  
+var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';  
+  
+(function(){  
+  var params=new URLSearchParams(window.location.search);
+  var source=params.get('source');
+  var returnTo=params.get('returnTo');
+  var homeBtn=document.getElementById('homeBtn');
+  if(source==='manager-actions'||source==='open-actions'||source==='rep-actions'||returnTo==='./fieldiq-actions.html'){
+    homeBtn.href=returnTo||'./fieldiq-actions.html';
+    homeBtn.textContent='← Back to Open Actions';
+  }else if(source==='manager-home'){
+    homeBtn.href='./fieldiq.html';
+    homeBtn.textContent='← Back to Manager Home';
+  }else if(source==='operations'){
+    homeBtn.href='./fieldiq-operations.html';
+    homeBtn.textContent='← Back to Operations';
+  }else if(source==='dashboard'){
+    var dashQ2=[];
+    ['rep','territory','priority','period'].forEach(function(k){
+      var v=params.get(k);
+      if(v)dashQ2.push(k+'='+encodeURIComponent(v));
+    });
+    homeBtn.href='./dashboard.html'+(dashQ2.length?'?'+dashQ2.join('&'):'');
+    homeBtn.textContent='← Back to Dashboard';
+  }else if(source==='map'){
+    homeBtn.href=returnTo||'./fieldiq-visits-map.html';
+    homeBtn.textContent='← Back to Territory Map';
+    var mapVisitList=null;
+    try{
+      var _stored=sessionStorage.getItem('fieldiq_map_visit_list');
+      if(_stored){
+        var _parsed=JSON.parse(_stored);
+        if(Array.isArray(_parsed))mapVisitList=_parsed;
+      }
+    }catch(e){}
+    var currentVisitId=params.get('visitId');
+    if(mapVisitList&&currentVisitId){
+      var curIdx=mapVisitList.indexOf(currentVisitId);
+      if(curIdx>-1&&mapVisitList.length>1){
+        document.getElementById('mapProgress').textContent='Visit '+(curIdx+1)+' of '+mapVisitList.length;
+        var prevBtn=document.getElementById('mapPrevBtn');
+        var nextBtn=document.getElementById('mapNextBtn');
+        function _mapNavHref(idx){
+          var baseReturnTo=returnTo||'./fieldiq-visits-map.html';
+          var qIdx=baseReturnTo.indexOf('?');
+          var returnPath=qIdx>-1?baseReturnTo.substring(0,qIdx):baseReturnTo;
+          var returnParams=qIdx>-1?new URLSearchParams(baseReturnTo.substring(qIdx+1)):new URLSearchParams();
+          returnParams.set('mapVisitId',mapVisitList[idx]);
+          var rebuiltReturnTo=returnPath+'?'+returnParams.toString();
+          return './fieldiq-visit-history.html?visitId='+encodeURIComponent(mapVisitList[idx])+'&source=map&returnTo='+encodeURIComponent(rebuiltReturnTo);
+        }
+        if(curIdx>0){
+          prevBtn.href=_mapNavHref(curIdx-1);
+        }else{
+          prevBtn.style.visibility='hidden';
+        }
+        if(curIdx<mapVisitList.length-1){
+          nextBtn.href=_mapNavHref(curIdx+1);
+        }else{
+          nextBtn.style.visibility='hidden';
+        }
+        document.getElementById('mapNavControls').style.display='flex';
+        var _navBarEl=document.getElementById('mapNavControls');
+        document.body.style.paddingTop=(_navBarEl.offsetHeight+16)+'px';
+      }
+    }
+  }else{
+    var role=localStorage.getItem('fieldiq_user_role');
+    if(role==='Manager'){
+      var dashQ=[];
+      ['rep','territory','priority','period'].forEach(function(k){
+        var v=params.get(k);
+        if(v)dashQ.push(k+'='+encodeURIComponent(v));
+      });
+      homeBtn.href='./dashboard.html'+(dashQ.length?'?'+dashQ.join('&'):'');
+      homeBtn.textContent='← Back to Dashboard';
+    }else{
+      homeBtn.href='./index.html';
+    }
   }
-  if(s.indexOf('positive')>-1)return'positive';
-  if(s.indexOf('negative')>-1)return'negative';
-  if(s.indexOf('neutral')>-1)return'neutral';
-  return'unknown';
+})();  
+  
+function formatDate(d){  
+  if(!d)return'—';  
+  return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});  
+}  
+
+function formatDateTimeLocal(v){
+  if(!v)return'';
+  try{return new Date(v).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
+  catch(e){return v;}
 }
-function getColor(s){return s==='positive'?'#44cc88':s==='neutral'?'#ffaa44':s==='negative'?'#ff6666':'#888';}
-function getBadgeStyle(s){
-  if(s==='positive')return'background:#44cc8822;color:#44cc88;border:1px solid #44cc8844';
-  if(s==='neutral')return'background:#ffaa4422;color:#ffaa44;border:1px solid #ffaa4444';
-  if(s==='negative')return'background:#ff666622;color:#ff6666;border:1px solid #ff666644';
-  return'background:#88888822;color:#888;border:1px solid #88888844';
+  
+function getPriorityClass(p){  
+  if(!p)return'badge-medium';  
+  p=p.toLowerCase();  
+  if(p==='high')return'badge-high';  
+  if(p==='low')return'badge-low';  
+  return'badge-medium';  
+}  
+  
+function truncateSummary(text,n){  
+  if(!text)return'';  
+  var i=text.indexOf('VISIT SUMMARY');  
+  var raw=(i>-1?text.substring(i+13):text).trim();  
+  if(raw.length<=n)return raw;  
+  var cut=raw.substring(0,n);  
+  var lastPeriod=cut.lastIndexOf('. ');  
+  if(lastPeriod>n*0.5){return cut.substring(0,lastPeriod+1).trim();}  
+  var lastSpace=cut.lastIndexOf(' ');  
+  if(lastSpace>-1){return cut.substring(0,lastSpace).trim()+'...';}  
+  return cut.trim()+'...';  
+}  
+  
+function parseFullReport(text){  
+  var sections={summary:'',contacts:'',outcomes:'',nextSteps:'',signals:'',sentiment:''};  
+  var lines=(text||'').split('\n'),current='';  
+  for(var i=0;i<lines.length;i++){  
+    var l=lines[i].trim();  
+    if(l.match(/VISIT SUMMARY/i))current='summary';  
+    else if(l.match(/KEY CONTACTS/i))current='contacts';  
+    else if(l.match(/OUTCOMES/i))current='outcomes';  
+    else if(l.match(/NEXT STEPS/i))current='nextSteps';  
+    else if(l.match(/OPPORTUNITY/i))current='signals';  
+    else if(l.match(/SENTIMENT/i))current='sentiment';  
+    else if(l.match(/PRIORITY/i))current='';  
+    else if(l&&current)sections[current]+=(sections[current]?'\n':'')+l;  
+  }  
+  return sections;  
+}  
+  
+function renderPhotoEvidence(urlsField,visitId){
+  if(!urlsField||!String(urlsField).trim())return'';
+  var urls=String(urlsField).split('\n').map(function(u){return u.trim();}).filter(function(u){return u.length>4;}).slice(0,2);
+  if(!urls.length)return'';
+  var html='<div class="photo-evidence"><h4>Visit Evidence</h4><div class="photo-evidence-grid">';
+  urls.forEach(function(url){
+    html+='<img class="photo-evidence-thumb" src="'+url+'" alt="Visit photo" loading="lazy" onclick="event.stopPropagation();openPhotoModal(\''+url.replace(/'/g,"\\'")+'\',\''+String(visitId||'').replace(/'/g,"\\'")+'\')">';
+  });
+  html+='</div></div>';
+  return html;
 }
-function makeIcon(c){
-  return L.divIcon({
-    className:'',
-    html:'<div style="width:14px;height:14px;border-radius:50%;background:'+c+';border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.6)"></div>',
-    iconSize:[14,14],iconAnchor:[7,7],popupAnchor:[0,-10]
+function openPhotoModal(url,visitId){
+  try{
+    sessionStorage.setItem('fieldiq_return_visitId',visitId||'');
+    sessionStorage.setItem('fieldiq_return_scroll',String(window.scrollY||0));
+  }catch(e){}
+  document.getElementById('photoModalImg').src=url;
+  document.getElementById('photoModalOverlay').classList.add('open');
+}
+function closePhotoModal(){
+  document.getElementById('photoModalOverlay').classList.remove('open');
+  document.getElementById('photoModalImg').src='';
+  try{sessionStorage.removeItem('fieldiq_return_visitId');sessionStorage.removeItem('fieldiq_return_scroll');}catch(e){}
+}
+function restoreReturnStateIfAny(){
+  try{
+    var vid=sessionStorage.getItem('fieldiq_return_visitId');
+    if(vid){
+      expandAndScrollToVisit(vid);
+      sessionStorage.removeItem('fieldiq_return_visitId');
+      sessionStorage.removeItem('fieldiq_return_scroll');
+    }
+  }catch(e){}
+}  
+function renderReviewButton(f, recordId){
+  if(!currentUser||currentUser.role!=='Manager')return'';
+  var qualifies=(f['Priority']==='High'||f['Outcome']==='Negative');
+  if(!qualifies)return'';
+  if(f['Reviewed']===true){
+    return '<div class="review-row"><span class="reviewed-badge">Reviewed ✓</span></div>';
+  }
+  return '<div class="review-row"><button class="mark-reviewed-btn" id="reviewBtn-'+recordId+'" onclick="event.stopPropagation();markVisitReviewed(\''+recordId+'\',this)">✓ Mark as Reviewed</button></div>';
+}
+function markVisitReviewed(recordId,btnEl){
+  btnEl.disabled=true;
+  btnEl.textContent='Saving…';
+  fetch(WORKER+'/update-visit',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({recordId:recordId,reviewed:true})
+  }).then(function(res){
+    if(!res.ok)throw new Error('Request failed');
+    // sortedRecords is rebuilt fresh from allRecordsRaw every time
+    // renderVisits() runs (applyFilters/resetFilters/search) — updating
+    // only sortedRecords here means that rebuild would silently revert
+    // this visit back to unreviewed, since it re-derives from the
+    // still-stale allRecordsRaw entry. Both must be updated so the
+    // Reviewed state survives any future re-render, not just the current
+    // one already on screen.
+    var rec=sortedRecords.find(function(r){return r.id===recordId;});
+    if(rec)rec.fields['Reviewed']=true;
+    var rawRec=allRecordsRaw.find(function(r){return r.id===recordId;});
+    if(rawRec)rawRec.fields['Reviewed']=true;
+    var wrapper=btnEl.parentElement;
+    wrapper.innerHTML='<span class="reviewed-badge">Reviewed ✓</span>';
+  }).catch(function(err){
+    console.error('Could not mark visit reviewed:',err);
+    btnEl.disabled=false;
+    btnEl.textContent='✓ Mark as Reviewed';
+    alert('Could not save right now. Please try again.');
   });
 }
-function trunc(t,n){
-  if(!t)return'';
-  var i=t.indexOf('VISIT SUMMARY');
-  if(i>-1){var s=t.substring(i+13,i+13+n).trim();return s.length===n?s+'...':s;}
-  return t.length>n?t.substring(0,n)+'...':t;
-}
+function renderFullReport(text){  
+  if(!text)return'<div class="report-section"><p>No additional details available.</p></div>';  
+  var s=parseFullReport(text),html='';  
+  if(s.summary)html+='<div class="report-section"><h4>Visit Summary</h4><p>'+escapeHtmlLocal(s.summary).replace(/\n/g,'<br>')+'</p></div>';  
+  if(s.contacts)html+='<div class="report-section"><h4>Key Contacts</h4><p>'+escapeHtmlLocal(s.contacts).replace(/\n/g,'<br>')+'</p></div>';  
+  if(s.outcomes)html+='<div class="report-section"><h4>Outcomes & Decisions</h4><p>'+escapeHtmlLocal(s.outcomes).replace(/\n/g,'<br>')+'</p></div>';  
+  if(s.nextSteps)html+='<div class="report-section"><h4>Next Steps</h4><p>'+escapeHtmlLocal(s.nextSteps).replace(/\n/g,'<br>')+'</p></div>';  
+  if(s.signals)html+='<div class="report-section"><h4>Opportunity Signals</h4><p>'+escapeHtmlLocal(s.signals).replace(/\n/g,'<br>')+'</p></div>';  
+  if(s.sentiment)html+='<div class="report-section"><h4>Sentiment</h4><p>'+escapeHtmlLocal(s.sentiment).replace(/\n/g,'<br>')+'</p></div>';  
+  return html||'<div class="report-section"><p>'+escapeHtmlLocal(text)+'</p></div>';  
+}  
 
-// A visit only counts as mappable when it has both coordinates AND, if an
-// Accuracy value was recorded for it, that accuracy is at or better than
-// this threshold — same 500m value already agreed for Log Visit's own save
-// gate. A visit with no Accuracy value at all (older records saved before
-// that field existed) is not excluded by this second check, since there is
-// no evidence either way for those — only a visit with a known, recorded,
-// poor accuracy is filtered out. This is what keeps a stale low-accuracy
-// pin (e.g. one that resolved somewhere like an airport) from rendering,
-// without deleting or modifying anything in Airtable.
-var MAP_GPS_ACCURACY_THRESHOLD_METERS=500;
-function hasValidMapCoordinates(f){
-  if(!f||!f.Latitude||!f.Longitude)return false;
-  if(f.Accuracy!=null&&f.Accuracy>MAP_GPS_ACCURACY_THRESHOLD_METERS)return false;
-  return true;
-}
-
-function getDateCutoffs(period){
-  var now=new Date();
-  var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-  if(period==='today'){
-    return {start:today,end:null};
-  }
-  if(period==='yesterday'){
-    var yest=new Date(today);yest.setDate(today.getDate()-1);
-    var yestEnd=new Date(today);yestEnd.setMilliseconds(-1);
-    return {start:yest,end:yestEnd};
-  }
-  if(period==='thisWeek'){
-    var dow=today.getDay();
-    var diff=(dow===0?6:dow-1);
-    var monday=new Date(today);monday.setDate(today.getDate()-diff);
-    return {start:monday,end:null};
-  }
-  if(period==='30'){
-    var cutoff=new Date(today);cutoff.setDate(today.getDate()-30);
-    return {start:cutoff,end:null};
-  }
-  if(period==='7'){
-    var cutoff7=new Date(today);cutoff7.setDate(today.getDate()-7);
-    return {start:cutoff7,end:null};
-  }
-  if(period==='90'){
-    var cutoff90=new Date(today);cutoff90.setDate(today.getDate()-90);
-    return {start:cutoff90,end:null};
-  }
-  return {start:null,end:null};
-}
-
-function fitToResults(){
-  var coords=currentFilteredVisits
-    .filter(function(v){return hasValidMapCoordinates(v.fields);})
-    .map(function(v){return [v.fields.Latitude,v.fields.Longitude];});
-
-  if(coords.length===0)return;
-
-  if(coords.length===1){
-    theMap.setView(coords[0],11);
-    return;
-  }
-
-  theMap.fitBounds(coords,{padding:[40,40],maxZoom:11});
-}
-function goToVisit(visitId){
-  var c=theMap.getCenter();
-  var z=theMap.getZoom();
-  var fPeriod=document.getElementById('fPeriod').value;
-  var fTerr=document.getElementById('fTerr').value;
-  var fRep=document.getElementById('fRep').value;
-  var fSent=document.getElementById('fSent').value;
-  var mapVisitIds=currentFilteredVisits.filter(function(v){return hasValidMapCoordinates(v.fields);}).map(function(v){return v.id;});
-  try{sessionStorage.setItem('fieldiq_map_visit_list',JSON.stringify(mapVisitIds));}catch(e){}
-  var returnUrl='./fieldiq-visits-map.html?mapLat='+encodeURIComponent(c.lat)+'&mapLng='+encodeURIComponent(c.lng)+'&mapZoom='+encodeURIComponent(z)+'&mapVisitId='+encodeURIComponent(visitId)+'&fPeriod='+encodeURIComponent(fPeriod)+'&fTerr='+encodeURIComponent(fTerr)+'&fRep='+encodeURIComponent(fRep)+'&fSent='+encodeURIComponent(fSent);
-  var navUrl='./fieldiq-visit-history.html?visitId='+encodeURIComponent(visitId)+'&source=map&rep='+encodeURIComponent(fRep)+'&territory='+encodeURIComponent(fTerr)+'&returnTo='+encodeURIComponent(returnUrl);
-  window.location.href=navUrl;
-}
-function renderMarkers(visits){
-  markers.clearLayers();
-  markersByVisitId={};
-  var p=0,n=0,neg=0,shown=0;
-  visits.forEach(function(v){
-    var f=v.fields;
-    if(!hasValidMapCoordinates(f))return;
-    shown++;
-    var sent=v._sent;
-    if(sent==='positive')p++;
-    else if(sent==='neutral')n++;
-    else if(sent==='negative')neg++;
-    var popup=
-      '<div class="ph">'+(f['Hospital Name']||'Unknown Account')+'</div>'+
-      '<span class="ps" style="'+getBadgeStyle(sent)+'">'+sent.charAt(0).toUpperCase()+sent.slice(1)+'</span>'+
-      '<div class="pr"><span class="pl">Rep</span><span class="pv">'+(f['Rep Name']||'—')+'</span></div>'+
-      '<div class="pr"><span class="pl">Date</span><span class="pv">'+formatDate(f['Visit Date'])+'</span></div>'+
-      '<div class="pr"><span class="pl">Time</span><span class="pv">'+formatTime(v.createdTime)+'</span></div>'+
-      '<div class="pr"><span class="pl">Territory</span><span class="pv">'+(f['Territory']||'—')+'</span></div>'+
-      '<div class="pr"><span class="pl">Type</span><span class="pv">'+(f['Visit Type']||'—')+'</span></div>'+
-      '<div style="margin-top:8px"><a href="#" onclick="goToVisit(\''+encodeURIComponent(v.id)+'\');return false;" style="display:block;text-align:center;background:#2f8fff;color:#fff;font-weight:800;font-size:11.5px;padding:7px 0;border-radius:8px;text-decoration:none">View Visit</a></div>';
-    var _marker=L.marker([f.Latitude,f.Longitude],{icon:makeIcon(getColor(sent))}).bindPopup(popup,{maxWidth:280});
-    markersByVisitId[v.id]=_marker;
-    markers.addLayer(_marker);
+// ── Actions from this Visit ──────────────────────────────────────────────
+// New, additive block shown beneath the existing AI Summary / Next Steps —
+// that content is never modified. Shows each action linked to this specific
+// visit (via the Source Visit field) with its true current status. No
+// inline matching or guessing against the AI-generated text — this is a
+// separate, honest list sourced directly from Open Actions records.
+function escapeHtmlLocal(str){
+  return String(str||'').replace(/[&<>"']/g,function(m){
+    return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
   });
-  document.getElementById('sCount').textContent=shown;
-  document.getElementById('sPos').textContent=p;
-  document.getElementById('sNeu').textContent=n;
-  document.getElementById('sNeg').textContent=neg;
+}
+// Manager Notes archive display — locked business rule: Manager Notes
+// belong to an Action for its lifetime. Once an Action reaches an end
+// state (Completed or Dismissed), Visit History displays it together with
+// its Manager Notes and acknowledgement history, read via the existing
+// /get-notes?actionId=X endpoint. Read-only here — nothing is written,
+// moved, duplicated, or re-parented. An action with no notes renders
+// nothing additional, exactly as before.
+function renderAvfNoteItems(records){
+  if(!records.length)return'';
+  var html='<div class="avf-notes">';
+  records.forEach(function(r){
+    var f=r.fields||{};
+    var acked=!!f['Acknowledged'];
+    html+='<div class="avf-note-item">'+
+      '<div class="avf-note-text">'+escapeHtmlLocal(f['Notes']||'')+'</div>'+
+      '<div class="avf-note-meta">'+escapeHtmlLocal(f['Created By']||'Manager')+' · '+escapeHtmlLocal(formatDateTimeLocal(f['Created Date']||''))+'</div>'+
+      '<div class="avf-note-status '+(acked?'acked':'not-acked')+'">'+(acked?'Acknowledged by rep':'Not yet acknowledged')+'</div>'+
+    '</div>';
+  });
+  html+='</div>';
+  return html;
+}
+// Fetches notes for a single completed/dismissed action and, if any exist,
+// appends them directly beneath that action's row in the already-rendered
+// Actions-from-this-Visit list. Fails silently — a note-lookup error never
+// disturbs the action list itself, which has already rendered successfully
+// by the time this runs.
+function loadNotesForAvfAction(actionId){
+  var box=document.getElementById('avf-notes-'+actionId);
+  if(!box)return;
+  fetch(WORKER+'/get-notes?actionId='+encodeURIComponent(actionId))
+    .then(function(res){return res.json();})
+    .then(function(data){
+      box.innerHTML=renderAvfNoteItems(data.records||[]);
+    })
+    .catch(function(err){
+      console.error('Could not load manager notes for action:',actionId,err);
+      // Leaves the placeholder empty — matches "if no notes, render nothing additional".
+    });
+}
+function renderActionsFromVisitList(records){
+  if(!records.length)return '<p style="color:#8a9bb3;font-size:12px;margin:0">No actions linked to this visit.</p>';
+  return '<div class="avf-list">'+records.map(function(r){
+    var f=r.fields||{};
+    var text=f['Action Text']||'';
+    var status=String(f['Status']||'Open').toLowerCase();
+    var isDismissed=status==='dismissed';
+    var isCompleted=status==='completed';
+    var isEndState=isDismissed||isCompleted;
+    var badgeClass=isDismissed?'avf-badge-dismissed':(isCompleted?'avf-badge-completed':'avf-badge-pending');
+    var badgeText=isDismissed?'Dismissed':(isCompleted?'Completed':'Pending');
+    return '<div class="avf-item-wrap">'+
+        '<div class="avf-item"><span class="avf-text">'+escapeHtmlLocal(text)+'</span><span class="avf-badge '+badgeClass+'">'+badgeText+'</span></div>'+
+        (isEndState?'<div class="avf-notes" id="avf-notes-'+r.id+'"></div>':'')+
+      '</div>';
+  }).join('')+'</div>';
+}
+// Fetches and appends the Actions-from-this-Visit block to an already-
+// rendered detail panel. Called after the existing synchronous AI report
+// content, so it never delays or blocks that rendering. Fails gracefully —
+// a fetch error or an empty result both produce a calm, honest message,
+// never a raw error shown to the user.
+function loadActionsForVisit(detailEl,visitRecordId){
+  var container=document.createElement('div');
+  container.className='report-section';
+  container.innerHTML='<h4>Actions from this Visit</h4><p style="color:#8a9bb3;font-size:12px;margin:0">Loading actions...</p>';
+  detailEl.appendChild(container);
+  fetch(WORKER+'/get-actions?visitId='+encodeURIComponent(visitRecordId))
+    .then(function(res){return res.json();})
+    .then(function(data){
+      var records=data.records||[];
+      container.innerHTML='<h4>Actions from this Visit</h4>'+renderActionsFromVisitList(records);
+      records.forEach(function(r){
+        var status=String((r.fields||{})['Status']||'Open').toLowerCase();
+        if(status==='completed'||status==='dismissed')loadNotesForAvfAction(r.id);
+      });
+    })
+    .catch(function(err){
+      console.error('Could not load actions for this visit:',err);
+      container.innerHTML='<h4>Actions from this Visit</h4><p style="color:#8a9bb3;font-size:12px;margin:0">Could not load actions for this visit.</p>';
+    });
+}  
+// Visit Thread — every visit in the same thread (original and every
+// follow-up alike) shows the identical full list: every member, in
+// chronological order, the current one marked "(currently viewing)",
+// every other one a clickable button calling the existing
+// expandAndScrollToVisit() — no new navigation, same one used everywhere
+// else in this app. Renders nothing if the thread has only one member (a
+// normal visit no Log Update has joined yet).
+var _threadToggleCounter=0;
+function renderThreadCards(members,threadId,currentId){
+  var html='';var followUpNum=0;
+  members.forEach(function(m){
+    var mf=m.fields||{};
+    var isCurrent=m.id===currentId;
+    var isOrig=m.id===threadId;
+    var label=isOrig?'Original Visit':('Follow-up '+(++followUpNum));
+    var dateStr=mf['Visit Date']?formatDate(mf['Visit Date']):'';
+    var snippet=truncateSummary(mf['AI Summary']||mf['Meeting Notes']||'',70).replace(/^[:\s]+/,'');
+    var actionHtml=isCurrent
+      ? '<span class="thread-card-status">Currently viewing</span>'
+      : '<button type="button" class="thread-action-btn thread-action-btn-small" onclick="event.stopPropagation();expandAndScrollToVisit(\''+m.id+'\');">Open</button>';
+    html+='<div class="thread-card'+(isCurrent?' thread-card-current':'')+'">'+
+      '<div class="thread-card-label">'+label+'</div>'+
+      '<div class="thread-card-meta">'+(dateStr?escapeHtmlLocal(dateStr):'')+(dateStr&&snippet?' · ':'')+escapeHtmlLocal(snippet)+'</div>'+
+      '<div class="thread-card-action">'+actionHtml+'</div>'+
+    '</div>';
+  });
+  return html;
+}
+function loadThreadForVisit(detailEl,record){
+  var existing=detailEl.querySelector('.visit-thread-section');
+  if(existing)existing.remove();
+  var threadId=(record.fields||{})['Visit Thread ID']||record.id;
+  // Guaranteed, immediate fallback — shown before the fetch below
+  // resolves, so the section never depends entirely on a network call
+  // succeeding. Upgraded to the full thread list once the fetch returns.
+  var fallback=document.createElement('div');
+  fallback.className='report-section visit-thread-section';
+  fallback.innerHTML='<div class="thread-card thread-card-current"><div class="thread-card-label">'+(threadId===record.id?'Original Visit':'This Visit')+'</div><div class="thread-card-action"><span class="thread-card-status">Currently viewing</span></div></div>';
+  detailEl.appendChild(fallback);
+  fetch(WORKER+'/get-visit-thread?threadId='+encodeURIComponent(threadId))
+    .then(function(res){return res.json();})
+    .then(function(data){
+      var members=data.records||[];
+      if(members.length<=1)return;
+      var stillPresent=detailEl.contains(fallback);
+      if(stillPresent)fallback.remove();
+      _threadToggleCounter++;
+      var toggleId='thread-toggle-'+_threadToggleCounter;
+      var container=document.createElement('div');
+      container.className='report-section visit-thread-section';
+      var cardsHtml=renderThreadCards(members,threadId,record.id);
+      container.innerHTML='<button type="button" class="thread-toggle-btn" id="'+toggleId+'-btn" onclick="event.stopPropagation();toggleThreadList(\''+toggleId+'\');">'+
+          '📋 Thread ('+members.length+' Visit'+(members.length===1?'':'s')+')'+
+          '<span id="'+toggleId+'-arrow" class="thread-toggle-arrow">▸</span>'+
+        '</button>'+
+        '<div id="'+toggleId+'-list" class="thread-list" style="display:none">'+cardsHtml+'</div>';
+      detailEl.appendChild(container);
+    })
+    .catch(function(err){
+      console.error('Could not load visit thread:',err);
+      // fallback (already appended above) remains visible — never nothing.
+    });
+}
+function toggleThreadList(toggleId){
+  var list=document.getElementById(toggleId+'-list');
+  var arrow=document.getElementById(toggleId+'-arrow');
+  if(!list)return;
+  var isOpen=list.style.display!=='none';
+  list.style.display=isOpen?'none':'block';
+  if(arrow)arrow.textContent=isOpen?'▸':'▾';
+}
+  
+var sortedRecords=[];  
+var allRecordsRaw=[];  
+var watchedAccountIds={};
+var accountIdByName={};
+var targetVisitId=null;  
+  
+function renderVisits(records){  
+  var today=new Date();today.setHours(0,0,0,0);  
+  var weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);  
+  var thisWeek=0,newAccounts=0;  
+  var sorted=records.slice().sort(function(a,b){  
+    var da=a.fields['Visit Date']?new Date(a.fields['Visit Date']):new Date(0);  
+    var db=b.fields['Visit Date']?new Date(b.fields['Visit Date']):new Date(0);  
+    return db-da;  
+  });  
+  sortedRecords=sorted;  
+  sorted.forEach(function(r){  
+    var f=r.fields;var vDate=f['Visit Date']?new Date(f['Visit Date']):null;  
+    if(vDate&&vDate>=weekAgo)thisWeek++;  
+    if(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1')newAccounts++;  
+  });  
+  document.getElementById('statTotal').textContent=records.length;  
+  document.getElementById('statThisWeek').textContent=thisWeek;  
+  document.getElementById('statNewAccounts').textContent=newAccounts;  
+  document.getElementById('countLabel').textContent='Showing '+sorted.length+' visit'+(sorted.length!==1?'s':'')+', most recent first';  
+  if(sorted.length===0){document.getElementById('visitList').innerHTML='<div class="empty">No visits logged yet.</div>';return;}  
+  var html='';  
+  sorted.forEach(function(r,idx){  
+    var f=r.fields;var priority=f['Priority']||'Medium';  
+    var isNew=(f['New Account']===true||f['New Account']==='true'||f['New Account']===1||f['New Account']==='1');  
+    var summary=truncateSummary(f['AI Summary']||f['Meeting Notes']||'',180);  
+    var linkedAccountId=(f['Account']&&f['Account'][0])?f['Account'][0]:null;
+    if(!linkedAccountId){
+      var normalizedName=String(f['Hospital Name']||'').trim().toLowerCase();
+      if(normalizedName&&accountIdByName[normalizedName])linkedAccountId=accountIdByName[normalizedName];
+    }
+    var starHtml='';
+    if(currentUser.role==='Manager'){
+      if(linkedAccountId){
+        var isWatched=!!watchedAccountIds[linkedAccountId];
+        starHtml='<button class="watch-star'+(isWatched?' watching':'')+'" onclick="event.stopPropagation();toggleWatch(\''+linkedAccountId+'\',this)" data-account-id="'+linkedAccountId+'" aria-label="'+(isWatched?'Remove from watchlist':'Add to watchlist')+'" title="'+(isWatched?'Watching — tap to remove':'Tap to watch this account')+'">'+(isWatched?'⭐':'☆')+'</button>';
+      }else{
+        starHtml='<button class="watch-star watch-star-unresolved" disabled aria-label="Account not linked — cannot watch" title="This visit is not linked to an account record yet, so it cannot be watched.">☆</button>';
+      }
+    }
+    html+=  
+      '<div class="visit-card'+(isNew?' new-account':'')+'" data-idx="'+idx+'" data-id="'+r.id+'">'+  
+        '<div class="visit-header">'+  
+          starHtml+
+          '<div class="visit-account">'+(f['Hospital Name']||'Unknown Account')+'</div>'+  
+          '<div class="visit-date">'+formatDate(f['Visit Date'])+'</div>'+  
+        '</div>'+  
+        '<div class="visit-meta">'+  
+          (f['Territory']?'<span class="badge badge-territory">'+f['Territory']+'</span>':'')+  
+          (f['Visit Type']?'<span class="badge badge-type">'+f['Visit Type']+'</span>':'')+  
+          '<span class="badge '+getPriorityClass(priority)+'">'+priority+'</span>'+  
+          (f['Rep Name']?'<span class="badge badge-territory">'+f['Rep Name']+'</span>':'')+  
+          (isNew?'<span class="badge badge-new">New Account</span>':'')+  
+        '</div>'+  
+        (summary?'<div class="visit-summary">'+summary+'</div>':'')+  
+        '<div class="visit-toggle"><i data-lucide="chevron-down"></i> Tap to view full report</div>'+  
+        '<div class="visit-detail" id="detail-'+idx+'"></div>'+  
+      '</div>';  
+  });  
+  document.getElementById('visitList').innerHTML=html;lucide.createIcons();  
+  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();  
+}  
+  
+// ── Watch / Unwatch Account ──────────────────────────────────────────────
+// Instant, optimistic toggle — same pattern already proven for Dismiss and
+// Mark Reviewed elsewhere in this app. Watching is Account-level, resolved
+// via the visit's linked Account field; every other card for the same
+// Account updates too, so the toggle state never contradicts itself across
+// cards for the same account on screen at once.
+function toggleWatch(accountId,btnEl){
+  var isWatching=btnEl.classList.contains('watching');
+  btnEl.disabled=true;
+  var endpoint=isWatching?'/unwatch-account':'/watch-account';
+  fetch(WORKER+endpoint,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({accountId:accountId})
+  }).then(function(res){
+    if(!res.ok)throw new Error('Request failed');
+    watchedAccountIds[accountId]=!isWatching;
+    document.querySelectorAll('.watch-star[data-account-id="'+accountId+'"]').forEach(function(b){
+      var nowWatching=!isWatching;
+      b.classList.toggle('watching',nowWatching);
+      b.textContent=nowWatching?'⭐':'☆';
+      b.setAttribute('aria-label',nowWatching?'Remove from watchlist':'Add to watchlist');
+      b.setAttribute('title',nowWatching?'Watching — tap to remove':'Tap to watch this account');
+      b.disabled=false;
+    });
+  }).catch(function(err){
+    console.error('Could not update watch status:',err);
+    btnEl.disabled=false;
+    alert('Could not update watch status. Please try again.');
+  });
 }
 
-// Same canonical mapping already used consistently in worker.js,
-// fieldiq-accounts.html, and fieldiq-log-visit.html — any territory
-// beginning with "Saudi Arabia" (regardless of region suffix) collapses
-// to the single canonical "Saudi Arabia", matching Airtable's own actual
-// stored value. This file previously output "KSA" here, which does not
-// exist anywhere in Airtable's data — the one page in the app that had
-// not yet been brought in line with the rename applied everywhere else.
-function normalizeTerritoryForMap(raw){
+document.getElementById('visitList').addEventListener('click',function(e){  
+  var card=e.target.closest('.visit-card');if(!card)return;  
+  var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');  
+  if(!detail)return;  
+  var isOpen=detail.classList.contains('open');  
+  if(isOpen){  
+    detail.classList.remove('open');card.classList.remove('expanded');  
+    toggle.innerHTML='<i data-lucide="chevron-down"></i> Tap to view full report';lucide.createIcons({el:toggle});  
+  }else{  
+    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderReviewButton(f,sortedRecords[idx].id)+renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}
+    loadThreadForVisit(detail,sortedRecords[idx]);
+    detail.classList.add('open');card.classList.add('expanded');  
+    toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
+  }  
+});  
+  
+function populateRepFilter(records){  
+  var reps={};records.forEach(function(r){var rep=r.fields['Rep Name']||'';if(rep){rep=rep.trim();rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();reps[rep]=1;}});  
+  var sel=document.getElementById('filterRep');while(sel.options.length>1)sel.remove(1);  
+  Object.keys(reps).sort().forEach(function(r){var o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});  
+}  
+  
+function getPeriodRange(period){  
+  var now=new Date();var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());var dayOfWeek=today.getDay();var diffToMonday=(dayOfWeek===0?6:dayOfWeek-1);var thisMonday=new Date(today);thisMonday.setDate(today.getDate()-diffToMonday);  
+  if(period==='thisWeek'){return {start:thisMonday,end:null};}  
+  if(period==='lastWeek'){var lastMonday=new Date(thisMonday);lastMonday.setDate(thisMonday.getDate()-7);var lastSunday=new Date(thisMonday);lastSunday.setDate(thisMonday.getDate()-1);lastSunday.setHours(23,59,59,999);return {start:lastMonday,end:lastSunday};}  
+  if(period==='thisMonth'){return {start:new Date(now.getFullYear(),now.getMonth(),1),end:null};}  
+  if(period==='lastMonth'){var lm=new Date(now.getFullYear(),now.getMonth()-1,1);var lmEnd=new Date(now.getFullYear(),now.getMonth(),0);lmEnd.setHours(23,59,59,999);return {start:lm,end:lmEnd};}  
+  return {start:null,end:null};  
+}  
+  
+function normalizeTerritoryForFilter(raw){
   var t=(raw||'').trim();if(!t)return'';
   var tu=t.toUpperCase();
-  if(tu.indexOf('SAUDI ARABIA')===0||tu==='KSA')return'Saudi Arabia';
+  if(tu.indexOf('SAUDI ARABIA')===0)return'Saudi Arabia';
   if(tu==='UAE')return'UAE';
   if(tu==='QATAR')return'Qatar';
   if(tu==='KUWAIT')return'Kuwait';
@@ -350,100 +768,221 @@ function normalizeTerritoryForMap(raw){
   if(tu==='OMAN')return'Oman';
   return t;
 }
-function populateFilters(visits){
-  var t={},r={};
-  visits.forEach(function(v){
-    var f=v.fields;
-    if(f.Territory)t[normalizeTerritoryForMap(f.Territory)]=1;
-    if(f['Rep Name'])r[f['Rep Name']]=1;
-  });
-  var ts=document.getElementById('fTerr');
-  while(ts.options.length>1)ts.remove(1);
-  Object.keys(t).sort().forEach(function(x){
-    var o=document.createElement('option');o.value=x;o.textContent=x;ts.appendChild(o);
-  });
-  var rs=document.getElementById('fRep');
-  while(rs.options.length>1)rs.remove(1);
-  Object.keys(r).sort().forEach(function(x){
-    var o=document.createElement('option');o.value=x;o.textContent=x;rs.appendChild(o);
-  });
-}
-
-function applyFilters(){
-  var period=document.getElementById('fPeriod').value;
-  var t=document.getElementById('fTerr').value;
-  var r=document.getElementById('fRep').value;
-  var s=document.getElementById('fSent').value;
-  var cutoffs=getDateCutoffs(period);
-  var filtered=allVisits.filter(function(v){
-    var f=v.fields;
-    if(t&&normalizeTerritoryForMap(f.Territory)!==t)return false;
-    if(r&&f['Rep Name']!==r)return false;
-    if(s&&getSent(f['AI Summary']||'')!==s)return false;
-    if(cutoffs.start||cutoffs.end){
-      if(!f['Visit Date'])return false;
-      var vDate=new Date(f['Visit Date']);
-      if(cutoffs.start&&vDate<cutoffs.start)return false;
-      if(cutoffs.end&&vDate>cutoffs.end)return false;
-    }
-    return true;
-  });
-  currentFilteredVisits=filtered;
-  renderMarkers(filtered);
-}
-
-function resetFilters(){
-  document.getElementById('fPeriod').value='30';
-  document.getElementById('fTerr').value='';
-  document.getElementById('fRep').value='';
-  document.getElementById('fSent').value='';
-  try{history.replaceState(null,'',window.location.pathname);}catch(e){}
-  applyFilters();
-}
-
-async function loadVisits(){
-  document.getElementById('loadingEl').style.display='block';
-  document.getElementById('errorEl').style.display='none';
-  try{
-    var res=await fetch(WORKER+'/get-visits');
-    var data=await res.json();
-    if(!res.ok)throw new Error('Worker error '+res.status+': '+JSON.stringify(data));
-    allVisits=data.records||[];
-    allVisits.forEach(function(v){v._sent=getSent(v.fields['AI Summary']||'');});
-    if(allVisits.length===0){
-      document.getElementById('loadingEl').style.display='none';
-      document.getElementById('errorEl').style.display='block';
-      document.getElementById('errorMsg').textContent='No visits found in Airtable yet. Log a visit first.';
-      return;
-    }
-    populateFilters(allVisits);
-    var _restoreParams=new URLSearchParams(window.location.search);
-    var _mLat=_restoreParams.get('mapLat'),_mLng=_restoreParams.get('mapLng'),_mZoom=_restoreParams.get('mapZoom'),_mVisitId=_restoreParams.get('mapVisitId');
-    var _fPeriod=_restoreParams.get('fPeriod'),_fTerr=_restoreParams.get('fTerr'),_fRep=_restoreParams.get('fRep'),_fSent=_restoreParams.get('fSent');
-    document.getElementById('fPeriod').value=(_fPeriod!==null)?_fPeriod:'30';
-    if(_fTerr!==null)document.getElementById('fTerr').value=_fTerr;
-    if(_fRep!==null)document.getElementById('fRep').value=_fRep;
-    if(_fSent!==null)document.getElementById('fSent').value=_fSent;
-    applyFilters();
-    if(_mLat&&_mLng&&_mZoom){
-      theMap.setView([parseFloat(_mLat),parseFloat(_mLng)],parseInt(_mZoom,10));
-      if(_mVisitId&&markersByVisitId[_mVisitId]){
-        markersByVisitId[_mVisitId].openPopup();
-      }
-    }
-    document.getElementById('updated').textContent='Updated '+new Date().toLocaleTimeString();
-    document.getElementById('loadingEl').style.display='none';
-    setTimeout(function(){theMap.invalidateSize();},100);
-  }catch(err){
-    document.getElementById('loadingEl').style.display='none';
-    document.getElementById('errorEl').style.display='block';
-    document.getElementById('errorMsg').textContent='Error: '+err.message;
+function getFilteredRecords(){  
+  var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var priority=document.getElementById('filterPriority').value;var period=document.getElementById('filterPeriod').value;  
+  var cutoff=null;var range={start:null,end:null};  
+  if(period==='30'||period==='90'){cutoff=new Date(Date.now()-parseInt(period)*24*60*60*1000);}else if(period){range=getPeriodRange(period);}  
+  return allRecordsRaw.filter(function(r){  
+    var f=r.fields;var repName=(f['Rep Name']||'').trim();repName=repName.charAt(0).toUpperCase()+repName.slice(1).toLowerCase();  
+    if(rep&&repName!==rep)return false;if(terr&&normalizeTerritoryForFilter(f['Territory'])!==terr)return false;if(priority&&f['Priority']!==priority)return false;  
+    if(cutoff&&f['Visit Date']&&new Date(f['Visit Date'])<cutoff)return false;  
+    if(range.start||range.end){if(!f['Visit Date'])return false;var vDate=new Date(f['Visit Date']);if(range.start&&vDate<range.start)return false;if(range.end&&vDate>range.end)return false;}  
+    return true;  
+  });  
+}  
+  
+function applyFilters(){  
+  var filtered=getFilteredRecords();var rep=document.getElementById('filterRep').value;var terr=document.getElementById('filterTerritory').value;var priority=document.getElementById('filterPriority').value;var period=document.getElementById('filterPeriod').value;  
+  var searchBox=document.getElementById('repSearch');var q=searchBox?searchBox.value.trim().toLowerCase():'';
+  if(q){
+    filtered=filtered.filter(function(r){
+      var f=r.fields;
+      return ['Hospital Name','AI Summary','Meeting Notes','Action Items'].some(function(key){
+        var v=f[key];return v&&String(v).toLowerCase().indexOf(q)>-1;
+      });
+    });
   }
-}
-
-loadVisits();
-document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();});
+  var periodLabels={thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};  
+  var parts=[];if(rep)parts.push('Rep: '+rep);if(terr)parts.push('Territory: '+terr);if(priority)parts.push('Priority: '+priority);if(period)parts.push(periodLabels[period]||period);if(q)parts.push('Search: "'+q+'"');
+  document.getElementById('filterStatus').textContent=parts.length?'Filtering: '+parts.join(' · ')+' ('+filtered.length+' visits)':'';  
+  renderVisits(filtered);  
+}  
+  
+function resetFilters(){  
+  document.getElementById('filterRep').value='';document.getElementById('filterTerritory').value='';document.getElementById('filterPriority').value='';document.getElementById('filterPeriod').value='';document.getElementById('filterStatus').textContent='';  
+  renderVisits(allRecordsRaw);  
+}  
+  
+function applyUrlParams(){  
+  var params=new URLSearchParams(window.location.search);  
+  var rep=params.get('rep');var terr=params.get('territory');var priority=params.get('priority');var period=params.get('period');targetVisitId=params.get('visitId');  
+  if(rep){
+    rep=rep.trim();
+    rep=rep.charAt(0).toUpperCase()+rep.slice(1).toLowerCase();
+    document.getElementById('filterRep').value=rep;
+  }
+  if(terr)document.getElementById('filterTerritory').value=terr;  
+  if(priority)document.getElementById('filterPriority').value=priority;  
+  if(period)document.getElementById('filterPeriod').value=period;  
+}  
+  
+function expandAndScrollToVisit(recordId){  
+  if(!recordId)return;  
+  var card=document.querySelector('.visit-card[data-id="'+recordId+'"]');if(!card)return;  
+  var idx=card.getAttribute('data-idx');var detail=document.getElementById('detail-'+idx);var toggle=card.querySelector('.visit-toggle');  
+  // Command Centre / Open Actions context marker — purely in-memory, a
+  // plain DOM class with no storage backing it at all. Manager sources
+  // (manager-home, manager-actions) keep the original "Opened from
+  // Command Centre" treatment, unchanged. The Rep's own Open Actions
+  // source gets its own correct wording instead of incorrectly reusing
+  // the Manager's ribbon text. Loading Visit History normally, or from
+  // any other source, never applies either.
+  var _srcParams=new URLSearchParams(window.location.search);
+  if(_srcParams.get('source')==='manager-home'||_srcParams.get('source')==='manager-actions'){
+    card.classList.add('command-centre-highlight');
+  }else if(_srcParams.get('source')==='rep-actions'){
+    card.classList.add('rep-actions-highlight');
+  }else if(_srcParams.get('source')==='map'){
+    card.classList.add('map-highlight');
+  }
+  // Defensive correction: ensure this specific card's header has the same
+  // watch star every other card gets, using the identical construction as
+  // the main render loop — not a variant. Self-healing, idempotent: only
+  // acts if the star is actually missing and should be present.
+  if(idx!==null&&sortedRecords[idx]){
+    var hf=sortedRecords[idx].fields||{};
+    var hLinkedAccountId=(hf['Account']&&hf['Account'][0])?hf['Account'][0]:null;
+    if(!hLinkedAccountId){
+      var hNormalizedName=String(hf['Hospital Name']||'').trim().toLowerCase();
+      if(hNormalizedName&&accountIdByName[hNormalizedName])hLinkedAccountId=accountIdByName[hNormalizedName];
+    }
+    var header=card.querySelector('.visit-header');
+    if(header&&currentUser.role==='Manager'&&!header.querySelector('.watch-star')){
+      var hStarHtml;
+      if(hLinkedAccountId){
+        var hIsWatched=!!watchedAccountIds[hLinkedAccountId];
+        hStarHtml='<button class="watch-star'+(hIsWatched?' watching':'')+'" onclick="event.stopPropagation();toggleWatch(\''+hLinkedAccountId+'\',this)" data-account-id="'+hLinkedAccountId+'" aria-label="'+(hIsWatched?'Remove from watchlist':'Add to watchlist')+'" title="'+(hIsWatched?'Watching — tap to remove':'Tap to watch this account')+'">'+(hIsWatched?'⭐':'☆')+'</button>';
+      }else{
+        hStarHtml='<button class="watch-star watch-star-unresolved" disabled aria-label="Account not linked — cannot watch" title="This visit is not linked to an account record yet, so it cannot be watched.">☆</button>';
+      }
+      header.insertAdjacentHTML('afterbegin',hStarHtml);
+    }
+  }
+  if(detail&&!detail.classList.contains('open')){  
+    if(!detail.getAttribute('data-rendered')){var f=sortedRecords[idx].fields;detail.innerHTML=renderReviewButton(f,sortedRecords[idx].id)+renderFullReport(f['AI Summary']||f['Meeting Notes']||'')+renderPhotoEvidence(f['Photo URLs']||'',sortedRecords[idx].id);detail.setAttribute('data-rendered','1');loadActionsForVisit(detail,sortedRecords[idx].id);}
+    loadThreadForVisit(detail,sortedRecords[idx]);
+    detail.classList.add('open');card.classList.add('expanded');  
+    if(toggle)toggle.innerHTML='<i data-lucide="chevron-up"></i> Tap to collapse';lucide.createIcons({el:toggle});  
+  }  
+  var _stickyBar=document.getElementById('mapNavControls');
+  var _stickyOffset=0;
+  if(_stickyBar&&_stickyBar.style.display==='flex'){
+    _stickyOffset=_stickyBar.offsetHeight+12;
+  }
+  var _targetTop=card.getBoundingClientRect().top+(window.pageYOffset||document.documentElement.scrollTop||0)-_stickyOffset;
+  window.scrollTo({top:_targetTop,behavior:'smooth'});
+  card.classList.add('thread-nav-highlight');
+  setTimeout(function(){card.classList.remove('thread-nav-highlight');},1700);
+}  
+  
+var currentUser=null;  
+  
+async function loadCurrentUser(){  
+  var userId=localStorage.getItem('fieldiq_user_id');var userName=localStorage.getItem('fieldiq_user_name');var userRole=localStorage.getItem('fieldiq_user_role');  
+  if(userId&&userName&&userRole){currentUser={userId:userId,name:userName,role:userRole};}  
+}  
+  
+async function loadHistory(){  
+  try{  
+    if(!currentUser){  
+      document.getElementById('visitList').innerHTML='<div class="empty">Please select your name on the Home screen before viewing Visit History.<br><br><a href="./index.html" style="display:inline-block;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:12px;box-shadow:0 6px 16px rgba(47,143,255,0.3)">Return Home</a></div>';  
+      document.getElementById('countLabel').textContent='';return;  
+    }  
+    var _incomingParams=new URLSearchParams(window.location.search);
+    var endpoint=WORKER+'/get-visits';  
+    if(currentUser.role!=='Manager'){
+      endpoint=WORKER+'/get-visits?filterByUser='+encodeURIComponent(currentUser.userId);
+    }
+    // Manager: always fetch the complete dataset, unfiltered by any URL
+    // param. Territory used to be server-filtered here, which permanently
+    // limited allRecordsRaw to whatever the arriving URL specified — no
+    // amount of client-side Reset/Apply could ever recover records that
+    // were never fetched in the first place. Rep was already correctly
+    // left as fetch-everything-then-filter-locally, for the same reason
+    // this now applies to territory too: applyUrlParams() + applyFilters()
+    // below already handle the initial drill-down state client-side,
+    // exactly as they already do for rep.
+    var res=await fetch(endpoint,{cache:'no-store'});var data=await res.json();  
+    if(!res.ok)throw new Error(JSON.stringify(data));  
+    allRecordsRaw=data.records||[];  
+    if(currentUser.role==='Manager'){
+      try{
+        var wlRes=await fetch(WORKER+'/get-watchlist');
+        var wlData=await wlRes.json();
+        watchedAccountIds={};
+        (wlData.records||[]).forEach(function(w){watchedAccountIds[w.id]=true;});
+      }catch(e){watchedAccountIds={};}
+      try{
+        var accRes=await fetch(WORKER+'/get-accounts');
+        var accData=await accRes.json();
+        accountIdByName={};
+        (accData.records||[]).forEach(function(a){
+          var name=String((a.fields||{})['Account Name']||'').trim().toLowerCase();
+          if(name)accountIdByName[name]=a.id;
+        });
+      }catch(e){accountIdByName={};}
+    }
+    if(currentUser.role==='Manager'){  
+      populateRepFilter(allRecordsRaw);document.getElementById('filterBar').style.display='block';  
+      document.getElementById('repSearchBox').style.display='block';document.getElementById('repSearch').setAttribute('placeholder','Search accounts…');
+      applyUrlParams();applyFilters();  
+      if(targetVisitId){expandAndScrollToVisit(targetVisitId);}else{restoreReturnStateIfAny();}  
+    }else{  
+      document.getElementById('repSearchBox').style.display='block';  
+      targetVisitId=new URLSearchParams(window.location.search).get('visitId');  
+      renderVisits(allRecordsRaw);  
+      if(targetVisitId){expandAndScrollToVisit(targetVisitId);}else{restoreReturnStateIfAny();}  
+    }  
+  }catch(err){console.error('Visit History failed to load:',err);document.getElementById('visitList').innerHTML='<div class="empty">Could not load your visits. Please try again.</div>';}  
+}  
+  
+loadCurrentUser().then(function(){loadHistory();});  
+</script>  <script>
+var _repSearchTimer;
+document.getElementById('repSearch').addEventListener('input',function(){
+  clearTimeout(_repSearchTimer);
+  _repSearchTimer=setTimeout(function(){
+    if(currentUser&&currentUser.role==='Manager'){applyFilters();return;}
+    var q=document.getElementById('repSearch').value.trim().toLowerCase();
+    if(!q){renderVisits(allRecordsRaw);return;}
+    var filtered=allRecordsRaw.filter(function(r){
+      var f=r.fields;
+      return ['Hospital Name','AI Summary','Meeting Notes','Action Items'].some(function(key){
+        var v=f[key];return v&&String(v).toLowerCase().indexOf(q)>-1;
+      });
+    });
+    renderVisits(filtered);
+  },150);
+});
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).catch(function(){});}</script>
-</body>
+<script>
+// Back-to-top floating button — purely cosmetic, self-contained. Created
+// entirely via JS so no existing HTML/IDs/layout are touched. Appears only
+// after scrolling past 500px, scrolls smoothly to top on click. Does not
+// interact with navigation, actions, reminders, photo modal, or any
+// business logic.
+(function(){
+  var btn=document.createElement('button');
+  btn.type='button';
+  btn.className='back-to-top';
+  btn.setAttribute('aria-label','Back to top');
+  btn.textContent='↑';
+  btn.addEventListener('click',function(){
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+  document.addEventListener('DOMContentLoaded',function(){
+    document.body.appendChild(btn);
+  });
+  window.addEventListener('scroll',function(){
+    btn.classList.toggle('visible',(window.scrollY||document.documentElement.scrollTop)>500);
+  },{passive:true});
+})();
+window.addEventListener('pageshow',function(event){
+  if(event.persisted){
+    window.location.reload();
+  }
+});
+</script>
+</body>  
 </html>
