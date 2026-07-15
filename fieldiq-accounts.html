@@ -317,6 +317,14 @@ async function loadDirectory(){
     });
     ACCOUNTS.sort(function(a,b){return a.name.localeCompare(b.name);});
     document.getElementById('loadingEl').style.display='none';document.getElementById('directoryContent').style.display='block';renderDirectory();
+
+    var _dlParams=new URLSearchParams(window.location.search);
+    var _dlAccountId=_dlParams.get('accountId');
+    var _dlAccountName=_dlParams.get('accountName');
+    var _dlTarget=null;
+    if(_dlAccountId&&byId[_dlAccountId]){_dlTarget=byId[_dlAccountId];}
+    else if(_dlAccountName){_dlTarget=byNameLower[_dlAccountName.trim().toLowerCase()]||null;}
+    if(_dlTarget){openAccountDetail(_dlTarget.id);}
   }catch(err){console.error('Account Directory failed to load:',err);document.getElementById('loadingEl').innerHTML='<div class="empty">Could not load accounts. Please try again.</div>';}
 }
 // Account status thresholds — days since last visit. Adjust these two
