@@ -215,6 +215,7 @@ window.onerror=function(msg){document.getElementById('status').textContent='Erro
 var currentUserId=localStorage.getItem('fieldiq_user_id');
 var currentUserName=localStorage.getItem('fieldiq_user_name');
 var currentUserRole=localStorage.getItem('fieldiq_user_role');
+var currentSessionToken=localStorage.getItem('fieldiq_session_token');
 if(!currentUserId||!currentUserName){
   window.location.href='./index.html';
   throw new Error('No identity locked — redirecting to home.');
@@ -716,7 +717,7 @@ submitBtn.addEventListener('click',async function(){
       try{
         fetch(WORKER+'/update-action',{
           method:'POST',
-          headers:{'Content-Type':'application/json'},
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
           body:JSON.stringify({
             actionId:prefillSourceRef,
             lastUpdatedBy:repName,
