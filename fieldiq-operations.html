@@ -333,14 +333,25 @@ function initials(name) {
 // ── Data loading ─────────────────────────────────────────────────────────────
 async function loadData() {
   var managerId = localStorage.getItem('fieldiq_user_id')||'';
+  var sessionToken = localStorage.getItem('fieldiq_session_token')||'';
   var [visRes, actRes, usrRes] = await Promise.all([
-    fetch(WORKER+'/get-visits')
+    fetch(WORKER+'/get-visits',{headers:{'Authorization':'Bearer '+sessionToken}})
       .catch(function(){return {ok:false};}),
-    fetch(WORKER+'/get-actions?role=Manager&status=Open&userId='+encodeURIComponent(managerId))
+    fetch(WORKER+'/get-actions?role=Manager&status=Open&userId='+encodeURIComponent(managerId),{headers:{'Authorization':'Bearer '+sessionToken}})
       .catch(function(){return {ok:false};}),
     fetch(WORKER+'/get-users')
       .catch(function(){return {ok:false};})
   ]);
+
+  if (visRes.status===401||visRes.status===403) {
+    localStorage.removeItem('fieldiq_user_id');
+    localStorage.removeItem('fieldiq_user_name');
+    localStorage.removeItem('fieldiq_user_role');
+    localStorage.removeItem('fieldiq_user_record_id');
+    localStorage.removeItem('fieldiq_session_token');
+    window.location.href='./index.html';
+    return;
+  }
 
   allVisits = [];
   if (visRes.ok) {
@@ -1046,9 +1057,10 @@ function buildRepActivity(){
 // continues to the existing action navigation — same destination Quick
 // Actions already uses for Open Actions.
 function openRepActivityItem(actionId){
+  var _token=localStorage.getItem('fieldiq_session_token')||'';
   fetch(WORKER+'/update-action',{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+_token},
     body:JSON.stringify({actionId:actionId,managerNotificationViewed:true})
   }).catch(function(e){console.warn('Could not mark notification viewed:',e);});
   window.location.href='./fieldiq-actions.html?actionId='+encodeURIComponent(actionId)+'&from=operations';
