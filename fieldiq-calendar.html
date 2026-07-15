@@ -459,7 +459,7 @@ async function doCompleteAction(){
   try{
     var res=await fetch(WORKER+'/complete-action',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
       body:JSON.stringify({actionId:idToComplete,userId:currentUserId})
     });
     var data=await res.json();
