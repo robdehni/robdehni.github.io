@@ -145,6 +145,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .rep-section:last-of-type{margin-bottom:14px}
 .rep-section-title{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;color:#0b1f3a;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px}
 .rep-section-icon{font-size:13px}
+.rep-section-icon [data-lucide]{width:15px;height:15px;stroke-width:2;color:#2f8fff;vertical-align:-3px}
 .rep-item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f8fbff;border:1px solid #edf2f8;border-radius:10px;padding:9px 12px;margin-bottom:5px;text-decoration:none}
 .rep-item:last-child{margin-bottom:0}
 .rep-item-link{cursor:pointer}
@@ -467,10 +468,11 @@ async function updateOpenActionsBadge(){
 
   var userId=localStorage.getItem('fieldiq_user_id');
   var role=localStorage.getItem('fieldiq_user_role')||'Sales Rep';
+  var sessionToken=localStorage.getItem('fieldiq_session_token');
   if(!userId)return;
 
   try{
-    var res=await fetch(WORKER+'/get-actions?userId='+encodeURIComponent(userId)+'&role='+encodeURIComponent(role)+'&status=Open');
+    var res=await fetch(WORKER+'/get-actions?userId='+encodeURIComponent(userId)+'&role='+encodeURIComponent(role)+'&status=Open',{headers:{'Authorization':'Bearer '+sessionToken}});
     var data=await res.json();
     if(!res.ok)throw new Error('Failed');
     var count=(data.records||[]).length;
@@ -493,10 +495,11 @@ async function loadNotifications(){
   section.innerHTML='';
 
   var userId=localStorage.getItem('fieldiq_user_id');
+  var sessionToken=localStorage.getItem('fieldiq_session_token');
   if(!userId)return;
 
   try{
-    var res=await fetch(WORKER+'/get-notifications?userId='+encodeURIComponent(userId));
+    var res=await fetch(WORKER+'/get-notifications?userId='+encodeURIComponent(userId),{headers:{'Authorization':'Bearer '+sessionToken}});
     var data=await res.json();
     var records=(data.records||[]).filter(function(r){return !r.fields['Is Read'];});
     if(!records.length)return;
@@ -542,6 +545,10 @@ async function viewAction(notifId,actionId){
 // new /get-rep-briefing endpoint only, never writes anything. Every item
 // links straight to the existing Open Actions page — no new destination
 // page, no duplicated logic for showing/completing/dismissing an action.
+function repIconName(emoji){
+  var map = {'\ud83c\udfaf':'target','\ud83d\udcc5':'calendar','\u2705':'check-circle','\u26a0\ufe0f':'alert-triangle','\ud83d\udc65':'users','\ud83d\udccd':'map-pin'};
+  return map[emoji] || 'circle';
+}
 function renderRepBriefingContent(data){
   var html = '<div class="rep-greeting">' + escapeHtml(data.greeting || '') + '</div>';
   if (data.topLine) {
@@ -550,7 +557,7 @@ function renderRepBriefingContent(data){
   var sections = data.sections || [];
   sections.forEach(function(sec){
     html += '<div class="rep-section">';
-    html += '<div class="rep-section-title"><span class="rep-section-icon">' + escapeHtml(sec.icon || '') + '</span>' + escapeHtml(sec.title || '') + '</div>';
+    html += '<div class="rep-section-title"><span class="rep-section-icon"><i data-lucide="' + repIconName(sec.icon) + '"></i></span>' + escapeHtml(sec.title || '') + '</div>';
     (sec.items || []).forEach(function(item){
       var inner = '<div class="rep-item-text">' + escapeHtml(item.text || '') + '</div>' +
         (item.nav ? '<div class="rep-item-nav">' + escapeHtml(item.nav.label) + ' \u203a</div>' : '');
@@ -562,7 +569,6 @@ function renderRepBriefingContent(data){
     });
     html += '</div>';
   });
-  html += '<a class="rep-focus-btn" href="./fieldiq-open-actions.html">Open Actions</a>';
   return html;
 }
 // Clears everything that represents an authenticated session. Deliberately
@@ -618,6 +624,7 @@ function loadRepBriefing(){
       if (!body) return;
       if (!result.ok || !result.data || !result.data.sections) { renderRepBriefingError(); return; }
       body.innerHTML = renderRepBriefingContent(result.data);
+      if (window.lucide) lucide.createIcons();
     })
     .catch(function(){ renderRepBriefingError(); });
 }
@@ -675,14 +682,6 @@ function renderModules(){
         '<div class="module-desc">Record a field visit — voice to intelligence</div>'+
       '</div>'+
       '<div class="module-arrow">›</div>'+
-    '</a>'+
-    '<a class="module" href="./fieldiq-visit-history.html">'+
-      '<div class="module-icon-wrap"><i data-lucide="clock"></i></div>'+
-      '<div class="module-text">'+
-        '<div class="module-title">Visit History</div>'+
-        '<div class="module-desc">Your logged visits — dates, accounts, summaries</div>'+
-      '</div>'+
-      '<div class="module-arrow">›</div>'+
     '</a>';
 
   if(!isManager){
@@ -705,6 +704,16 @@ function renderModules(){
         '<div class="module-arrow">›</div>'+
       '</a>';
   }
+
+  html+=
+    '<a class="module" href="./fieldiq-visit-history.html">'+
+      '<div class="module-icon-wrap"><i data-lucide="clock"></i></div>'+
+      '<div class="module-text">'+
+        '<div class="module-title">Visit History</div>'+
+        '<div class="module-desc">Your logged visits — dates, accounts, summaries</div>'+
+      '</div>'+
+      '<div class="module-arrow">›</div>'+
+    '</a>';
 
   html+='<div class="section-label">Help</div>'+
     '<a class="module" href="./fieldiq-guide.html">'+
