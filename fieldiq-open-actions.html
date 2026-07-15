@@ -268,7 +268,7 @@ async function loadNotesForAction(actionId){
   var box=document.getElementById('notes-'+actionId);
   if(!box)return;
   try{
-    var res=await fetch(WORKER+'/get-notes?actionId='+encodeURIComponent(actionId),{cache:'no-store'});
+    var res=await fetch(WORKER+'/get-notes?actionId='+encodeURIComponent(actionId),{cache:'no-store',headers:{'Authorization':'Bearer '+currentSessionToken}});
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not load notes');
     renderNotesForAction(actionId,data.records||[]);
@@ -467,7 +467,7 @@ async function loadActions(){
   var _timer=setTimeout(function(){_ctrl.abort();},15000);
   try{
     var url=WORKER+'/get-actions?userId='+encodeURIComponent(currentUserId)+'&role='+encodeURIComponent(currentUserRole)+'&status=Open';
-    var res=await fetch(url,{cache:'no-store',signal:_ctrl.signal});
+    var res=await fetch(url,{cache:'no-store',signal:_ctrl.signal,headers:{'Authorization':'Bearer '+currentSessionToken}});
     clearTimeout(_timer);
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not load actions');
