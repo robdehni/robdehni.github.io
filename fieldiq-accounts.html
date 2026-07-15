@@ -296,7 +296,7 @@ function getCanonicalTerritory(raw){
 }
 async function loadDirectory(){
   try{
-    var [accRes,visRes]=await Promise.all([fetch(WORKER_URL+'/get-accounts',{cache:'no-store'}),fetch(WORKER_URL+'/get-visits',{cache:'no-store'})]);
+    var [accRes,visRes]=await Promise.all([fetch(WORKER_URL+'/get-accounts',{cache:'no-store',headers:{'Authorization':'Bearer '+currentSessionToken}}),fetch(WORKER_URL+'/get-visits',{cache:'no-store',headers:{'Authorization':'Bearer '+currentSessionToken}})]);
     var accData=await accRes.json();var visData=await visRes.json();
     if(!accRes.ok)throw new Error(JSON.stringify(accData));if(!visRes.ok)throw new Error(JSON.stringify(visData));
     var accountRecords=accData.records||[];var visitRecords=visData.records||[];
