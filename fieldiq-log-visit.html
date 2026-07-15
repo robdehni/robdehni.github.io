@@ -246,7 +246,7 @@ var ACCOUNTS=[];var accountsLoaded=false;var selectedAccountId=null;
 function loadAccounts(){
   hospitalList.innerHTML='<div class="hospital-option" style="color:#7a8aa3">Loading accounts...</div>';hospitalList.classList.add('open');
   var controller=new AbortController();var timeoutId=setTimeout(function(){controller.abort();},8000);
-  fetch(WORKER+'/get-accounts',{signal:controller.signal,cache:'no-store'}).then(function(r){return r.json();}).then(function(data){
+  fetch(WORKER+'/get-accounts',{signal:controller.signal,cache:'no-store',headers:{'Authorization':'Bearer '+currentSessionToken}}).then(function(r){return r.json();}).then(function(data){
     clearTimeout(timeoutId);var records=data.records||[];
     ACCOUNTS=records.map(function(r){return {id:r.id,name:(r.fields&&r.fields['Account Name'])||'',territory:(r.fields&&r.fields['Territory'])||''};}).filter(function(a){return a.name;});
     applyPrefillFromURL();
@@ -631,7 +631,7 @@ submitBtn.addEventListener('click',async function(){
     var accountIdForContext=isNewAccount?null:selectedAccountId;
     if(accountIdForContext){
       try{
-        var priorVisitsRes=await fetch(WORKER+'/get-visits',{cache:'no-store'});
+        var priorVisitsRes=await fetch(WORKER+'/get-visits',{cache:'no-store',headers:{'Authorization':'Bearer '+currentSessionToken}});
         var priorVisitsData=await priorVisitsRes.json();
         var priorVisits=(priorVisitsData.records||[]).filter(function(v){
           var acc=v.fields&&v.fields['Account'];
