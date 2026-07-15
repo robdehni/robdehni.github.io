@@ -154,6 +154,7 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 var currentUserId=localStorage.getItem('fieldiq_user_id');
 var currentUserName=localStorage.getItem('fieldiq_user_name');
 var currentUserRole=localStorage.getItem('fieldiq_user_role')||'';
+var currentSessionToken=localStorage.getItem('fieldiq_session_token')||'';
 
 var allEvents=[];   // every rep's events, unfiltered
 var events=[];      // currently displayed (after rep filter)
@@ -271,9 +272,9 @@ function normalizeActionRecord(r){
 function timeoutPromise(ms,msg){
   return new Promise(function(_,reject){setTimeout(function(){reject(new Error(msg||'Timeout'));},ms);});
 }
-function fetchJson(url,ms){
+function fetchJson(url,ms,headers){
   return Promise.race([
-    fetch(url,{cache:'no-store'}).then(function(res){
+    fetch(url,Object.assign({cache:'no-store'},headers?{headers:headers}:{})).then(function(res){
       return res.text().then(function(text){
         var data={};
         try{data=text?JSON.parse(text):{};}catch(e){throw new Error('Invalid JSON from '+url+': '+text.slice(0,200));}
@@ -304,7 +305,7 @@ async function loadCalendar(){
   try{
     await loadUsersBestEffort();
 
-    var openData=await fetchJson(WORKER+'/get-actions?role=Manager&status=Open',8000);
+    var openData=await fetchJson(WORKER+'/get-actions?role=Manager&status=Open',8000,{'Authorization':'Bearer '+currentSessionToken});
     allEvents=(openData.records||[])
       .filter(function(r){
         var f=r.fields||{};
