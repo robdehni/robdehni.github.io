@@ -596,7 +596,7 @@ function saveAccountUpdate(){
   if(!text)return;
   fetch(WORKER_URL+'/save-account-update',{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
     body:JSON.stringify({accountId:acc.id,accountName:acc.name,updateText:text,createdBy:currentUserName,createdByUserId:currentUserId})
   })
     .then(function(r){return r.json();})
