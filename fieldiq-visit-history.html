@@ -247,6 +247,7 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600;text
   <img class="photo-modal-img" id="photoModalImg" src="" alt="Visit evidence photo">
 </div>  <script>  
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';  
+var currentSessionToken=localStorage.getItem('fieldiq_session_token');
   
 (function(){  
   var params=new URLSearchParams(window.location.search);
@@ -425,7 +426,7 @@ function markVisitReviewed(recordId,btnEl){
   btnEl.textContent='Saving…';
   fetch(WORKER+'/update-visit',{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
     body:JSON.stringify({recordId:recordId,reviewed:true})
   }).then(function(res){
     if(!res.ok)throw new Error('Request failed');
@@ -502,7 +503,7 @@ function renderAvfNoteItems(records){
 function loadNotesForAvfAction(actionId){
   var box=document.getElementById('avf-notes-'+actionId);
   if(!box)return;
-  fetch(WORKER+'/get-notes?actionId='+encodeURIComponent(actionId))
+  fetch(WORKER+'/get-notes?actionId='+encodeURIComponent(actionId),{headers:{'Authorization':'Bearer '+currentSessionToken}})
     .then(function(res){return res.json();})
     .then(function(data){
       box.innerHTML=renderAvfNoteItems(data.records||[]);
@@ -539,7 +540,7 @@ function loadActionsForVisit(detailEl,visitRecordId){
   container.className='report-section';
   container.innerHTML='<h4>Actions from this Visit</h4><p style="color:#8a9bb3;font-size:12px;margin:0">Loading actions...</p>';
   detailEl.appendChild(container);
-  fetch(WORKER+'/get-actions?visitId='+encodeURIComponent(visitRecordId))
+  fetch(WORKER+'/get-actions?visitId='+encodeURIComponent(visitRecordId),{headers:{'Authorization':'Bearer '+currentSessionToken}})
     .then(function(res){return res.json();})
     .then(function(data){
       var records=data.records||[];
@@ -593,7 +594,7 @@ function loadThreadForVisit(detailEl,record){
   fallback.className='report-section visit-thread-section';
   fallback.innerHTML='<div class="thread-card thread-card-current"><div class="thread-card-label">'+(threadId===record.id?'Original Visit':'This Visit')+'</div><div class="thread-card-action"><span class="thread-card-status">Currently viewing</span></div></div>';
   detailEl.appendChild(fallback);
-  fetch(WORKER+'/get-visit-thread?threadId='+encodeURIComponent(threadId))
+  fetch(WORKER+'/get-visit-thread?threadId='+encodeURIComponent(threadId),{headers:{'Authorization':'Bearer '+currentSessionToken}})
     .then(function(res){return res.json();})
     .then(function(data){
       var members=data.records||[];
