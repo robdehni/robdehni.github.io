@@ -576,6 +576,13 @@ async function applyPrefillFromURL(){
           accountBlock.style.opacity='1';
           accountBlock.style.pointerEvents='none';
           accountBlock.style.cursor='not-allowed';
+          // Clear must never be available here — it unconditionally
+          // resets Territory/Account (see clearBtn's own handler), which
+          // would detach this Log Update from its locked scheduled
+          // account. Hiding the button is the complete fix: it's the
+          // only element that triggers that reset, confirmed by checking
+          // every reference to clearBtn in this file.
+          document.getElementById('clearBtn').style.display='none';
         }
       }
     }
