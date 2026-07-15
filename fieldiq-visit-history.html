@@ -903,18 +903,18 @@ async function loadHistory(){
     // this now applies to territory too: applyUrlParams() + applyFilters()
     // below already handle the initial drill-down state client-side,
     // exactly as they already do for rep.
-    var res=await fetch(endpoint,{cache:'no-store'});var data=await res.json();  
+    var res=await fetch(endpoint,{cache:'no-store',headers:{'Authorization':'Bearer '+currentSessionToken}});var data=await res.json();  
     if(!res.ok)throw new Error(JSON.stringify(data));  
     allRecordsRaw=data.records||[];  
     if(currentUser.role==='Manager'){
       try{
-        var wlRes=await fetch(WORKER+'/get-watchlist');
+        var wlRes=await fetch(WORKER+'/get-watchlist',{headers:{'Authorization':'Bearer '+currentSessionToken}});
         var wlData=await wlRes.json();
         watchedAccountIds={};
         (wlData.records||[]).forEach(function(w){watchedAccountIds[w.id]=true;});
       }catch(e){watchedAccountIds={};}
       try{
-        var accRes=await fetch(WORKER+'/get-accounts');
+        var accRes=await fetch(WORKER+'/get-accounts',{headers:{'Authorization':'Bearer '+currentSessionToken}});
         var accData=await accRes.json();
         accountIdByName={};
         (accData.records||[]).forEach(function(a){
