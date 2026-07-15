@@ -514,7 +514,7 @@ async function ensureFullRecordsLoaded(){
   if(allRecordsRawLoaded)return;
   if(_fullRecordsLoadPromise)return _fullRecordsLoadPromise;
   _fullRecordsLoadPromise=(async function(){
-    var res=await fetch(WORKER_URL+'/get-visits');
+    var res=await fetch(WORKER_URL+'/get-visits',{headers:{'Authorization':'Bearer '+currentSessionToken}});
     var data=await res.json();
     if(!res.ok)throw new Error(JSON.stringify(data));
     allRecordsRaw=data.records||[];
@@ -786,7 +786,7 @@ async function loadWatchlist(filters){
       if(filters.period)q.set('period',filters.period);
     }
     var qs=q.toString();
-    var res=await fetch(WORKER_URL+'/get-watchlist'+(qs?('?'+qs):''),{signal:_wlCtrl.signal});
+    var res=await fetch(WORKER_URL+'/get-watchlist'+(qs?('?'+qs):''),{signal:_wlCtrl.signal,headers:{'Authorization':'Bearer '+currentSessionToken}});
     clearTimeout(_wlTimer);
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Could not load watchlist');
