@@ -185,6 +185,7 @@ var SESSION_KEY='fieldiq_actions_return_state';
 var currentUserId=localStorage.getItem('fieldiq_user_id');
 var myOwnRecordId=localStorage.getItem('fieldiq_user_record_id')||null;
 var currentUserName=localStorage.getItem('fieldiq_user_name');
+var currentSessionToken=localStorage.getItem('fieldiq_session_token');
 var currentUserRole=localStorage.getItem('fieldiq_user_role')||'';
 
 var openActions=[];
@@ -291,9 +292,9 @@ function readableError(x){
   if(typeof x==='string')return x;
   try{return JSON.stringify(x);}catch(e){return String(x);}
 }
-function fetchJson(url,ms){
+function fetchJson(url,ms,headers){
   return Promise.race([
-    fetch(url).then(function(r){
+    fetch(url,headers?{headers:headers}:undefined).then(function(r){
       return r.text().then(function(t){
         var d={};
         try{d=t?JSON.parse(t):{};}catch(e){throw new Error('Worker returned invalid JSON: '+t.slice(0,200));}
@@ -404,7 +405,7 @@ function closeNoteModal(){
 }
 async function loadExistingNotes(actionId){
   try{
-    var d=await fetchJson(WORKER+'/get-notes?actionId='+encodeURIComponent(actionId),6000);
+    var d=await fetchJson(WORKER+'/get-notes?actionId='+encodeURIComponent(actionId),6000,{'Authorization':'Bearer '+currentSessionToken});
     var records=d.records||[];
     var box=document.getElementById('noteExisting');
     if(!records.length){box.innerHTML='<div style="font-size:11px;color:#8a9bb3;font-weight:700;">No notes yet on this action.</div>';return;}
@@ -506,9 +507,9 @@ async function loadActions(pendingScroll){
   document.getElementById('content').innerHTML='<div class="loading"><div class="spinner"></div>Loading manager actions...</div>';
   try{
     var results=await Promise.all([
-      fetchJson(WORKER+'/get-actions?role=Manager&status=Open',15000),
-      fetchJson(WORKER+'/get-actions?role=Manager&status=Completed',5000).catch(function(){return {records:[]};}),
-      fetchJson(WORKER+'/get-actions?role=Manager&status=Dismissed',5000).catch(function(e){console.error('Failed to load Dismissed actions:',e);return {records:[]};}),
+      fetchJson(WORKER+'/get-actions?role=Manager&status=Open',15000,{'Authorization':'Bearer '+currentSessionToken}),
+      fetchJson(WORKER+'/get-actions?role=Manager&status=Completed',5000,{'Authorization':'Bearer '+currentSessionToken}).catch(function(){return {records:[]};}),
+      fetchJson(WORKER+'/get-actions?role=Manager&status=Dismissed',5000,{'Authorization':'Bearer '+currentSessionToken}).catch(function(e){console.error('Failed to load Dismissed actions:',e);return {records:[]};}),
       loadUsersBestEffort()
     ]);
     var openData=results[0],compData=results[1],dismissData=results[2];
@@ -798,7 +799,7 @@ async function loadNoteStatusForRow(actionId){
   var box=document.getElementById('note-status-'+actionId);
   if(!box)return;
   try{
-    var d=await fetchJson(WORKER+'/get-notes?actionId='+encodeURIComponent(actionId),6000);
+    var d=await fetchJson(WORKER+'/get-notes?actionId='+encodeURIComponent(actionId),6000,{'Authorization':'Bearer '+currentSessionToken});
     var records=d.records||[];
     if(!records.length){box.innerHTML='';return;}
     var allAcked=records.every(function(r){return !!(r.fields||{})['Acknowledged'];});
