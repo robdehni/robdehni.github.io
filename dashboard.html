@@ -290,6 +290,7 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:5px;font-weight:600;text
 </nav>
 <script>
 var role = localStorage.getItem('fieldiq_user_role');
+var currentSessionToken = localStorage.getItem('fieldiq_session_token');
 var isManager = (role === 'Manager');
 var WORKER_URL='https://fieldiq-proxy.rdehni1979.workers.dev';
 var allRecordsRawLoaded=false;
@@ -326,7 +327,7 @@ async function updatePriority(recordId,newPriority,cardEl){
     renderPrioritySection(lastPriorityReviewFeed);
   }
   try{
-    var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:recordId,priority:newPriority})});
+    var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},body:JSON.stringify({recordId:recordId,priority:newPriority})});
     if(!res.ok){
       if(rec){rec.fields['Priority']=_oldPriority;renderPrioritySection(lastPriorityReviewFeed);}
       alert('Could not update priority. Please try again.');
@@ -345,7 +346,7 @@ async function markReviewed(recordId,btnEl){
     renderPrioritySection(lastPriorityReviewFeed);
   }
   try{
-    var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:recordId,reviewed:true})});
+    var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},body:JSON.stringify({recordId:recordId,reviewed:true})});
     if(!res.ok){
       if(_removedRec){lastPriorityReviewFeed.push(_removedRec);renderPrioritySection(lastPriorityReviewFeed);}
       btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Could not mark as reviewed. Please try again.');
@@ -831,7 +832,7 @@ async function markPendingReviewed(recordId,btnEl){
     if(_countEl){var n=parseInt(_countEl.textContent,10);if(!isNaN(n)&&n>0)_countEl.textContent=n-1;}
   }
   try{
-    var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:recordId,pendingReview:false})});
+    var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},body:JSON.stringify({recordId:recordId,pendingReview:false})});
     if(!res.ok){
       if(_removedRec){
         lastNewAccountsFeed[_removedIdx].fields['Pending Review']=true;
