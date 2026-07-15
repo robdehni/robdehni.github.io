@@ -76,6 +76,7 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .ask-sources{margin-top:12px;padding-top:12px;border-top:1px solid #d3e6ff}
 .ask-sources-label{font-size:9.5px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px}
 .ask-sources-row{display:flex;flex-direction:column;gap:6px}
+.ask-sources-toggle{background:none;border:1px solid #d3e6ff;border-radius:8px;color:#1f6fe0;font-size:12px;font-weight:800;padding:8px 12px;cursor:pointer;width:100%;text-align:left}
 .ask-source-btn{display:block;font-size:11.5px;font-weight:700;padding:8px 12px;border-radius:8px;text-decoration:none;background:#fff;border:1px solid #cfe4ff;color:#2f6fd8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ask-source-btn:hover{background:#eef6ff;border-color:#2f8fff}
 .ask-source-btn.visit{border-left:3px solid #2f8fff}
@@ -142,16 +143,21 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
     display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;text-decoration:none;
     color:#5b6b85;font-size:13.5px;font-weight:700;margin-bottom:2px;
   }
-  .sidebar-link:hover{background:#f4f8fc}
+  .sidebar-link:hover{background:#eaf3ff}
   .sidebar-link.current{background:#eaf3ff;color:#1f6fe0;pointer-events:none;cursor:default}
-  .sidebar-link [data-lucide]{width:17px;height:17px;stroke-width:1.9;flex-shrink:0}
+  .sidebar-link [data-lucide]{width:17px;height:17px;stroke-width:1.9;flex-shrink:0;color:#2f8fff}
+  .sidebar-link.current [data-lucide]{color:#1f6fe0}
 
   .main{padding:32px 40px 60px;max-width:1120px}
   .header{margin-bottom:32px}
   .command-strip{max-width:640px}
   .attention-panel{max-width:640px}
   .ask-card{max-width:640px}
-  .primary-actions{max-width:640px;grid-template-columns:repeat(3,180px)}
+  .primary-actions{max-width:260px;grid-template-columns:1fr}
+  .desktop-hide{display:none}
+  .lv-hero{background:linear-gradient(135deg,#3d9bff,#1f6fe0);border:none}
+  .lv-hero .primary-tile-icon{background:#fff}
+  .lv-hero .primary-tile-label{color:#fff}
   .more-toggle,.more-tools-collapsible{display:none}
 }
 </style>
@@ -176,7 +182,6 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
     <a href="https://fieldiq.biz/fieldiq-visits-map.html" class="sidebar-link"><i data-lucide="map-pin"></i> Visit Map</a>
 
     <div class="sidebar-group-label">Field &amp; Help</div>
-    <a href="./fieldiq-log-visit.html" class="sidebar-link"><i data-lucide="mic"></i> Log Visit</a>
     <a href="./fieldiq-visit-history.html?source=manager-home" class="sidebar-link"><i data-lucide="clock"></i> Visit History</a>
     <a href="./fieldiq-guide.html" class="sidebar-link"><i data-lucide="book-open"></i> Quick Start Guide</a>
   </nav>
@@ -206,6 +211,21 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
       <div class="command-stat"><div class="command-stat-value">—</div><div class="command-stat-label">New</div></div>
     </div>
 
+    <div class="primary-actions">
+      <a class="primary-tile primary desktop-hide" href="https://fieldiq.biz/dashboard.html">
+        <div class="primary-tile-icon"><i data-lucide="layout-dashboard"></i></div>
+        <div class="primary-tile-label">Dashboard</div>
+      </a>
+      <a class="primary-tile desktop-hide" href="./fieldiq-operations.html">
+        <div class="primary-tile-icon"><i data-lucide="activity"></i></div>
+        <div class="primary-tile-label">Operations</div>
+      </a>
+      <a class="primary-tile lv-hero" href="./fieldiq-log-visit.html">
+        <div class="primary-tile-icon"><i data-lucide="mic"></i></div>
+        <div class="primary-tile-label">Log Visit</div>
+      </a>
+    </div>
+
     <div class="attention-panel" id="attentionPanel">
       <div class="attention-panel-head" id="attentionPanelHead">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -231,21 +251,6 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
         <button type="button" class="ask-chip" data-question="Who needs coaching or recognition?">Who needs coaching or recognition?</button>
       </div>
       <div id="askAnswerArea"></div>
-    </div>
-
-    <div class="primary-actions">
-      <a class="primary-tile primary" href="https://fieldiq.biz/dashboard.html">
-        <div class="primary-tile-icon"><i data-lucide="layout-dashboard"></i></div>
-        <div class="primary-tile-label">Dashboard</div>
-      </a>
-      <a class="primary-tile" href="./fieldiq-operations.html">
-        <div class="primary-tile-icon"><i data-lucide="activity"></i></div>
-        <div class="primary-tile-label">Operations</div>
-      </a>
-      <a class="primary-tile" href="./fieldiq-log-visit.html">
-        <div class="primary-tile-icon"><i data-lucide="mic"></i></div>
-        <div class="primary-tile-label">Log Visit</div>
-      </a>
     </div>
 
     <button type="button" class="more-toggle" id="moreToggle">
@@ -438,7 +443,9 @@ var MANAGER_BRIEFING_QUESTION = "Give me a short daily briefing: top priorities 
 function renderSourcesHtml(sources){
   if (!sources || !sources.length) return '';
   var typeFallback = { visit: 'Open Visit', action: 'Open Action', account: 'View Account' };
-  var html = '<div class="ask-sources"><div class="ask-sources-label">Sources</div><div class="ask-sources-row">';
+  var rowId = 'srcRow' + Math.random().toString(36).slice(2, 8);
+  var html = '<div class="ask-sources"><button type="button" class="ask-sources-toggle" onclick="var r=document.getElementById(\'' + rowId + '\');var open=r.style.display!==\'none\';r.style.display=open?\'none\':\'block\';this.textContent=open?\'View sources (' + sources.length + ')\':\'Hide sources\';">View sources (' + sources.length + ')</button>';
+  html += '<div id="' + rowId + '" style="display:none;max-height:320px;overflow-y:auto;margin-top:8px"><div class="ask-sources-row">';
   sources.forEach(function(s){
     // The visible button text IS the specific label ("MediClinic — High
     // Priority visit"), not a generic type name — a row of identical
@@ -446,7 +453,7 @@ function renderSourcesHtml(sources){
     var displayText = s.label || typeFallback[s.type] || 'Open';
     html += '<a class="ask-source-btn ' + escapeHtmlHome(s.type || '') + '" href="' + escapeHtmlHome(s.url) + '">' + escapeHtmlHome(displayText) + '</a>';
   });
-  html += '</div></div>';
+  html += '</div></div></div>';
   return html;
 }
 // Renders the structured {greeting, topLine, sections, sources} shape —
