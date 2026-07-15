@@ -1,8 +1,9 @@
-// FieldIQ Service Worker — v1.1
-// Safe shell cache only.
-// API/CDN/map/data requests are never intercepted.
-
-var CACHE = 'fieldiq-shell-v3';
+// FieldIQ Service Worker — v2
+// Cache version must be bumped on every real deployment. Previously
+// hardcoded as a fixed string that never changed between deployments, so
+// the activate handler's own cleanup logic had nothing to ever find and
+// delete.
+var CACHE = 'fieldiq-shell-v4';
 
 var SHELL = [
   '/index.html',
@@ -35,6 +36,17 @@ var NETWORK_ONLY = [
   'tile.openstreetmap.org',
   'openstreetmap.org'
 ];
+
+// Every network attempt below is bounded — if a request stalls (opens but
+// never completes or errors, a real mobile-network failure mode), it is
+// aborted after 8 seconds and treated as a failure, falling through to
+// cache. Without this, a stalled fetch() inside respondWith() leaves the
+// page's own resource request hanging indefinitely.
+function fetchWithTimeout(request, ms) {
+  var controller = new AbortController();
+  var timer = setTimeout(function() { controller.abort(); }, ms || 8000);
+  return fetch(request, { signal: controller.signal }).finally(function() { clearTimeout(timer); });
+}
 
 self.addEventListener('install', function(e) {
   e.waitUntil(
@@ -95,26 +107,27 @@ self.addEventListener('fetch', function(e) {
     return;
   }
 
+  // Network-first, not cache-first. The previous version returned any
+  // cached copy immediately whenever one existed and only used the
+  // network to quietly refresh that cache for next time — meaning a
+  // deployed change (a bug fix, a UI update) could sit unseen behind a
+  // stale cached page until a hard refresh forced the browser past it.
+  // This always tries the real network first; the cache is now only a
+  // fallback for when the network genuinely fails.
   e.respondWith(
-    caches.match(e.request).then(function(cached) {
-
-      var networkUpdate = fetch(e.request)
-        .then(function(networkRes) {
-
-          if (networkRes && networkRes.status === 200) {
-            caches.open(CACHE).then(function(cache) {
-              cache.put(e.request, networkRes.clone());
-            });
-          }
-
-          return networkRes;
-        })
-        .catch(function() {
-          return null;
-        });
-
-      return cached || networkUpdate;
-    })
+    fetchWithTimeout(e.request)
+      .then(function(networkRes) {
+        if (networkRes && networkRes.status === 200) {
+          var copy = networkRes.clone();
+          caches.open(CACHE).then(function(cache) {
+            cache.put(e.request, copy);
+          });
+        }
+        return networkRes;
+      })
+      .catch(function() {
+        return caches.match(e.request);
+      })
   );
 
 });
