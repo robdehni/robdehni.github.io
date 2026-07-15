@@ -153,6 +153,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
 <script>
 var role = localStorage.getItem('fieldiq_user_role');
+var currentSessionToken = localStorage.getItem('fieldiq_session_token');
 var isManager = (role === 'Manager');
 
 document.getElementById('topHomeBtn').href = isManager ? './fieldiq.html' : './index.html';
@@ -405,7 +406,7 @@ async function loadVisits(){
   document.getElementById('loadingEl').style.display='block';
   document.getElementById('errorEl').style.display='none';
   try{
-    var res=await fetch(WORKER+'/get-visits');
+    var res=await fetch(WORKER+'/get-visits',{headers:{'Authorization':'Bearer '+currentSessionToken}});
     var data=await res.json();
     if(!res.ok)throw new Error('Worker error '+res.status+': '+JSON.stringify(data));
     allVisits=data.records||[];
