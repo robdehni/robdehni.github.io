@@ -707,7 +707,7 @@ function toggleWatch(accountId,btnEl){
   var endpoint=isWatching?'/unwatch-account':'/watch-account';
   fetch(WORKER+endpoint,{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
     body:JSON.stringify({accountId:accountId})
   }).then(function(res){
     if(!res.ok)throw new Error('Request failed');
