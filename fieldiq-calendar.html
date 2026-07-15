@@ -157,6 +157,7 @@ var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 var currentUserId=localStorage.getItem('fieldiq_user_id');
 var currentUserName=localStorage.getItem('fieldiq_user_name');
 var currentUserRole=localStorage.getItem('fieldiq_user_role')||'Sales Rep';
+var currentSessionToken=localStorage.getItem('fieldiq_session_token');
 var events=[];
 var currentPopupActionId=null; // tracks which action the popup is showing
 
@@ -225,9 +226,9 @@ function normalizeActionRecord(r){
 function timeoutPromise(ms,msg){
   return new Promise(function(_,reject){setTimeout(function(){reject(new Error(msg||'Timeout'));},ms);});
 }
-function fetchJson(url,ms){
+function fetchJson(url,ms,headers){
   return Promise.race([
-    fetch(url,{cache:'no-store'}).then(function(res){
+    fetch(url,Object.assign({cache:'no-store'},headers?{headers:headers}:{})).then(function(res){
       return res.text().then(function(text){
         var data={};
         try{data=text?JSON.parse(text):{};}catch(e){throw new Error('Invalid JSON from '+url+': '+text.slice(0,200));}
@@ -245,7 +246,7 @@ async function loadCalendar(){
   try{
     var loaded=[];
 
-    var openData=await fetchJson(WORKER+'/get-actions?role=Rep&status=Open&userId='+encodeURIComponent(currentUserId),8000);
+    var openData=await fetchJson(WORKER+'/get-actions?role=Rep&status=Open&userId='+encodeURIComponent(currentUserId),8000,{'Authorization':'Bearer '+currentSessionToken});
     loaded=(openData.records||[])
       .filter(function(r){
         var f=r.fields||{};
@@ -477,7 +478,7 @@ async function doCancelAction(){
   try{
     var res=await fetch(WORKER+'/update-action',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
       body:JSON.stringify({actionId:currentPopupActionId,status:'Cancelled'})
     });
     var data=await res.json();
@@ -501,7 +502,7 @@ async function doRescheduleAction(){
     if(reason)body.rescheduleReason=reason;
     var res=await fetch(WORKER+'/update-action',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
       body:JSON.stringify(body)
     });
     var data=await res.json();
