@@ -659,14 +659,14 @@ submitBtn.addEventListener('click',async function(){
     if(isNewAccount){
       document.getElementById('processingText').textContent='Creating account...';
       var accPayload={'Account Name':hospitalName,'Territory':territory,'City':newAccountCity,'Created By':userId};
-      var accRes=await fetch(WORKER+'/save-account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(accPayload)});
+      var accRes=await fetch(WORKER+'/save-account',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},body:JSON.stringify(accPayload)});
       var accData=await accRes.json();
       if(!accRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';transcriptText.disabled=false;console.error('Account creation failed:',accData);alert('Could not create the new account. Nothing was saved — please try again.');return;}
       newAccountId=accData.id;ACCOUNTS.push({id:newAccountId,name:hospitalName,territory:territory});
       if(newContactName){
         document.getElementById('processingText').textContent='Saving contact...';
         var contactPayload={'Contact Name':newContactName,'Account Role':newContactRole,'Mobile':newContactPhone,'Email':newContactEmail,'Status':'Current','Accounts':[newAccountId],'Added By':userId};
-        var contactRes=await fetch(WORKER+'/save-contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(contactPayload)});
+        var contactRes=await fetch(WORKER+'/save-contact',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},body:JSON.stringify(contactPayload)});
         var contactData=await contactRes.json();
         if(!contactRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';transcriptText.disabled=false;alert('The account "'+hospitalName+'" was created successfully, but saving the contact failed. The visit has NOT been saved yet.\n\nSubmit again — this time search for "'+hospitalName+'" instead of using "Account not listed," since it already exists now.\n\n'+JSON.stringify(contactData));return;}
       }
@@ -693,13 +693,13 @@ submitBtn.addEventListener('click',async function(){
       savePayload['Photo URLs'] = photoUrls.join('\n');
     }
 
-    var saveRes=await fetch(WORKER+'/save-visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(savePayload)});
+    var saveRes=await fetch(WORKER+'/save-visit',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},body:JSON.stringify(savePayload)});
     var saveData=await saveRes.json();
     if(!saveRes.ok){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';transcriptText.disabled=false;if(isNewAccount){alert('The account'+(newContactName?' and contact were':' was')+' created successfully, but the visit itself failed to save.\n\nSubmit again — this time search for "'+hospitalName+'" instead of using "Account not listed," since it already exists now.\n\nSave error '+saveRes.status+': '+JSON.stringify(saveData));}else{alert('Save error '+saveRes.status+': '+JSON.stringify(saveData));}return;}
     try{
       await fetch(WORKER+'/save-actions',{
         method:'POST',
-        headers:{'Content-Type':'application/json'},
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
         body:JSON.stringify({
           visitRecordId:saveData.id,
           accountId:isNewAccount?newAccountId:selectedAccountId,
