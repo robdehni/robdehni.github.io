@@ -823,7 +823,7 @@ async function completeOwnAction(actionId,btnEl){
   try{
     var res=await fetch(WORKER+'/complete-action',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
       body:JSON.stringify({actionId:actionId,userId:currentUserId})
     });
     var data=await res.json();
@@ -848,7 +848,7 @@ async function dismissOwnAction(actionId,btnEl){
   try{
     var res=await fetch(WORKER+'/dismiss-action',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
       body:JSON.stringify({actionId:actionId,userId:currentUserId})
     });
     var data=await res.json();
@@ -920,7 +920,7 @@ async function sendReminder(actionId){
 
     var res=await fetch(WORKER+'/send-reminder',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
       body:JSON.stringify(payload)
     });
 
