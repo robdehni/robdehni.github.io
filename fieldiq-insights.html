@@ -170,6 +170,7 @@ p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:4px;font-weight:600;text
 <script>
 var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
 var role = localStorage.getItem('fieldiq_user_role');
+var currentSessionToken = localStorage.getItem('fieldiq_session_token');
 if (role !== 'Manager') {
   window.location.href = './index.html';
   throw new Error('Manager access required');
@@ -256,7 +257,7 @@ function toggleTimeline(btn){
 }
 function attachTimelineListeners(){document.querySelectorAll('.timeline-btn').forEach(function(btn){btn.addEventListener('click',function(){toggleTimeline(btn);});});}
 async function loadInsights(){
-  try{var res=await fetch(WORKER+'/get-visits',{cache:'no-store'});var data=await res.json();if(!res.ok)throw new Error(JSON.stringify(data));buildInsights(data.records||[]);}
+  try{var res=await fetch(WORKER+'/get-visits',{cache:'no-store',headers:{'Authorization':'Bearer '+currentSessionToken}});var data=await res.json();if(!res.ok)throw new Error(JSON.stringify(data));buildInsights(data.records||[]);}
   catch(err){document.getElementById('loadingEl').textContent='Failed to load: '+err.message;}
 }
 loadInsights();
