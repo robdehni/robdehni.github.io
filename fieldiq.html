@@ -52,7 +52,8 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
 .ask-card{background:#fff;border:1px solid #e8edf5;border-radius:16px;padding:16px;margin-bottom:20px;box-shadow:0 2px 8px rgba(11,31,58,0.04)}
 .ask-card-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.ask-card-icon{font-size:20px;line-height:1}
+.ask-card-icon{font-size:20px;line-height:1;display:inline-flex}
+.ask-card-icon [data-lucide]{width:22px;height:22px;stroke-width:1.9;color:#2f8fff}
 .ask-card-title{font-size:13.5px;font-weight:800;color:#0b1f3a}
 .ask-card-sub{font-size:11px;color:#8a9bb3;font-weight:600;margin-top:1px}
 .ask-suggested-row{display:flex;flex-direction:column;gap:8px}
@@ -65,6 +66,7 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .mgr-section:last-of-type{margin-bottom:0}
 .mgr-section-title{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;color:#0b1f3a;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px}
 .mgr-section-icon{font-size:13px}
+.mgr-section-icon [data-lucide]{width:15px;height:15px;stroke-width:2;color:#2f8fff;vertical-align:-3px}
 .mgr-item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f8fbff;border:1px solid #edf2f8;border-radius:10px;padding:9px 12px;margin-bottom:5px;text-decoration:none}
 .mgr-item:last-child{margin-bottom:0}
 .mgr-item-link{cursor:pointer}
@@ -214,7 +216,7 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 
     <div class="ask-card" id="askCard">
       <div class="ask-card-header">
-        <span class="ask-card-icon">🤖</span>
+        <span class="ask-card-icon"><i data-lucide="sparkles"></i></span>
         <div>
           <div class="ask-card-title">Ask FieldIQ</div>
           <div class="ask-card-sub">Your daily briefing, generated automatically</div>
@@ -450,12 +452,16 @@ function renderSourcesHtml(sources){
 // Renders the structured {greeting, topLine, sections, sources} shape —
 // same philosophy as the rep briefing: real data in short scannable
 // sections, each item with its own specific destination where one exists.
+function mgrIconName(emoji){
+  var map = {'\ud83c\udfaf':'target','\ud83d\udcc5':'calendar','\u2705':'check-circle','\u26a0\ufe0f':'alert-triangle','\ud83d\udc65':'users','\ud83d\udccd':'map-pin'};
+  return map[emoji] || 'circle';
+}
 function renderManagerBriefingContent(data){
   var html = '<div class="mgr-topline">' + escapeHtmlHome(data.topLine || '') + '</div>';
   var sections = data.sections || [];
   sections.forEach(function(sec){
     html += '<div class="mgr-section">';
-    html += '<div class="mgr-section-title"><span class="mgr-section-icon">' + escapeHtmlHome(sec.icon || '') + '</span>' + escapeHtmlHome(sec.title || '') + '</div>';
+    html += '<div class="mgr-section-title"><span class="mgr-section-icon"><i data-lucide="' + mgrIconName(sec.icon) + '"></i></span>' + escapeHtmlHome(sec.title || '') + '</div>';
     (sec.items || []).forEach(function(item){
       var inner = '<div class="mgr-item-text">' + escapeHtmlHome(item.text || '') + '</div>' +
         (item.nav ? '<div class="mgr-item-nav">' + escapeHtmlHome(item.nav.label) + ' \u203a</div>' : '');
@@ -492,6 +498,7 @@ function loadManagerBriefing(){
       if (!result.ok || !result.data) { renderBriefingError(); return; }
       if (result.data.sections) {
         area.innerHTML = renderManagerBriefingContent(result.data) + renderSourcesHtml(result.data.sources);
+        if (window.lucide) lucide.createIcons();
         return;
       }
       // Falls back to the original prose rendering if the Worker ever
