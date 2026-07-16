@@ -91,7 +91,7 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 .ask-retry-btn{margin-top:8px;border:none;background:#2f8fff;color:#fff;padding:8px 14px;border-radius:8px;font-weight:800;font-size:11.5px;cursor:pointer}
 .ask-again-link{margin-top:10px;font-size:11.5px;color:#2f8fff;font-weight:700;cursor:pointer;text-decoration:underline;display:inline-block}
 
-.primary-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:20px}
+.primary-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:20px}
 .primary-tile{display:flex;flex-direction:column;align-items:center;gap:9px;background:#fff;border:1px solid #e8edf5;border-radius:16px;padding:18px 6px;text-decoration:none;box-shadow:0 2px 8px rgba(11,31,58,0.03)}
 .primary-tile.primary{background:linear-gradient(135deg,#3d9bff,#1f6fe0);border:none}
 .primary-tile-icon{width:42px;height:42px;border-radius:12px;background:#eaf3ff;display:flex;align-items:center;justify-content:center}
@@ -225,7 +225,13 @@ body{background:#f7f9fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
         <div class="primary-tile-icon"><i data-lucide="mic"></i></div>
         <div class="primary-tile-label">Log Visit</div>
       </a>
+      <a class="primary-tile" href="./fieldiq-broadcast.html">
+        <div class="primary-tile-icon"><i data-lucide="megaphone"></i></div>
+        <div class="primary-tile-label">Broadcast</div>
+      </a>
     </div>
+
+    <div id="broadcastSection"></div>
 
     <div class="attention-panel" id="attentionPanel">
       <div class="attention-panel-head" id="attentionPanelHead">
@@ -604,10 +610,50 @@ function askFieldIQ(question){
 // call entirely (nothing to validate, straight back to sign-in); a token
 // that fails verification is cleared before redirecting, exactly like any
 // other expired or invalid session elsewhere in this app.
+// ── Company Broadcast (Manager side) ────────────────────────────────────────
+// Managers can both send and receive broadcasts — a broadcast sent by one
+// manager is still visible to every other manager unless explicitly
+// excluded. One-way, no acknowledgement, no reply — it simply displays
+// until it expires or a manager removes it from fieldiq-broadcast.html.
+// Fails silently — a broadcast card is never allowed to block or break
+// the rest of Manager Home loading.
+function escapeHtmlBroadcast(str){
+  return String(str||'').replace(/[&<>"']/g,function(m){
+    return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
+  });
+}
+async function loadBroadcasts(){
+  var section=document.getElementById('broadcastSection');
+  if(!section)return;
+  try{
+    var res=await fetch(WORKER_URL_HOME+'/get-broadcasts',{headers:{'Authorization':'Bearer '+currentSessionToken}});
+    var data=await res.json();
+    if(!res.ok)return;
+    var records=data.records||[];
+    if(!records.length){section.innerHTML='';return;}
+    var html='';
+    records.forEach(function(r){
+      var f=r.fields||{};
+      html+='<div class="broadcast-card" style="background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
+          '<i data-lucide="megaphone" style="width:18px;height:18px;color:#2f8fff"></i>'+
+          '<span style="font-size:11px;font-weight:800;color:#2f8fff;text-transform:uppercase;letter-spacing:0.6px">Company Broadcast</span>'+
+        '</div>'+
+        '<div style="font-size:14px;color:#263b59;line-height:1.5;font-weight:500;white-space:pre-wrap">'+escapeHtmlBroadcast(f['Message']||'')+'</div>'+
+      '</div>';
+    });
+    section.innerHTML=html;
+    if(window.lucide)lucide.createIcons({el:section});
+  }catch(e){
+    // Non-fatal — Manager Home must still load if this fails.
+  }
+}
+
 function initManagerHome(){
   lucide.createIcons();
   loadHomeSummary();
   loadManagerBriefing();
+  loadBroadcasts();
   var toggle = document.getElementById('moreToggle');
   var body = document.getElementById('moreToolsBody');
   if (toggle && body) {
