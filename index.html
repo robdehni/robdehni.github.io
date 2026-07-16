@@ -178,6 +178,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
 <div id="repBriefingSection" style="width:100%;max-width:380px"></div>
 
 <!-- Notification banners injected here for rep users only -->
+<div id="broadcastSection" style="width:100%;max-width:380px"></div>
 <div id="notificationsSection" style="width:100%;max-width:380px"></div>
 
 <div id="modulesSection"></div>
@@ -489,6 +490,40 @@ async function updateOpenActionsBadge(){
 
 // ── Notifications ────────────────────────────────────────────────────────────
 
+// ── Company Broadcast (Rep side) ────────────────────────────────────────────
+// One-way, no acknowledgement, no reply. Displays until it expires or a
+// manager removes it — must never block or break the rest of Home from
+// loading.
+async function loadBroadcasts(){
+  var section=document.getElementById('broadcastSection');
+  if(!section)return;
+  var userId=localStorage.getItem('fieldiq_user_id');
+  var sessionToken=localStorage.getItem('fieldiq_session_token');
+  if(!userId)return;
+  try{
+    var res=await fetch(WORKER+'/get-broadcasts',{headers:{'Authorization':'Bearer '+sessionToken}});
+    var data=await res.json();
+    if(!res.ok)return;
+    var records=data.records||[];
+    if(!records.length){section.innerHTML='';return;}
+    var html='';
+    records.forEach(function(r){
+      var f=r.fields||{};
+      html+='<div class="broadcast-card" style="background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
+          '<i data-lucide="megaphone" style="width:18px;height:18px;color:#2f8fff"></i>'+
+          '<span style="font-size:11px;font-weight:800;color:#2f8fff;text-transform:uppercase;letter-spacing:0.6px">Company Broadcast</span>'+
+        '</div>'+
+        '<div style="font-size:14px;color:#263b59;line-height:1.5;font-weight:500;white-space:pre-wrap">'+escapeHtml(f['Message']||'')+'</div>'+
+      '</div>';
+    });
+    section.innerHTML=html;
+    if(window.lucide)lucide.createIcons({el:section});
+  }catch(e){
+    // Non-fatal — Home must still load if this fails.
+  }
+}
+
 async function loadNotifications(){
   var section=document.getElementById('notificationsSection');
   if(!section)return;
@@ -731,7 +766,7 @@ function renderModules(){
   if(typeof lucide!=='undefined'){lucide.createIcons();}
 
   if(!isManager){
-    Promise.all([updateOpenActionsBadge(), loadNotifications()]);
+    Promise.all([updateOpenActionsBadge(), loadNotifications(), loadBroadcasts()]);
   }
 }
 
