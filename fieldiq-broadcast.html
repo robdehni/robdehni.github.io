@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldIQ — Company Broadcast</title>
+<script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js" defer></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:24px 20px 50px}
+.container{max-width:620px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.brand-cloud{font-size:26px;line-height:1}
+.brand-text h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#0b1f3a}
+.brand-text h1 span{color:#2f8fff}
+.brand-text p{font-size:10px;color:#8a9bb3;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:2px}
+.header{margin-bottom:18px}
+p.page-subtitle{color:#7a8aa3;font-size:13px;margin-top:6px;font-weight:600}
+.home-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#2f8fff;font-size:13px;font-weight:700;text-decoration:none;padding:9px 16px;border-radius:30px;margin-bottom:16px;border:1px solid #e3ebf5;box-shadow:0 2px 8px rgba(11,31,58,0.05)}
+.panel{background:#fff;border:1px solid #e3ebf5;border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 4px 14px rgba(11,31,58,0.05)}
+.panel-label{font-size:11px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px}
+textarea{width:100%;min-height:140px;padding:14px;border:1.5px solid #dde8f5;border-radius:12px;background:#f8fbff;color:#0b1f3a;font-size:14px;font-family:inherit;line-height:1.5;outline:none;resize:vertical}
+textarea:focus{border-color:#2f8fff}
+.exclude-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f4f9}
+.exclude-row:last-child{border-bottom:none}
+.exclude-row input[type=checkbox]{width:18px;height:18px;accent-color:#2f8fff;cursor:pointer}
+.exclude-row label{font-size:13.5px;font-weight:700;color:#263b59;cursor:pointer}
+.exclude-hint{font-size:11.5px;color:#8a9bb3;font-weight:600;margin-top:8px}
+.mic-btn-compact{width:34px;height:34px;border-radius:50%;border:1.5px solid #2f8fff;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mic-btn-compact [data-lucide]{width:16px;height:16px;color:#2f8fff}
+.mic-btn-compact.recording{border-color:#e0445b;background:#fdecef}
+.mic-btn-compact.recording [data-lucide]{color:#e0445b}
+.mic-btn-compact:disabled{opacity:.45;cursor:not-allowed}
+.mic-status{font-size:11.5px;color:#8a9bb3;font-weight:600;margin-bottom:8px;min-height:14px}
+.expiry-row{margin-top:14px}
+.expiry-row label{display:block;font-size:11px;color:#8a9bb3;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.expiry-row input[type=datetime-local]{width:100%;padding:11px;border:1.5px solid #dde8f5;border-radius:10px;background:#f8fbff;color:#0b1f3a;font-size:13px;font-family:inherit;outline:none}
+.active-broadcast-card{background:#f8fbff;border:1px solid #e3ebf5;border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.active-broadcast-msg{font-size:13px;color:#263b59;line-height:1.5;font-weight:500;white-space:pre-wrap;margin-bottom:8px}
+.active-broadcast-meta{font-size:10.5px;color:#8a9bb3;font-weight:700;margin-bottom:10px}
+.remove-btn{border:1.5px solid #f5c2c8;border-radius:8px;background:#fff;color:#c43048;padding:7px 12px;font-size:11.5px;font-weight:800;cursor:pointer}
+.remove-btn:disabled{opacity:.55;cursor:not-allowed}
+.send-btn{width:100%;border:none;border-radius:12px;background:linear-gradient(135deg,#3d9bff,#1f6fe0);color:#fff;padding:15px;font-size:14.5px;font-weight:800;cursor:pointer;box-shadow:0 6px 16px rgba(47,143,255,0.25);display:flex;align-items:center;justify-content:center;gap:8px}
+.send-btn:disabled{opacity:.55;cursor:not-allowed}
+.send-btn [data-lucide]{width:18px;height:18px}
+.status-msg{text-align:center;font-size:13px;font-weight:700;padding:12px;border-radius:12px;margin-bottom:14px}
+.status-success{background:#e6f7ed;color:#1a9c53;border:1px solid #cdeedb}
+.status-error{background:#fff3e0;color:#7a6000;border:1px solid #ffe5b3}
+.loading-roles{font-size:12.5px;color:#8a9bb3;font-weight:600}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="brand">
+      <span class="brand-cloud">☁️</span>
+      <div class="brand-text">
+        <h1>Field<span>IQ</span></h1>
+        <p>Territory Intelligence Platform</p>
+      </div>
+    </div>
+    <p class="page-subtitle">Company Broadcast — one-way, to your whole team.</p>
+  </div>
+  <a href="./fieldiq.html" class="home-btn">← Manager Home</a>
+
+  <div id="statusMsg"></div>
+
+  <div class="panel">
+    <div class="panel-label" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Message</span>
+      <button type="button" class="mic-btn-compact" id="broadcastMicBtn" aria-label="Record message"><i data-lucide="mic"></i></button>
+    </div>
+    <div id="micStatus" class="mic-status"></div>
+    <textarea id="broadcastMessage" placeholder="What does the team need to know?"></textarea>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">Audience</div>
+    <div class="exclude-hint" style="margin-top:0;margin-bottom:10px">Default: All Staff. Optionally exclude managers from this broadcast.</div>
+    <div class="exclude-row">
+      <input type="checkbox" id="excludeManagers">
+      <label for="excludeManagers">Exclude Managers</label>
+    </div>
+    <div class="expiry-row">
+      <label>Expires (optional — leave blank to keep visible until manually removed)</label>
+      <input type="datetime-local" id="expiresAtInput">
+    </div>
+  </div>
+
+  <button type="button" class="send-btn" id="sendBtn"><i data-lucide="megaphone"></i> Send Broadcast</button>
+
+  <div class="panel" style="margin-top:22px">
+    <div class="panel-label">Currently Active</div>
+    <div id="activeBroadcastsList" class="loading-roles">Loading...</div>
+  </div>
+</div>
+<script>
+var WORKER='https://fieldiq-proxy.rdehni1979.workers.dev';
+var currentUserId=localStorage.getItem('fieldiq_user_id');
+var currentUserName=localStorage.getItem('fieldiq_user_name');
+var currentSessionToken=localStorage.getItem('fieldiq_session_token');
+
+function clearActiveSession(){
+  localStorage.removeItem('fieldiq_user_id');
+  localStorage.removeItem('fieldiq_user_name');
+  localStorage.removeItem('fieldiq_user_role');
+  localStorage.removeItem('fieldiq_user_record_id');
+  localStorage.removeItem('fieldiq_session_token');
+}
+
+if(!currentUserId||!currentUserName||!currentSessionToken){
+  window.location.href='./index.html';
+  throw new Error('No identity locked');
+}
+
+function validateAndInit(){
+  fetch(WORKER+'/validate-session',{headers:{'Authorization':'Bearer '+currentSessionToken}})
+    .then(function(res){return res.json().then(function(data){return {ok:res.ok,data:data};});})
+    .then(function(result){
+      if(!result.ok||!result.data||!result.data.valid||result.data.role!=='Manager'){
+        clearActiveSession();
+        window.location.href='./index.html';
+        return;
+      }
+      localStorage.setItem('fieldiq_user_id',result.data.userId);
+      localStorage.setItem('fieldiq_user_name',result.data.name);
+      localStorage.setItem('fieldiq_user_role',result.data.role);
+      localStorage.setItem('fieldiq_user_record_id',result.data.recordId);
+      initBroadcastPage();
+    })
+    .catch(function(){
+      window.location.href='./index.html';
+    });
+}
+
+function escapeHtml(str){
+  return String(str||'').replace(/[&<>"']/g,function(m){
+    return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
+  });
+}
+
+function extractErrorMessage(data){
+  if(!data)return 'Unknown error';
+  if(typeof data.error==='string')return data.error;
+  if(data.error&&typeof data.error==='object'&&data.error.message)return data.error.message;
+  return JSON.stringify(data);
+}
+
+function showStatus(msg,isError){
+  var el=document.getElementById('statusMsg');
+  el.innerHTML='<div class="status-msg '+(isError?'status-error':'status-success')+'">'+escapeHtml(msg)+'</div>';
+}
+
+// ── Optional voice input for the broadcast message ──────────────────────────
+// Same /transcribe endpoint and multipart shape already proven by
+// fieldiq-log-visit.html — no Worker change, no new endpoint. Populates
+// the existing textarea only; sending still requires the explicit Send
+// Broadcast tap, exactly as with typed text.
+var broadcastMicBtn=document.getElementById('broadcastMicBtn');
+var micStatusEl=document.getElementById('micStatus');
+var isRecordingBroadcast=false;
+var broadcastMediaRecorder=null;
+var broadcastStreamRef=null;
+var broadcastChunks=[];
+
+broadcastMicBtn.addEventListener('click',function(){
+  if(!isRecordingBroadcast)startBroadcastRecording();else stopBroadcastRecording();
+});
+
+async function startBroadcastRecording(){
+  try{
+    isRecordingBroadcast=true;
+    broadcastChunks=[];
+    micStatusEl.textContent='Recording… tap the mic to stop';
+    broadcastStreamRef=await navigator.mediaDevices.getUserMedia({audio:true});
+    broadcastMediaRecorder=new MediaRecorder(broadcastStreamRef);
+    broadcastMediaRecorder.ondataavailable=function(e){if(e.data&&e.data.size>0)broadcastChunks.push(e.data);};
+    broadcastMediaRecorder.onstop=function(){
+      isRecordingBroadcast=false;
+      broadcastMicBtn.className='mic-btn-compact';
+      broadcastMicBtn.innerHTML='<i data-lucide="mic"></i>';
+      if(window.lucide)lucide.createIcons({el:broadcastMicBtn});
+      if(broadcastStreamRef)broadcastStreamRef.getTracks().forEach(function(t){t.stop();});
+      var blob=new Blob(broadcastChunks,{type:'audio/webm'});
+      proceedToTranscribeBroadcast(blob);
+    };
+    broadcastMediaRecorder.start();
+    broadcastMicBtn.className='mic-btn-compact recording';
+    broadcastMicBtn.innerHTML='<i data-lucide="square"></i>';
+    if(window.lucide)lucide.createIcons({el:broadcastMicBtn});
+  }catch(e){
+    isRecordingBroadcast=false;
+    micStatusEl.textContent='Mic error: '+e.message;
+  }
+}
+
+function stopBroadcastRecording(){
+  broadcastMicBtn.disabled=true;
+  if(broadcastMediaRecorder&&broadcastMediaRecorder.state!=='inactive')broadcastMediaRecorder.stop();
+}
+
+function proceedToTranscribeBroadcast(blob){
+  micStatusEl.textContent='Transcribing…';
+  var fd=new FormData();
+  fd.append('file',blob,'broadcast.webm');
+  fd.append('model','whisper-1');
+  fetch(WORKER+'/transcribe',{method:'POST',body:fd})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var t=d.text||d.transcript||'';
+      broadcastMicBtn.disabled=false;
+      if(t){
+        document.getElementById('broadcastMessage').value=t;
+        micStatusEl.textContent='Transcript ready — review or edit before sending.';
+      }else{
+        micStatusEl.textContent='Transcription failed. Type your message instead.';
+      }
+    })
+    .catch(function(){
+      broadcastMicBtn.disabled=false;
+      micStatusEl.textContent='Transcription error. Type your message instead.';
+    });
+}
+
+document.getElementById('sendBtn').addEventListener('click',async function(){
+  var btn=this;
+  var message=document.getElementById('broadcastMessage').value.trim();
+  if(!message){showStatus('Please enter a message before sending.',true);return;}
+  var excludedRoles=document.getElementById('excludeManagers').checked?['Manager']:[];
+  var expiresAtRaw=document.getElementById('expiresAtInput').value;
+  var expiresAt=expiresAtRaw?new Date(expiresAtRaw).toISOString():null;
+  btn.disabled=true;
+  btn.innerHTML='Sending…';
+  try{
+    var payload={message:message,excludedRoles:excludedRoles};
+    if(expiresAt)payload.expiresAt=expiresAt;
+    var res=await fetch(WORKER+'/send-broadcast',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
+      body:JSON.stringify(payload)
+    });
+    var data=await res.json();
+    if(!res.ok)throw new Error(extractErrorMessage(data));
+    showStatus('Broadcast sent.',false);
+    document.getElementById('broadcastMessage').value='';
+    document.getElementById('expiresAtInput').value='';
+    document.getElementById('excludeManagers').checked=false;
+    loadActiveBroadcasts();
+  }catch(e){
+    showStatus('Could not send broadcast: '+e.message,true);
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='<i data-lucide="megaphone"></i> Send Broadcast';
+    if(window.lucide)lucide.createIcons({el:btn});
+  }
+});
+
+function formatDateTime(v){
+  if(!v)return '';
+  try{return new Date(v).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
+  catch(e){return v;}
+}
+
+async function loadActiveBroadcasts(){
+  var box=document.getElementById('activeBroadcastsList');
+  try{
+    var res=await fetch(WORKER+'/get-active-broadcasts-admin',{headers:{'Authorization':'Bearer '+currentSessionToken}});
+    var data=await res.json();
+    if(!res.ok)throw new Error(extractErrorMessage(data));
+    var records=data.records||[];
+    if(!records.length){box.innerHTML='<div class="exclude-hint" style="margin-top:0">No active broadcasts right now.</div>';return;}
+    var html='';
+    records.forEach(function(r){
+      var f=r.fields||{};
+      var excluded=String(f['Excluded Roles']||'').trim();
+      var meta='Sent '+escapeHtml(formatDateTime(f['Sent At']||''));
+      if(excluded)meta+=' · Excludes: '+escapeHtml(excluded);
+      if(f['Expires At'])meta+=' · Expires '+escapeHtml(formatDateTime(f['Expires At']));
+      html+='<div class="active-broadcast-card" id="active-'+escapeHtml(r.id)+'">'+
+        '<div class="active-broadcast-msg">'+escapeHtml(f['Message']||'')+'</div>'+
+        '<div class="active-broadcast-meta">'+meta+'</div>'+
+        '<button type="button" class="remove-btn" data-remove-id="'+escapeHtml(r.id)+'">Remove</button>'+
+      '</div>';
+    });
+    box.innerHTML=html;
+  }catch(e){
+    box.innerHTML='<div class="exclude-hint" style="margin-top:0">Could not load active broadcasts: '+escapeHtml(e.message)+'</div>';
+  }
+}
+
+document.addEventListener('click',function(e){
+  var btn=e.target.closest('[data-remove-id]');
+  if(!btn)return;
+  var broadcastId=btn.getAttribute('data-remove-id');
+  btn.disabled=true;btn.textContent='Removing…';
+  fetch(WORKER+'/remove-broadcast',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
+    body:JSON.stringify({broadcastId:broadcastId})
+  }).then(function(res){return res.json().then(function(data){return {ok:res.ok,data:data};});})
+    .then(function(result){
+      if(!result.ok){btn.disabled=false;btn.textContent='Remove';return;}
+      var card=document.getElementById('active-'+broadcastId);
+      if(card)card.remove();
+    })
+    .catch(function(){btn.disabled=false;btn.textContent='Remove';});
+});
+
+function initBroadcastPage(){
+  if(window.lucide)lucide.createIcons();
+  loadActiveBroadcasts();
+}
+document.addEventListener('DOMContentLoaded', validateAndInit);
+</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(function(){});}</script>
+</body>
+</html>
