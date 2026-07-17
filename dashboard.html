@@ -503,7 +503,8 @@ function renderDashboardSummary(agg){
   var topReps=agg.reps.slice(0,5);
   topReps.forEach(function(r){
     var ld=r.lastVisit?new Date(r.lastVisit).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'—';
-    repRows+='<tr><td><a href="'+buildVisitHistoryLink({rep:r.name})+'" style="color:#0b1f3a;font-weight:700;text-decoration:none">'+r.name+' →</a></td><td style="color:#2f8fff;font-weight:800">'+r.count+'</td><td>'+ld+'</td><td><span class="activity-badge '+getBadgeClass(r.sentiment)+'">'+r.sentiment+'</span></td></tr>';
+    var safeRepName=escapeHtml(r.name);
+    repRows+='<tr><td><a href="'+buildVisitHistoryLink({rep:r.name})+'" data-rep-row="'+safeRepName+'" onclick="try{sessionStorage.setItem(\'fieldiq_dashboard_lastRepRow\',this.getAttribute(\'data-rep-row\'));}catch(e){}" style="color:#0b1f3a;font-weight:700;text-decoration:none">'+r.name+' →</a></td><td style="color:#2f8fff;font-weight:800">'+r.count+'</td><td>'+ld+'</td><td><span class="activity-badge '+getBadgeClass(r.sentiment)+'">'+r.sentiment+'</span></td></tr>';
   });
   document.getElementById('repTable').innerHTML=repRows||'<tr><td colspan="4" class="empty">No rep data yet</td></tr>';
   var moreLinkEl=document.getElementById('repTableMoreLink');
@@ -515,7 +516,8 @@ function renderDashboardSummary(agg){
   var maxT=Math.max.apply(null,agg.territories.map(function(t){return t.count;}).concat([1]));var terrHtml='';
   agg.territories.forEach(function(t){
     var pw=Math.round(t.count/maxT*100);
-    terrHtml+='<a href="'+buildVisitHistoryLink({territory:t.name})+'" style="text-decoration:none;color:inherit;display:block"><div class="territory-item"><div class="territory-header"><span class="territory-name">'+t.name+'</span><span class="territory-count">'+t.count+' visits</span></div><div class="territory-bar-bg"><div class="territory-bar-fill" style="width:'+pw+'%"></div></div></div></a>';
+    var safeTerrName=escapeHtml(t.name);
+    terrHtml+='<a href="'+buildVisitHistoryLink({territory:t.name})+'" data-territory-card="'+safeTerrName+'" onclick="try{sessionStorage.setItem(\'fieldiq_dashboard_lastTerritoryCard\',this.getAttribute(\'data-territory-card\'));}catch(e){}" style="text-decoration:none;color:inherit;display:block"><div class="territory-item"><div class="territory-header"><span class="territory-name">'+t.name+'</span><span class="territory-count">'+t.count+' visits</span></div><div class="territory-bar-bg"><div class="territory-bar-fill" style="width:'+pw+'%"></div></div></div></a>';
   });
   document.getElementById('territoryBars').innerHTML=terrHtml||'<div class="empty">No territory data yet</div>';
   var flatPriority=[].concat(agg.priorityReview.high,agg.priorityReview.medium,agg.priorityReview.low);
@@ -696,28 +698,10 @@ function scrollToRestoredPriorityReview(){
     }
   }
 }
-async function restoreDashboardContext(){
-  var params=new URLSearchParams(window.location.search);
-  var rep=params.get('rep')||'';
-  var territory=params.get('territory')||'';
-  var priority=params.get('priority')||'';
-  var period=params.get('period')||'';
-  if(rep||territory||priority||period){
-    document.getElementById('filterRep').value=rep;
-    document.getElementById('filterTerritory').value=territory;
-    document.getElementById('filterPriority').value=priority;
-    document.getElementById('filterDate').value=period;
-    try{
-      var agg=await fetchDashboardAggregate({rep:rep,territory:territory,priority:priority,period:period});
-      var periodLabels={today:'Today',yesterday:'Yesterday',thisWeek:'This Week',lastWeek:'Last Week',thisMonth:'This Month',lastMonth:'Last Month','30':'Last 30 Days','90':'Last 90 Days'};
-      var parts=[];if(rep)parts.push('Rep: '+rep);if(territory)parts.push('Territory: '+territory);if(period)parts.push(periodLabels[period]||period);if(priority)parts.push('Priority: '+priority);
-      renderFilterBanner(parts,agg.kpi.total);
-      renderDashboardSummary(agg);
-    }catch(err){
-      document.getElementById('filterStatus').textContent='Failed to restore filters: '+err.message;
-    }
-  }
-}
+// Dashboard filter restoration was intentionally removed — Dashboard now
+// always opens unfiltered. This does not affect the navigation-shortcut
+// restoration below (Radar/Watchlist/New Accounts/Priority Review/Rep/
+// Territory scroll and highlight), which is independent and unchanged.
 // Extracted from restoreDashboardContext() — this must not run until
 // loadWatchlist() has genuinely finished rendering, not just after
 // restoreDashboardContext()'s own fetch resolves. myWatchlist sits above
@@ -774,6 +758,51 @@ function scrollToRestoredWatchlistCard(){
   }
 }
 // Same pattern again, extended to New Accounts.
+// Same pattern again, extended to Rep Performance. Highlights the row
+// itself (the <tr>), not just the link text within it.
+function scrollToRestoredRepRow(){
+  var lastRep=null;
+  try{lastRep=sessionStorage.getItem('fieldiq_dashboard_lastRepRow');sessionStorage.removeItem('fieldiq_dashboard_lastRepRow');}catch(e){}
+  if(lastRep!==null){
+    var table=document.getElementById('repTable');
+    if(table){
+      var links=table.querySelectorAll('[data-rep-row]');
+      for(var i=0;i<links.length;i++){
+        if(links[i].getAttribute('data-rep-row')===lastRep){
+          var rowEl=links[i].closest('tr');
+          if(rowEl){
+            rowEl.scrollIntoView({behavior:'smooth',block:'center'});
+            rowEl.classList.add('radar-card-highlighted');
+            (function(el){setTimeout(function(){el.classList.remove('radar-card-highlighted');},4000);})(rowEl);
+          }
+          break;
+        }
+      }
+    }
+  }
+}
+// Same pattern again, extended to Territory Coverage.
+function scrollToRestoredTerritoryCard(){
+  var lastTerr=null;
+  try{lastTerr=sessionStorage.getItem('fieldiq_dashboard_lastTerritoryCard');sessionStorage.removeItem('fieldiq_dashboard_lastTerritoryCard');}catch(e){}
+  if(lastTerr!==null){
+    var section=document.getElementById('territoryBars');
+    if(section){
+      var links=section.querySelectorAll('[data-territory-card]');
+      for(var i=0;i<links.length;i++){
+        if(links[i].getAttribute('data-territory-card')===lastTerr){
+          var cardDiv=links[i].querySelector('.territory-item');
+          if(cardDiv){
+            cardDiv.scrollIntoView({behavior:'smooth',block:'center'});
+            cardDiv.classList.add('radar-card-highlighted');
+            (function(el){setTimeout(function(){el.classList.remove('radar-card-highlighted');},4000);})(cardDiv);
+          }
+          break;
+        }
+      }
+    }
+  }
+}
 function scrollToRestoredNewAccountCard(){
   var lastCard=null;
   try{lastCard=sessionStorage.getItem('fieldiq_dashboard_lastNewAccountCard');sessionStorage.removeItem('fieldiq_dashboard_lastNewAccountCard');}catch(e){}
@@ -801,19 +830,7 @@ async function loadDashboard(){
     var agg=await res.json();if(!res.ok)throw new Error(JSON.stringify(agg));
     populateRepFilterFromAgg(agg);
     document.getElementById('filterBar').style.display='block';
-    var _returnParams=new URLSearchParams(window.location.search);
-    var _hasReturnContext=!!(_returnParams.get('rep')||_returnParams.get('territory')||_returnParams.get('priority')||_returnParams.get('period'));
-    if(!_hasReturnContext){
-      // No return context — a fresh, direct visit. Render immediately.
-      renderDashboardSummary(agg);
-    }
-    // With return context, the render above is skipped: restoreDashboardContext()
-    // below performs the only render, using the correctly-restored filter
-    // values from the start. Rendering unfiltered first and correcting it
-    // moments later (once restoreDashboardContext()'s own fetch resolves)
-    // would briefly expose clickable Territory/Rep links built from an
-    // empty filter state.
-    await restoreDashboardContext();
+    renderDashboardSummary(agg);
     await loadWatchlist({
       rep:document.getElementById('filterRep').value,
       territory:document.getElementById('filterTerritory').value,
@@ -823,6 +840,8 @@ async function loadDashboard(){
     scrollToRestoredRadarCard();
     scrollToRestoredWatchlistCard();
     scrollToRestoredNewAccountCard();
+    scrollToRestoredRepRow();
+    scrollToRestoredTerritoryCard();
     scrollToRestoredPriorityReview();
   }catch(err){
     clearTimeout(_timer);
