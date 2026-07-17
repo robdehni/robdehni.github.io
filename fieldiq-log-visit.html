@@ -510,7 +510,7 @@ function normalizeTerritoryForDropdown(raw){
         var calYear=params.get('calYear');
         var calMonth=params.get('calMonth');
         var calDay=params.get('calDay');
-        var calUrl='./fieldiq-calendar.html';
+        var calUrl=(currentUserRole==='Manager')?'./fieldiq-manager-calendar.html':'./fieldiq-calendar.html';
         var calParams=[];
         if(calYear)calParams.push('calYear='+encodeURIComponent(calYear));
         if(calMonth)calParams.push('calMonth='+encodeURIComponent(calMonth));
@@ -742,7 +742,8 @@ submitBtn.addEventListener('click',async function(){
     if(suggestedDateText&&suggestedDateText.toLowerCase()!=='none'){
       var dateNoticeEl=document.createElement('div');
       dateNoticeEl.style.cssText='margin-top:14px;padding:13px 16px;background:#eaf3ff;border:1.5px solid #b8d8ff;border-radius:12px;font-size:13px;color:#0b1f3a;font-weight:600';
-      dateNoticeEl.innerHTML='\ud83d\udcc5 AI detected a possible new date: <strong>'+suggestedDateText.replace(/</g,'&lt;')+'</strong>. <a href="./fieldiq-calendar.html" style="color:#2f8fff;font-weight:800;text-decoration:none">Open Calendar to reschedule \u2192</a>';
+      var _rescheduleCalUrl=(currentUserRole==='Manager')?'./fieldiq-manager-calendar.html':'./fieldiq-calendar.html';
+      dateNoticeEl.innerHTML='\ud83d\udcc5 AI detected a possible new date: <strong>'+suggestedDateText.replace(/</g,'&lt;')+'</strong>. <a href="'+_rescheduleCalUrl+'" style="color:#2f8fff;font-weight:800;text-decoration:none">Open Calendar to reschedule \u2192</a>';
       document.getElementById('reportContent').appendChild(dateNoticeEl);
     }
   }catch(err){processingOverlay.style.display='none';submitBtn.disabled=false;submitBtn.textContent='Process Visit Log';transcriptText.disabled=false;alert('Error: '+err.message);}
