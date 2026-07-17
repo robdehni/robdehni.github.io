@@ -393,7 +393,7 @@ function renderHomeSummary(agg){
     // picking one to silently hide.
     panel.classList.remove('all-clear');
     panelHead.innerHTML = priorityCount + ' visit' + (priorityCount !== 1 ? 's' : '') + ' awaiting review';
-    body.innerHTML = '<a class="summary-empty" style="padding:0 14px 14px;display:block;text-decoration:none;color:#2f8fff;font-weight:700" href="https://fieldiq.biz/dashboard.html">No accounts are individually flagged, but ' + priorityCount + ' visit' + (priorityCount !== 1 ? 's are' : ' is') + ' still awaiting your review. View Dashboard \u203a</a>';
+    body.innerHTML = '<a class="summary-empty" style="padding:0 14px 14px;display:block;text-decoration:none;color:#2f8fff;font-weight:700" href="https://fieldiq.biz/dashboard.html" onclick="try{sessionStorage.setItem(\'fieldiq_dashboard_openPriorityShortcut\',\'1\');}catch(e){}">No accounts are individually flagged, but ' + priorityCount + ' visit' + (priorityCount !== 1 ? 's are' : ' is') + ' still awaiting your review. View Dashboard \u203a</a>';
     return;
   }
   panel.classList.remove('all-clear');
