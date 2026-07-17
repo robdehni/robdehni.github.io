@@ -318,6 +318,51 @@ function buildVisitHistoryLink(overrides){
   var _finalUrl='fieldiq-visit-history.html'+(qs.length?'?'+qs.join('&'):'');
   return _finalUrl;
 }
+// Guards against a race between this optimistic UI update and
+// /update-visit's own network round-trip: if a manager navigates away and
+// back before that request (and its cache invalidation) has completed,
+// the returning Dashboard load can read Cloudflare's still-cached,
+// pre-update response. Recording the intended change here lets the next
+// load correct for that specific window without touching the cache,
+// invalidation logic, or aggregation itself in any way.
+function _recordPendingPriorityOverride(recordId,override){
+  try{
+    var raw=sessionStorage.getItem('fieldiq_dashboard_pendingOverrides');
+    var map=raw?JSON.parse(raw):{};
+    map[recordId]=Object.assign({},override,{ts:Date.now()});
+    sessionStorage.setItem('fieldiq_dashboard_pendingOverrides',JSON.stringify(map));
+  }catch(e){}
+}
+function _clearPendingPriorityOverride(recordId){
+  try{
+    var raw=sessionStorage.getItem('fieldiq_dashboard_pendingOverrides');
+    if(!raw)return;
+    var map=JSON.parse(raw);
+    delete map[recordId];
+    sessionStorage.setItem('fieldiq_dashboard_pendingOverrides',JSON.stringify(map));
+  }catch(e){}
+}
+function _applyPendingPriorityOverrides(records){
+  var raw;
+  try{raw=sessionStorage.getItem('fieldiq_dashboard_pendingOverrides');}catch(e){return records;}
+  if(!raw)return records;
+  var map;
+  try{map=JSON.parse(raw);}catch(e){return records;}
+  var now=Date.now();
+  var stillValid={};
+  Object.keys(map).forEach(function(id){
+    if(now-map[id].ts<90000)stillValid[id]=map[id];
+  });
+  try{sessionStorage.setItem('fieldiq_dashboard_pendingOverrides',JSON.stringify(stillValid));}catch(e){}
+  if(!Object.keys(stillValid).length)return records;
+  return records.filter(function(r){
+    var ov=stillValid[r.id];
+    if(!ov)return true;
+    if(ov.reviewed)return false;
+    if(ov.priority!==undefined)r.fields['Priority']=ov.priority;
+    return true;
+  });
+}
 async function updatePriority(recordId,newPriority,cardEl){
   var btns=cardEl.querySelectorAll('.pbtn');btns.forEach(function(b){b.disabled=true;});
   var rec=lastPriorityReviewFeed.find(function(r){return r.id===recordId;});
@@ -325,15 +370,18 @@ async function updatePriority(recordId,newPriority,cardEl){
   if(rec){
     rec.fields['Priority']=newPriority;
     renderPrioritySection(lastPriorityReviewFeed);
+    _recordPendingPriorityOverride(recordId,{priority:newPriority});
   }
   try{
     var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},body:JSON.stringify({recordId:recordId,priority:newPriority})});
     if(!res.ok){
       if(rec){rec.fields['Priority']=_oldPriority;renderPrioritySection(lastPriorityReviewFeed);}
+      _clearPendingPriorityOverride(recordId);
       alert('Could not update priority. Please try again.');
     }
   }catch(err){
     if(rec){rec.fields['Priority']=_oldPriority;renderPrioritySection(lastPriorityReviewFeed);}
+    _clearPendingPriorityOverride(recordId);
     alert('Error: '+err.message);
   }
 }
@@ -344,15 +392,18 @@ async function markReviewed(recordId,btnEl){
   if(_removedRec){
     lastPriorityReviewFeed=lastPriorityReviewFeed.filter(function(r){return r.id!==recordId;});
     renderPrioritySection(lastPriorityReviewFeed);
+    _recordPendingPriorityOverride(recordId,{reviewed:true});
   }
   try{
     var res=await fetch(WORKER_URL+'/update-visit',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},body:JSON.stringify({recordId:recordId,reviewed:true})});
     if(!res.ok){
       if(_removedRec){lastPriorityReviewFeed.push(_removedRec);renderPrioritySection(lastPriorityReviewFeed);}
+      _clearPendingPriorityOverride(recordId);
       btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Could not mark as reviewed. Please try again.');
     }
   }catch(err){
     if(_removedRec){lastPriorityReviewFeed.push(_removedRec);renderPrioritySection(lastPriorityReviewFeed);}
+    _clearPendingPriorityOverride(recordId);
     btnEl.disabled=false;btnEl.textContent='✓ Mark Reviewed';alert('Error: '+err.message);
   }
 }
@@ -470,6 +521,7 @@ function renderDashboardSummary(agg){
   });
   document.getElementById('territoryBars').innerHTML=terrHtml||'<div class="empty">No territory data yet</div>';
   var flatPriority=[].concat(agg.priorityReview.high,agg.priorityReview.medium,agg.priorityReview.low);
+  flatPriority=_applyPendingPriorityOverrides(flatPriority);
   lastPriorityReviewFeed=flatPriority;
   renderPrioritySection(flatPriority);
   lastNewAccountsFeed=agg.newAccountsFeed;
