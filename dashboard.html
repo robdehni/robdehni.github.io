@@ -680,6 +680,22 @@ async function resetFilters(){
 // reorder or shrink between visits, since reviewing a flagged account is
 // often exactly what resolves the flag; if the card is gone, that's a
 // correct outcome, not a failure to restore.
+// Same pattern again, extended to the Priority Review toggle itself —
+// does not open or close #openActionsBody, only scrolls to and
+// highlights the toggle header, leaving its existing expand/collapse
+// state exactly as it already was.
+function scrollToRestoredPriorityReview(){
+  var shouldScroll=null;
+  try{shouldScroll=sessionStorage.getItem('fieldiq_dashboard_openPriorityShortcut');sessionStorage.removeItem('fieldiq_dashboard_openPriorityShortcut');}catch(e){}
+  if(shouldScroll){
+    var toggleEl=document.getElementById('openActionsToggle');
+    if(toggleEl){
+      toggleEl.scrollIntoView({behavior:'smooth',block:'center'});
+      toggleEl.classList.add('radar-card-highlighted');
+      (function(el){setTimeout(function(){el.classList.remove('radar-card-highlighted');},4000);})(toggleEl);
+    }
+  }
+}
 async function restoreDashboardContext(){
   var params=new URLSearchParams(window.location.search);
   var rep=params.get('rep')||'';
@@ -807,6 +823,7 @@ async function loadDashboard(){
     scrollToRestoredRadarCard();
     scrollToRestoredWatchlistCard();
     scrollToRestoredNewAccountCard();
+    scrollToRestoredPriorityReview();
   }catch(err){
     clearTimeout(_timer);
     var msg=(err.name==='AbortError')?'Request timed out — check your connection.':('Failed to load: '+err.message);
