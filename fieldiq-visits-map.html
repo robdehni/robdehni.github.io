@@ -103,6 +103,7 @@ body{background:#f4f8fc;color:#0b1f3a;font-family:-apple-system,BlinkMacSystemFo
   </div>
   <div style="display:flex;align-items:center;gap:10px;">
     <span id="updated" style="color:#aab8cc;font-size:11.5px;font-weight:600">Loading...</span>
+    <a href="./dashboard.html" id="backToDashboardBtn" class="home-btn" style="display:none">← Back to Dashboard</a>
     <a href="./index.html" id="topHomeBtn" class="home-btn">← Home</a>
   </div>
 </div>
@@ -158,6 +159,9 @@ var isManager = (role === 'Manager');
 
 document.getElementById('topHomeBtn').href = isManager ? './fieldiq.html' : './index.html';
 document.getElementById('topHomeBtn').textContent = isManager ? '← Manager Home' : '← Home';
+if (new URLSearchParams(window.location.search).get('from') === 'dashboard') {
+  document.getElementById('backToDashboardBtn').style.display = '';
+}
 document.getElementById('accessDeniedHomeBtn').href = isManager ? './dashboard.html' : './index.html';
 
 if (!isManager) {
