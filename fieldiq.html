@@ -427,7 +427,8 @@ function renderHomeSummary(agg){
             ? './fieldiq-visit-history.html?visitId=' + encodeURIComponent(acc.followUpDueTodayVisitId) + '&source=manager-home'
             : 'https://fieldiq.biz/dashboard.html');
     }
-    return '<a class="attention-row" href="' + dest + '">' +
+    var _onclickAttr = dest.indexOf('dashboard.html') > -1 ? ' onclick="try{sessionStorage.setItem(\'fieldiq_dashboard_openPriorityShortcut\',\'1\');}catch(e){}"' : '';
+    return '<a class="attention-row" href="' + dest + '"' + _onclickAttr + '>' +
       '<div class="attention-rank">' + (idx + 1) + '</div>' +
       '<div class="attention-body"><div class="attention-name">' + escapeHtmlHome(acc.name) + '</div>' +
       '<div class="attention-reason">' + escapeHtmlHome(reason) + '</div></div>' +
