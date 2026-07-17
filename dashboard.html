@@ -540,11 +540,27 @@ function renderManagementRadar(radarItems){
   (radarItems||[]).forEach(function(acc){
     var link=acc.visitId?buildVisitHistoryLink({visitId:acc.visitId}):buildVisitHistoryLink({});
     var safeName=escapeHtml(acc.name);
-    html+='<a href="'+link+'" data-radar-account="'+safeName+'" onclick="try{sessionStorage.setItem(\'fieldiq_dashboard_lastRadarCard\',this.getAttribute(\'data-radar-account\'));}catch(e){}" style="text-decoration:none;color:inherit;display:block"><div class="radar-card"><div class="radar-card-header"><div class="radar-account">'+safeName+'</div><div style="display:flex;align-items:center;gap:6px">'+(acc.territory?'<span class="activity-badge badge-territory">'+escapeHtml(acc.territory)+'</span>':'')+'<button type="button" class="radar-dismiss-btn" onclick="event.preventDefault();event.stopPropagation();dismissRadarItem(\''+safeName.replace(/'/g,"\\'")+'\',this);" style="border:1px solid #dde8f5;background:#fff;color:#8a9bb3;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:20px;cursor:pointer;white-space:nowrap">Dismiss</button></div></div><div class="radar-evidence-label">Why AI flagged this</div><div class="radar-evidence">'+acc.evidence.map(function(e){return'<div class="radar-evidence-line">'+escapeHtml(e)+'</div>';}).join('')+'</div><div class="radar-date">Last visit: '+formatDate(acc.lastVisit)+'</div></div></a>';
+    html+='<a href="'+link+'" class="radar-item-link" data-radar-account="'+safeName+'" style="text-decoration:none;color:inherit;display:block"><div class="radar-card"><div class="radar-card-header"><div class="radar-account">'+safeName+'</div><div style="display:flex;align-items:center;gap:6px">'+(acc.territory?'<span class="activity-badge badge-territory">'+escapeHtml(acc.territory)+'</span>':'')+'<button type="button" class="radar-dismiss-btn" style="border:1px solid #dde8f5;background:#fff;color:#8a9bb3;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:20px;cursor:pointer;white-space:nowrap">Dismiss</button></div></div><div class="radar-evidence-label">Why AI flagged this</div><div class="radar-evidence">'+acc.evidence.map(function(e){return'<div class="radar-evidence-line">'+escapeHtml(e)+'</div>';}).join('')+'</div><div class="radar-date">Last visit: '+formatDate(acc.lastVisit)+'</div></div></a>';
   });
   document.getElementById('managementRadar').innerHTML=html||'<div class="empty">No accounts currently need attention</div>';
+  var cardLinks=document.querySelectorAll('#managementRadar .radar-item-link');
+  cardLinks.forEach(function(cardEl,idx){
+    var acc=(radarItems||[])[idx];
+    if(!acc)return;
+    cardEl.addEventListener('click',function(){
+      try{sessionStorage.setItem('fieldiq_dashboard_lastRadarCard',cardEl.getAttribute('data-radar-account'));}catch(e){}
+    });
+    var dismissBtn=cardEl.querySelector('.radar-dismiss-btn');
+    if(dismissBtn){
+      dismissBtn.addEventListener('click',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        dismissRadarItem(acc.name,dismissBtn,cardEl);
+      });
+    }
+  });
 }
-function dismissRadarItem(accountName,btnEl){
+function dismissRadarItem(accountName,btnEl,cardEl){
   btnEl.disabled=true;
   btnEl.textContent='Dismissing…';
   fetch(WORKER_URL+'/dismiss-radar-item',{
@@ -552,10 +568,27 @@ function dismissRadarItem(accountName,btnEl){
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
     body:JSON.stringify({accountName:accountName})
   }).then(function(res){
-    if(!res.ok)throw new Error('Request failed');
-    return fetchDashboardAggregate();
-  }).then(function(agg){
-    renderManagementRadar(agg.managementRadar);
+    if(res.status===401||res.status===403){
+      localStorage.removeItem('fieldiq_user_id');
+      localStorage.removeItem('fieldiq_user_name');
+      localStorage.removeItem('fieldiq_user_role');
+      localStorage.removeItem('fieldiq_user_record_id');
+      localStorage.removeItem('fieldiq_session_token');
+      window.location.href='./index.html';
+      return;
+    }
+    if(!res.ok){
+      btnEl.disabled=false;
+      btnEl.textContent='Dismiss';
+      alert('Could not dismiss right now. Please try again.');
+      return;
+    }
+    if(cardEl&&cardEl.parentNode)cardEl.parentNode.removeChild(cardEl);
+    fetchDashboardAggregate().then(function(agg){
+      renderManagementRadar(agg.managementRadar);
+    }).catch(function(refreshErr){
+      console.error('Radar item dismissed successfully, but refreshing to promote the next item failed:',refreshErr);
+    });
   }).catch(function(err){
     console.error('Could not dismiss radar item:',err);
     btnEl.disabled=false;
