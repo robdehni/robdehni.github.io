@@ -272,8 +272,6 @@ var currentSessionToken=localStorage.getItem('fieldiq_session_token');
     homeBtn.href='./dashboard.html'+(dashQ2.length?'?'+dashQ2.join('&'):'');
     homeBtn.textContent='← Back to Dashboard';
   }else if(source==='map'){
-    homeBtn.href=returnTo||'./fieldiq-visits-map.html';
-    homeBtn.textContent='← Back to Territory Map';
     var mapVisitList=null;
     try{
       var _stored=sessionStorage.getItem('fieldiq_map_visit_list');
@@ -282,36 +280,59 @@ var currentSessionToken=localStorage.getItem('fieldiq_session_token');
         if(Array.isArray(_parsed))mapVisitList=_parsed;
       }
     }catch(e){}
-    var currentVisitId=params.get('visitId');
-    if(mapVisitList&&currentVisitId){
-      var curIdx=mapVisitList.indexOf(currentVisitId);
-      if(curIdx>-1&&mapVisitList.length>1){
-        document.getElementById('mapProgress').textContent='Visit '+(curIdx+1)+' of '+mapVisitList.length;
-        var prevBtn=document.getElementById('mapPrevBtn');
-        var nextBtn=document.getElementById('mapNextBtn');
-        function _mapNavHref(idx){
-          var baseReturnTo=returnTo||'./fieldiq-visits-map.html';
-          var qIdx=baseReturnTo.indexOf('?');
-          var returnPath=qIdx>-1?baseReturnTo.substring(0,qIdx):baseReturnTo;
-          var returnParams=qIdx>-1?new URLSearchParams(baseReturnTo.substring(qIdx+1)):new URLSearchParams();
-          returnParams.set('mapVisitId',mapVisitList[idx]);
-          var rebuiltReturnTo=returnPath+'?'+returnParams.toString();
-          return './fieldiq-visit-history.html?visitId='+encodeURIComponent(mapVisitList[idx])+'&source=map&returnTo='+encodeURIComponent(rebuiltReturnTo);
+    var curIdx=mapVisitList?mapVisitList.indexOf(params.get('visitId')):-1;
+    function _mapReturnToFor(idx){
+      var baseReturnTo=returnTo||'./fieldiq-visits-map.html';
+      var qIdx=baseReturnTo.indexOf('?');
+      var returnPath=qIdx>-1?baseReturnTo.substring(0,qIdx):baseReturnTo;
+      var returnParams=qIdx>-1?new URLSearchParams(baseReturnTo.substring(qIdx+1)):new URLSearchParams();
+      returnParams.set('mapVisitId',mapVisitList[idx]);
+      return returnPath+'?'+returnParams.toString();
+    }
+    function _updateMapNavUI(){
+      homeBtn.href=_mapReturnToFor(curIdx);
+      homeBtn.textContent='← Back to Territory Map';
+      document.getElementById('mapProgress').textContent='Visit '+(curIdx+1)+' of '+mapVisitList.length;
+      var prevBtn=document.getElementById('mapPrevBtn');
+      var nextBtn=document.getElementById('mapNextBtn');
+      prevBtn.style.visibility=curIdx>0?'visible':'hidden';
+      nextBtn.style.visibility=curIdx<mapVisitList.length-1?'visible':'hidden';
+    }
+    // Switches to another already-rendered card in place — no network
+    // request, no page reload. Collapses whichever card this same flow
+    // previously opened (if any) so exactly one is ever expanded at a
+    // time, matching the original one-page-per-visit behaviour.
+    var _mapCurrentOpenId=mapVisitList&&curIdx>-1?mapVisitList[curIdx]:null;
+    function _goToMapVisit(newIdx){
+      if(!mapVisitList||newIdx<0||newIdx>=mapVisitList.length)return;
+      if(_mapCurrentOpenId){
+        var oldCard=document.querySelector('.visit-card[data-id="'+_mapCurrentOpenId+'"]');
+        if(oldCard){
+          oldCard.classList.remove('expanded','command-centre-highlight','rep-actions-highlight','map-highlight','thread-nav-highlight');
+          var oldDetail=oldCard.querySelector('.visit-detail');
+          var oldToggle=oldCard.querySelector('.visit-toggle');
+          if(oldDetail)oldDetail.classList.remove('open');
+          if(oldToggle){oldToggle.innerHTML='<i data-lucide="chevron-down"></i> Tap to view full report';lucide.createIcons({el:oldToggle});}
         }
-        if(curIdx>0){
-          prevBtn.href=_mapNavHref(curIdx-1);
-        }else{
-          prevBtn.style.visibility='hidden';
-        }
-        if(curIdx<mapVisitList.length-1){
-          nextBtn.href=_mapNavHref(curIdx+1);
-        }else{
-          nextBtn.style.visibility='hidden';
-        }
-        document.getElementById('mapNavControls').style.display='flex';
-        var _navBarEl=document.getElementById('mapNavControls');
-        document.body.style.paddingTop=(_navBarEl.offsetHeight+16)+'px';
       }
+      curIdx=newIdx;
+      _mapCurrentOpenId=mapVisitList[curIdx];
+      var _newUrl=new URL(window.location.href);
+      _newUrl.searchParams.set('visitId',mapVisitList[curIdx]);
+      history.pushState(null,'',_newUrl.toString());
+      _updateMapNavUI();
+      expandAndScrollToVisit(mapVisitList[curIdx]);
+    }
+    if(mapVisitList&&curIdx>-1&&mapVisitList.length>1){
+      _updateMapNavUI();
+      document.getElementById('mapPrevBtn').addEventListener('click',function(e){e.preventDefault();_goToMapVisit(curIdx-1);});
+      document.getElementById('mapNextBtn').addEventListener('click',function(e){e.preventDefault();_goToMapVisit(curIdx+1);});
+      document.getElementById('mapNavControls').style.display='flex';
+      var _navBarEl=document.getElementById('mapNavControls');
+      document.body.style.paddingTop=(_navBarEl.offsetHeight+16)+'px';
+    }else{
+      homeBtn.href=returnTo||'./fieldiq-visits-map.html';
+      homeBtn.textContent='← Back to Territory Map';
     }
   }else{
     var role=localStorage.getItem('fieldiq_user_role');
