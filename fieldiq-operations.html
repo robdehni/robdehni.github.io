@@ -441,6 +441,25 @@ function buildIndices() {
   allVisits.forEach(function(v){
     addRepName(v.fields['Rep Name']||'');
   });
+  // Managers are excluded from the general sweep above by design, but a
+  // manager who has personally logged field visits should still appear
+  // on the board — otherwise Dashboard/Planned Visits count their
+  // activity while Operations silently omits it. Included only when
+  // genuine visit activity exists, using the same normalizeRepName
+  // comparison every rep's own activity already relies on; a manager
+  // with zero logged visits is correctly left out, same as before.
+  allUsers.forEach(function(u){
+    var role = u.fields['Role']||'';
+    if (role!=='Manager') return;
+    var mgrName = normalizeRepName(u.fields['Display Name']||'');
+    if (!mgrName) return;
+    var hasActivity = allVisits.some(function(v){ return normalizeRepName(v.fields['Rep Name'])===mgrName; });
+    if (!hasActivity) return;
+    var lower = mgrName.toLowerCase();
+    if (seenLower[lower]) return;
+    seenLower[lower] = true;
+    orderedNames.push(mgrName);
+  });
   activeRepNames = orderedNames.sort(function(a,b){return a.localeCompare(b);});
 }
 
