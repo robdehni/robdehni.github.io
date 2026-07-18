@@ -562,7 +562,23 @@ function renderManagementRadar(radarItems){
 }
 function dismissRadarItem(accountName,btnEl,cardEl){
   btnEl.disabled=true;
-  btnEl.textContent='Dismissing…';
+  // Optimistic removal — the card disappears immediately on click, not
+  // after the network round-trip completes. Its exact original position
+  // is captured so it can be precisely restored if the write fails.
+  var cardParent=cardEl?cardEl.parentNode:null;
+  var cardNextSibling=cardEl?cardEl.nextSibling:null;
+  if(cardEl&&cardParent)cardParent.removeChild(cardEl);
+  function restoreCard(){
+    if(cardEl&&cardParent){
+      if(cardNextSibling&&cardNextSibling.parentNode===cardParent){
+        cardParent.insertBefore(cardEl,cardNextSibling);
+      }else{
+        cardParent.appendChild(cardEl);
+      }
+    }
+    btnEl.disabled=false;
+    btnEl.textContent='Dismiss';
+  }
   fetch(WORKER_URL+'/dismiss-radar-item',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSessionToken},
@@ -578,12 +594,25 @@ function dismissRadarItem(accountName,btnEl,cardEl){
       return;
     }
     if(!res.ok){
-      btnEl.disabled=false;
-      btnEl.textContent='Dismiss';
-      alert('Could not dismiss right now. Please try again.');
+      var resForFallback=res.clone();
+      res.json().then(function(errBody){
+        var detail=(errBody&&(errBody.airtableError||errBody.error))||('HTTP '+res.status);
+        restoreCard();
+        alert('Could not dismiss: '+detail);
+      }).catch(function(){
+        resForFallback.text().then(function(rawText){
+          restoreCard();
+          alert('Could not dismiss (HTTP '+res.status+'): '+(rawText||'(empty response body)'));
+        }).catch(function(){
+          restoreCard();
+          alert('Could not dismiss right now. Please try again. (HTTP '+res.status+')');
+        });
+      });
       return;
     }
-    if(cardEl&&cardEl.parentNode)cardEl.parentNode.removeChild(cardEl);
+    // Confirmed successful POST — the card is already gone from the
+    // optimistic removal above. Nothing after this point can turn a
+    // genuine success back into a failure.
     fetchDashboardAggregate().then(function(agg){
       renderManagementRadar(agg.managementRadar);
     }).catch(function(refreshErr){
@@ -591,8 +620,7 @@ function dismissRadarItem(accountName,btnEl,cardEl){
     });
   }).catch(function(err){
     console.error('Could not dismiss radar item:',err);
-    btnEl.disabled=false;
-    btnEl.textContent='Dismiss';
+    restoreCard();
     alert('Could not dismiss right now. Please try again.');
   });
 }
